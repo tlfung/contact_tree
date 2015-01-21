@@ -1,0 +1,9 @@
+@import "ion.rangeSlider.skinNice.css?v=2";
+
+.demo_block {
+    position: relative;
+    background: #fff;
+    padding: 0 20px 1px;
+    margin: 0 0 30px;
+    border-radius: 2px;
+}
