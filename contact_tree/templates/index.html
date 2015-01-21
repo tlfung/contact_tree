@@ -55,7 +55,7 @@
             </div>
             <div class="left">
                 <div class="btn-group" style="margin:20px 0 2px 15px;">
-                    <!-- <button type="button" id="import" class="myfont2 menu_button btn btn-default">Import</button> -->
+                    <button type="button" id="import" class="myfont2 menu_button btn btn-default">Import</button>
                     <button type="button" id="menu" class="myfont2 menu_button btn btn-default">Data</button>
                     <!-- <button type="button" id="element" class="myfont2 menu_button btn btn-default">Components</button> -->
                     <button type="button" id="map" class="myfont2 menu_button btn btn-default">Mapping</button>
@@ -317,6 +317,21 @@
         <div id="sidekey_button" class="row" style="margin-right:5px;"></div> -->
     </div>
 
+
+    <div id="import_dialog" title="Import Data File" class="popup_window_title" style="overflow:hidden;">
+        <input type="file" name="filename" id="filename" style="width:100%;"> </input>
+        <div id="data_information" style="margin-top:5px;">
+            <div id="ori_data" class="left" style="margin-right:5px; width:45%; height:300px; overflow-y:auto;">
+                list raw data
+            </div>
+            <div id="cnt_data" class="left" style="width:50%; height:300px; overflow-y:auto;">
+                data convertor
+            </div>
+        </div>
+        <p></p>
+    </div>
+
+
     <div id="menu_dialog" title="Choose Display Data" class="popup_window_title" style="overflow:hidden;">
         <select id="dataselect" style="width:100%;">
             <option value="0">Data Set</option>
@@ -392,7 +407,6 @@
             </div>
         </div>
         
-        
     </div>
 
 <!--     <div id="component_dialog" title="Choose Tree Component" class="popup_window_title">
@@ -404,7 +418,7 @@
         </div>
         <div id="component_button" class="row right"></div>
     </div>
- -->
+-->
 
     <div id="style_dialog" title="Choose Tree Style" class="popup_window_title">
         <div id="style_option" class="row" style="display:none; margin-left:3px;">
@@ -426,7 +440,6 @@
     </div>
 
 
-
     <!-- my custom js -->.
     <script type="text/javascript" src="media/js/settings.js"></script>
     <script type="text/javascript" src="media/js/labels.js"></script>
@@ -434,6 +447,7 @@
 
     <script type="text/javascript" src="media/js/model.js"></script>
     <script type="text/javascript" src="media/js/my_app.js"></script>
+    <script type="text/javascript" src="media/js/import_data.js"></script>
     <script type="text/javascript" src="media/js/tree_structure.js"></script>
     <script type="text/javascript" src="media/js/tree_selecting.js"></script>
     <script type="text/javascript" src="media/js/tree_mapping.js"></script>
