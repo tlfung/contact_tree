@@ -321,11 +321,14 @@
     <div id="import_dialog" title="Import Data File" class="popup_window_title" style="overflow:hidden;">
         <input type="file" name="filename" id="filename" style="width:100%;"> </input>
         <div id="data_information" style="margin-top:5px;">
-            <div id="ori_data" class="left" style="margin-right:5px; width:45%; height:300px; overflow-y:auto;">
-                list raw data
+            <div id="ori_data" class="left" style="margin-right:5px; width:45%;">
+                <span id="raw_data" class="left myfont3" style="display:none;">Original Attributes:</span><br>
+                <div id="list_attr" style="margin-top:10px; height:400px; overflow-y:auto; margin-right:5px;"></div>
             </div>
-            <div id="cnt_data" class="left" style="width:50%; height:300px; overflow-y:auto;">
-                data convertor
+            <div id="data_convertor" class="left" style="width:50%;">
+                <span id="data_cnvt" class="left myfont3" style="display:none;">Data Convertor:</span><br>
+                <div id="cnvt_tool" style="margin-top:10px; height:400px; overflow-y:auto; margin-right:5px;"></div>
+                
             </div>
         </div>
         <p></p>
@@ -447,7 +450,7 @@
 
     <script type="text/javascript" src="media/js/model.js"></script>
     <script type="text/javascript" src="media/js/my_app.js"></script>
-    <script type="text/javascript" src="media/js/import_data.js"></script>
+    <script type="text/javascript" src="media/js/data_importing.js"></script>
     <script type="text/javascript" src="media/js/tree_structure.js"></script>
     <script type="text/javascript" src="media/js/tree_selecting.js"></script>
     <script type="text/javascript" src="media/js/tree_mapping.js"></script>
