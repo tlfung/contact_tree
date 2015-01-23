@@ -7,20 +7,30 @@ var ImportView = Backbone.View.extend({
         console.log("in importing initialize");
               
         // this.model.bind('change:view_mode', this.change_mode);
-        
+        this.final_data_attr_info = {};
+        this.data_column = [];
+        this.info_array = [];
+        this.filter_array = [];
+        this.data_survey = ["column", "min", "max", "missing", "type", "ego", "relation", "action", "change"];
+        this.data_form = ["col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-4"];
+        this.data_type = ["Categorical", "Dichotomy", "Ordinal", "Numerical", "identified"];
+        this.data_action = ["none", "clean", "fill"];
+        this.data_function = ["==", ">=", "<", "[m,M]"];
+        this.data_function_name = ["e", "b", "s", "r"];
+        this.missing_data = [];
+        this.raw_data = [];
+
         // open the dialog
         $( "#import_dialog" ).dialog({
             autoOpen: false,
             height: 530,
-            width: 750,
+            width: 1100,
             modal: true
         });
 
         $( "#import" ).click(function() {
             $( "#import_dialog" ).dialog( "open" );
            
-            $("#style_submit").show();
-            $("#style_option").show();
         });
 
         $("#filename").change(function(e) {
@@ -35,7 +45,8 @@ var ImportView = Backbone.View.extend({
                 var reader = new FileReader();
                 reader.onload = function(e) {
                     var csvval = e.target.result.split("\n");
-                    self.analyzing_attribute(csvval);
+                    this.raw_data = csvval;
+                    self.convertor_layout(csvval);
                 };
                 reader.readAsText(e.target.files.item(0));
 
@@ -47,49 +58,284 @@ var ImportView = Backbone.View.extend({
 
     },
 
-    analyzing_attribute: function(data){
+    convertor_layout: function(data){
         var self = this;
-        $("#raw_data").show();
+        this.final_data_attr_info = {};
+        $("#cnvt_tool").show();
         $("#data_cnvt").show();
+        $("#column_row_name").show();
+        
         // $("#sub_selection").append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + ego_time[s] + '" id="' + ego_time[s] + '" checked>' + ego_time[s] + '</label>');            
-        var data_column = data[0].split(",");
-        var info_array = [];
-        var filter_array = [];
-        for(var j = 0; j < data_column.length; j++){
-            info_array.push([]);
+        this.data_column = data[0].split(",");
+        this.info_array = [];
+        this.filter_array = [];
+        // var this.data_survey = ["column", "min", "max", "missing", "type", "ego", "relation", "action"];
+        // var this.data_form = ["col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1"];
+        // var this.data_type = ["Categorical", "Dichotomy", "Ordinal", "Numerical", "identified"];
+        // var this.data_action = ["none", "clean", "fill"];
+        this.missing_data = [];
+        for(var j = 0; j < this.data_column.length; j++){
+            this.info_array.push([]);
+            this.missing_data.push(0);
         }
-        // var inputrad = data_column[0];
-        var container = document.getElementById("list_attr");
+        // var inputrad = this.data_column[0];
+        var container = document.getElementById("cnvt_tool");
+        $("#cnvt_tool").empty();
         // container.setAttribute("class", "area_selector");
         for(var i = 1; i < data.length; i++){
             var row = data[i].split(",");
             var temp_info = [];
-            for(var j = 0; j < data_column.length; j++){
-                info_array[j].push(row[j]);
+            for(var j = 0; j < this.data_column.length; j++){
+                if(row[j] != '' && row[j] != undefined)
+                    this.info_array[j].push(row[j]);
+                else
+                    this.missing_data[j] += 1;
             }
         }
-        console.log(info_array);
-        for(var j = 0; j < data_column.length; j++){
-            distinct_val = info_array[j].filter(util.unique);
-            // var distinct_val = jQuery.unique( info_array[j] )
-            filter_array.push(distinct_val);
+        console.log(this.info_array);
+        for(var j = 0; j < this.data_column.length; j++){
+            distinct_val = this.info_array[j].filter(util.unique);
+            // var distinct_val = jQuery.unique( this.info_array[j] )
+            this.filter_array.push(distinct_val);
         }
-        console.log(filter_array);
-        
-        for(var i = 0; i < data_column.length; i++){
-            // var temp = data_column[i];
+        console.log(this.filter_array);
+
+        for(var i = 0; i < this.data_column.length; i++){
+            // var temp = this.data_column[i];
             // var inputrad = inputrad + "<br>" + temp;
+
             var column_opt = document.createElement('div');
-            column_opt.value = data_column[i];
-            column_opt.innerHTML = data_column[i];
-            column_opt.setAttribute("class", "myfont3");
-            
+            column_opt.setAttribute("class", "ui-widget row");
+            // <div class="col-md-6">
+            // var column_info = [this.data_column[i], Math.min(this.filter_array[i]), Math.max(this.filter_array[i])];
+            var column_info = [this.data_column[i],  Math.min.apply(Math, this.filter_array[i]),  Math.max.apply(Math, this.filter_array[i]), this.missing_data[i]];
+            if(isNaN(column_info[1]))
+                column_info = [this.data_column[i],  this.filter_array[i][0],  this.filter_array[i][1], this.missing_data[i]];
+            if(this.filter_array[i].length == 2)
+                column_info.push(1);
+            else if(this.filter_array[i].length < 15)
+                column_info.push(0);
+            else if(this.filter_array[i].length > 100)
+                column_info.push(4);
+            else
+                column_info.push(3);
+
+            console.log(column_info);
+
+            var column_row = document.createElement('div');
+            column_row.setAttribute("class", this.data_form[0]);
+            // column_row.value = this.data_column[0] + "_" + this.data_survey[0];
+            column_row.setAttribute("style", "padding:0 0 0 15;");
+            var input_type = document.createElement('input');
+            input_type.id = this.data_column[i] + "_" + this.data_survey[0];
+            input_type.value = this.data_column[i];
+            // input_type.setAttribute("type", "radio");
+            // input_type.setAttribute("name", "define_ego_selection");
+            input_type.setAttribute("style", "margin:1 0 1 0; width:100%; border-radius:3px;");
+            column_row.appendChild(input_type);
+            column_opt.appendChild(column_row);
+
+            for(var e = 1; e < 4; e++){ //this.data_survey.length
+                var column_row = document.createElement('div');
+                column_row.setAttribute("class", this.data_form[e]);
+                column_row.value = this.data_column[i] + "_" + this.data_survey[e];
+                column_row.id = this.data_column[i] + "_" + this.data_survey[e];
+                column_row.innerHTML = column_info[e];
+                if(e == 3)
+                    column_row.setAttribute("style", "margin:0 -20 0 15;");
+                // column_row.setAttribute("class", "myfont3");
+                column_opt.appendChild(column_row);
+            }
+            for(var e = 4; e < 9; e++){ //this.data_survey.length
+                var column_row = document.createElement('div');
+                column_row.setAttribute("class", this.data_form[e]);
+                // column_row.value = this.data_column[i] + "_" + this.data_survey[e];
+                if(e == 4){
+                    column_row.setAttribute("style", "padding:0; margin-left:5px");
+                    var input_type = document.createElement('select');
+                    input_type.id = this.data_column[i] + "_" + this.data_survey[e];
+                    input_type.setAttribute("style", "margin-left:10px; width:110%; padding-buttom:5px; border-radius:3px;");
+                    input_type.setAttribute("class", "type_selector");
+                    for(var t = 0; t < this.data_type.length; t ++){
+                        var attr_type = document.createElement('option');
+                        attr_type.value = t;
+                        attr_type.innerHTML = this.data_type[t];
+                        if(column_info[4] == t)
+                            attr_type.setAttribute("selected", true);
+                        input_type.appendChild(attr_type);
+                    }
+                }
+                else if(e == 5){
+                    var input_type = document.createElement('input');
+                    input_type.value = this.data_column[i] + "_" + this.data_survey[e];
+                    input_type.type = "radio";
+                    input_type.name = "define_ego_selection";
+                    input_type.setAttribute("class", "myfont3 define_ego_checkbox");
+                    input_type.setAttribute("style", "margin-left:27px;");
+                }
+                else if(e == 6){
+                    column_row.setAttribute("style", "padding:0;");
+                    var input_type = document.createElement('input');
+                    input_type.id = this.data_column[i] + "_" + this.data_survey[e];
+                    input_type.setAttribute("style", "margin:1 0 1 0; width:100%; border-radius:3px;");
+                }
+                else if(e == 7){
+                    column_row.setAttribute("style", "padding:0;");
+                    var input_type = document.createElement('select');
+                    input_type.id = this.data_column[i] + "_" + this.data_survey[e];
+                    input_type.setAttribute("style", "margin-left:10px; padding-buttom:5px; border-radius:3px;");
+                    input_type.setAttribute("class", "action_selector");
+                    for(var t = 0; t < this.data_action.length; t++){
+                        var attr_act = document.createElement('option');
+                        attr_act.value = t;
+                        attr_act.innerHTML = this.data_action[t];
+                        input_type.appendChild(attr_act);
+                    }
+                }
+                else if(e == 8){
+                    // column_row.setAttribute("style", "padding:0; margin-left:5px");
+                    // var input_type = document.createElement('div');
+                    for(var t = 1; t < this.data_action.length; t++){
+                        var input_type = document.createElement('div');
+                        input_type.setAttribute("style", "display:none; width:100%; overflow-x:auto;");
+                        input_type.id = this.data_column[i] + "_" + this.data_survey[e] + "_" + this.data_action[t];
+                        // input_type.innerHTML = this.data_action[t];
+                        if(t == 1){
+                            input_type.innerHTML = "Delete if " + this.data_column[i].bold();
+                            var action_function = document.createElement('select');
+                            action_function.setAttribute("style", "width:50; margin-left:10;");
+                            action_function.setAttribute("class", this.data_column[i] + "_clean_func");
+                            action_function.id = this.data_column[i] + "_clean_func";
+                            for(var f = 0; f < this.data_function.length; f++){
+                                var attr_fun = document.createElement('option');
+                                attr_fun.value = f;
+                                attr_fun.innerHTML = this.data_function[f];
+                                action_function.appendChild(attr_fun);
+                            }
+                            input_type.appendChild(action_function);
+
+                            var action_value = document.createElement('input');
+                            action_value.setAttribute("style", "width:50; margin-left:10px;");
+                            // action_function.setAttribute("class", this.data_column[i] + "_" + this.data_action[t] + "_func");
+                            action_value.id = this.data_column[i] + "_clean_val";
+                            input_type.appendChild(action_value);
+
+                            column_row.appendChild(input_type);
+                        }
+                        else{
+                            input_type.innerHTML = "Fill";
+                            var action_value = document.createElement('input');
+                            action_value.setAttribute("style", "width:50; margin-left:5px;");
+                            // action_function.setAttribute("class", this.data_column[i] + "_" + this.data_action[t] + "_func");
+                            action_value.id = this.data_column[i] + "_fill_val";
+                            input_type.appendChild(action_value);
+
+                            var fill_text = document.createElement('span');
+                            fill_text.innerHTML = " if " + this.data_column[i].bold();
+                            input_type.appendChild(fill_text);
+
+                            var action_function = document.createElement('select');
+                            action_function.setAttribute("style", "width:50; margin-left:10;");
+                            action_function.setAttribute("class", this.data_column[i] + "_fill_func");
+                            action_function.id = this.data_column[i] + "_fill_func";
+                            for(var f = 0; f < this.data_function.length; f++){
+                                var attr_fun = document.createElement('option');
+                                attr_fun.value = f;
+                                attr_fun.innerHTML = this.data_function[f];
+                                action_function.appendChild(attr_fun);
+                            }
+                            input_type.appendChild(action_function);
+
+                            var action_target = document.createElement('input');
+                            action_target.setAttribute("style", "width:50; margin-left:10px;");
+                            // action_function.setAttribute("class", this.data_column[i] + "_" + this.data_action[t] + "_func");
+                            action_target.id = this.data_column[i] + "_fill_targ";
+                            input_type.appendChild(action_target);
+                        } 
+
+                        var fill_text = document.createElement('span');
+                        fill_text.innerHTML = "<br>(Column contains: ";
+                        // fill_text.setAttribute("style", "width:50; margin-left:30;");
+                        input_type.appendChild(fill_text);
+                        var list_attr = document.createElement('select');
+                        // list_attr.setAttribute("style", "width:50; margin-left:30;");
+                        list_attr.setAttribute("class", this.data_column[i] + "_list");
+                        list_attr.id = this.data_column[i] + "_" + this.data_action[t] + "_list_attr";       
+                        input_type.appendChild(list_attr);
+                        var fill_text = document.createElement('span');
+                        fill_text.innerHTML = ")";
+                        input_type.appendChild(fill_text);
+                        
+                        // column_row.appendChild(input_type);
+                        
+                    }
+                }
+                
+                column_row.appendChild(input_type);
+                column_opt.appendChild(column_row);
+            }
+
             container.appendChild(column_opt);
             
         }
         // $("#list_attr").html(inputrad);
         $("#csvimporthinttitle").show();
         // console.log(data);
+        this.action_event();
+    },
+
+    action_event: function(){
+        var self = this;
+        $(".action_selector").change(function(){
+            var on_action = "#" + this.id;
+            var col_name = this.id.split("_")[0];
+            var on_missing = "#" + col_name + "_missing";
+            // console.log(on_action);
+            var set_act = "";
+            if($(on_action).val() == "0"){
+                $("#"+col_name+"_change_clean").hide();
+                $("#"+col_name+"_change_fill").hide();
+                // console.log(self.data_action[0]);
+            }
+            else{
+                if($(on_action).val() == "1"){
+                    set_act = "_clean";
+                    $(on_missing).text("0000");
+                    $("#"+col_name+"_change_clean").show();
+                    $("#"+col_name+"_change_fill").hide();
+                    // console.log(self.data_action[1]);
+                }
+                else if($(on_action).val() == "2"){
+                    set_act = "_fill";
+                    $(on_missing).text("1111");
+                    $("#"+col_name+"_change_clean").hide();
+                    $("#"+col_name+"_change_fill").show();
+                    // console.log(self.data_action[2]);
+                }
+                var column_idx = self.data_column.indexOf(col_name);
+                console.log("...", column_idx, col_name);
+                $("#"+ col_name + set_act + "_list_attr").empty();
+                var container = document.getElementById(col_name + set_act + "_list_attr");
+                // $("."+ col_name + "_list").empty();
+                // var container = document.getElementsByClassName(col_name + "_list");
+                for(var c = 0; c < self.filter_array[column_idx].length; c += 1){
+                    if(c > 14){
+                        var c_val = document.createElement('option');
+                        c_val.value = c;
+                        c_val.innerHTML = "etc.";
+                        container.appendChild(c_val);
+                        break;
+                    }
+                    var c_val = document.createElement('option');
+                    c_val.value = c;
+                    c_val.innerHTML = self.filter_array[column_idx][c];
+                    container.appendChild(c_val);
+                }
+            }
+            
+        });
+        
+
     }
 
 });

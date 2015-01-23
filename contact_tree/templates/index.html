@@ -319,16 +319,45 @@
 
 
     <div id="import_dialog" title="Import Data File" class="popup_window_title" style="overflow:hidden;">
-        <input type="file" name="filename" id="filename" style="width:100%;"> </input>
+        <input type="file" name="filename" id="filename" class="left" style="width:50%;"></input>
+        <div class="left" style="width:50%;">
+            <span class="left myfont3" style="margin-top:3px;">Table Name: </span>
+            <input name="database_table" id="database_table" class="left" style="margin:0 5;"></input>
+        </div>
+        
         <div id="data_information" style="margin-top:5px;">
-            <div id="ori_data" class="left" style="margin-right:5px; width:45%;">
-                <span id="raw_data" class="left myfont3" style="display:none;">Original Attributes:</span><br>
-                <div id="list_attr" style="margin-top:10px; height:400px; overflow-y:auto; margin-right:5px;"></div>
-            </div>
-            <div id="data_convertor" class="left" style="width:50%;">
-                <span id="data_cnvt" class="left myfont3" style="display:none;">Data Convertor:</span><br>
-                <div id="cnvt_tool" style="margin-top:10px; height:400px; overflow-y:auto; margin-right:5px;"></div>
-                
+            <div id="data_convertor" class="left; width:100%;">
+                <span id="data_cnvt" class="left myfont3" style="width:100%; display:none;">Data Convertor:</span><br><p></p>
+                <div id="column_row_name" class="ui-widget row" style="display:none;">
+                    <div class="col-md-1">
+                        <label class="myfont3">Column</label>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="myfont3">Min</label>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="myfont3">Max</label>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="myfont3" style="margin-left:-5px">Missing</label>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="myfont3" style="margin-left:5px">Type</label>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="myfont3" style="margin-left:10px">Ego</label>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="myfont3" style="margin-left:-15px">Relation</label>
+                    </div>
+                    <div class="col-md-1">
+                        <label class="myfont3" style="margin-left:-15px">Action</label>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="myfont3">Change</label>
+                    </div>
+                </div>
+                <div id="cnvt_tool" style="width:100%; height:390px; overflow-y:auto; padding-right:20px; display:none;"></div>
             </div>
         </div>
         <p></p>
