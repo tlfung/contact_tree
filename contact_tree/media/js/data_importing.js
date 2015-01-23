@@ -61,9 +61,9 @@ var ImportView = Backbone.View.extend({
     convertor_layout: function(data){
         var self = this;
         this.final_data_attr_info = {};
-        $("#cnvt_tool").show();
-        $("#data_cnvt").show();
-        $("#column_row_name").show();
+        $("#import_submit").show();
+        $("#data_information").show();
+        
         
         // $("#sub_selection").append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + ego_time[s] + '" id="' + ego_time[s] + '" checked>' + ego_time[s] + '</label>');            
         this.data_column = data[0].split(",");
@@ -102,10 +102,12 @@ var ImportView = Backbone.View.extend({
 
         for(var i = 0; i < this.data_column.length; i++){
             // var temp = this.data_column[i];
-            // var inputrad = inputrad + "<br>" + temp;
-
+            // var inputrad = inputrad + "<br>" + temp;    
+            $("#cnvt_tool").append('<span class="glyphicon glyphicon-minus-sign left" style="opacity:0.5; margin-top:5px; cursor:pointer;" id="delete_all_' +  this.data_column[i] + '"></span>');            
+            
             var column_opt = document.createElement('div');
-            column_opt.setAttribute("class", "ui-widget row");
+            column_opt.setAttribute("class", "ui-widget row left");
+            column_opt.setAttribute("style", "width:99%; margin-left:auto;");
             // <div class="col-md-6">
             // var column_info = [this.data_column[i], Math.min(this.filter_array[i]), Math.max(this.filter_array[i])];
             var column_info = [this.data_column[i],  Math.min.apply(Math, this.filter_array[i]),  Math.max.apply(Math, this.filter_array[i]), this.missing_data[i]];
@@ -274,7 +276,7 @@ var ImportView = Backbone.View.extend({
                 column_row.appendChild(input_type);
                 column_opt.appendChild(column_row);
             }
-
+            
             container.appendChild(column_opt);
             
         }
