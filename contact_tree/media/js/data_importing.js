@@ -11,8 +11,10 @@ var ImportView = Backbone.View.extend({
         this.data_column = [];
         this.info_array = [];
         this.filter_array = [];
-        this.data_survey = ["column", "min", "max", "missing", "type", "ego", "relation", "action", "change"];
-        this.data_form = ["col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-4"];
+        // this.data_survey = ["column", "min", "max", "missing", "type", "ego", "relation", "action", "change"];
+        this.data_survey = ["column", "min", "max", "Range", "type", "ego", "relation"];
+        // this.data_form = ["col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-4"];
+        this.data_form = ["col-md-2", "col-md-2", "col-md-2", "col-md-1", "col-md-2", "col-md-1", "col-md-2"];
         this.data_type = ["Categorical", "Dichotomy", "Ordinal", "Numerical", "identified"];
         this.data_action = ["none", "clean", "fill"];
         this.data_function = ["==", ">=", "<", "[m,M]"];
@@ -69,10 +71,7 @@ var ImportView = Backbone.View.extend({
         this.data_column = data[0].split(",");
         this.info_array = [];
         this.filter_array = [];
-        // var this.data_survey = ["column", "min", "max", "missing", "type", "ego", "relation", "action"];
-        // var this.data_form = ["col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1", "col-md-1"];
-        // var this.data_type = ["Categorical", "Dichotomy", "Ordinal", "Numerical", "identified"];
-        // var this.data_action = ["none", "clean", "fill"];
+        
         this.missing_data = [];
         for(var j = 0; j < this.data_column.length; j++){
             this.info_array.push([]);
@@ -110,9 +109,10 @@ var ImportView = Backbone.View.extend({
             column_opt.setAttribute("style", "width:99%; margin-left:auto;");
             // <div class="col-md-6">
             // var column_info = [this.data_column[i], Math.min(this.filter_array[i]), Math.max(this.filter_array[i])];
-            var column_info = [this.data_column[i],  Math.min.apply(Math, this.filter_array[i]),  Math.max.apply(Math, this.filter_array[i]), this.missing_data[i]];
+            var column_info = [this.data_column[i],  Math.min.apply(Math, this.filter_array[i]),  Math.max.apply(Math, this.filter_array[i]), this.filter_array[i].length];
             if(isNaN(column_info[1]))
-                column_info = [this.data_column[i],  this.filter_array[i][0],  this.filter_array[i][1], this.missing_data[i]];
+                column_info = [this.data_column[i],  this.filter_array[i][0],  this.filter_array[i][1], this.filter_array[i].length];
+                // column_info = [this.data_column[i],  this.filter_array[i][0],  this.filter_array[i][1], this.missing_data[i]];
             if(this.filter_array[i].length == 2)
                 column_info.push(1);
             else if(this.filter_array[i].length < 15)
@@ -122,7 +122,7 @@ var ImportView = Backbone.View.extend({
             else
                 column_info.push(3);
 
-            console.log(column_info);
+            // console.log(column_info);
 
             var column_row = document.createElement('div');
             column_row.setAttribute("class", this.data_form[0]);
@@ -148,7 +148,7 @@ var ImportView = Backbone.View.extend({
                 // column_row.setAttribute("class", "myfont3");
                 column_opt.appendChild(column_row);
             }
-            for(var e = 4; e < 9; e++){ //this.data_survey.length
+            for(var e = 4; e < self.data_survey.length; e++){ //this.data_survey.length
                 var column_row = document.createElement('div');
                 column_row.setAttribute("class", this.data_form[e]);
                 // column_row.value = this.data_column[i] + "_" + this.data_survey[e];
@@ -305,13 +305,14 @@ var ImportView = Backbone.View.extend({
                     $(on_missing).text("0000");
                     $("#"+col_name+"_change_clean").show();
                     $("#"+col_name+"_change_fill").hide();
+                    $("#"+col_name+"_clean_func").show();
                     // console.log(self.data_action[1]);
                 }
                 else if($(on_action).val() == "2"){
                     set_act = "_fill";
                     $(on_missing).text("1111");
                     $("#"+col_name+"_change_clean").hide();
-                    $("#"+col_name+"_change_fill").show();
+                    $("#"+col_name+"_change_fill").val();
                     // console.log(self.data_action[2]);
                 }
                 var column_idx = self.data_column.indexOf(col_name);
