@@ -100,6 +100,7 @@ var ImportView = Backbone.View.extend({
         console.log(this.filter_array);
 
         for(var i = 0; i < this.data_column.length; i++){
+            this.final_data_attr_info[this.data_column[i]] = [0];
             // var temp = this.data_column[i];
             // var inputrad = inputrad + "<br>" + temp;    
             $("#cnvt_tool").append('<span class="glyphicon glyphicon-minus-sign left" style="opacity:0.5; margin-top:5px; cursor:pointer;" id="delete_all_' +  this.data_column[i] + '"></span>');            
@@ -109,7 +110,7 @@ var ImportView = Backbone.View.extend({
             column_opt.setAttribute("style", "width:99%; margin-left:auto;");
             // <div class="col-md-6">
             // var column_info = [this.data_column[i], Math.min(this.filter_array[i]), Math.max(this.filter_array[i])];
-            var column_info = [this.data_column[i],  Math.min.apply(Math, this.filter_array[i]),  Math.max.apply(Math, this.filter_array[i]), this.filter_array[i].length];
+            var column_info = [this.data_column[i],  Math.min.apply(Math, this.filter_array[i]),  Math.max.apply(Math, this.filter_array[i]), Math.max.apply(Math, this.filter_array[i])-Math.min.apply(Math, this.filter_array[i])];
             if(isNaN(column_info[1]))
                 column_info = [this.data_column[i],  this.filter_array[i][0],  this.filter_array[i][1], this.filter_array[i].length];
                 // column_info = [this.data_column[i],  this.filter_array[i][0],  this.filter_array[i][1], this.missing_data[i]];
@@ -143,6 +144,7 @@ var ImportView = Backbone.View.extend({
                 column_row.value = this.data_column[i] + "_" + this.data_survey[e];
                 column_row.id = this.data_column[i] + "_" + this.data_survey[e];
                 column_row.innerHTML = column_info[e];
+                this.final_data_attr_info[this.data_column[i]].push(column_info[e]);
                 if(e == 3)
                     column_row.setAttribute("style", "margin:0 -20 0 15;");
                 // column_row.setAttribute("class", "myfont3");
@@ -160,10 +162,12 @@ var ImportView = Backbone.View.extend({
                     input_type.setAttribute("class", "type_selector");
                     for(var t = 0; t < this.data_type.length; t ++){
                         var attr_type = document.createElement('option');
-                        attr_type.value = t;
+                        attr_type.value = this.data_type[t];
                         attr_type.innerHTML = this.data_type[t];
-                        if(column_info[4] == t)
+                        if(column_info[4] == t){
+                            this.final_data_attr_info[this.data_column[i]].push(this.data_type[t]);
                             attr_type.setAttribute("selected", true);
+                        }                            
                         input_type.appendChild(attr_type);
                     }
                 }
@@ -174,13 +178,17 @@ var ImportView = Backbone.View.extend({
                     input_type.name = "define_ego_selection";
                     input_type.setAttribute("class", "myfont3 define_ego_checkbox");
                     input_type.setAttribute("style", "margin-left:27px;");
+                    this.final_data_attr_info[this.data_column[i]].push(0);
                 }
                 else if(e == 6){
                     column_row.setAttribute("style", "padding:0;");
                     var input_type = document.createElement('input');
                     input_type.id = this.data_column[i] + "_" + this.data_survey[e];
                     input_type.setAttribute("style", "margin:1 0 1 0; width:100%; border-radius:3px;");
+                    input_type.setAttribute("class", "relation_input");
+                    this.final_data_attr_info[this.data_column[i]].push(-1);
                 }
+                /*
                 else if(e == 7){
                     column_row.setAttribute("style", "padding:0;");
                     var input_type = document.createElement('select');
@@ -271,8 +279,9 @@ var ImportView = Backbone.View.extend({
                         // column_row.appendChild(input_type);
                         
                     }
+
                 }
-                
+                */
                 column_row.appendChild(input_type);
                 column_opt.appendChild(column_row);
             }
@@ -337,8 +346,70 @@ var ImportView = Backbone.View.extend({
             }
             
         });
-        
 
+        $(".type_selector").change(function(){
+            var on_action = "#" + this.id;
+            var col_name = this.id.split("_type")[0];
+            self.final_data_attr_info[col_name][4] = $(on_action).val();
+            self.check_survey();
+            // console.log("++++++", self.final_data_attr_info);
+        });
+
+        $(".relation_input").change(function(){
+            var on_relation = "#" + this.id;
+            var col_name = this.id.split("_relation")[0];
+            // console.log("------", self.final_data_attr_info[col_name], col_name, on_relation);
+            self.final_data_attr_info[col_name][6] = $(on_relation).val();
+            
+            self.check_survey();
+        });
+
+        $('.define_ego_checkbox').change(function() {
+            var checked_ego = $('.define_ego_checkbox:checked').val().split("_ego")[0];
+           
+            for(attr_column in self.final_data_attr_info){
+                if(self.final_data_attr_info[attr_column][5] == 1){
+                    self.final_data_attr_info[attr_column][5] = 0;
+                }
+            }
+            self.final_data_attr_info[checked_ego][5] = 1;
+            self.check_survey();
+        });
+
+        self.check_survey();
+
+        // console.log("++++++", this.final_data_attr_info);
+
+    },
+
+    check_survey:function(){
+        var self = this;
+        var check_complete = 0;
+        console.log("++++++", this.final_data_attr_info);
+        var table_name = $("#database_table").val();
+
+        for(attr_column in this.final_data_attr_info){
+            if(this.final_data_attr_info[attr_column][5] == 1)
+                check_complete ++;
+
+            if(this.final_data_attr_info[attr_column][6] != -1 && this.final_data_attr_info[attr_column][6] != "")
+                check_complete ++;
+            else
+                break;
+                
+        }
+        
+        if(table_name != ""){
+            if(check_complete == self.data_column.length + 1){
+                $('#import_submit').removeAttr("disabled");
+                // console.log("!!!", check_complete);
+            }
+            
+        }
+        else{
+            // console.log("???", check_complete);
+            return            
+        }
     }
 
 });

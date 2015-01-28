@@ -227,88 +227,21 @@
 
     <!-- popup window -->
     <div id="sidekey_dialog" title="Customize Your Tree" class="popup_window_title">
-        <div id="sidekey_img" class="row text-center" style="float:left;">
-            <canvas id='sidekey_tree' width="450" height="420"></canvas>
+        <div id="sidekey_img" class="row text-center" style="float:left; width:55%; position: relative;">
+            <img src="media/img/real_mix_tree.png" align="left" style="margin-left:20px; height:100%; padding-top:5px;"></img>
+            <div id="stick_label" style="cursor:pointer; position:absolute; left:3%; top:20%; font-size:18;">Stick</div>
+            <div id="trunk_label" style="cursor:pointer; position:absolute; left:40%; top:70%; font-size:18;">Trunk Side</div>
+            <div id="branch_label" style="cursor:pointer; position:absolute; left:12%; top:55%; font-size:18;">Branch Layer</div>
+            <div id="bside_label" style="cursor:pointer; position:absolute; left:10%; top:48%; font-size:18;">Branch Side</div>
+            <div id="root_label" style="cursor:pointer; position:absolute; left:15%; top:80%; font-size:18;">Root</div>
+            <div id="leaf_size_label" style="cursor:pointer; position:absolute; left:50%; top:10%; font-size:18;">Leaf Size</div>
+            <div id="leaf_color_label" style="cursor:pointer; position:absolute; left:50%; top:14%; font-size:18;">Leaf Color</div>
+            <div id="leaf_highlight_label" style="cursor:pointer; position:absolute; left:50%; top:18%; font-size:18;">Leaf Highlight</div>
+            <div id="fruit_size_label" style="cursor:pointer; position:absolute; left:50%; top:38%; font-size:18;">Fruit Size</div>
         </div>
 
-        <div id="sidekey_selection" style="display:none; width: 280px; float:left; margin-left:15px; margin-top:35px;">
-            <div id="row_stick" class="ui-widget row">
-                <div class="col-md-6">
-                    <label class="myfont3">Stick:</label>
-                </div>
-                <div class="col-md-6">
-                    <select id="stick"></select>
-                </div>
-            </div>
-            <p></p>
-            <div id="row_trunk" class="ui-widget row">
-                <div class="col-md-6">
-                    <label class="myfont3">Trunk Side:</label>
-                </div>
-                <div class="col-md-6">
-                    <select id="trunk"></select>
-                </div>
-            </div>
-            <p></p>
-            <div id="row_branch" class="ui-widget row">
-                <div class="col-md-6">
-                    <label class="myfont3">Branch Layer:</label>
-                </div>
-                <div class="col-md-6">
-                    <select id="branch"></select>
-                </div>
-            </div>
-            <p></p>
-            <div id="row_bside" class="ui-widget row">
-                <div class="col-md-6">
-                    <label class="myfont3">Branch Side:</label>
-                </div>
-                <div class="col-md-6">
-                    <select id="bside"></select>
-                </div>
-            </div>
-            <p></p>
-            <div id="row_leaf_color" class="ui-widget row">
-                <div class="col-md-6">
-                    <label class="myfont3">Leaf's Brightness:</label>
-                </div>
-                <div class="col-md-6">
-                    <select id="leaf_color"></select>
-                </div>
-            </div>
-            <p></p>
-            <div id="row_leaf_size" class="ui-widget row">
-                <div class="col-md-6">
-                    <label class="myfont3">Leaf's Size:</label>
-                </div>
-                <div class="col-md-6">
-                    <select id="leaf_size"></select>
-                </div>
-            </div>
-            <p></p>
-            <div id="row_fruit" class="ui-widget row">
-                <div class="col-md-6">
-                    <label class="myfont3">Fruit:</label>
-                </div>
-                <div class="col-md-6">
-                    <select id="fruit"></select>
-                </div>
-            </div>
-            <p></p>
-            <div id="row_root" class="ui-widget row">
-                <div class="col-md-6">
-                    <label class="myfont3">Root:</label>
-                </div>
-                <div class="col-md-6">
-                    <select id="root"></select>
-                </div>
-            </div>
-            
-            <div id="warnig_div" class="row" style="margin:0 5px 5px 5px">
-                <span id="warnig" class="right myfont2" style="margin-top:30px; width:270px; font-size:14; color:red; visibility:hidden;">Warning: You have duplicated mapping attribute!</span>
-            </div>
-            <!-- <p></p> -->
-            <div id="sidekey_button" class="row" style="margin-right:5px; margin-top:10px"></div>
+        <div id="sidekey_selection" style="display:none; width:45%; float:left; margin-top:5px;">
+            <div id="sidekey_title" class="row myfont3"></div>
         </div>
         <!-- <div id="warnig_div" class="row" style="margin:0 5px 5px 5px">
             <span id="warnig" class="right myfont2" style="width: 270px; font-size:14; color:red; visibility:hidden;">Warning: You have duplicated mapping attribute!</span>
@@ -322,7 +255,7 @@
         <input type="file" name="filename" id="filename" class="left" style="width:40%;"></input>
         <div class="left" style="width:40%;">
             <span class="left myfont3" style="margin-top:3px;">Table Name: </span>
-            <input name="database_table" id="database_table" class="left" style="margin:0 5;"></input>
+            <input id="database_table" class="left" style="margin:0 5;" value=""></input>
         </div>
         <button class="btn btn-default right" id="import_submit" style="display:none; width:100;" disabled>Done</button>
 
