@@ -1,5 +1,5 @@
 from datetime import date, timedelta, datetime
-from django.http import Http404, HttpResponse
+from django.http import Http404, HttpResponse, HttpResponseRedirect
 import os.path
 import csv
 import simplejson
@@ -11,6 +11,9 @@ import time
 import collections
 import warnings 
 from operator import *
+from django.views.decorators.csrf import csrf_exempt
+import hashlib
+import json
 
 warnings.filterwarnings(action='ignore', category=MySQLdb.Warning)
 
@@ -35,6 +38,63 @@ class DB:
 # database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree", cursorclass=MySQLdb.cursors.DictCursor)
 # clause = database.cursor()
 
+@csrf_exempt
+def upload_view(request):
+    if request.method == 'POST':
+        file = request.FILES['usercsvupload']
+        localtime = str(time.time())
+        localtime = localtime.replace(".", "_")
+        print localtime
+        # print hashlib.md5(localtime).hexdigest()
+        # with open('./contact_tree/data/test_%s' % file.name, 'wb+') as dest:
+        with open('./contact_tree/data/upload/' + localtime + ".csv", 'wb+') as dest:
+            for chunk in file.chunks():
+                dest.write(chunk)
+
+    return HttpResponse(localtime)
+
+
+def create_csv2database(request):
+    # db = DB()
+    database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
+    clause = database.cursor()
+    if request.GET.get('collection'):
+        all_info = request.GET.get('collection').split(":-")
+        table = all_info[0]
+        csvfile = all_info[1]
+        attr_json = json.loads(all_info[2])
+        # json.dumps(all_info[2], separators=(',',':'))
+        print table
+        print csvfile
+        # print attr_json
+        print "./contact_tree/data/upload/" + csvfile + ".csv"
+        csv2mysql("./contact_tree/data/upload/" + csvfile + ".csv", table)
+
+        delete_column = []
+        clause.execute('delete from dataset_collection where dataset = "' + table + '";')
+        for a in attr_json:
+            # print a
+            # print attr_json[a]
+            if attr_json[a][0] == 1:
+                delete_column.append(a)
+            my_attr = '"' + table + '", "' + a + '", "' + str(attr_json[a][1]) + '", "' + str(attr_json[a][2]) + '", "' + str(attr_json[a][3]) + '", "' + str(attr_json[a][6]) + '", "' + str(attr_json[a][4]) + '", ' + str(attr_json[a][5])
+            # print my_attr
+            # print 'INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, relation, `type`, ego_mark) VALUES (' + my_attr + ');'
+
+            clause.execute('INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, relation, `type`, ego_mark) VALUES (%s);' %my_attr)
+        
+        print delete_column # need to test
+        for d in delete_column:
+            clause.execute('ALTER TABLE "' + table + '" DROP "' + d + '"')
+        
+        database.commit()
+
+    else:
+        raise Http404
+
+    jsondata = simplejson.dumps("successed upload " + table, indent=4, use_decimal=True)
+    return HttpResponse(jsondata)
+    
 
 def get_dataset(request):
     folder = []
@@ -55,8 +115,10 @@ def get_type(s):
     """Find type for this string
     """
     number_formats = (
-        (int, 'BIGINT'),
-        (float, 'double'),
+        # (int, 'BIGINT'),
+        # (float, 'double'),
+        (int, 'varchar(64)'),
+        (float, 'varchar(64)'),
     )
     for cast, number_type in number_formats:
         try:
@@ -129,6 +191,7 @@ def get_schema(table, header, col_types):
     
     return schema_sql
 
+
 def get_insert(table, header):
     """Generate the SQL for inserting rows
     """
@@ -142,24 +205,8 @@ def safe_col(s):
     return re.sub('\W+', '_', s.lower()).strip('_')
 
 
-def create_table(request):
-    folder = request.GET.get('folder')
-    if request.GET.get('folder'):
-        files = glob.glob("contact_tree/data/" + folder + "/*.csv")
-        for fn in files:
-            # print fn
-            csv2mysql(fn)
-        # create own ego table
-
-    else:
-        raise Http404
-    json = simplejson.dumps(folder, indent=4, use_decimal=True)
-    # print json
-    return HttpResponse(json)
-
-
-def csv2mysql(fn):
-    table = fn.split("\\").pop().split(".")[0]
+def csv2mysql(fn, table):
+    # table = fn.split("\\").pop().split(".")[0]
     database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
     clause = database.cursor()
     print 'Analyzing column types ...'
@@ -169,26 +216,24 @@ def csv2mysql(fn):
     header = None
     for row in csv.reader(open(fn)):
         if header:
-            try:
-                clause.execute(insert_sql, row)
-            except MySQLdb.OperationalError:
-                pass
+            clause.execute(insert_sql, row)
+            
         else:
             header = []
             for col in row:
                 header.append("`"+safe_col(col)+"`")
-            # print header
+            print header
             #sys.exit()
             schema_sql = get_schema(table, header, col_types)
             #print schema_sql
 
             #create table
-            # clause.execute('DROP TABLE IF EXISTS %s;' % table)
-            clause.execute('SELECT "%s" FROM INFORMATION_SCHEMA.TABLES LIMIT 1;' % table)
-            if clause.fetchone():
-                return 0
-            else:
-                clause.execute(schema_sql)
+            clause.execute('DROP TABLE IF EXISTS %s;' % table)
+            # clause.execute('SELECT "%s" FROM INFORMATION_SCHEMA.TABLES LIMIT 1;' % table)
+            # if clause.fetchone():
+            #     return 0
+            # else:
+            clause.execute(schema_sql)
             
             # create index for more efficient access
             try:

@@ -21,11 +21,12 @@ var ImportView = Backbone.View.extend({
         this.data_function_name = ["e", "b", "s", "r"];
         this.missing_data = [];
         this.raw_data = [];
+        this.raw_csvfile;
 
         // open the dialog
         $( "#import_dialog" ).dialog({
             autoOpen: false,
-            height: 530,
+            height: 540,
             width: 1100,
             modal: true
         });
@@ -51,7 +52,7 @@ var ImportView = Backbone.View.extend({
                     self.convertor_layout(csvval);
                 };
                 reader.readAsText(e.target.files.item(0));
-
+                
             }
 
             return false;
@@ -66,9 +67,8 @@ var ImportView = Backbone.View.extend({
         $("#import_submit").show();
         $("#data_information").show();
         
-        
-        // $("#sub_selection").append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + ego_time[s] + '" id="' + ego_time[s] + '" checked>' + ego_time[s] + '</label>');            
         this.data_column = data[0].split(",");
+        this.data_column.pop(); // need solve problem...
         this.info_array = [];
         this.filter_array = [];
         
@@ -76,8 +76,11 @@ var ImportView = Backbone.View.extend({
         for(var j = 0; j < this.data_column.length; j++){
             this.info_array.push([]);
             this.missing_data.push(0);
+            // console.log("column>>", this.data_column[j]);
+            this.final_data_attr_info[this.data_column[j]] = [0];
+            // console.log("column>>>>>", this.final_data_attr_info);
         }
-        // var inputrad = this.data_column[0];
+        
         var container = document.getElementById("cnvt_tool");
         $("#cnvt_tool").empty();
         // container.setAttribute("class", "area_selector");
@@ -85,8 +88,11 @@ var ImportView = Backbone.View.extend({
             var row = data[i].split(",");
             var temp_info = [];
             for(var j = 0; j < this.data_column.length; j++){
-                if(row[j] != '' && row[j] != undefined)
+                if(row[j] != '' && row[j] != undefined){
+                    row[j] = row[j].replace(/\"/g, "");
                     this.info_array[j].push(row[j]);
+                }
+                    
                 else
                     this.missing_data[j] += 1;
             }
@@ -98,9 +104,8 @@ var ImportView = Backbone.View.extend({
             this.filter_array.push(distinct_val);
         }
         console.log(this.filter_array);
-
-        for(var i = 0; i < this.data_column.length; i++){
-            this.final_data_attr_info[this.data_column[i]] = [0];
+        
+        for(var i = 0; i < this.data_column.length; i+=1){
             // var temp = this.data_column[i];
             // var inputrad = inputrad + "<br>" + temp;    
             $("#cnvt_tool").append('<span class="glyphicon glyphicon-minus-sign left" style="opacity:0.5; margin-top:5px; cursor:pointer;" id="delete_all_' +  this.data_column[i] + '"></span>');            
@@ -186,7 +191,9 @@ var ImportView = Backbone.View.extend({
                     input_type.id = this.data_column[i] + "_" + this.data_survey[e];
                     input_type.setAttribute("style", "margin:1 0 1 0; width:100%; border-radius:3px;");
                     input_type.setAttribute("class", "relation_input");
-                    this.final_data_attr_info[this.data_column[i]].push(-1);
+                    // this.final_data_attr_info[this.data_column[i]].push(-1);
+                    input_type.value = "test"; // need remove
+                    this.final_data_attr_info[this.data_column[i]].push("test");
                 }
                 /*
                 else if(e == 7){
@@ -352,15 +359,13 @@ var ImportView = Backbone.View.extend({
             var col_name = this.id.split("_type")[0];
             self.final_data_attr_info[col_name][4] = $(on_action).val();
             self.check_survey();
-            // console.log("++++++", self.final_data_attr_info);
         });
 
         $(".relation_input").change(function(){
             var on_relation = "#" + this.id;
             var col_name = this.id.split("_relation")[0];
-            // console.log("------", self.final_data_attr_info[col_name], col_name, on_relation);
+           
             self.final_data_attr_info[col_name][6] = $(on_relation).val();
-            
             self.check_survey();
         });
 
@@ -372,22 +377,27 @@ var ImportView = Backbone.View.extend({
                     self.final_data_attr_info[attr_column][5] = 0;
                 }
             }
+            
             self.final_data_attr_info[checked_ego][5] = 1;
             self.check_survey();
         });
 
+        $("#database_table").change(function(){
+            self.check_survey();
+        });
+
+        // need to add control delete column event
+
         self.check_survey();
-
-        // console.log("++++++", this.final_data_attr_info);
-
     },
 
     check_survey:function(){
         var self = this;
         var check_complete = 0;
-        console.log("++++++", this.final_data_attr_info);
+        // console.log("++++++", this.final_data_attr_info);
         var table_name = $("#database_table").val();
-
+        var request = table_name + ":-";
+        
         for(attr_column in this.final_data_attr_info){
             if(this.final_data_attr_info[attr_column][5] == 1)
                 check_complete ++;
@@ -401,8 +411,32 @@ var ImportView = Backbone.View.extend({
         
         if(table_name != ""){
             if(check_complete == self.data_column.length + 1){
+                var json_data = JSON.stringify(self.final_data_attr_info);
+                // request += json_data;
                 $('#import_submit').removeAttr("disabled");
                 // console.log("!!!", check_complete);
+                $('#import_submit').click(function(){
+                    console.log(">>>", request);
+                    self.raw_csvfile = new FormData($('#upload_form').get(0));
+                    $.ajax({
+                        url: "upload_csv/",
+                        type: 'POST',
+                        data: self.raw_csvfile,
+                        cache: false,
+                        processData: false,
+                        contentType: false,
+                        success: function(data) {
+                            request += data + ":-";
+                            // alert('success');
+                            console.log(data);
+                            request += json_data;
+                            d3.json("data_collection/?collection=" + request, function(result) {
+                                alert('success');
+                                console.log(result);                                  
+                            });
+                        }
+                    });
+                });
             }
             
         }

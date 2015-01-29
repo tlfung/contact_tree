@@ -252,14 +252,16 @@
 
 
     <div id="import_dialog" title="Import Data File" class="popup_window_title" style="overflow:hidden;">
-        <input type="file" name="filename" id="filename" class="left" style="width:40%;"></input>
+        <form id="upload_form" name="upload_form" class="left" style="width:40%;">
+            <input type="file" name="usercsvupload" id="filename"></input>
+        </form>
         <div class="left" style="width:40%;">
             <span class="left myfont3" style="margin-top:3px;">Table Name: </span>
             <input id="database_table" class="left" style="margin:0 5;" value=""></input>
         </div>
         <button class="btn btn-default right" id="import_submit" style="display:none; width:100;" disabled>Done</button>
 
-        <div id="data_information" style="margin-top:5px; display:none;">
+        <div id="data_information" style="display:none;">
             <div id="data_convertor" class="left; width:100%;">
                 <span id="data_cnvt" class="left myfont3" style="width:100%;">Data Convertor:</span><br><p></p>
                 <span class="glyphicon glyphicon-minus-sign left" style="cursor:pointer; visibility:hidden;"></span>
