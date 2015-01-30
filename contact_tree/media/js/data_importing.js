@@ -20,8 +20,11 @@ var ImportView = Backbone.View.extend({
         this.data_function = ["==", ">=", "<", "[m,M]"];
         this.data_function_name = ["e", "b", "s", "r"];
         this.missing_data = [];
-        this.raw_data = [];
+        // this.raw_data = [];
         this.raw_csvfile;
+        this.relation_opt = ["none"];
+        this.selected_ego = "";
+        this.selected_relation = {};
 
         // open the dialog
         $( "#import_dialog" ).dialog({
@@ -48,7 +51,7 @@ var ImportView = Backbone.View.extend({
                 var reader = new FileReader();
                 reader.onload = function(e) {
                     var csvval = e.target.result.split("\n");
-                    this.raw_data = csvval;
+                    // this.raw_data = csvval;
                     self.convertor_layout(csvval);
                 };
                 reader.readAsText(e.target.files.item(0));
@@ -64,6 +67,9 @@ var ImportView = Backbone.View.extend({
     convertor_layout: function(data){
         var self = this;
         this.final_data_attr_info = {};
+        this.relation_opt = ["none"];
+        this.selected_ego = "";
+        this.selected_relation = {};
         $("#import_submit").show();
         $("#data_information").show();
         
@@ -78,6 +84,7 @@ var ImportView = Backbone.View.extend({
             this.missing_data.push(0);
             // console.log("column>>", this.data_column[j]);
             this.final_data_attr_info[this.data_column[j]] = [0];
+            this.selected_relation[this.data_column[j]] = "";
             // console.log("column>>>>>", this.final_data_attr_info);
         }
         
@@ -98,7 +105,7 @@ var ImportView = Backbone.View.extend({
             }
         }
         console.log(this.info_array);
-        for(var j = 0; j < this.data_column.length; j++){
+        for(var j = 0; j < this.data_column.length; j++){ // this is very slow......
             distinct_val = this.info_array[j].filter(util.unique);
             // var distinct_val = jQuery.unique( this.info_array[j] )
             this.filter_array.push(distinct_val);
@@ -115,6 +122,8 @@ var ImportView = Backbone.View.extend({
             column_opt.setAttribute("style", "width:99%; margin-left:auto;");
             // <div class="col-md-6">
             // var column_info = [this.data_column[i], Math.min(this.filter_array[i]), Math.max(this.filter_array[i])];
+            
+            // this.data_type = ["Categorical", "Dichotomy", "Ordinal", "Numerical", "identified"];
             var column_info = [this.data_column[i],  Math.min.apply(Math, this.filter_array[i]),  Math.max.apply(Math, this.filter_array[i]), Math.max.apply(Math, this.filter_array[i])-Math.min.apply(Math, this.filter_array[i])];
             if(isNaN(column_info[1]))
                 column_info = [this.data_column[i],  this.filter_array[i][0],  this.filter_array[i][1], this.filter_array[i].length];
@@ -123,8 +132,10 @@ var ImportView = Backbone.View.extend({
                 column_info.push(1);
             else if(this.filter_array[i].length < 15)
                 column_info.push(0);
-            else if(this.filter_array[i].length > 100)
+            else if(this.filter_array[i].length > 100){
                 column_info.push(4);
+                self.relation_opt.push(this.data_column[i])
+            }
             else
                 column_info.push(3);
 
@@ -185,6 +196,7 @@ var ImportView = Backbone.View.extend({
                     input_type.setAttribute("style", "margin-left:27px;");
                     this.final_data_attr_info[this.data_column[i]].push(0);
                 }
+                /*
                 else if(e == 6){
                     column_row.setAttribute("style", "padding:0;");
                     var input_type = document.createElement('input');
@@ -194,6 +206,14 @@ var ImportView = Backbone.View.extend({
                     // this.final_data_attr_info[this.data_column[i]].push(-1);
                     input_type.value = "test"; // need remove
                     this.final_data_attr_info[this.data_column[i]].push("test");
+                }
+                */
+                else if(e == 6){
+                    column_row.setAttribute("style", "padding:0;");
+                    var input_type = document.createElement('select');
+                    input_type.id = this.data_column[i] + "_" + this.data_survey[e];
+                    input_type.setAttribute("style", "margin-left:10px; width:100%; padding-buttom:5px; border-radius:3px;");
+                    input_type.setAttribute("class", "relation_selector");
                 }
                 /*
                 else if(e == 7){
@@ -293,14 +313,45 @@ var ImportView = Backbone.View.extend({
                 column_opt.appendChild(column_row);
             }
             
-            container.appendChild(column_opt);
-            
+            container.appendChild(column_opt);   
         }
         // $("#list_attr").html(inputrad);
         $("#csvimporthinttitle").show();
+        this.set_relationship();
         // console.log(data);
         this.action_event();
         this.submit_event();
+    },
+
+    set_relationship: function(){
+        var self = this;
+        for(var i = 0; i < this.data_column.length; i+=1){
+            var container = document.getElementById(this.data_column[i] + "_relation");
+            $("#"+ this.data_column[i] + "_relation").empty();
+            if(self.selected_ego != ""){
+                // this.selected_relation[this.data_column[i]] = self.selected_ego;
+                var attr_type = document.createElement('option');
+                attr_type.value = self.selected_ego;
+                attr_type.innerHTML = self.selected_ego;
+                attr_type.id = this.data_column[i] + "_relate_" + self.selected_ego;
+                container.appendChild(attr_type);
+            }
+            
+            for(var t = 0; t < this.relation_opt.length; t++){
+                var attr_type = document.createElement('option');
+                attr_type.value = this.relation_opt[t];
+                attr_type.id = this.data_column[i] + "_relate_" + this.relation_opt[t];
+                attr_type.innerHTML = this.relation_opt[t];
+                container.appendChild(attr_type);
+            }
+
+            if(this.selected_relation[this.data_column[i]] != ""){
+                var opt = document.getElementById(this.data_column[i] + "_relate_" + this.selected_relation[this.data_column[i]]);
+                opt.setAttribute("selected", true);
+            }
+            
+        }
+        
     },
 
     action_event: function(){
@@ -359,9 +410,25 @@ var ImportView = Backbone.View.extend({
             var on_action = "#" + this.id;
             var col_name = this.id.split("_type")[0];
             self.final_data_attr_info[col_name][4] = $(on_action).val();
-            self.check_survey();
+            if(self.final_data_attr_info[col_name][4] == "identified"){
+                self.relation_opt.push(col_name);
+            }
+            else{
+                self.relation_opt.splice(self.relation_opt.indexOf(col_name), 1);
+            }
+            self.set_relationship();
+            // self.check_survey();
         });
 
+        $(".relation_selector").change(function(){
+            var on_action = "#" + this.id;
+            var col_name = this.id.split("_relation")[0];
+            // self.final_data_attr_info[col_name][6] = $(on_action).val();
+            self.selected_relation[col_name] = $(on_action).val();
+            self.set_relationship();
+            // self.check_survey();
+        });
+        /*
         $(".relation_input").change(function(){
             var on_relation = "#" + this.id;
             var col_name = this.id.split("_relation")[0];
@@ -369,18 +436,27 @@ var ImportView = Backbone.View.extend({
             self.final_data_attr_info[col_name][6] = $(on_relation).val();
             self.check_survey();
         });
+        */
 
         $('.define_ego_checkbox').change(function() {
             var checked_ego = $('.define_ego_checkbox:checked').val().split("_ego")[0];
-           
+            var last_ego = "";
             for(attr_column in self.final_data_attr_info){
                 if(self.final_data_attr_info[attr_column][5] == 1){
                     self.final_data_attr_info[attr_column][5] = 0;
+                    last_ego = attr_column;
                 }
             }
-            
+            for(var a = 0; a < self.data_column.length; a++){
+                if(self.selected_relation[self.data_column[a]] == last_ego || self.selected_relation[self.data_column[a]] == ""){
+                    self.selected_relation[self.data_column[a]] = checked_ego;
+                }
+            }
             self.final_data_attr_info[checked_ego][5] = 1;
+            self.selected_ego = checked_ego;
+
             self.check_survey();
+            self.set_relationship();
         });
 
         $("#database_table").change(function(){
@@ -389,7 +465,7 @@ var ImportView = Backbone.View.extend({
 
         // need to add control delete column event
 
-        self.check_survey();
+        // self.check_survey();
     },
 
     check_survey:function(){
@@ -398,32 +474,14 @@ var ImportView = Backbone.View.extend({
         // console.log("++++++", this.final_data_attr_info);
         var table_name = $("#database_table").val();
         // var request = table_name + ":-";
-        
-        for(attr_column in this.final_data_attr_info){
-            if(this.final_data_attr_info[attr_column][5] == 1)
-                check_complete ++;
-
-            if(this.final_data_attr_info[attr_column][6] != -1 && this.final_data_attr_info[attr_column][6] != "")
-                check_complete ++;
-            else
-                break;
-                
-        }
-        
         if(table_name != ""){
-            if(check_complete == self.data_column.length + 1){
-                // var json_data = JSON.stringify(self.final_data_attr_info);
-                // request += json_data;
+            if(this.selected_ego != ""){
                 $('#import_submit').removeAttr("disabled");
-                // console.log("!!!", check_complete);
-                
             }
-            
         }
-        else{
-            // console.log("???", check_complete);
-            return            
-        }
+        else
+            return
+
     },
 
     submit_event: function(){  
@@ -431,8 +489,8 @@ var ImportView = Backbone.View.extend({
         var set_db = function(fn){
             var table_name = $("#database_table").val();
             var json_data = JSON.stringify(self.final_data_attr_info);
-            var request = table_name + ":-" + fn + ":-" + json_data;
-            
+            var request = fn + "_" + table_name + ":-" + fn + ":-" + json_data;
+            dataset_mode.push(table_name);
             console.log(request);
             d3.json("data_collection/?collection=" + request, function(result) {
                 alert('success');
@@ -440,6 +498,11 @@ var ImportView = Backbone.View.extend({
             });
         };
         $('#import_submit').click(function(){
+            for(attr_column in self.final_data_attr_info){
+                self.final_data_attr_info[attr_column][6] = self.selected_relation[attr_column];
+            }
+            self.final_data_attr_info[attr_column].push($("#" + attr_column + "_column").val());
+
             self.raw_csvfile = new FormData($('#upload_form').get(0));
             $.ajax({
                 url: "upload_csv/",
