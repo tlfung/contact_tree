@@ -83,6 +83,8 @@ var MappingView = Backbone.View.extend({
         console.log("in stick mapping");
         $("#sidekey_selection").show();
         $("#sidekey_title").text("Stick Mapping:");
+        $("#sidekey_description").text("Stick Mapping Description");
+        
         
     },
 
@@ -90,48 +92,56 @@ var MappingView = Backbone.View.extend({
         console.log("in trunk mapping");
         $("#sidekey_selection").show();
         $("#sidekey_title").text("Trunk Mapping:");
+        $("#sidekey_description").text("Trunk Mapping Description");
     },
 
     branch_map: function(){
         console.log("in branch mapping");
         $("#sidekey_selection").show();
-        $("#sidekey_title").text("Branch Mapping:");
+        $("#sidekey_title").text("Branch Layer Mapping:");
+        $("#sidekey_description").text("Branch Layer Mapping Description");
     },
 
     bside_map: function(){
         console.log("in bside mapping");
         $("#sidekey_selection").show();
         $("#sidekey_title").text("Branch Side Mapping:");
+        $("#sidekey_description").text("Branch Side Mapping Description");
     },
 
     root_map: function(){
         console.log("in root mapping");
         $("#sidekey_selection").show();
         $("#sidekey_title").text("Root Mapping:");
+        $("#sidekey_description").text("Root Mapping Description");
     },
 
     leaf_size_map: function(){
         console.log("in leaf_size mapping");
         $("#sidekey_selection").show();
         $("#sidekey_title").text("Leaf Size Mapping:");
+        $("#sidekey_description").text("Leaf Size Mapping Description");
     },
 
     leaf_color_map: function(){
         console.log("in leaf_color mapping");
         $("#sidekey_selection").show();
         $("#sidekey_title").text("Leaf Color Mapping:");
+        $("#sidekey_description").text("Leaf Color Mapping Description");
     },
 
     leaf_highlight_map: function(){
         console.log("in leaf_highlight mapping");
         $("#sidekey_selection").show();
         $("#sidekey_title").text("Leaf Highlight Mapping:");
+        $("#sidekey_description").text("Leaf Highlight Mapping Description");
     },
 
     fruit_size_map: function(){
         console.log("in fruit_size mapping");
         $("#sidekey_selection").show();
         $("#sidekey_title").text("Fruit Size Mapping:");
+        $("#sidekey_description").text("Fruit Size Mapping Description");
     },
 
     set_component: function(){
