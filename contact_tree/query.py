@@ -228,7 +228,9 @@ def csv2mysql(fn, table):
             #print schema_sql
 
             #create table
-            clause.execute('DROP TABLE IF EXISTS %s;' % table)
+            print 'DROP TABLE IF EXISTS %s;' %table
+            clause.execute('DROP TABLE IF EXISTS %s;' %table)
+
             # clause.execute('SELECT "%s" FROM INFORMATION_SCHEMA.TABLES LIMIT 1;' % table)
             # if clause.fetchone():
             #     return 0

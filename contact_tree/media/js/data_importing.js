@@ -300,6 +300,7 @@ var ImportView = Backbone.View.extend({
         $("#csvimporthinttitle").show();
         // console.log(data);
         this.action_event();
+        this.submit_event();
     },
 
     action_event: function(){
@@ -396,7 +397,7 @@ var ImportView = Backbone.View.extend({
         var check_complete = 0;
         // console.log("++++++", this.final_data_attr_info);
         var table_name = $("#database_table").val();
-        var request = table_name + ":-";
+        // var request = table_name + ":-";
         
         for(attr_column in this.final_data_attr_info){
             if(this.final_data_attr_info[attr_column][5] == 1)
@@ -411,32 +412,11 @@ var ImportView = Backbone.View.extend({
         
         if(table_name != ""){
             if(check_complete == self.data_column.length + 1){
-                var json_data = JSON.stringify(self.final_data_attr_info);
+                // var json_data = JSON.stringify(self.final_data_attr_info);
                 // request += json_data;
                 $('#import_submit').removeAttr("disabled");
                 // console.log("!!!", check_complete);
-                $('#import_submit').click(function(){
-                    console.log(">>>", request);
-                    self.raw_csvfile = new FormData($('#upload_form').get(0));
-                    $.ajax({
-                        url: "upload_csv/",
-                        type: 'POST',
-                        data: self.raw_csvfile,
-                        cache: false,
-                        processData: false,
-                        contentType: false,
-                        success: function(data) {
-                            request += data + ":-";
-                            // alert('success');
-                            console.log(data);
-                            request += json_data;
-                            d3.json("data_collection/?collection=" + request, function(result) {
-                                alert('success');
-                                console.log(result);                                  
-                            });
-                        }
-                    });
-                });
+                
             }
             
         }
@@ -444,6 +424,37 @@ var ImportView = Backbone.View.extend({
             // console.log("???", check_complete);
             return            
         }
+    },
+
+    submit_event: function(){  
+        var self = this;      
+        var set_db = function(fn){
+            var table_name = $("#database_table").val();
+            var json_data = JSON.stringify(self.final_data_attr_info);
+            var request = table_name + ":-" + fn + ":-" + json_data;
+            
+            console.log(request);
+            d3.json("data_collection/?collection=" + request, function(result) {
+                alert('success');
+                console.log(result);                                  
+            });
+        };
+        $('#import_submit').click(function(){
+            self.raw_csvfile = new FormData($('#upload_form').get(0));
+            $.ajax({
+                url: "upload_csv/",
+                type: 'POST',
+                data: self.raw_csvfile,
+                cache: false,
+                processData: false,
+                contentType: false,
+                success: function(data) {
+                    set_db(data);
+                }
+            });
+        });
+
     }
+
 
 });
