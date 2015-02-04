@@ -39,9 +39,9 @@ class DB:
 # clause = database.cursor()
 
 @csrf_exempt
-def upload_view(request):
+def upload_file(request):
     if request.method == 'POST':
-        file = request.FILES['usercsvupload']
+        file = request.FILES['usercsv2upload']
         localtime = str(time.time())
         localtime = localtime.replace(".", "_")
         print localtime
@@ -50,40 +50,64 @@ def upload_view(request):
         with open('./contact_tree/data/upload/' + localtime + ".csv", 'wb+') as dest:
             for chunk in file.chunks():
                 dest.write(chunk)
-
+    
     return HttpResponse(localtime)
 
 
 def test_type(table):
     db = DB()
     final_attr_info = dict()
+    final_info = []
+    attr_info = dict()
     cur = db.query('SHOW columns FROM ' + table + ';')
     all_attr = cur.fetchall()
+    total_missing = 0
+    defult_col = 0
+    final_attr_info["missing"] = []
+    final_attr_info["default"] = []
+    final_attr_info["intext"] = []
+    
+    temp_default = []
     for a in all_attr:
-        temp = []
+        # final_attr_info[f] = []
+        temp_missing = []
+        missing = 0
+        if a['Field'] == 'egoid' or a['Field'] == 'alterid':
+            temp_default.append(a['Field'])
+            defult_col += 1
+        if a['Field'] != 'e_id' and a['Field'] != 'egoid' and a['Field'] != 'alterid' and a['Field'] != 'dataset':
+            f = a['Field']
+            # print f
+            a_cur = db.query('select MIN(cast(`' + f + '` as unsigned)), MAX(cast(`' + f + '` as unsigned)), COUNT(DISTINCT(`' + f + '`)) from `' + table + '`;')
+            f_val = a_cur.fetchone()
+            attr_info[f] = dict()
+            for ff in f_val:
+                attr_info[f][ff.split("(")[0]] = f_val[ff]
+            attr_info[f]["RANGE"] = attr_info[f]["MAX"] - attr_info[f]["MIN"] + 1
+            if attr_info[f]["MAX"] == attr_info[f]["MIN"] and attr_info[f]["COUNT"] > 0:
+                final_attr_info["intext"].append(f)
+
         if a['Field'] != 'e_id':
             f = a['Field']
             # print f
-            a_cur = db.query('SELECT DISTINCT(`' + f + '`) FROM ' + table + ';')
-            f_val = a_cur.fetchall()
-            for v in f_val:
-                if v[f] != '' and v[f] != 'None' and v[f] != 'undefined':
-                    if v[f].isdigit():
-                        temp.append(int(v[f]))
-                    else:
-                        temp.append(v[f])
+            c_cur = db.query('SELECT COUNT(*) FROM ' + table + ' WHERE `' + f + '`="";')
+            missing = c_cur.fetchone()['COUNT(*)']
+            temp_missing = [f, missing]
+            final_attr_info["missing"].append(temp_missing)
+            total_missing += missing
 
-            # print f, ":", sorted(temp)
-            temp = sorted(temp)
-            min_val = min(temp)
-            max_val = max(temp)
-            len_val = len(temp)
-            if str(min_val).isdigit() and str(max_val).isdigit():
-                final_attr_info[f] = [min_val, max_val, max_val-min_val+1]
-            else:
-                final_attr_info[f] = [min_val, max_val, len_val]
-    return final_attr_info
-
+    if defult_col == 2:
+        if total_missing == 0:
+            return [table, attr_info]
+        else:
+            return [final_attr_info, attr_info]
+    else:
+        if 'egoid' not in temp_default:
+            final_attr_info["default"].append('egoid')
+        if 'alterid' not in temp_default:
+            final_attr_info["default"].append('alterid')
+        return [final_attr_info, attr_info]
+    
 
 def create_csv2database(request):
     final_attr_info = dict()
@@ -92,8 +116,8 @@ def create_csv2database(request):
     tree_cmpt = ["trunk", "branch", "bside", "leaf_color", "leaf_size", "fruit_size", "root"]
     # print request.GET.get('collection')
     if request.GET.get('collection'):
-        # table = request.GET.get('collection').replace(":-", "_")
-        table = request.GET.get('collection').split(":-")[-1]
+        table = request.GET.get('collection').replace(":-", "_")
+        # table = request.GET.get('collection').split(":-")[-1]
         csvfile = request.GET.get('collection').split(":-")[0]
         # attr_json = json.loads(all_info[2])
         # json.dumps(all_info[2], separators=(',',':'))
@@ -104,50 +128,42 @@ def create_csv2database(request):
         csv2mysql("./contact_tree/data/upload/" + csvfile + ".csv", table)
 
         final_attr_info = test_type(table)
-        
-        for c in tree_cmpt:
-            clause.execute('ALTER TABLE ' + table + ' ADD COLUMN `ctree_' + c + '` VARCHAR(16) NULL DEFAULT NULL;')
-                
-        database.commit()
+        if final_attr_info[0] == table:
+            for c in tree_cmpt:
+                clause.execute('ALTER TABLE ' + table + ' ADD COLUMN `ctree_' + c + '` VARCHAR(16) NULL DEFAULT NULL;')
+                    
+            database.commit()
+            update_collection_data(table, final_attr_info[1])
+        else:
+            print "in error drop!!!"
+            clause.execute('DROP TABLE IF EXISTS %s;' %table)
+            database.commit()
+            try:
+                os.remove("./contact_tree/data/upload/" + csvfile + ".csv")
+            except OSError:
+                pass
 
     else:
         raise Http404
 
-    jsondata = simplejson.dumps(final_attr_info, indent=4, use_decimal=True)
+    jsondata = simplejson.dumps(final_attr_info[0], indent=4, use_decimal=True)
     # print jsondata
     return HttpResponse(jsondata)
     
 
-def update_collection_data(request):
-    db = DB()
+def update_collection_data(table, attr_json):
     database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
     clause = database.cursor()
-    # tree_cmpt = ["trunk", "branch", "bside", "leaf_color", "leaf_size", "fruit_size", "root"]
-    if request.GET.get('collection'):
-        table = request.GET.get('collection').split(":-")[0]
-        attr_json = request.GET.get('collection').split(":-")[1]
-        print attr_json
-        clause.execute('delete from dataset_collection where dataset = "' + table + '";')
-        for a in attr_json:
-            if attr_json[a][0] == 1:
-                delete_column.append(a)
-            my_attr = '"' + table + '", "' + a + '", "' + str(attr_json[a][1]) + '", "' + str(attr_json[a][2]) + '", "' + str(attr_json[a][3]) + '", "' + str(attr_json[a][6]) + '", "' + str(attr_json[a][4]) + '", ' + str(attr_json[a][5])
-            # print my_attr
-            # print 'INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, relation, `type`, ego_mark) VALUES (' + my_attr + ');'
-
-            clause.execute('INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, relation, `type`, ego_mark) VALUES (%s);' %my_attr)
-        
-        print delete_column # need to test
-        for d in delete_column:
-            clause.execute('ALTER TABLE ' + table + ' DROP ' + d + '')
-
-        database.commit()
-
-    else:
-        raise Http404
-
-    jsondata = simplejson.dumps("successed update collection of " + table, indent=4, use_decimal=True)
-    return HttpResponse(jsondata)
+    
+    # print attr_json
+    clause.execute('delete from dataset_collection where dataset = "' + table + '";')
+    for a in attr_json:
+        my_attr = '"' + table + '", "' + a + '", "' + str(attr_json[a]["MIN"]) + '", "' + str(attr_json[a]["MAX"]) + '", "' + str(attr_json[a]["RANGE"]) + '"'
+        # print my_attr
+        # print 'INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, relation, `type`, ego_mark) VALUES (' + my_attr + ');'
+        clause.execute('INSERT INTO dataset_collection (dataset, attr, min, max, attr_range) VALUES (%s);' %my_attr)
+    
+    database.commit()
 
 
 def get_dataset(request):

@@ -74,7 +74,8 @@ var MyApp = function MyApp(){
     }
     
     // bind with view
-    this.importing = new ImportView({model: this.model, containerID: "#importing"});
+    // this.importing = new ImportView({model: this.model, containerID: "#importing"});
+    this.uploading = new UploadView({model: this.model, containerID: "#uploading"});
     this.selecting = new SelectingView({model: this.model, containerID: "#selecting"});
     this.structure = new StructureView({model: this.model, containerID: "#structure"});
     // this.component = new ComponentView({model: this.model, containerID: "#component"});

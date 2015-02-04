@@ -16,7 +16,7 @@ urlpatterns = patterns('',
     (r'^datainfo/$', query.get_data_info),
     (r'^one_country/$', query.get_country),
     (r'^update_author/$', query.upadte_author),
-    (r'^upload_csv/$', query.upload_view),
+    (r'^upload_csv/$', query.upload_file),
     (r'^update_collection/$', query.update_collection_data),
     (r'^collecting_data/$', query.create_csv2database)
     # (r'^set_attr/$', query.change_attr)

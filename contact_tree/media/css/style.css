@@ -61,6 +61,12 @@ a:focus{ outline: none; }
   background: gray;
 }
 
+.description_box{
+  border:solid 1;
+  border-radius:5;
+  width:100%;
+}
+
 .full_width{
 	width:100%
 }
