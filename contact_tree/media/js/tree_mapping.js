@@ -17,7 +17,8 @@ var MappingView = Backbone.View.extend({
             autoOpen: false,
             height: 650,
             width: 1000,
-            modal: true
+            modal: true,
+            resizable: false
         });
 
         $( "#map" ).click(function() {
@@ -84,7 +85,10 @@ var MappingView = Backbone.View.extend({
         $("#sidekey_selection").show();
         $("#sidekey_title").text("Stick Mapping:");
         $("#sidekey_description").text("Stick Mapping Description");
-        
+        // d3.json("get_attribute/?candidate=" + request, function(result) {
+        //     alert('success');
+        //     console.log(result);                                  
+        // });        
         
     },
 

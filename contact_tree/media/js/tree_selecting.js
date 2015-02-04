@@ -8,24 +8,23 @@ var SelectingView = Backbone.View.extend({
         console.log("in selecting initialize");
         _.bindAll(this, 'change_mode');
         // _.bindAll(this, 'set_dblp_label');
-        // _.bindAll(this, 'set_diary_label');
-        _.bindAll(this, 'set_label');
+        // _.bindAll(this, 'set_ego_label');
+        _.bindAll(this, 'set_data_label');
 
         this.model.bind('change:view_mode', this.change_mode);
-        this.model.bind('change:folder', this.change_mode);
-        // this.model.bind('change:done_query_list', this.set_dblp_label);
-        // this.model.bind('change:done_query_list', this.set_diary_label);
-        this.model.bind('change:done_query_list', this.set_label);
+        this.model.bind('change:dataset_group', this.change_mode);
         
-        this.my_diary_selected = {};
-        this.my_diary_display = {};
-        this.my_dblp_display = {};
-        this.my_dblp_selected = {};
+        // this.model.bind('change:folder', this.change_mode);
+        // this.model.bind('change:done_query_list', this.set_dblp_label);
+        // this.model.bind('change:done_query_list', this.set_ego_label);
+        // this.model.bind('change:done_query_list', this.set_label);
+        this.model.bind('change:done_query_list', this.set_data_label);
+        
+        
+        this.my_ego_selected = {};
+        this.my_ego_display = {};
         this.my_ego = 0;
-        this.author_name = "";
-        this.author_publication = 0;
-        this.author_area = "";
-        this.set_area = 0;
+        this.ego_cat = ["", "all"],
         // default setting??
 
         // open the dialog
@@ -39,180 +38,129 @@ var SelectingView = Backbone.View.extend({
             var mode = self.model.get("view_mode");
             $( "#menu_dialog" ).dialog( "open" );
             // self.model.set({"selected_egos":{}});
-            this.my_diary_selected = self.model.get("selected_egos");
-            this.my_diary_display = self.model.get("display_egos");
+            this.my_ego_selected = self.model.get("selected_egos");
+            this.my_ego_display = self.model.get("display_egos");
             
             // clean checked
             $("#sub_selection").empty();
             $('.ego_checkbox:checked').each(function(i, item){
                 this.checked = item.defaultChecked;
             });
-            if(mode == "diary" || mode == "DBLP"){
-                $("#detail_menu").hide();
-            }
+            $("#detail_menu").hide();
                       
         });
 
+        this.get_data_event();
+
+    },
+
+    get_data_event: function(){
+        var self = this;
+        $("#dataselect").change(function(){
+            // default_component = ["stick", "trunk", "branch", "bside", "leaf_color", "leaf_size", "fruit"];
+            self.model.set({"moving": 0});
+            // console.log("on menu dialog before:", self.model.get("display_egos"));
+            self.model.set({"selected_egos": {}});
+            self.model.set({"display_egos": {}});
+            self.model.set({"canvas_translate": [0, 0]});
+            self.model.set({"canvas_scale": 0.15});
+            self.model.trigger('change:display_egos');
+            self.ego_cat = ["", "all"];
+            $("#egogroup").empty();
+            $("#group_container").hide();
+
+            if($("#dataselect").val() == "0"){
+                self.model.set({"egos_data": {}});
+                self.model.set({"view_mode":"0"});
+                $("#group_container").hide();
+            }
+            // others data
+            else{
+                // default_component.push("root");
+                var data_selected = $("#dataselect").val();
+                $("#divTable_menu").empty();
+                $("#main_title").hide();
+                $("#divTable_menu").hide();
+                $("#submit_ego").hide();
+                $("#sub_title").hide();
+                $("#detail_menu").hide();
+                
+                var request_url = "dataset/?data="+data_selected;
+                d3.json(request_url, function(result){
+                      console.log("in model.query_data_info");
+                      console.log(result)
+                      var set_dataset_group = function(data){
+                        for(var d = 0; d < data.length; d++){
+                          self.ego_cat.push(data[d]);
+                        }
+                        
+                      };
+                      set_dataset_group(result);
+
+                      var container = document.getElementById("egogroup");
+                      // container.setAttribute("class", "dataset_selector");
+                      for(var s = 0; s < self.ego_cat.length; s++){
+                        var selection_opt = document.createElement('option');
+                        selection_opt.value = self.ego_cat[s];
+                        selection_opt.innerHTML = self.ego_cat[s];
+                        selection_opt.setAttribute("class", "myfont3");
+                        
+                        container.appendChild(selection_opt);
+                      }
+                      $("#group_container").show();
+                      // dataset_mode
+                  });
+                
+            }
+
+        });
+
+        $("#egogroup").change(function(){
+            var data_selected = $("#dataselect").val();
+            var ego_group = $("#egogroup").val();
+            
+            self.model.query_ego_list(data_selected, ego_group);
+            
+            self.model.set({"dataset_group": ego_group});
+            self.model.set({"view_mode":data_selected});
+            
+            var label = document.getElementById("selecting_label");
+            label.innerHTML = data_selected;
+        });
     },
 
     change_mode: function(){
         var self = this;
         var mode = self.model.get("view_mode");
-        if(mode == "diary"){
-            this.diary_option();
-            // change tree component item
-        }
-        else if(mode == "inter"){
-            this.inter_option();
-            /*
-            d3.json("inter/?inter=be", function(result) {
-              console.log("in model.query_data_inter");
-              console.log(result);
-              var egos_data = self.model.get("egos_data");
-              var tree_structure = self.model.get("tree_structure");
-              if(mode in egos_data){}
-              else{
-                egos_data[mode] = {};
-                tree_structure[mode] = {};
-              }
-              // var tree_structure = self.get("tree_structure");
-              var set_inter_json = function(data){
-                tree_structure[mode]["inter"] = {};
-                tree_structure[mode]["inter"]["be"] = data;
-                console.log("store", tree_structure);
-                self.model.set({"tree_structure": tree_structure});
-                
-              };
-               set_inter_json(result);
-               var e = {"be": ["inter"]};
-               self.model.set({"display_egos": e});
-               self.model.set({"selected_egos": e});
-               self.model.trigger('change:tree_structure');
-                  
-              });
-            */
-        }
-        else if(mode == "DBLP"){
-            this.dblp_option();
-        }
-        else{
+        if(mode == "0"){
             $("#divTable_menu").empty();
-            $("#submit_dblp").hide();
-            $("#main_title").hide();
             $("#main_title").hide();
             $("#divTable_menu").hide();
-            $("#search_option").hide();
-            $("#search_menu").hide();
-            $("#submit_search").hide();
-            $("#sub_selection").hide();
-            $("#submit_diary").hide();
+            $("#submit_ego").hide();
             $("#sub_title").hide();
-            $("#submit_inter").hide();
             $("#detail_menu").hide();
-            this.my_dblp_display = {};
-            this.my_dblp_selected = {};
-        }
-    },
-
-    set_label: function(){
-        var self = this;
-        var mode = self.model.get("view_mode");
-        if(mode == "diary"){
-            this.set_diary_label();
-            // change tree component item
-        }
-        else if(mode == "inter"){
-            this.set_inter_label();
         }
         else{
-            this.set_dblp_label();
+            this.data_option();
         }
-
+       
     },
 
-    inter_option: function(){
-        var self = this;
-        $("#divTable_menu").empty();
-        $("#submit_dblp").hide();
-        $("#main_title").show();
-        $("#main_title").text("Select Countries:");
-        $("#divTable_menu").show();
-        $("#search_option").hide();
-        $("#search_menu").hide();
-        $("#submit_search").hide();
-        $("#sub_selection").hide();
-        $("#submit_diary").hide();
-        $("#sub_title").hide();
-        $("#submit_inter").show();
-        $("#detail_menu").show();
-        this.my_dblp_display = {};
-        this.my_dblp_selected = {};
-        self.author_name = "";
-    },
-
-    set_inter_label: function(){
-        var self = this;
-
-        for(var c = 0; c < international_countries.length; c++){
-            var countries = countries_label[international_countries[c]];
-            // <label><input class="myfont3 sub_option" type="checkbox"
-            $("#divTable_menu").append('<div><label><input class="myfont3 country_option" type="checkbox" id="' + international_countries[c] + '" value="' + international_countries[c] +'" style="margin-right:5px;">' + countries + '</label></div>');
-        }
-        
-        $("#submit_inter").click(function(){
-            var checked_countries = [];
-            var country_ego = {};
-            // console.log(checked_countries);
-            $('#submit_inter').attr("disabled", true);
-            $('.country_option').attr("disabled", true);
-            $("#submit_inter").text("Loading");
-            $('.country_option:checked').each(function(){
-                checked_countries.push($(this).val());
-                country_ego[$(this).val()] = ["inter"];
-            });
-            var now_attr = self.model.get("attr_option");
-            var requst = now_attr[0];
-            for(var a = 1; a < now_attr.length; a++){
-                requst = requst + "," + now_attr[a];
-            }
-            requst = requst + ":" + checked_countries[0];
-            for(var s = 1; s < checked_countries.length; s++){
-                requst = requst + "_" + checked_countries[s];
-            }
-            self.model.query_data(requst);
-            // var e = {"be": ["inter"]};
-            self.model.set({"selected_egos": country_ego});
-            self.model.set({"display_egos": country_ego});
-            
-            // self.model.query_data(requst);
-            // self.model.trigger('change:selected_egos');
-        });
-
-    },
-
-    diary_option: function(){
+    data_option: function(){
         var self = this;
         // var name = "EGO ";
         // var sub = "";
         // var select_ego = [];
         $("#divTable_menu").empty();
         $("#detail_menu").hide();
-        $("#submit_dblp").hide();
-        $("#submit_inter").hide();
-        // $("#sub_title").hide();
+        
         $("#main_title").show();
         $("#main_title").text("Select Ego:");
         $("#divTable_menu").show();
-        $("#search_option").hide();
-        $("#search_menu").hide();
-        $("#submit_search").hide();
-        this.my_dblp_display = {};
-        this.my_dblp_selected = {};
-        self.author_name = "";
         
     },
 
-    set_diary_label:function(){
+    set_data_label: function(){
         var self = this;
         var name = "EGO ";
         var sub = "";
@@ -220,83 +168,106 @@ var SelectingView = Backbone.View.extend({
         
         function opt_change(ego){
             // console.log("in opt_function", ego);
-            // console.log("in opt_function", self.my_diary_selected);
-            $("#sub_selection").empty();
-            $("#sub_selection").show();
-            $("#submit_diary").show();
-            $('.ego_checkbox').attr("disabled", true);
-            var ego_time = [];
-            for(var c = 0; c < time.length; c++){
-                for(var c1 = 0; c1 < total_ego[time[c]].length; c1++){
-                    if(total_ego[time[c]][c1] == ego){
-                        ego_time.push(time[c]);
+            // console.log("in opt_function", self.my_ego_selected);
+            var subset = self.model.get("dataset_group");
+            if(subset != "all"){
+                $("#sub_title").show();
+                $("#sub_title").text("Sub Group:");
+                $("#detail_menu").show();
+
+                $("#sub_selection").empty();
+                $("#sub_selection").show();
+                $("#submit_ego").show();
+                // $('.ego_checkbox').attr("disabled", true);
+            }
+            else{
+                $("#sub_title").hide();
+                // $("#sub_title").text("Sub Group:");
+                $("#detail_menu").show();
+
+                $("#sub_selection").empty();
+                $("#sub_selection").hide();
+                $("#submit_ego").show();
+                // $('.ego_checkbox').attr("disabled", true);
+
+            }
+            $("#submit_ego").removeAttr("disabled");
+            $("#submit_ego").text("Done");
+            // $('.ego_checkbox').removeAttr("disabled");
+            
+            var ego_subgroup = [];
+            for(var c = 0; c < sub_ego.length; c++){
+                for(var v = 0; v < total_ego[sub_ego[c]].length; v++){
+                    if(total_ego[sub_ego[c]][v] == ego){
+                        ego_subgroup.push(sub_ego[c]);
                         break;
                     }
                }
             }
             // var check_done = self.model.get("done_query");
-            var folder = self.model.get("folder");
-            var now_attr = self.model.get("attr_option");
+            // var mode = self.model.get("view_mode");
+
+            // var now_attr = self.model.get("attr_option");
             
-            $('#submit_diary').attr("disabled", true);
-            $("#submit_diary").text("Loading");
-            var requst = now_attr[0];
-            for(var a = 1; a < now_attr.length; a++){
-                requst = requst + "," + now_attr[a];
-            }
-            requst = requst + ":" + folder + "_" + ego;
-            for(var s = 0; s < ego_time.length; s++){
-                requst = requst + "_" + ego_time[s];
-            }
+            // $('#submit_ego').attr("disabled", true);
+            // $("#submit_ego").text("Loading");
+            // var requst = now_attr[0];
+            // for(var a = 1; a < now_attr.length; a++){
+            //     requst = requst + "," + now_attr[a];
+            // }
+            // requst = requst + ":" + mode + "_" + ego;
+            // for(var s = 0; s < ego_subgroup.length; s++){
+            //     requst = requst + "_" + ego_subgroup[s];
+            // }
             // self.model.set({"now_query":requst});
             
             // console.log("query_request", requst);
             // check_done.push(ego);
             // self.model.set({"done_query":check_done});
-            self.model.query_data(requst);
-            /*
-            if(jQuery.inArray(ego, check_done) == -1){
-                $('#submit_diary').attr("disabled", true);
-                $("#submit_diary").text("Loading");
-                var requst = folder + "_" + ego;
-                for(var s = 0; s < ego_time.length; s++){
-                    requst = requst + "_" + ego_time[s];
-                }
-                self.model.set({"now_query":requst});
-                
-                // console.log("query_request", requst);
-                check_done.push(ego);
-                self.model.set({"done_query":check_done});
-                self.model.query_data(requst);
-            }
-            */
-            
-            for(var s = 0; s < ego_time.length; s++){
-
-                if(s == ego_time.length-1)
-                    $("#sub_selection").append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + ego_time[s] + '" id="' + ego_time[s] + '" checked>' + ego_time[s] + '</label>');            
+            // self.model.query_data(requst);
+                        
+            for(var s = 0; s < ego_subgroup.length; s++){
+                if(s == ego_subgroup.length-1)
+                    $("#sub_selection").append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + ego_subgroup[s] + '" id="' + ego_subgroup[s] + '" checked>' + ego_subgroup[s] + '</label>');            
                 else
-                    $("#sub_selection").append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + ego_time[s] + '" id="' + ego_time[s] + '">' + ego_time[s] + '</label>');            
+                    $("#sub_selection").append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + ego_subgroup[s] + '" id="' + ego_subgroup[s] + '">' + ego_subgroup[s] + '</label>');            
                 $("#sub_selection").append("<p></p>");
             }
-            
+
             // button click event
-            $("#submit_diary").click(function(){ // store selecting data
+            $("#submit_ego").click(function(){ // store selecting data
+                var now_attr = JSON.stringify(self.model.get("attribute"));
+                var now_mode = self.model.get("view_mode");
+                var now_ego = {};
+                var now_subset = self.model.get("dataset_group");
+
                 // store last page's selections
                 var display = [];
                 select_ego = [];
                 var total = 0;
-                $('.sub_option:checked').each(function(){
-                    //alert($(this).val());
-                    select_ego.push($(this).val());
+                var data_group = self.model.get("dataset_group");
+                if(data_group == "all"){
+                    select_ego.push("all");
                     total++;
-                });
-                self.my_diary_selected[self.my_ego] = select_ego;
+                }
+                else{
+                    $('.sub_option:checked').each(function(){
+                        //alert($(this).val());
+                        select_ego.push($(this).val());
+                        total++;
+                    });
+                }
+                now_ego[now_mode] = select_ego;
+                now_ego = JSON.stringify(now_ego);
+                var requst = now_attr + "&" + now_ego + "&" + now_subset + "&" + self.my_ego;
+                self.model.query_data(requst);
+
+                self.my_ego_selected[self.my_ego] = select_ego;
                 display.push(select_ego[total-1]);
-                self.my_diary_display[self.my_ego] = display;
+                self.my_ego_display[self.my_ego] = display;
                 
-                self.model.set({"display_egos":self.my_diary_display});
-                self.model.set({"selected_egos":self.my_diary_selected});
+                self.model.set({"display_egos":self.my_ego_display});
+                self.model.set({"selected_egos":self.my_ego_selected});
                 
                 self.model.set({"canvas_translate":[0, 0]});
                 self.model.set({"canvas_scale":0.15});
@@ -307,17 +278,17 @@ var SelectingView = Backbone.View.extend({
         }
 
         // all ego selections
-        for(var c = 0; c < total_ego[time[0]].length; c++){
+        for(var c = 0; c < total_ego[sub_ego[0]].length; c++){
             var check_amont = 0;
-            for(var t = 0; t < time.length; t++){
-                for(var t1 = 0; t1 < total_ego[time[t]].length; t1++){
-                    if(total_ego[time[t]][t1] == total_ego[time[0]][c]){
+            for(var t = 0; t < sub_ego.length; t++){
+                for(var t1 = 0; t1 < total_ego[sub_ego[t]].length; t1++){
+                    if(total_ego[sub_ego[t]][t1] == total_ego[sub_ego[0]][c]){
                         check_amont++;
                         break;
                     }
                }
             }
-            $("#divTable_menu").append('<div><label><input class="myfont3 ego_checkbox" name="ego_selection" type="radio" id="' + total_ego[time[0]][c] + '" value="' + total_ego[time[0]][c] +'" style="margin-right:5px;">' + name + ' ' + total_ego[time[0]][c] + ' ('+ check_amont +')</label></div>');
+            $("#divTable_menu").append('<div><label><input class="myfont3 ego_checkbox" name="ego_selection" type="radio" id="' + total_ego[sub_ego[0]][c] + '" value="' + total_ego[sub_ego[0]][c] +'" style="margin-right:5px;">' + name + ' ' + total_ego[sub_ego[0]][c] + ' ('+ check_amont +')</label></div>');
         }
          
         // sub = $('.sub_option:checked').val();
@@ -325,136 +296,15 @@ var SelectingView = Backbone.View.extend({
         $('.ego_checkbox').change(function() {
             var checked_ego = $('.ego_checkbox:checked').val();
             // var instructure = checked_ego
-            $("#sub_title").show();
-            $("#sub_title").text("year");
-            $("#detail_menu").show();
+            // $("#sub_title").show();
+            // $("#sub_title").text("Sub Group:");
+            // $("#detail_menu").show();
             // querying
             self.my_ego = checked_ego;
             opt_change(checked_ego);
             // $('.ego_checkbox:checked').prop('checked', false); // dont know
         });
-
-    },
-
-    dblp_option: function(){
-        var self = this;
-        self.my_diary_selected = {};
-        self.my_diary_display = {};
-       
-        $("#sub_selection").hide();
-        $("#detail_menu").hide();
-        $("#submit_diary").hide();
-        $("#submit_inter").hide();
-        $("#main_title").show();
-        $("#main_title").text("Search Ego:");
-        $("#divTable_menu").hide();
-        $("#submit_search").show();
-        $("#search_option").show();
-        
-        if(this.set_area == 0){
-            var container = document.getElementById("area_box");
-            container.setAttribute("class", "area_selector");
-            for(var s = 0; s < cat_dblp.length; s++){
-                var selection_opt = document.createElement('option');
-                selection_opt.value = cat_dblp[s];
-                selection_opt.innerHTML = dblp_area_label[cat_dblp[s]];
-                selection_opt.setAttribute("class", "myfont3");
-                
-                container.appendChild(selection_opt);
-            }
-            self.set_area = 1;
-        }
-        else{} // must?!
-
-        var set_author = function(au_name){
-            // $("#sub_selection").empty();
-            self.model.query_one_author(au_name);
-        }
-        var set_author_list = function(au_name, au_total, au_area){
-            // $("#sub_selection").empty();
-            self.model.query_author_list(au_name, au_total, au_area);
-        }
-
-        $("#submit_search").off("click");
-        $("#submit_search").click(function(){ // store selecting data
-            total_ego["DBLP"] = [];
-            self.author_name = $('#search_a_box').val();
-            if($('#search_p_box').val() != ""){
-                self.author_publication = $('#search_p_box').val();
-            }
-            else{
-                self.author_publication = -1;
-            }
-            
-            self.author_area = $('#area_box').val();
-            // if(self.author_publication == -1 && self.author_area == " "){}
-            // console.log(self.author_name, self.author_publication, self.author_area);
-            set_author_list(self.author_name, self.author_publication, self.author_area);
-
-            // if(self.author_name == ""){
-            //     // total_ego["DBLP"] = [];
-            // }
-            // else{
-            //     set_author(self.author_name)
-            // }
-            // if(self.author_publication == 0 && self.author_area == " "){}
-            // else{
-            //     // console.log(self.author_publication, self.author_area);
-            //     set_author_list(self.author_name, self.author_publication, self.author_area);
-            // }
-            
-            $("#detail_menu").show();
-            $("#sub_title").text("Select Ego:");            
-            $("#submit_dblp").show(); 
-            $('#submit_dblp').attr("disabled", true);
-            $("#submit_dblp").text("Loading");
-            $("#sub_selection").show();
-            
-        }); 
-        
-        // $("#submit_button").empty();
-        // $("#sidekey_button").empty();
-    },
-
-    set_dblp_label:function(){ // when the container is created
-        var self = this;
-        $('.au_checkbox').change(function() {
-            $("#submit_dblp").show(); 
-            $('#submit_dblp').attr("disabled", true);
-            $("#submit_dblp").text("Loading");
-            $('.au_checkbox').attr("disabled", true);
-            $('#submit_search').attr("disabled", true);
-            
-            checked_au = $('.au_checkbox:checked').val();
-            self.my_ego = checked_au;
-            // self.model.query_data(self.my_ego);
-
-            var now_attr = self.model.get("attr_option");
-
-            var requst = now_attr[0];
-            for(var a = 1; a < now_attr.length; a++){
-                requst = requst + "," + now_attr[a];
-            }
-            requst = requst + ":" + self.my_ego;
-            self.model.query_data(requst);
-            var checked_au = $('.au_checkbox:checked').val();
-            
-            // console.log("DBLP request", requst);
-        });
-
-        $("#submit_dblp").off("click");
-        $("#submit_dblp").click(function(){ // store selecting data
-            self.my_dblp_display[self.my_ego] = ["author"];
-            self.my_dblp_selected[self.my_ego] = ["author"];
-
-            self.model.set({"selected_egos": self.my_dblp_selected});
-            self.model.set({"display_egos": self.my_dblp_display});
-
-            self.model.trigger('change:selected_egos');
-            self.model.trigger('change:display_egos');
-            $( "#menu_dialog" ).dialog( "close" );            
-            
-        });
     }
+
 
 });

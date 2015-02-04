@@ -54,27 +54,81 @@ def upload_view(request):
     return HttpResponse(localtime)
 
 
+def test_type(table):
+    db = DB()
+    final_attr_info = dict()
+    cur = db.query('SHOW columns FROM ' + table + ';')
+    all_attr = cur.fetchall()
+    for a in all_attr:
+        temp = []
+        if a['Field'] != 'e_id':
+            f = a['Field']
+            # print f
+            a_cur = db.query('SELECT DISTINCT(`' + f + '`) FROM ' + table + ';')
+            f_val = a_cur.fetchall()
+            for v in f_val:
+                if v[f] != '' and v[f] != 'None' and v[f] != 'undefined':
+                    if v[f].isdigit():
+                        temp.append(int(v[f]))
+                    else:
+                        temp.append(v[f])
+
+            # print f, ":", sorted(temp)
+            temp = sorted(temp)
+            min_val = min(temp)
+            max_val = max(temp)
+            len_val = len(temp)
+            if str(min_val).isdigit() and str(max_val).isdigit():
+                final_attr_info[f] = [min_val, max_val, max_val-min_val+1]
+            else:
+                final_attr_info[f] = [min_val, max_val, len_val]
+    return final_attr_info
+
+
 def create_csv2database(request):
-    # db = DB()
+    final_attr_info = dict()
     database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
     clause = database.cursor()
+    tree_cmpt = ["trunk", "branch", "bside", "leaf_color", "leaf_size", "fruit_size", "root"]
+    # print request.GET.get('collection')
     if request.GET.get('collection'):
-        all_info = request.GET.get('collection').split(":-")
-        table = all_info[0]
-        csvfile = all_info[1]
-        attr_json = json.loads(all_info[2])
+        # table = request.GET.get('collection').replace(":-", "_")
+        table = request.GET.get('collection').split(":-")[-1]
+        csvfile = request.GET.get('collection').split(":-")[0]
+        # attr_json = json.loads(all_info[2])
         # json.dumps(all_info[2], separators=(',',':'))
         print table
         print csvfile
         # print attr_json
-        print "./contact_tree/data/upload/" + csvfile + ".csv"
+        # print "./contact_tree/data/upload/" + csvfile + ".csv"
         csv2mysql("./contact_tree/data/upload/" + csvfile + ".csv", table)
 
-        delete_column = []
+        final_attr_info = test_type(table)
+        
+        for c in tree_cmpt:
+            clause.execute('ALTER TABLE ' + table + ' ADD COLUMN `ctree_' + c + '` VARCHAR(16) NULL DEFAULT NULL;')
+                
+        database.commit()
+
+    else:
+        raise Http404
+
+    jsondata = simplejson.dumps(final_attr_info, indent=4, use_decimal=True)
+    # print jsondata
+    return HttpResponse(jsondata)
+    
+
+def update_collection_data(request):
+    db = DB()
+    database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
+    clause = database.cursor()
+    # tree_cmpt = ["trunk", "branch", "bside", "leaf_color", "leaf_size", "fruit_size", "root"]
+    if request.GET.get('collection'):
+        table = request.GET.get('collection').split(":-")[0]
+        attr_json = request.GET.get('collection').split(":-")[1]
+        print attr_json
         clause.execute('delete from dataset_collection where dataset = "' + table + '";')
         for a in attr_json:
-            # print a
-            # print attr_json[a]
             if attr_json[a][0] == 1:
                 delete_column.append(a)
             my_attr = '"' + table + '", "' + a + '", "' + str(attr_json[a][1]) + '", "' + str(attr_json[a][2]) + '", "' + str(attr_json[a][3]) + '", "' + str(attr_json[a][6]) + '", "' + str(attr_json[a][4]) + '", ' + str(attr_json[a][5])
@@ -85,28 +139,35 @@ def create_csv2database(request):
         
         print delete_column # need to test
         for d in delete_column:
-            clause.execute('ALTER TABLE "' + table + '" DROP "' + d + '"')
-        
+            clause.execute('ALTER TABLE ' + table + ' DROP ' + d + '')
+
         database.commit()
 
     else:
         raise Http404
 
-    jsondata = simplejson.dumps("successed upload " + table, indent=4, use_decimal=True)
+    jsondata = simplejson.dumps("successed update collection of " + table, indent=4, use_decimal=True)
     return HttpResponse(jsondata)
-    
+
 
 def get_dataset(request):
-    folder = []
+    # folder = []
+    group_list = []
+    db = DB()
     if request.GET.get('data'):
         # ./contact_tree/data
-        for root, dirs, files in os.walk("./contact_tree/data"):
-            # print dirs
-            folder = dirs
-            break
+        data_table = request.GET.get('data')
+        cur = db.query("select attr from dataset_collection where dataset='" + data_table + "' and (type='Categorical' or type='Ordinal')and ego_mark=0 and relation = (select attr from dataset_collection where ego_mark=1 and dataset='" + data_table + "');")
+        group = cur.fetchall()
+        for g in group:
+            group_list.append(g["attr"])
+        # for root, dirs, files in os.walk("./contact_tree/data"):
+        #     # print dirs
+        #     group_list = dirs
+        #     break
     else:
         raise Http404
-    json = simplejson.dumps(folder, indent=4, use_decimal=True)
+    json = simplejson.dumps(group_list, indent=4, use_decimal=True)
     # print json
     return HttpResponse(json)
 
@@ -259,31 +320,109 @@ def csv2mysql(fn, table):
 
 def get_list_ego(request):
     e_list = dict()
-    if request.GET.get('folder'):
+    final_return = []
+    default_attr = dict()
+    alter_cmpt = ["trunk", "bside", "fruit_size"]
+    ego_cmpt = ["leaf_color", "root"]
+    db = DB()
+    if request.GET.get('table'):
         # ./contact_tree/data
-        files = glob.glob("contact_tree/data/" + request.GET.get('folder') + "/*.csv")
-        for fn in files:
-            # print fn
-            diary = csv.reader(open(fn, 'rU'), delimiter='\t')
-            check_row = 0
-            row_index = []
-            sub = fn.split(".")[0].split("_").pop()
+        table = request.GET.get('table').split("_")[0]
+        column = request.GET.get('table').split("_")[1]
+        if column == "all":
+            precur = db.query("select attr from dataset_collection where ego_mark=1 and dataset='" + table + "';")
+            ego_attr = precur.fetchone()
+            myego = ego_attr['attr']
+            cur = db.query("select distinct(" + myego + ") from " + table + ";")
+            allego = cur.fetchall()
+            e_list["all"] = []
+            for e in allego:
+                e_list["all"].append(e[myego])
+        else:
+            # db.query("UPDATE " + table + " SET ego_mark = 2 WHERE attr ='" + column + "';")
+            precur = db.query("select attr from dataset_collection where ego_mark=1 and dataset='" + table + "';")
+            ego_attr = precur.fetchone()
+            myego = ego_attr['attr']
+            cur = db.query("select distinct(" + myego + "), " + column + " from " + table + " order by " + column + ";")
+            allego = cur.fetchall()
+            
+            for e in allego:
+                if e[column] in e_list:
+                    e_list[e[column]].append(e[myego])
+                else:
+                    e_list[e[column]] = []
+                    e_list[e[column]].append(e[myego])
 
-            ego_id = []
-            for row in diary:
-                elements = row[0].split(",")
-                if check_row == 0:
-                    for e in elements:
-                        row_index.append(e)
-                    check_row += 1
-                    continue
-                if elements[row_index.index('egoid')].isdigit() and elements[row_index.index("alterid")].isdigit():
-                    ego_id.append(int(elements[row_index.index('egoid')]))
-            e_list[sub] = sorted(list(set(ego_id)))
+        final_return.append(e_list)
+
+        stick_cur = db.query("select attr from dataset_collection where dataset='" + table + "' and type='identified' and ego_mark=0 and relation = (select attr from dataset_collection where ego_mark=1 and dataset='" + table + "');")
+        stick_candidate = stick_cur.fetchall()
+        if len(stick_candidate) > 1:
+            default_attr["stick"] = stick_candidate[0]['attr']
+            default_attr["leaf_id"] = stick_candidate[1]['attr']
+        else:
+            default_attr["stick"] = stick_candidate[0]['attr']
+            leaf_id_cur = db.query("select attr from dataset_collection where dataset='" + table + "' and type='identified' and ego_mark=0 and relation != (select attr from dataset_collection where ego_mark=1 and dataset='" + table + "');")
+            leaf_candidate = leaf_id_cur.fetchone()
+            default_attr["leaf_id"] = leaf_candidate['attr']
+
+        alter_cur = db.query("select * from dataset_collection where attr_range > 0 and attr_range < 15 and attr !='" + column + "' and dataset='" + table + "' and ego_mark=0 and relation = (select attr from dataset_collection where attr='" + default_attr["stick"] + "' and dataset='" + table + "');")
+        alter_info = alter_cur.fetchall()
+        temp_alter = dict()
+
+        for alt in alter_info:
+            temp_alter[alt["attr"]] = [alt["min"], alt["max"], int(alt["attr_range"]), alt["type"]]
+
+        # print temp_alter
+        # sorted(temp_alter.items(), key=lambda e: e[1][2])
+        count_cmpt = 0
+        for key, value in sorted(temp_alter.items(), key=lambda e: e[1][2]):
+            # print key, value
+            if count_cmpt == len(alter_cmpt):
+                default_attr["branch"] = key
+                # break
+            else:
+                default_attr[alter_cmpt[count_cmpt]] = key
+                count_cmpt += 1
+
+        ego_cur = db.query("select * from dataset_collection where attr_range > 0 and attr_range < 10 and type = 'Categorical' or type = 'Ordinal' and attr !='" + column + "' and dataset='" + table + "' and ego_mark=0 and (relation = 'none' or relation = (select attr from dataset_collection where attr='" + myego + "' and dataset='" + table + "'));")
+        cmpt_candidate = ego_cur.fetchall()
+        count_cat = 0
+        for c in cmpt_candidate:
+            if c['type'] == "Ordinal":
+                default_attr["leaf_size"] = c['attr']
+            else:
+                if count_cat < len(ego_cmpt):
+                    default_attr[ego_cmpt[count_cat]] = c['attr']
+                    count_cat += 1
+
+        if "leaf_size" not in default_attr:
+            default_attr["leaf_size"] = cmpt_candidate[count_cat]['attr']
+
+        final_return.append(default_attr)
+        # files = glob.glob("contact_tree/data/" + request.GET.get('folder') + "/*.csv")
+        # for fn in files:
+        #     # print fn
+        #     diary = csv.reader(open(fn, 'rU'), delimiter='\t')
+        #     check_row = 0
+        #     row_index = []
+        #     sub = fn.split(".")[0].split("_").pop()
+
+        #     ego_id = []
+        #     for row in diary:
+        #         elements = row[0].split(",")
+        #         if check_row == 0:
+        #             for e in elements:
+        #                 row_index.append(e)
+        #             check_row += 1
+        #             continue
+        #         if elements[row_index.index('egoid')].isdigit() and elements[row_index.index("alterid")].isdigit():
+        #             ego_id.append(int(elements[row_index.index('egoid')]))
+        #     e_list[sub] = sorted(list(set(ego_id)))
 
     else:
         raise Http404
-    json = simplejson.dumps(e_list, indent=4, use_decimal=True)
+    json = simplejson.dumps(final_return, indent=4, use_decimal=True)
     # print json
     return HttpResponse(json)
 
@@ -691,8 +830,9 @@ def one_contact(request):
     # print request.GET['contact']
     # attr = ["sex", "age", "yrknown", "feel", "howlong", "like"]
     if request.GET.get('contact'):
-        attr = request.GET['contact'].split(":")[0].split(",")[1:]
-        ego_info = request.GET['contact'].split(":")[1].split("_")
+        attr = json.loads(request.GET['contact'].split("&")[0])
+        ego_info = json.loads(request.GET['contact'].split("&")[1])
+        ego_group = request.GET['contact'].split("&")[2]
         # print request.GET['contact']
         # print ego_info
         for y in range(2, len(ego_info)):

@@ -12,12 +12,13 @@ urlpatterns = patterns('',
     (r'^dblp_list/$', query.list_author),
     (r'^one_author/$', query.one_author),
     (r'^dataset/$', query.get_dataset),
-    (r'^datafolder/$', query.get_list_ego),
+    (r'^datatable/$', query.get_list_ego),
     (r'^datainfo/$', query.get_data_info),
     (r'^one_country/$', query.get_country),
     (r'^update_author/$', query.upadte_author),
     (r'^upload_csv/$', query.upload_view),
-    (r'^data_collection/$', query.create_csv2database)
+    (r'^update_collection/$', query.update_collection_data),
+    (r'^collecting_data/$', query.create_csv2database)
     # (r'^set_attr/$', query.change_attr)
     # (r'^testing/$', query.test)
 )

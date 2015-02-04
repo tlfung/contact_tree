@@ -45,12 +45,12 @@ a:focus{ outline: none; }
 }
 
 .sidekey_label{
-  cursor:pointer; 
+  /*cursor:pointer; */
   position:absolute;
-  font-size:18;
+  /*font-size:18;
   border:solid 1;
   border-radius:5;
-  background: gray;
+  background: gray;*/
 }
 
 .sidekey_cmpt{

@@ -1,4 +1,4 @@
-// structure
+// not use
 var StructureView = Backbone.View.extend({
     
     initialize: function(args) {
@@ -8,7 +8,7 @@ var StructureView = Backbone.View.extend({
         console.log("in structure initialize");
         _.bindAll(this, 'build_tree');
 
-        this.model.bind('change:egos_data', this.build_tree);
+        // this.model.bind('change:egos_data', this.build_tree);
         // this.model.bind('change:attribute', this.build_tree);
         // this.build_tree();
         this.mode = self.model.get("view_mode");

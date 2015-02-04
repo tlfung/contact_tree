@@ -43,7 +43,6 @@ var MyApp = function MyApp(){
         self.model.set({"canvas_width": myCanvas.width});
         self.model.trigger('change:canvas_width');
         self.model.set({"canvas_grid": a_grid});
-
     };
 
     var arr_grid = self.model.get("canvas_grid");
@@ -62,80 +61,18 @@ var MyApp = function MyApp(){
     self.model.set({"canvas_grid": arr_grid});
     // console.log("grid", self.model.get("canvas_grid"));
     // initialize data selecter
-    $("#dataselect").change(function() {
-        // default_component = ["stick", "trunk", "branch", "bside", "leaf_color", "leaf_size", "fruit"];
-        self.model.set({"moving": 0});
-        // console.log("on menu dialog before:", self.model.get("display_egos"));
-        self.model.set({"selected_egos": {}});
-        self.model.set({"display_egos": {}});
-        self.model.set({"canvas_translate": [0, 0]});
-        self.model.set({"canvas_scale": 0.15});
-        self.model.trigger('change:display_egos');
 
+    var container = document.getElementById("dataselect");
+    container.setAttribute("class", "dataset_selector");
+    for(var s = 2; s < dataset_mode.length; s++){
+        var selection_opt = document.createElement('option');
+        selection_opt.value = dataset_mode[s];
+        selection_opt.innerHTML = dataset_mode[s];
+        selection_opt.setAttribute("class", "myfont3");
 
-        if($("#dataselect").val() == "0"){
-            self.model.set({"egos_data": {}});
-            self.model.set({"view_mode":"0"});
-        }
-        // others data
-        else if($("#dataselect").val() == "DBLP"){
-            // default_component.push("root");
-            self.model.set({"egos_data": {}});
-            self.model.set({"view_mode":"DBLP"});
-            self.model.set({"folder": "DBLP"});
-            self.model.set({"attr_option": mapping_item["DBLP"]});
-            self.model.set({"attribute": default_attribute["DBLP"]});
-                      
-            var label = document.getElementById("selecting_label");
-            label.innerHTML = "DBLP:";
-            self.model.trigger('change:attribute');       
-            
-        }
-        else if($("#dataselect").val() == "International"){
-            self.model.set({"egos_data": {}});
-            self.model.set({"view_mode":"inter"});
-            self.model.set({"folder": "inter"});
-            
-            self.model.set({"attr_option": mapping_item["inter"]});
-            self.model.set({"attribute": default_attribute["inter"]});
-            
-            var label = document.getElementById("selecting_label");
-            // self.model.query_country_list($("#dataselect").val());
-            label.innerHTML = "international:";
-            self.model.trigger('change:attribute');
-            self.model.trigger('change:done_query_list');
-            
-        }
-        // Diary
-        else{
-            // default_component.push("root");
-            self.model.set({"view_mode":"diary"});       
-            self.model.set({"attr_option": mapping_item["diary"]});
-            self.model.set({"folder": $("#dataselect").val()});
-            
-            self.model.set({"attribute": default_attribute["diary"]});
-            /*
-            // initial global attribute
-            var new_attr = "sex,age,yrknown,feel,howlong,like";
-            d3.json("set_attr/?attr=" + new_attr, function(result) {
-                console.log("in model.set_attr");
-                console.log("=====", result);
-            });
-            */
-            self.model.query_ego_list($("#dataselect").val());
-            // var check_table = self.model.get("done_table_loading")
-            // if(jQuery.inArray($("#dataselect").val(), check_table) == -1){
-            //     self.model.load_data($("#dataselect").val());
-            // }
-                        
-            var label = document.getElementById("selecting_label");
-            label.innerHTML = "Diary:";
-            self.model.trigger('change:attribute');
-            
-        }
-
-    });
-
+        container.appendChild(selection_opt);
+    }
+    
     // bind with view
     this.importing = new ImportView({model: this.model, containerID: "#importing"});
     this.selecting = new SelectingView({model: this.model, containerID: "#selecting"});
