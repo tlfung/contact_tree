@@ -130,8 +130,7 @@ var Tree_Model = Backbone.Model.extend({
         // console.log(total_ego);
         var d = self.get("done_query_list");
         self.set({"done_query_list": d+1});
-        self.trigger('change:attr_option');
-        
+        self.trigger('change:attribute');        
         // dataset_mode
     });
    

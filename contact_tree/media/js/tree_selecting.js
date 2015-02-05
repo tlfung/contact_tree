@@ -203,28 +203,7 @@ var SelectingView = Backbone.View.extend({
                     }
                }
             }
-            // var check_done = self.model.get("done_query");
-            // var mode = self.model.get("view_mode");
-
-            // var now_attr = self.model.get("attr_option");
-            
-            // $('#submit_ego').attr("disabled", true);
-            // $("#submit_ego").text("Loading");
-            // var requst = now_attr[0];
-            // for(var a = 1; a < now_attr.length; a++){
-            //     requst = requst + "," + now_attr[a];
-            // }
-            // requst = requst + ":" + mode + "_" + ego;
-            // for(var s = 0; s < ego_subgroup.length; s++){
-            //     requst = requst + "_" + ego_subgroup[s];
-            // }
-            // self.model.set({"now_query":requst});
-            
-            // console.log("query_request", requst);
-            // check_done.push(ego);
-            // self.model.set({"done_query":check_done});
-            // self.model.query_data(requst);
-                        
+           
             for(var s = 0; s < ego_subgroup.length; s++){
                 if(s == ego_subgroup.length-1)
                     $("#sub_selection").append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + ego_subgroup[s] + '" id="' + ego_subgroup[s] + '" checked>' + ego_subgroup[s] + '</label>');            

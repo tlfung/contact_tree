@@ -13,6 +13,7 @@ import warnings
 from operator import *
 from django.views.decorators.csrf import csrf_exempt
 import hashlib
+import operator
 import json
 
 warnings.filterwarnings(action='ignore', category=MySQLdb.Warning)
@@ -78,7 +79,7 @@ def test_type(table):
         if a['Field'] != 'e_id' and a['Field'] != 'egoid' and a['Field'] != 'alterid':
             f = a['Field']
             # print f                
-            a_cur = db.query('select MIN(cast(`' + f + '` as unsigned)), MAX(cast(`' + f + '` as unsigned)), COUNT(DISTINCT(`' + f + '`)) from `' + table + '`;')
+            a_cur = db.query('SELECT MIN(cast(`' + f + '` as unsigned)), MAX(cast(`' + f + '` as unsigned)), COUNT(DISTINCT(`' + f + '`)) FROM `' + table + '`;')
             f_val = a_cur.fetchone()
             attr_info[f] = dict()
             for ff in f_val:
@@ -160,7 +161,7 @@ def update_collection_data(table, attr_json):
     db = DB()
     
     # print attr_json
-    clause.execute('delete from dataset_collection where dataset = "' + table + '";')
+    clause.execute('DELETE FROM dataset_collection WHERE dataset = "' + table + '";')
     for a in attr_json:
         my_attr = '"' + table + '", "' + a + '", "' + str(attr_json[a]["MIN"]) + '", "' + str(attr_json[a]["MAX"]) + '", "' + str(attr_json[a]["RANGE"]) + '"'
         # print my_attr
@@ -195,7 +196,7 @@ def get_dataset(request):
         # ./contact_tree/data
         data_table = request.GET.get('data')
         print "-----", data_table
-        cur = db.query("select attr from dataset_collection where dataset='" + data_table + "' and attr='dataset';")
+        cur = db.query("SELECT attr FROM dataset_collection WHERE dataset='" + data_table + "' and attr='dataset';")
         group = cur.fetchone()
         if group:
             group_list.append(group["attr"])
@@ -370,14 +371,14 @@ def get_list_ego(request):
         column = request.GET.get('table').split(":-")[1]
         myego = "egoid"
         if column == "all":
-            cur = db.query("select distinct(" + myego + ") from " + table + ";")
+            cur = db.query("SELECT DISTINCT(" + myego + ") DROM " + table + ";")
             allego = cur.fetchall()
             e_list["all"] = []
             for e in allego:
                 e_list["all"].append(e[myego])
                 
         else:
-            cur = db.query("select distinct(" + myego + "), " + column + " from " + table + " order by " + column + ";")
+            cur = db.query("SELECT DISTINCT(" + myego + "), " + column + " FROM " + table + " ORDER BY " + column + ";")
             allego = cur.fetchall()
             
             for e in allego:
@@ -391,6 +392,33 @@ def get_list_ego(request):
         final_return.append(e_list)
 
         default_attr["stick"] = "alterid"
+        
+        cur = db.query('SELECT * FROM dataset_collection WHERE attr_range < 16 and dataset="' + table + '" and `alter`="1";')
+        relate_alter = cur.fetchall()
+        candidate = dict()
+        for relate in relate_alter:
+            candidate[relate['attr']] = int(relate["attr_range"])
+        # candidate_range = sorted(candidate.values(), key=int)
+        sort_candidate = sorted(candidate.items(), key=operator.itemgetter(1))
+        
+        default_attr["trunk"] = sort_candidate[0][0]
+        default_attr["bside"] = sort_candidate[1][0]
+        default_attr["fruit_size"] = sort_candidate[2][0]
+        default_attr["branch"] = sort_candidate[-1][0]
+
+        cur = db.query('SELECT * FROM dataset_collection WHERE attr_range > 3 and dataset="' + table + '" and `alter`is NULL;')
+        relate_ego = cur.fetchall()
+        ego_candidate = dict()
+        for relate in relate_ego:
+            ego_candidate[relate['attr']] = int(relate["attr_range"])
+
+        sort_candidate = sorted(ego_candidate.items(), key=operator.itemgetter(1))
+        
+        default_attr["leaf_color"] = sort_candidate[0][0]
+        default_attr["leaf_size"] = sort_candidate[1][0]
+        default_attr["root"] = sort_candidate[2][0]
+        default_attr["leaf_id"] = sort_candidate[-1][0]
+
 
         final_return.append(default_attr)
         # files = glob.glob("contact_tree/data/" + request.GET.get('folder') + "/*.csv")
