@@ -276,8 +276,9 @@
             2. Data must contain egoid column as each tree represent one ego <br>
             3. Data must contain alterid column as each stick in this tree is one alterid <br>
             4. If you have multiple data, combine them and add an extra column "dataset" as different dataset <br>
-            5. Data inside should be a categorical data or we will automatically category the attribute as an id data if all the distinct data is > 15 <br>
-            6. Upload it or check the data format or cancel it <br>
+            5. If you have missing data, please fill it with a value or fill with -1 as missing <br>
+            6. Data inside should be a categorical data or we will automatically category the attribute as an id data if all the distinct data is > 15 <br>
+            7. Upload it or check the data format or cancel it <br>
         </span>
         <form id="upload_form" name="upload_form" class="left" style="width:60%; margin-top:5px;">
             <input type="file" name="usercsv2upload" id="filename"></input>
@@ -339,14 +340,14 @@
             <span class="left myfont3">Datase:</span>
             <select id="dataselect" style="width:70%; margin-left:5px;">
                 <option value="0">Dataset</option>
-                <option value="diary">Diary</option>
+                <option value="combine_diary">Combine_diary</option>
                 <option value="international">International</option>
                 <!-- <option value="1">International</option> -->
                 <!-- <option value="2">DBLP</option> -->
             </select>
         </div>
         <div id="group_container" class="left" style="margin-left:10px; width:45%; display:none;">
-            <span class="left myfont3">Sub Dataset:</span>
+            <span class="left myfont3">Group:</span>
             <select id="egogroup" style="width:75%; margin-left:5px;">
                 <option value="0">Ego group</option>
                 <option value="all">All</option>

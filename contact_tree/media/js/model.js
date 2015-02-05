@@ -90,7 +90,7 @@ var Tree_Model = Backbone.Model.extend({
   query_ego_list: function(table, group){
     var self = this;
     // console.log(request);
-    var request = table+"_"+group;
+    var request = table + ":-" + group;
     var request_url = "datatable/?table="+request;
     d3.json(request_url, function(result){
         console.log("in model.query_ego_list");

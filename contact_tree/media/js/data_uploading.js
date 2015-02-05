@@ -109,8 +109,22 @@ var UploadView = Backbone.View.extend({
                 // alert('success');
                 // console.log("wtf");
                 console.log(result);
-                if(result == self.session + "_" + self.dataset)
+                if(result == self.session + "_" + self.dataset){
+                    var container = document.getElementById("dataselect");
+                    container.setAttribute("class", "dataset_selector");
+                    
+                    var selection_opt = document.createElement('option');
+                    selection_opt.value = result;
+                    selection_opt.innerHTML = self.dataset;
+                    selection_opt.setAttribute("class", "myfont3");
+
+                    container.appendChild(selection_opt);
+                    dataset_mode.push(result);
+                    
                     $("#import_dialog").dialog( "close" );
+                    
+                }
+                    
                 else{
                     var report_text = set_error(result);
                     console.log(report_text);

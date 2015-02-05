@@ -75,17 +75,20 @@ def test_type(table):
         if a['Field'] == 'egoid' or a['Field'] == 'alterid':
             temp_default.append(a['Field'])
             defult_col += 1
-        if a['Field'] != 'e_id' and a['Field'] != 'egoid' and a['Field'] != 'alterid' and a['Field'] != 'dataset':
+        if a['Field'] != 'e_id' and a['Field'] != 'egoid' and a['Field'] != 'alterid':
             f = a['Field']
-            # print f
+            # print f                
             a_cur = db.query('select MIN(cast(`' + f + '` as unsigned)), MAX(cast(`' + f + '` as unsigned)), COUNT(DISTINCT(`' + f + '`)) from `' + table + '`;')
             f_val = a_cur.fetchone()
             attr_info[f] = dict()
             for ff in f_val:
                 attr_info[f][ff.split("(")[0]] = f_val[ff]
             attr_info[f]["RANGE"] = attr_info[f]["MAX"] - attr_info[f]["MIN"] + 1
-            if attr_info[f]["MAX"] == attr_info[f]["MIN"] and attr_info[f]["COUNT"] > 0:
-                final_attr_info["intext"].append(f)
+            if f == 'dataset':
+                attr_info[f]["RANGE"] = attr_info[f]["COUNT"]
+            else:
+                if attr_info[f]["MAX"] == attr_info[f]["MIN"] and attr_info[f]["COUNT"] > 0:
+                    final_attr_info["intext"].append(f)
 
         if a['Field'] != 'e_id':
             f = a['Field']
@@ -154,6 +157,7 @@ def create_csv2database(request):
 def update_collection_data(table, attr_json):
     database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
     clause = database.cursor()
+    db = DB()
     
     # print attr_json
     clause.execute('delete from dataset_collection where dataset = "' + table + '";')
@@ -165,18 +169,37 @@ def update_collection_data(table, attr_json):
     
     database.commit()
 
+    cur = db.query('SELECT alterid FROM ' + table + ' WHERE egoid=(SELECT min(egoid) FROM ' + table + ');')
+    temp_alter = cur.fetchone()['alterid']
+    cur = db.query('SELECT min(egoid) FROM ' + table + ';')
+    temp_ego = cur.fetchone()['min(egoid)']
+    for a in attr_json:
+        if a == 'dataset':
+            continue
+        else:
+            # print 'SELECT COUNT(DISTINCT(`' + a + '`)) from ' + table + ' WHERE alterid ="' + str(temp_alter) + '" and egoid="' + str(temp_ego) + '";'
+            cur = db.query('SELECT COUNT(DISTINCT(`' + a + '`)) from ' + table + ' WHERE alterid ="' + str(temp_alter) + '" and egoid="' + str(temp_ego) + '";')
+            alter_count = cur.fetchone()
+            if alter_count['COUNT(DISTINCT(`' + a + '`))'] == 1:
+                print 'UPDATE dataset_collection SET `alter` = 1 WHERE attr="' + a + '" and dataset="' + table + '";'
+                clause.execute('UPDATE dataset_collection SET `alter` = 1 WHERE attr="' + a + '" and dataset="' + table + '";')
+
+    database.commit()
+
 
 def get_dataset(request):
     # folder = []
-    group_list = []
+    group_list = ["", "all"]
     db = DB()
     if request.GET.get('data'):
         # ./contact_tree/data
         data_table = request.GET.get('data')
-        cur = db.query("select attr from dataset_collection where dataset='" + data_table + "' and (type='Categorical' or type='Ordinal')and ego_mark=0 and relation = (select attr from dataset_collection where ego_mark=1 and dataset='" + data_table + "');")
-        group = cur.fetchall()
-        for g in group:
-            group_list.append(g["attr"])
+        print "-----", data_table
+        cur = db.query("select attr from dataset_collection where dataset='" + data_table + "' and attr='dataset';")
+        group = cur.fetchone()
+        if group:
+            group_list.append(group["attr"])
+        
         # for root, dirs, files in os.walk("./contact_tree/data"):
         #     # print dirs
         #     group_list = dirs
@@ -343,22 +366,17 @@ def get_list_ego(request):
     db = DB()
     if request.GET.get('table'):
         # ./contact_tree/data
-        table = request.GET.get('table').split("_")[0]
-        column = request.GET.get('table').split("_")[1]
+        table = request.GET.get('table').split(":-")[0]
+        column = request.GET.get('table').split(":-")[1]
+        myego = "egoid"
         if column == "all":
-            precur = db.query("select attr from dataset_collection where ego_mark=1 and dataset='" + table + "';")
-            ego_attr = precur.fetchone()
-            myego = ego_attr['attr']
             cur = db.query("select distinct(" + myego + ") from " + table + ";")
             allego = cur.fetchall()
             e_list["all"] = []
             for e in allego:
                 e_list["all"].append(e[myego])
+                
         else:
-            # db.query("UPDATE " + table + " SET ego_mark = 2 WHERE attr ='" + column + "';")
-            precur = db.query("select attr from dataset_collection where ego_mark=1 and dataset='" + table + "';")
-            ego_attr = precur.fetchone()
-            myego = ego_attr['attr']
             cur = db.query("select distinct(" + myego + "), " + column + " from " + table + " order by " + column + ";")
             allego = cur.fetchall()
             
@@ -368,52 +386,11 @@ def get_list_ego(request):
                 else:
                     e_list[e[column]] = []
                     e_list[e[column]].append(e[myego])
+                    
 
         final_return.append(e_list)
 
-        stick_cur = db.query("select attr from dataset_collection where dataset='" + table + "' and type='identified' and ego_mark=0 and relation = (select attr from dataset_collection where ego_mark=1 and dataset='" + table + "');")
-        stick_candidate = stick_cur.fetchall()
-        if len(stick_candidate) > 1:
-            default_attr["stick"] = stick_candidate[0]['attr']
-            default_attr["leaf_id"] = stick_candidate[1]['attr']
-        else:
-            default_attr["stick"] = stick_candidate[0]['attr']
-            leaf_id_cur = db.query("select attr from dataset_collection where dataset='" + table + "' and type='identified' and ego_mark=0 and relation != (select attr from dataset_collection where ego_mark=1 and dataset='" + table + "');")
-            leaf_candidate = leaf_id_cur.fetchone()
-            default_attr["leaf_id"] = leaf_candidate['attr']
-
-        alter_cur = db.query("select * from dataset_collection where attr_range > 0 and attr_range < 15 and attr !='" + column + "' and dataset='" + table + "' and ego_mark=0 and relation = (select attr from dataset_collection where attr='" + default_attr["stick"] + "' and dataset='" + table + "');")
-        alter_info = alter_cur.fetchall()
-        temp_alter = dict()
-
-        for alt in alter_info:
-            temp_alter[alt["attr"]] = [alt["min"], alt["max"], int(alt["attr_range"]), alt["type"]]
-
-        # print temp_alter
-        # sorted(temp_alter.items(), key=lambda e: e[1][2])
-        count_cmpt = 0
-        for key, value in sorted(temp_alter.items(), key=lambda e: e[1][2]):
-            # print key, value
-            if count_cmpt == len(alter_cmpt):
-                default_attr["branch"] = key
-                # break
-            else:
-                default_attr[alter_cmpt[count_cmpt]] = key
-                count_cmpt += 1
-
-        ego_cur = db.query("select * from dataset_collection where attr_range > 0 and attr_range < 10 and type = 'Categorical' or type = 'Ordinal' and attr !='" + column + "' and dataset='" + table + "' and ego_mark=0 and (relation = 'none' or relation = (select attr from dataset_collection where attr='" + myego + "' and dataset='" + table + "'));")
-        cmpt_candidate = ego_cur.fetchall()
-        count_cat = 0
-        for c in cmpt_candidate:
-            if c['type'] == "Ordinal":
-                default_attr["leaf_size"] = c['attr']
-            else:
-                if count_cat < len(ego_cmpt):
-                    default_attr[ego_cmpt[count_cat]] = c['attr']
-                    count_cat += 1
-
-        if "leaf_size" not in default_attr:
-            default_attr["leaf_size"] = cmpt_candidate[count_cat]['attr']
+        default_attr["stick"] = "alterid"
 
         final_return.append(default_attr)
         # files = glob.glob("contact_tree/data/" + request.GET.get('folder') + "/*.csv")

@@ -87,27 +87,26 @@ var SelectingView = Backbone.View.extend({
                 
                 var request_url = "dataset/?data="+data_selected;
                 d3.json(request_url, function(result){
-                      console.log("in model.query_data_info");
-                      console.log(result)
-                      var set_dataset_group = function(data){
-                        for(var d = 0; d < data.length; d++){
-                          self.ego_cat.push(data[d]);
-                        }
-                        
-                      };
+                        console.log("in model.query_data_info");
+                        console.log(result)
+                        var set_dataset_group = function(data){
+                            self.ego_cat = data;
+                            // for(var d = 0; d < data.length; d++){
+                            //   self.ego_cat.push(data[d]);
+                            // }
+                            var container = document.getElementById("egogroup");
+                            // container.setAttribute("class", "dataset_selector");
+                            for(var s = 0; s < self.ego_cat.length; s++){
+                                var selection_opt = document.createElement('option');
+                                selection_opt.value = self.ego_cat[s];
+                                selection_opt.innerHTML = self.ego_cat[s];
+                                selection_opt.setAttribute("class", "myfont3");
+                                
+                                container.appendChild(selection_opt);
+                            }
+                            $("#group_container").show();
+                        };
                       set_dataset_group(result);
-
-                      var container = document.getElementById("egogroup");
-                      // container.setAttribute("class", "dataset_selector");
-                      for(var s = 0; s < self.ego_cat.length; s++){
-                        var selection_opt = document.createElement('option');
-                        selection_opt.value = self.ego_cat[s];
-                        selection_opt.innerHTML = self.ego_cat[s];
-                        selection_opt.setAttribute("class", "myfont3");
-                        
-                        container.appendChild(selection_opt);
-                      }
-                      $("#group_container").show();
                       // dataset_mode
                   });
                 

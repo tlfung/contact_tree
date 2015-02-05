@@ -32,7 +32,7 @@ var mapping_item = {
     // "inter": ["ego", "egosex", "egoage", "touch", "place", "duration", "ego_education_length", "ego_hhsize"] //(3)
 };
 
-var dataset_mode = ["diary", "international"]; //push new dataset
+var dataset_mode = ["combine_diary", "international"]; //push new dataset
 // var dataset_mode = [];
 
 var default_attribute = {
