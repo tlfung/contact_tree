@@ -147,34 +147,7 @@ var Tree_Model = Backbone.Model.extend({
 	    d3.json(request_url, function(result) {
 	      	console.log("in model.update_one_contact");
 	      	console.log(result);
-	      	// var egos_data = self.get("egos_data");
-	      	// var tree_structure = self.get("tree_structure");
-	      	// if(mode in egos_data){}
-	      	// else{
-		      //   egos_data[mode] = {};
-		      //   tree_structure[mode] = {};
-	      	// }
-	      	// var tree_structure = self.get("tree_structure");
-	      	/*
-	      	var set_diary_json = function(data, sub){
-	        	for(var d in data){
-	          		if(d in tree_structure[mode]){
-	            		tree_structure[mode][d][sub] = data[d][sub];            
-	          		}
-	          		else{
-	            		tree_structure[mode][d] = {};
-	            		tree_structure[mode][d][sub] = data[d][sub];
-	          		}
-	        	}
-		        // console.log("store", tree_structure);
-		        self.set({"tree_structure": tree_structure});
-		        console.log("lucky", tree_structure);
-	      	};
-	      	// var new_attr = JSON.parse(request.split(":-")[0]);
-		    var sub_request = JSON.parse(request.split(":-")[1]);
-		    for(s in sub_request)
-		    	set_diary_json(result, s);
-	      	*/
+	      	
 	      	$("#submit_ego").removeAttr("disabled");
 	      	$("#submit_ego").text("Done");
 	      	$('.ego_checkbox').removeAttr("disabled");
@@ -224,6 +197,7 @@ var Tree_Model = Backbone.Model.extend({
 	      	// $("#submit_ego").text("Done");
 	      	// $('.ego_checkbox').removeAttr("disabled");
 	      	self.trigger('change:tree_structure');
+	      	$( "#menu_dialog" ).dialog( "close" );
 
 	    });
 	    

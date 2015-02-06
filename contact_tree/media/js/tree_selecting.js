@@ -124,7 +124,7 @@ var SelectingView = Backbone.View.extend({
             self.model.set({"view_mode":data_selected});
             
             var label = document.getElementById("selecting_label");
-            label.innerHTML = data_selected;
+            label.innerHTML = data_selected.toUpperCase().replace("_", " ");
         });
     },
 
@@ -257,7 +257,6 @@ var SelectingView = Backbone.View.extend({
                 self.model.trigger('change:display_egos');
                 self.model.trigger('change:selected_egos');
 
-                $( "#menu_dialog" ).dialog( "close" );
             });
         }
 

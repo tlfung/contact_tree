@@ -716,7 +716,7 @@ def one_contact_update(request):
         attr = json.loads(list_request[0])
         ego = list_request[1]
         table = list_request[2]
-
+        # attr['branch'] = 'age'
         precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + ego + '";')
         all_data = precur.fetchall()
         set_default_mapping(all_data, table, attr)

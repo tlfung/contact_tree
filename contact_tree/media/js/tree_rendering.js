@@ -1969,10 +1969,10 @@ var RenderingView = Backbone.View.extend({
             
             // fruit
             var attr = self.model.get("attribute");
-            var draw_fruit = data_range[this.view][attr.fruit][1];
-            if(alters[long_stick][n]["fruit"] == draw_fruit){
-                // this.tree_fruit(this.context, fruit_pos[long_stick][0], fruit_pos[long_stick][1]);
-            }
+            // var draw_fruit = data_range[this.view][attr.fruit][1];
+            // if(alters[long_stick][n]["fruit"] == draw_fruit){
+            //     // this.tree_fruit(this.context, fruit_pos[long_stick][0], fruit_pos[long_stick][1]);
+            // }
 
 
             // short stick
@@ -2055,9 +2055,9 @@ var RenderingView = Backbone.View.extend({
                 // if(alters[short_stick][count_short_stick]["fruit"] > draw_fruit){
                 //     this.tree_fruit(this.context, fruit_pos[short_stick][0], fruit_pos[short_stick][1]);
                 // }
-                if(alters[short_stick][count_short_stick]["fruit"] == draw_fruit){
-                    // this.tree_fruit(this.context, fruit_pos[short_stick][0], fruit_pos[short_stick][1]);
-                }
+                // if(alters[short_stick][count_short_stick]["fruit"] == draw_fruit){
+                //     // this.tree_fruit(this.context, fruit_pos[short_stick][0], fruit_pos[short_stick][1]);
+                // }
                 count_short_stick++;
             }
             // var w = (weight/total_leaf)*sub_total_leaf;
@@ -2399,10 +2399,10 @@ var RenderingView = Backbone.View.extend({
             // if(alters[long_stick][n]["fruit"] > draw_fruit){
             //     this.tree_fruit(this.context, fruit_pos[long_stick][0], fruit_pos[long_stick][1]);
             // }
-            var draw_fruit = data_range[this.view][attr.fruit][1];
-            if(alters[long_stick][n]["fruit"] == draw_fruit){
-                // this.tree_fruit(this.context, fruit_pos[long_stick][0], fruit_pos[long_stick][1]);
-            }
+            // var draw_fruit = data_range[this.view][attr.fruit][1];
+            // if(alters[long_stick][n]["fruit"] == draw_fruit){
+            //     // this.tree_fruit(this.context, fruit_pos[long_stick][0], fruit_pos[long_stick][1]);
+            // }
             // else{}
 
             // short stick
@@ -2481,9 +2481,9 @@ var RenderingView = Backbone.View.extend({
                 // if(alters[short_stick][count_short_stick]["fruit"] > draw_fruit){
                 //     this.tree_fruit(this.context, fruit_pos[short_stick][0], fruit_pos[short_stick][1]);
                 // }
-                if(alters[short_stick][count_short_stick]["fruit"] == draw_fruit){
-                    // this.tree_fruit(self.context, fruit_pos[short_stick][0], fruit_pos[short_stick][1]);
-                }
+                // if(alters[short_stick][count_short_stick]["fruit"] == draw_fruit){
+                //     // this.tree_fruit(self.context, fruit_pos[short_stick][0], fruit_pos[short_stick][1]);
+                // }
                 // else{}
                 count_short_stick++;
             }

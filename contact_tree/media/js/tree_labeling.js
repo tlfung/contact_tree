@@ -24,14 +24,13 @@ var LabelView = Backbone.View.extend({
         // self.label_selected = self.model.get("selected_egos");
 
         var my_mode = self.model.get("view_mode");
-        var all_tree = my_mode + ":";
+        var all_tree = my_mode.toUpperCase().replace("_", " ") + ":";
         $("#selecting_ego").empty();
 
         var label = document.getElementById("selecting_label");
         label.innerHTML = all_tree;
         var label_btn = document.getElementById("selecting_ego");
         if(group != "all"){
-            
             for(s in self.label_selected){
                 var opt = document.createElement("div");
                 opt.setAttribute('class', 'dropdown');
@@ -59,7 +58,7 @@ var LabelView = Backbone.View.extend({
                 opt_btn.id = "label_" + s;
                 opt_btn.value = s;
                 opt_btn.name = s;
-                opt_btn.innerHTML = "EGO " + s;
+                opt_btn.innerHTML = "EGO " + s.toUpperCase();;
                 
                 // var caret = document.createElement("b");
                 // caret.setAttribute("class", "caret");
@@ -113,7 +112,7 @@ var LabelView = Backbone.View.extend({
                 e.stopPropagation();
             });
 
-            this.set_label_event(my_mode);
+            this.set_label_event(group);
         }
 
         // no sub dataset
@@ -152,7 +151,7 @@ var LabelView = Backbone.View.extend({
                 opt_btn.value = gen_id;
                 opt_btn.name = s;
                 opt_btn.innerHTML = "EGO " + s;
-                
+
                 opt.appendChild(opt_btn);
                 
                 opt.appendChild(remove_btn);
@@ -165,7 +164,7 @@ var LabelView = Backbone.View.extend({
 
     },
 
-    set_label_event: function(mode){
+    set_label_event: function(group){
         var self = this;
         function delete_selection(selection){
             delete self.label_selected[selection];
@@ -174,21 +173,6 @@ var LabelView = Backbone.View.extend({
         
         for(s_store in self.label_selected){
             var s = s_store;
-            if(mode == "DBLP"){
-                s = "";
-                var name_array = s_store.split(" ");
-                for(var w = 0; w < name_array.length; w++){
-                    latter = name_array[w].split(".")[0];
-                    if(w < name_array.length-1){
-                        s += latter + "_";
-                    }
-                    else{
-                        s += latter;
-                    }
-                }
-            }
-            else{}// why need else...
-
             var label_id = "#label_" + s;
             
             $(label_id).hover(function(){
@@ -243,7 +227,7 @@ var LabelView = Backbone.View.extend({
             });
             
         }
-        if(mode == "diary"){
+        if(group != "all"){
             $('.label_checkbox').change(function() {
                 self.temp_selecting = [];
                 // self.label_display = {};
