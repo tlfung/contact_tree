@@ -92,8 +92,8 @@ var Tree_Model = Backbone.Model.extend({
 	    var request = table + ":-" + group;
 	    var request_url = "datatable/?table="+request;
 	    d3.json(request_url, function(result){
-	        console.log("in model.query_ego_list");
-	        console.log(result);
+	        // console.log("in model.query_ego_list");
+	        // console.log(result);
 	        var set_ego_list_json = function(data){
 	          	total_ego = data;
 	          	var sub_array = [];
@@ -138,15 +138,14 @@ var Tree_Model = Backbone.Model.extend({
 	update_data: function(request){
 	    var self = this;
 	    var mode = self.get("view_mode");
-	    console.log("+++", request);
-	    console.log(mode);
+	    
 	    $("#submit_ego").attr("disabled", true);
-      	$("#submit_ego").text("Load");
+      	$("#submit_ego").text("Loading");
       	$('.ego_checkbox').attr("disabled", true);
 	    var request_url = "get_update/?contact="+request;
 	    d3.json(request_url, function(result) {
-	      	console.log("in model.update_one_contact");
-	      	console.log(result);
+	      	// console.log("in model.update_one_contact");
+	      	// console.log(result);
 	      	
 	      	$("#submit_ego").removeAttr("disabled");
 	      	$("#submit_ego").text("Done");
@@ -160,17 +159,17 @@ var Tree_Model = Backbone.Model.extend({
 	query_data: function(request){
 	    var self = this;
 	    var mode = self.get("view_mode");
-	    console.log("+++", request);
-	    console.log(mode);
+	    
 	    var request_url = "get_contact/?contact="+request;
+	    console.log(request_url);
 	    d3.json(request_url, function(result) {
-	      	console.log("in model.query_one_contact");
-	      	console.log(result);
+	      	// console.log("in model.query_one_contact");
+	      	// console.log(result);
 	      	var egos_data = self.get("egos_data");
 	      	var tree_structure = self.get("tree_structure");
-	      	if(mode in egos_data){}
+	      	if(mode in tree_structure){}
 	      	else{
-		        egos_data[mode] = {};
+		        // egos_data[mode] = {};
 		        tree_structure[mode] = {};
 	      	}
 	      	// var tree_structure = self.get("tree_structure");
@@ -186,7 +185,7 @@ var Tree_Model = Backbone.Model.extend({
 	        	}
 		        // console.log("store", tree_structure);
 		        self.set({"tree_structure": tree_structure});
-		        console.log("lucky", tree_structure);
+		        // console.log("lucky", tree_structure);
 	      	};
 	      	// var new_attr = JSON.parse(request.split(":-")[0]);
 		    var sub_request = JSON.parse(request.split(":-")[1]);
@@ -197,7 +196,10 @@ var Tree_Model = Backbone.Model.extend({
 	      	// $("#submit_ego").text("Done");
 	      	// $('.ego_checkbox').removeAttr("disabled");
 	      	self.trigger('change:tree_structure');
+	      	$("#submit_ego").removeAttr("disabled");
 	      	$( "#menu_dialog" ).dialog( "close" );
+	      	self.trigger('change:selected_egos');
+	      	self.trigger('change:display_egos');            
 
 	    });
 	    

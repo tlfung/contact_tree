@@ -21,8 +21,7 @@ var LabelView = Backbone.View.extend({
         self.label_selected = self.model.get("selected_egos");
         self.label_display = self.model.get("display_egos");
         var group = self.model.get("dataset_group");
-        // self.label_selected = self.model.get("selected_egos");
-
+       
         var my_mode = self.model.get("view_mode");
         var all_tree = my_mode.toUpperCase().replace("_", " ") + ":";
         $("#selecting_ego").empty();
@@ -58,7 +57,7 @@ var LabelView = Backbone.View.extend({
                 opt_btn.id = "label_" + s;
                 opt_btn.value = s;
                 opt_btn.name = s;
-                opt_btn.innerHTML = "EGO " + s.toUpperCase();;
+                opt_btn.innerHTML = "EGO " + s.toUpperCase();
                 
                 // var caret = document.createElement("b");
                 // caret.setAttribute("class", "caret");
@@ -150,7 +149,7 @@ var LabelView = Backbone.View.extend({
                 opt_btn.id = "label_" + gen_id;
                 opt_btn.value = gen_id;
                 opt_btn.name = s;
-                opt_btn.innerHTML = "EGO " + s;
+                opt_btn.innerHTML = "EGO " + s.toUpperCase();
 
                 opt.appendChild(opt_btn);
                 
@@ -215,8 +214,8 @@ var LabelView = Backbone.View.extend({
                     self.model.set({"abt_branch_curve":1});
                     self.model.set({"root_curve":0});
                     self.model.set({"root_len_scale":1});
-                    self.model.set({"attr_option": mapping_item[mode]});
-                    self.model.set({"attribute": default_attribute[mode]});
+                    // self.model.set({"attr_option": mapping_item[mode]});
+                    // self.model.set({"attribute": default_attribute[mode]});
                     self.model.trigger('change:attribute');
                     self.update_slider();
                 }
@@ -255,8 +254,8 @@ var LabelView = Backbone.View.extend({
                     self.model.set({"canvas_scale":0.15});
                     self.model.set({"root_curve":0});
                     self.model.set({"root_len_scale":1});
-                    self.model.set({"attr_option": mapping_item[mode]});
-                    self.model.set({"attribute": default_attribute[mode]});
+                    // self.model.set({"attr_option": mapping_item[mode]});
+                    // self.model.set({"attribute": default_attribute[mode]});
                     self.model.trigger('change:attribute');
                     self.update_slider();
                 }

@@ -392,7 +392,7 @@ def get_list_ego(request):
 
         default_attr["stick"] = "alterid"
         
-        cur = db.query('SELECT * FROM dataset_collection WHERE attr_range < 16 and dataset="' + table + '" and `alter`="1";')
+        cur = db.query('SELECT * FROM dataset_collection WHERE attr_range < 20 and dataset="' + table + '" and `alter`="1";')
         relate_alter = cur.fetchall()
         candidate = dict()
         for relate in relate_alter:

@@ -9,12 +9,6 @@ var RenderingView = Backbone.View.extend({
         _.bindAll(this, 'redraw');
         _.bindAll(this, 'update_fruit_size');
 
-        // leaf_scale: 1,
-        // fruit_scale: 1,
-        // sub_leaf_len_scale: 1,
-        // dtl_branch_curve: 1,
-        // abt_branch_curve: 1
-
         this.model.bind('change:display_egos', this.redraw);
         this.model.bind('change:canvas_scale', this.redraw);
         this.model.bind('change:tree_structure', this.redraw);
@@ -39,6 +33,7 @@ var RenderingView = Backbone.View.extend({
         this.model.bind('change:leaf_scale', this.update_fruit_size);
 
         this.view = self.model.get("view_mode");
+        this.group = self.model.get("dataset_group");
 
         this.myCanvas = drawing_canvas.main_canvas;
         this.context =  this.myCanvas.getContext('2d');
@@ -96,9 +91,11 @@ var RenderingView = Backbone.View.extend({
         this.leaf_hovor = self.model.get("clicking_leaf");
         var display_style = self.model.get("tree_style");
         this.view = self.model.get("view_mode");
+        this.group = self.model.get("dataset_group");
         this.clicking_grid = initial_grid;
         this.translate_point = self.model.get("canvas_translate");
         this.c_detail = 11*this.scale;
+
         if(this.scale > 0.6){
             this.on_moving = 0;
         }
@@ -1460,19 +1457,15 @@ var RenderingView = Backbone.View.extend({
                     // alart and delete this ego
                 }
                 var msg = "";
-                if(self.view == "diary"){
-                    // msg = "EGO" + e + "|" + sub;
+                if(self.group != "all"){
+                    msg = "EGO_" + e.toUpperCase() + "|" + sub;
                 }
-                else if(self.view == "DBLP"){
-                    msg = e;
+                else{
+                    msg = "EGO_" + e.toUpperCase();
                 }
-                else if(self.view == "inter"){
-                    // msg = countries_label[e];
-                    info_box = info_box = ["", ""];
-                }
+                // info_box = info_box = ["", ""];
                 var pos = [];
-                var info_pos = [];
-                
+                var info_pos = [];                
 
                 // if(ego["left"][branch_index]["level"]["down"].length >= ego["left"][branch_index]["level"]["up"].length){
                 //     this.start_x += ((ego["left"][branch_index]["level"]["down"].length + 2)*this.sub_stick_length + this.x_dist); //_glx
@@ -1505,6 +1498,15 @@ var RenderingView = Backbone.View.extend({
                 var ori_dr = right_side;
                 var ori_dl = left_side;
                 var t_scale = (right_side + left_side)/150;
+                if(right_side+left_side < 80){
+                    t_scale = 0.5;
+                }
+                else{
+                    if(t_scale < 1){
+                        t_scale = 1;
+                    }
+                }
+                /*
                 if(this.view == "diary" || this.view == "inter"){
                     // console.log("scale", ((right_side + left_side)/150));
                     if(t_scale < 1){
@@ -1527,10 +1529,11 @@ var RenderingView = Backbone.View.extend({
                     // this.dr = ori_dr/t_scale;
                     // this.dl = ori_dl/t_scale;
                 }
+                */
                 // pos = [this.start_x - 270, this.start_y + this.stick_length + 350];
                 pos = [((this.start_x - ori_dl/t_scale)+(this.start_x + ori_dr/t_scale))/2-270, this.start_y + this.stick_length + 350];
                 info_pos = [this.start_x + ori_dr/t_scale + 50, this.start_y + this.stick_length + 50];
-                if(this.view == "inter"){
+                if(self.group == "all"){
                     pos = [((this.start_x - ori_dl/t_scale)+(this.start_x + ori_dr/t_scale))/2-170, this.start_y + this.stick_length + 350];
                 }
                 // count the right boundary

@@ -38,8 +38,8 @@ var SelectingView = Backbone.View.extend({
             var mode = self.model.get("view_mode");
             $( "#menu_dialog" ).dialog( "open" );
             // self.model.set({"selected_egos":{}});
-            this.my_ego_selected = self.model.get("selected_egos");
-            this.my_ego_display = self.model.get("display_egos");
+            // this.my_ego_selected = self.model.get("selected_egos");
+            // this.my_ego_display = self.model.get("display_egos");
             
             // clean checked
             $("#sub_selection").empty();
@@ -62,6 +62,11 @@ var SelectingView = Backbone.View.extend({
             // console.log("on menu dialog before:", self.model.get("display_egos"));
             self.model.set({"selected_egos": {}});
             self.model.set({"display_egos": {}});
+            self.model.set({"tree_structure":{}});
+            
+            self.my_ego_selected = {};
+            self.my_ego_display = {};
+
             self.model.set({"canvas_translate": [0, 0]});
             self.model.set({"canvas_scale": 0.15});
             self.model.trigger('change:display_egos');
@@ -87,8 +92,8 @@ var SelectingView = Backbone.View.extend({
                 
                 var request_url = "dataset/?data="+data_selected;
                 d3.json(request_url, function(result){
-                        console.log("in model.query_data_info");
-                        console.log(result)
+                        // console.log("in model.query_data_info");
+                        // console.log(result)
                         var set_dataset_group = function(data){
                             self.ego_cat = data;
                             // for(var d = 0; d < data.length; d++){
@@ -122,6 +127,7 @@ var SelectingView = Backbone.View.extend({
             
             self.model.set({"dataset_group": ego_group});
             self.model.set({"view_mode":data_selected});
+            // self.model.set({"tree_structure":{}});
             
             var label = document.getElementById("selecting_label");
             label.innerHTML = data_selected.toUpperCase().replace("_", " ");
@@ -161,7 +167,7 @@ var SelectingView = Backbone.View.extend({
 
     set_data_label: function(){
         var self = this;
-        var name = "EGO ";
+        var name = "EGO";
         var sub = "";
         var select_ego = [];
         
@@ -218,6 +224,8 @@ var SelectingView = Backbone.View.extend({
             self.model.update_data(requst);
             // button click event
             $("#submit_ego").click(function(){ // store selecting data
+                this.my_ego_selected = self.model.get("selected_egos");
+                this.my_ego_display = self.model.get("display_egos");
                 var now_attr = JSON.stringify(self.model.get("attribute"));
                 var now_mode = self.model.get("view_mode");
                 var now_ego = {};
@@ -239,6 +247,8 @@ var SelectingView = Backbone.View.extend({
                         total++;
                     });
                 }
+                $("#submit_ego").attr("disabled", true);
+                $("#submit_ego").text("Rendering");
                 now_ego[self.my_ego] = select_ego;
                 now_ego = JSON.stringify(now_ego);
                 var requst = now_attr + ":-" + now_ego + ":-" + now_subset + ":-" + now_mode;
@@ -254,8 +264,8 @@ var SelectingView = Backbone.View.extend({
                 
                 self.model.set({"canvas_translate":[0, 0]});
                 self.model.set({"canvas_scale":0.15});
-                self.model.trigger('change:display_egos');
-                self.model.trigger('change:selected_egos');
+                // self.model.trigger('change:display_egos');
+                // self.model.trigger('change:selected_egos');
 
             });
         }
@@ -271,7 +281,7 @@ var SelectingView = Backbone.View.extend({
                     }
                }
             }
-            $("#divTable_menu").append('<div><label><input class="myfont3 ego_checkbox" name="ego_selection" type="radio" id="' + total_ego[sub_ego[0]][c] + '" value="' + total_ego[sub_ego[0]][c] +'" style="margin-right:5px;">' + name + ' ' + total_ego[sub_ego[0]][c] + ' ('+ check_amont +')</label></div>');
+            $("#divTable_menu").append('<div><label><input class="myfont3 ego_checkbox" name="ego_selection" type="radio" id="' + total_ego[sub_ego[0]][c] + '" value="' + total_ego[sub_ego[0]][c] +'" style="margin-right:5px;">' + name + '_' + total_ego[sub_ego[0]][c].toUpperCase() + ' ('+ check_amont +')</label></div>');
         }
          
         // sub = $('.sub_option:checked').val();
