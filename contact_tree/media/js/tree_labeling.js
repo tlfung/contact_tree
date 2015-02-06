@@ -24,13 +24,13 @@ var LabelView = Backbone.View.extend({
         // self.label_selected = self.model.get("selected_egos");
 
         var my_mode = self.model.get("view_mode");
-        var all_tree = data_label[my_mode] + ":";
+        var all_tree = my_mode + ":";
         $("#selecting_ego").empty();
 
         var label = document.getElementById("selecting_label");
-        label.innerHTML = all_tree;
+        label.innerHTML = my_mode;
         var label_btn = document.getElementById("selecting_ego");
-        if(my_mode == "diary"){
+        if(my_mode != "diary"){
             
             for(s in self.label_selected){
                 var opt = document.createElement("div");

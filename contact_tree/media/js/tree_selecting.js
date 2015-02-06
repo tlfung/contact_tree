@@ -235,12 +235,13 @@ var SelectingView = Backbone.View.extend({
                         total++;
                     });
                 }
-                now_ego[now_mode] = select_ego;
+                now_ego[self.my_ego] = select_ego;
                 now_ego = JSON.stringify(now_ego);
-                var requst = now_attr + "&" + now_ego + "&" + now_subset + "&" + self.my_ego;
+                var requst = now_attr + ":-" + now_ego + ":-" + now_subset + ":-" + now_mode;
                 self.model.query_data(requst);
 
                 self.my_ego_selected[self.my_ego] = select_ego;
+                
                 display.push(select_ego[total-1]);
                 self.my_ego_display[self.my_ego] = display;
                 

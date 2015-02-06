@@ -134,7 +134,7 @@ def create_csv2database(request):
         final_attr_info = test_type(table)
         if final_attr_info[0] == table:
             for c in tree_cmpt:
-                clause.execute('ALTER TABLE ' + table + ' ADD COLUMN `ctree_' + c + '` VARCHAR(16) NULL DEFAULT NULL;')
+                clause.execute('ALTER TABLE ' + table + ' ADD COLUMN `ctree_' + c + '` INT NULL DEFAULT NULL;')
                     
             database.commit()
             update_collection_data(table, final_attr_info[1])
@@ -207,9 +207,9 @@ def get_dataset(request):
         #     break
     else:
         raise Http404
-    json = simplejson.dumps(group_list, indent=4, use_decimal=True)
+    return_json = simplejson.dumps(group_list, indent=4, use_decimal=True)
     # print json
-    return HttpResponse(json)
+    return HttpResponse(return_json)
 
 
 def get_type(s):
@@ -362,8 +362,7 @@ def get_list_ego(request):
     e_list = dict()
     final_return = []
     default_attr = dict()
-    alter_cmpt = ["trunk", "bside", "fruit_size"]
-    ego_cmpt = ["leaf_color", "root"]
+    
     db = DB()
     if request.GET.get('table'):
         # ./contact_tree/data
@@ -371,7 +370,7 @@ def get_list_ego(request):
         column = request.GET.get('table').split(":-")[1]
         myego = "egoid"
         if column == "all":
-            cur = db.query("SELECT DISTINCT(" + myego + ") DROM " + table + ";")
+            cur = db.query("SELECT DISTINCT(" + myego + ") FROM " + table + ";")
             allego = cur.fetchall()
             e_list["all"] = []
             for e in allego:
@@ -413,14 +412,14 @@ def get_list_ego(request):
             ego_candidate[relate['attr']] = int(relate["attr_range"])
 
         sort_candidate = sorted(ego_candidate.items(), key=operator.itemgetter(1))
-        
+
         default_attr["leaf_color"] = sort_candidate[0][0]
         default_attr["leaf_size"] = sort_candidate[1][0]
         default_attr["root"] = sort_candidate[2][0]
         default_attr["leaf_id"] = sort_candidate[-1][0]
 
-
         final_return.append(default_attr)
+
         # files = glob.glob("contact_tree/data/" + request.GET.get('folder') + "/*.csv")
         # for fn in files:
         #     # print fn
@@ -443,10 +442,284 @@ def get_list_ego(request):
 
     else:
         raise Http404
-    json = simplejson.dumps(final_return, indent=4, use_decimal=True)
+    return_json = simplejson.dumps(final_return, indent=4, use_decimal=True)
     # print json
-    return HttpResponse(json)
+    return HttpResponse(return_json)
 
+
+def unique_stick(all_data, attr, branch_layer):
+    structure = dict()
+    # print stick_unique
+    structure["right"] = []
+    structure["left"] = []
+    structure["root"] = []
+
+    root = attr['root']
+    stick = "alterid"
+    leaf_id = attr['leaf_id']
+    f_size = "ctree_fruit_size"
+    l_size = "ctree_leaf_size"
+    l_color = "ctree_leaf_color"
+
+    alter_array_right_up = []
+    alter_array_left_up = []
+    alter_array_right_down = []
+    alter_array_left_down = []
+    for total in range(branch_layer):
+        structure["right"].append({"level": {"up": [], "down": []}})
+        structure["left"].append({"level": {"up": [], "down": []}})
+        alter_array_right_up.append([])
+        alter_array_left_up.append([])
+        alter_array_right_down.append([])
+        alter_array_left_down.append([])
+    structure["root"].append({})
+
+    for meeting in all_data:
+        # meeting = c
+        if meeting[root] not in structure["root"][0]:
+            structure["root"][0][meeting[root]] = dict()
+            structure["root"][0][meeting[root]]["length"] = 0
+            structure["root"][0][meeting[root]]["sub"] = [10 for i in range(12)] # may add attribute mapping
+            structure["root"][0][meeting[root]]["root_cat"] = meeting[root]
+            # print structure["root"]
+        else:
+            structure["root"][0][meeting[root]]["length"] += 1
+        # left
+        if meeting['ctree_trunk'] == 0:
+            level = 0
+            new_alter = -1
+            for l in range(branch_layer):
+                # level and up
+                if meeting["ctree_branch"] == l and meeting["ctree_bside"] == 1:
+                    if len(alter_array_left_up[level]) == 0:
+                        structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
+                        structure["left"][level]["level"]["up"][len(alter_array_left_up[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                        alter_array_left_up[level].append(meeting[stick])
+
+                    else:
+                        count_alter = 0
+                        for a in alter_array_left_up[level]:
+                            if meeting[stick] == a:
+                                new_alter = count_alter
+                                break
+                            count_alter += 1
+                        if new_alter == -1:
+                            structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
+                            structure["left"][level]["level"]["up"][len(alter_array_left_up[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            alter_array_left_up[level].append(meeting["alterid"])
+                        else:
+                            structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+
+                    break
+
+                # level and down
+                elif meeting["ctree_branch"] == l and meeting["ctree_bside"] == 0:
+                    if len(alter_array_left_down[level]) == 0:
+                        structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
+                        structure["left"][level]["level"]["down"][len(alter_array_left_down[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                        alter_array_left_down[level].append(meeting[stick])
+                    else:
+                        count_alter = 0
+                        for a in alter_array_left_down[level]:
+                            if meeting[stick] == a:
+                                new_alter = count_alter
+                                break
+                            count_alter += 1
+                        if new_alter == -1:
+                            structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
+                            structure["left"][level]["level"]["down"][len(alter_array_left_down[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            alter_array_left_down[level].append(meeting[stick])
+                        else:
+                            structure["left"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+
+                    break
+                level += 1
+        # right
+        else:
+            level = 0
+            new_alter = -1
+            for l in range(branch_layer):
+                # level and up
+                if meeting["ctree_branch"] == l and meeting["ctree_bside"] == 1:
+                    if len(alter_array_right_up[level]) == 0:
+                        structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
+                        structure["right"][level]["level"]["up"][len(alter_array_right_up[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                        alter_array_right_up[level].append(meeting[stick])
+                    else:
+                        count_alter = 0
+                        for a in alter_array_right_up[level]:
+                            if meeting[stick] == a:
+                                new_alter = count_alter
+                                break
+                            count_alter += 1
+                        if new_alter == -1:
+                            structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
+                            structure["right"][level]["level"]["up"][len(alter_array_right_up[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            alter_array_right_up[level].append(meeting[stick])
+                        else:
+                            structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+
+                    break
+                # level and down
+                elif meeting["ctree_branch"] == l and meeting["ctree_bside"] == 0:
+                    if len(alter_array_right_down[level]) == 0:
+                        structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
+                        structure["right"][level]["level"]["down"][len(alter_array_right_down[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                        alter_array_right_down[level].append(meeting[stick])
+                    else:
+                        count_alter = 0
+                        for a in alter_array_right_down[level]:
+                            if meeting[stick] == a:
+                                new_alter = count_alter
+                                break
+                            count_alter += 1
+                        if new_alter == -1:
+                            structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
+                            structure["right"][level]["level"]["down"][len(alter_array_right_down[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            alter_array_right_down[level].append(meeting["alterid"])
+                        else:
+                            structure["right"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+
+                    break
+                level += 1
+
+    return structure
+
+
+def duplicate_stick(all_data, attr, branch_layer):
+    structure = dict()
+    # print stick_unique
+    structure["right"] = []
+    structure["left"] = []
+    structure["root"] = []
+
+    root = attr['root']
+    # stick = "alterid"
+    leaf_id = attr['leaf_id']
+
+    alter_array_right = []
+    alter_array_left = []
+    for total in range(branch_layer):
+        structure["right"].append({"level": {"up": [], "down": []}})
+        structure["left"].append({"level": {"up": [], "down": []}})
+        alter_array_right.append([])
+        alter_array_left.append([])
+    structure["root"].append({})
+
+    return structure
+
+
+def set_default_mapping(all_data, table, attr):
+    print "set_default_mapping"
+    db = DB()
+    for d in all_data:
+        for compt in attr:
+            if compt == 'trunk' or compt == 'bside':
+                cur = db.query('SELECT min, max, attr_range FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
+                collecting_data = cur.fetchone()
+                mid = math.floor((int(collecting_data['max']) + int(collecting_data['min']))/2)
+                if int(d[attr[compt]]) <= int(mid):
+                    # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
+                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                else:
+                    # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
+                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
+
+            if compt == 'fruit_size' or compt == 'leaf_size' or compt == 'leaf_color' or compt == 'branch':
+                cur = db.query('SELECT min FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
+                collecting_data = cur.fetchone()
+                order = int(d[attr[compt]]) - int(collecting_data['min'])
+                if oeder > 15: oeder = 15 # set restrictions
+                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';'
+                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
+
+    db.conn.commit()
+
+
+def one_contact(request):
+    data = []
+    final_structure = dict()
+    db = DB()
+    # table = request.GET.get('contact')
+    print request.GET['contact']
+    if request.GET.get('contact'):
+        list_request = request.GET['contact'].split(":-")
+        print "================================"
+        
+        attr = json.loads(list_request[0])
+        ego_info = json.loads(list_request[1])
+        ego_group = list_request[2]
+        table = list_request[3]
+        print attr
+        print ego_info
+        print ego_group
+        print table
+        # print request.GET['contact']
+        # print ego_info
+        if ego_group == "all":
+            print "in all"
+            for e in ego_info:
+                precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + e + '";')
+                all_data = precur.fetchall()
+                set_default_mapping(all_data, table, attr)
+
+            for e in ego_info:
+                precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + e + '";')
+                all_data = precur.fetchall()
+                cur = db.query('SELECT `alter` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
+                stick_unique = cur.fetchone()["alter"]
+                cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
+                branch_layer = int(cur.fetchone()["attr_range"])
+
+                if stick_unique == '1':
+                    print "in_unique"
+                    one_structure = unique_stick(all_data, attr, branch_layer)
+
+                else:
+                    print "in_duplicate"
+                    one_structure = duplicate_stick(all_data, attr, branch_layer)
+
+                final_structure["all"] = dict()
+                final_structure["all"][e] = one_structure
+
+        else:
+            print "in else"
+            # for e in ego_info:
+            #     for sub in ego_info[e]:
+            #         precur = db.query('SELECT * FROM ' + table + ' WHERE dataset="' + sub + '" and egoid="' + e + '";')
+            #         all_data = precur.fetchall()
+            #         set_default_mapping(all_data, table, attr)
+            #     print "done update"
+            for e in ego_info:
+                for sub in ego_info[e]:
+                    precur = db.query('SELECT * FROM ' + table + ' WHERE dataset="' + sub + '" and egoid="' + e + '";')
+                    all_data = precur.fetchall()
+                    cur = db.query('SELECT `alter` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
+                    stick_unique = cur.fetchone()["alter"]
+                    cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
+                    branch_layer = int(cur.fetchone()["attr_range"])
+
+                    if stick_unique == '1':
+                        print "in_unique"
+                        one_structure = unique_stick(all_data, attr, branch_layer)
+
+                    else:
+                        print "in_duplicate"
+                        one_structure = duplicate_stick(all_data, attr, branch_layer)
+
+                    final_structure[sub] = dict()
+                    final_structure[sub][e] = one_structure
+
+    else:
+        raise Http404
+    
+    return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
+    print return_json
+    return HttpResponse(return_json)
+
+
+
+############################ old code #################################
 # rewrite
 def list_author(request):
     a_list = []
@@ -476,9 +749,9 @@ def list_author(request):
         # print a_list
     else:
         raise Http404
-    json = simplejson.dumps(a_list, indent=4, use_decimal=True)
+    return_json = simplejson.dumps(a_list, indent=4, use_decimal=True)
     # print json
-    return HttpResponse(json)
+    return HttpResponse(return_json)
   
 
 def query_list_author(single, area, total):
@@ -580,11 +853,11 @@ def update_contact(request):
     else:
         raise Http404
         # raise Http404
-    json = simplejson.dumps(final_data, indent=4, use_decimal=True)
+    return_json = simplejson.dumps(final_data, indent=4, use_decimal=True)
     # print json
     # print "in show: %s" % species
     # json = "this is what I got "+ species
-    return HttpResponse(json)
+    return HttpResponse(return_json)
 
 
 def get_country(request):
@@ -603,9 +876,9 @@ def get_country(request):
                 # print final_structure
     else:
         raise Http404
-    myjson = simplejson.dumps(final_structure, indent=4, use_decimal=True)
+    return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
     
-    return HttpResponse(myjson)
+    return HttpResponse(return_json)
 
 
 def create_inter_structure(attr, data):
@@ -843,54 +1116,6 @@ def create_inter_structure(attr, data):
     return structure
 
 
-def one_contact(request):
-    data = []
-    final_structure = dict()
-    sub_structure = dict()
-    # table = request.GET.get('contact')
-    # print request.GET['contact']
-    # attr = ["sex", "age", "yrknown", "feel", "howlong", "like"]
-    if request.GET.get('contact'):
-        attr = json.loads(request.GET['contact'].split("&")[0])
-        ego_info = json.loads(request.GET['contact'].split("&")[1])
-        ego_group = request.GET['contact'].split("&")[2]
-        # print request.GET['contact']
-        # print ego_info
-        for y in range(2, len(ego_info)):
-            diary_table = ego_info[0] + "_" + ego_info[y]
-            # print diary_table
-            # filename = "./contact_tree/data/" + ego_info[0] + "/" + ego_info[0] + "_" + ego_info[y] + ".csv"
-            # print filename
-            # print ego_info[y]
-            # print ego_info[y]
-            d = create_json_sql(diary_table, ego_info[1], attr)
-            # print d
-            # d = create_diary_json(filename, ego_info[1])
-            # data.append(d)
-            if ego_info[y] in sub_structure:
-                sub_structure[ego_info[y]][ego_info[1]] = d
-            else:
-                sub_structure[ego_info[y]] = dict()
-                sub_structure[ego_info[y]][ego_info[1]] = d
-
-        for d in sub_structure:
-            final_structure[d] = dict()
-            for sub in sub_structure[d]:
-                final_structure[d][sub] = sub_structure[d][sub]
-            
-        # json = simplejson.dumps(data, indent=4, use_decimal=True)
-        # print json
-    else:
-        raise Http404
-        # raise Http404
-    # json = simplejson.dumps(data, indent=4, use_decimal=True)
-    json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
-    # print json
-    # print "in show: %s" % species
-    # json = "this is what I got "+ species
-    return HttpResponse(json)
-
-
 # not be used
 def create_diary_json(fn, ego):
     diary = csv.reader(open(fn, 'rU'), delimiter='\t')
@@ -1008,16 +1233,16 @@ def change_attr(request):
             data.append(a)
         global attr
         attr = data
-        # json = simplejson.dumps(data, indent=4, use_decimal=True)
+        # return_json = simplejson.dumps(data, indent=4, use_decimal=True)
         # print json
     else:
         raise Http404
         # raise Http404
-    json = simplejson.dumps("", indent=4, use_decimal=True)
+    return_json = simplejson.dumps("", indent=4, use_decimal=True)
     # print json
     # print "in show: %s" % species
     # json = "this is what I got "+ species
-    return HttpResponse(json)
+    return HttpResponse(return_json)
     
 #not use
 def test(request):
