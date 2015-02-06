@@ -20,7 +20,7 @@ var LabelView = Backbone.View.extend({
         // selecting_label
         self.label_selected = self.model.get("selected_egos");
         self.label_display = self.model.get("display_egos");
-
+        var group = self.model.get("dataset_group");
         // self.label_selected = self.model.get("selected_egos");
 
         var my_mode = self.model.get("view_mode");
@@ -30,7 +30,7 @@ var LabelView = Backbone.View.extend({
         var label = document.getElementById("selecting_label");
         label.innerHTML = my_mode;
         var label_btn = document.getElementById("selecting_ego");
-        if(my_mode != "diary"){
+        if(group != "all"){
             
             for(s in self.label_selected){
                 var opt = document.createElement("div");
@@ -116,7 +116,7 @@ var LabelView = Backbone.View.extend({
             this.set_label_event(my_mode);
         }
 
-        // else if(my_mode == "DBLP"){
+        // no sub dataset
         else{
             for(s in self.label_selected){
                 var gen_id = "";
@@ -151,14 +151,8 @@ var LabelView = Backbone.View.extend({
                 opt_btn.id = "label_" + gen_id;
                 opt_btn.value = gen_id;
                 opt_btn.name = s;
-                if(my_mode == "inter"){
-                    opt_btn.innerHTML = countries_label[s];
-                }
-                else{
-                    opt_btn.innerHTML = s;
-                }
+                opt_btn.innerHTML = "EGO " + s;
                 
-
                 opt.appendChild(opt_btn);
                 
                 opt.appendChild(remove_btn);
