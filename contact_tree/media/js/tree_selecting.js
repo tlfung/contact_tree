@@ -211,7 +211,11 @@ var SelectingView = Backbone.View.extend({
                     $("#sub_selection").append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + ego_subgroup[s] + '" id="' + ego_subgroup[s] + '">' + ego_subgroup[s] + '</label>');            
                 $("#sub_selection").append("<p></p>");
             }
+            var now_attr = JSON.stringify(self.model.get("attribute"));
+            var now_mode = self.model.get("view_mode");
 
+            var requst = now_attr + ":-" + self.my_ego + ":-" + now_mode;
+            self.model.update_data(requst);
             // button click event
             $("#submit_ego").click(function(){ // store selecting data
                 var now_attr = JSON.stringify(self.model.get("attribute"));
@@ -241,7 +245,7 @@ var SelectingView = Backbone.View.extend({
                 self.model.query_data(requst);
 
                 self.my_ego_selected[self.my_ego] = select_ego;
-                
+
                 display.push(select_ego[total-1]);
                 self.my_ego_display[self.my_ego] = display;
                 
@@ -252,6 +256,7 @@ var SelectingView = Backbone.View.extend({
                 self.model.set({"canvas_scale":0.15});
                 self.model.trigger('change:display_egos');
                 self.model.trigger('change:selected_egos');
+
                 $( "#menu_dialog" ).dialog( "close" );
             });
         }
@@ -281,6 +286,7 @@ var SelectingView = Backbone.View.extend({
             // querying
             self.my_ego = checked_ego;
             opt_change(checked_ego);
+            
             // $('.ego_checkbox:checked').prop('checked', false); // dont know
         });
     }

@@ -8,6 +8,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 urlpatterns = patterns('',
     (r'^$', view.index),
     (r'^get_contact/$', query.one_contact),
+    (r'^get_update/$', query.one_contact_update),
     (r'^update_contact/$', query.update_contact),
     (r'^dblp_list/$', query.list_author),
     (r'^one_author/$', query.one_author),

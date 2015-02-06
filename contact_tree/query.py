@@ -15,6 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 import hashlib
 import operator
 import json
+import math
 
 warnings.filterwarnings(action='ignore', category=MySQLdb.Warning)
 
@@ -313,7 +314,6 @@ def csv2mysql(fn, table):
     print 'Analyzing column types ...'
     col_types = get_col_types(fn)
     # print col_types
-
     header = None
     for row in csv.reader(open(fn)):
         if header:
@@ -610,7 +610,7 @@ def duplicate_stick(all_data, attr, branch_layer):
 
 
 def set_default_mapping(all_data, table, attr):
-    print "set_default_mapping"
+    # print "set_default_mapping"
     db = DB()
     for d in all_data:
         for compt in attr:
@@ -626,25 +626,26 @@ def set_default_mapping(all_data, table, attr):
                     db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
 
             if compt == 'fruit_size' or compt == 'leaf_size' or compt == 'leaf_color' or compt == 'branch':
-                cur = db.query('SELECT min FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
-                collecting_data = cur.fetchone()
-                order = int(d[attr[compt]]) - int(collecting_data['min'])
-                if oeder > 15: oeder = 15 # set restrictions
-                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';'
-                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                cur1 = db.query('SELECT min FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
+                collecting_data = cur1.fetchone()
+                
+                reorder = int(d[attr[compt]]) - int(collecting_data['min'])
+                if reorder > 15:
+                    reorder = 15 # set restrictions
+                
+                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=' + str(reorder) + ' WHERE e_id=' + str(d['e_id']) + ';'
+                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(reorder) + ' WHERE e_id=' + str(d['e_id']) + ';')
 
     db.conn.commit()
 
 
 def one_contact(request):
-    data = []
     final_structure = dict()
     db = DB()
     # table = request.GET.get('contact')
-    print request.GET['contact']
+    # print request.GET['contact']
     if request.GET.get('contact'):
         list_request = request.GET['contact'].split(":-")
-        print "================================"
         
         attr = json.loads(list_request[0])
         ego_info = json.loads(list_request[1])
@@ -657,12 +658,6 @@ def one_contact(request):
         # print request.GET['contact']
         # print ego_info
         if ego_group == "all":
-            print "in all"
-            for e in ego_info:
-                precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + e + '";')
-                all_data = precur.fetchall()
-                set_default_mapping(all_data, table, attr)
-
             for e in ego_info:
                 precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + e + '";')
                 all_data = precur.fetchall()
@@ -672,24 +667,17 @@ def one_contact(request):
                 branch_layer = int(cur.fetchone()["attr_range"])
 
                 if stick_unique == '1':
-                    print "in_unique"
+                    # print "in_unique"
                     one_structure = unique_stick(all_data, attr, branch_layer)
 
                 else:
-                    print "in_duplicate"
+                    # print "in_duplicate"
                     one_structure = duplicate_stick(all_data, attr, branch_layer)
 
                 final_structure["all"] = dict()
                 final_structure["all"][e] = one_structure
 
         else:
-            print "in else"
-            # for e in ego_info:
-            #     for sub in ego_info[e]:
-            #         precur = db.query('SELECT * FROM ' + table + ' WHERE dataset="' + sub + '" and egoid="' + e + '";')
-            #         all_data = precur.fetchall()
-            #         set_default_mapping(all_data, table, attr)
-            #     print "done update"
             for e in ego_info:
                 for sub in ego_info[e]:
                     precur = db.query('SELECT * FROM ' + table + ' WHERE dataset="' + sub + '" and egoid="' + e + '";')
@@ -700,11 +688,11 @@ def one_contact(request):
                     branch_layer = int(cur.fetchone()["attr_range"])
 
                     if stick_unique == '1':
-                        print "in_unique"
+                        # print "in_unique"
                         one_structure = unique_stick(all_data, attr, branch_layer)
 
                     else:
-                        print "in_duplicate"
+                        # print "in_duplicate"
                         one_structure = duplicate_stick(all_data, attr, branch_layer)
 
                     final_structure[sub] = dict()
@@ -714,9 +702,31 @@ def one_contact(request):
         raise Http404
     
     return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
-    print return_json
+    # print return_json
     return HttpResponse(return_json)
 
+
+def one_contact_update(request):
+    db = DB()
+    # table = request.GET.get('contact')
+    # print request.GET['contact']
+    if request.GET.get('contact'):
+        list_request = request.GET['contact'].split(":-")
+        
+        attr = json.loads(list_request[0])
+        ego = list_request[1]
+        table = list_request[2]
+
+        precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + ego + '";')
+        all_data = precur.fetchall()
+        set_default_mapping(all_data, table, attr)
+
+    else:
+        raise Http404
+    
+    return_json = simplejson.dumps(table, indent=4, use_decimal=True)
+    # print return_json
+    return HttpResponse(return_json)
 
 
 ############################ old code #################################

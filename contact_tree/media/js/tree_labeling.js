@@ -28,7 +28,7 @@ var LabelView = Backbone.View.extend({
         $("#selecting_ego").empty();
 
         var label = document.getElementById("selecting_label");
-        label.innerHTML = my_mode;
+        label.innerHTML = all_tree;
         var label_btn = document.getElementById("selecting_ego");
         if(group != "all"){
             
