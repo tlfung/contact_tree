@@ -16,7 +16,7 @@ var ControlView = Backbone.View.extend({
         this.model.bind('change:fruit_scale', this.update_tabs);
         this.model.bind('change:sub_leaf_len_scale', this.update_tabs);
         this.model.bind('change:dtl_branch_curve', this.update_tabs);
-        this.model.bind('change:abt_branch_curve', this.update_tabs);
+        // this.model.bind('change:abt_branch_curve', this.update_tabs);
         
         $("#save").click(function(){
             window.location.href = drawing_canvas.main_canvas.toDataURL().replace('image/png','image/octet-stream');
@@ -53,7 +53,7 @@ var ControlView = Backbone.View.extend({
             self.model.set({"fruit_scale":3});
             self.model.set({"sub_leaf_len_scale":1});
             self.model.set({"dtl_branch_curve":1});
-            self.model.set({"abt_branch_curve":1});
+            // self.model.set({"abt_branch_curve":1});
             self.model.set({"root_curve":0});
             self.model.set({"root_len_scale":1});
             self.model.set({"canvas_translate":[0, 0]});
@@ -102,7 +102,7 @@ var ControlView = Backbone.View.extend({
             self.model.set({"fruit_scale":3});
             self.model.set({"sub_leaf_len_scale":1});
             self.model.set({"dtl_branch_curve":1});
-            self.model.set({"abt_branch_curve":1});
+            // self.model.set({"abt_branch_curve":1});
             self.model.set({"root_curve":0});
             self.model.set({"root_len_scale":1});
             self.model.set({"canvas_translate":[0, 0]});
@@ -329,7 +329,7 @@ var ControlView = Backbone.View.extend({
         var f_scale = self.model.get("fruit_scale");
         var len_scale = self.model.get("sub_leaf_len_scale");
         var dtl_b_curve = self.model.get("dtl_branch_curve");
-        var abt_b_curve = self.model.get("abt_branch_curve");
+        // var abt_b_curve = self.model.get("abt_branch_curve");
         var r_curve = self.model.get("root_curve");
         var r_len = self.model.get("root_len_scale");
         $( "#dtl_box" ).tabs({ activate: function(event ,ui){

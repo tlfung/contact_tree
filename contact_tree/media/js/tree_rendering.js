@@ -1693,6 +1693,16 @@ var RenderingView = Backbone.View.extend({
         var self = this;
         // console.log("branch_r", num_alter);
         var stick_scale = 0;
+        stick_scale = num_alter/15;
+        if(num_alter < 15){
+            stick_scale = 1/1.5;
+        }
+        else{
+            if(stick_scale < 1){
+                stick_scale = 1;
+            }
+        }
+        /*
         if(this.view == "diary" || this.view == "inter"){
             stick_scale = num_alter/20;//1.7;
             if(stick_scale < 1){
@@ -1712,6 +1722,7 @@ var RenderingView = Backbone.View.extend({
             }
             
         }
+        */
         var stick_width = num_alter/stick_scale;
         // end point
         var tree_rstpoint = [0, 0, 0, 0];

@@ -1,6 +1,6 @@
 var Tree_Model = Backbone.Model.extend({
 	defaults: {
-	    egos_data: {},
+	    // egos_data: {},
 	    // dblp_data: {},
 	    selected_egos: {},
 	    display_egos: {},
@@ -34,7 +34,7 @@ var Tree_Model = Backbone.Model.extend({
 	    root_len_scale: 1,
 	    sub_leaf_len_scale: 1,
 	    dtl_branch_curve: 1,
-	    abt_branch_curve: 1,
+	    // abt_branch_curve: 1,
 
 	    canvas_grid: [],
 	    info_table: {},
