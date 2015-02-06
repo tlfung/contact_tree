@@ -125,7 +125,7 @@ var ZoomView = Backbone.View.extend({
             else{
                 // self.model.set({"moving": 0});
                 if(self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)] != -1){
-                    // console.log("whywhywhy", self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)]);
+                    // console.log("Display Info:", self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)]);
                     if(self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[0] == "leaf"){
                         self.model.set({"clicking_leaf":self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1]});
                         self.writeNote(Math.round(mousePos.x), Math.round(mousePos.y), self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1]);
@@ -156,7 +156,7 @@ var ZoomView = Backbone.View.extend({
                 
                 // console.log("##########(", mousePos.x, mousePos.y, ")############", self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)]);
                 if(self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)] != -1){
-                    console.log("whywhywhy", self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)]);
+                    // console.log("Display Info:", self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)]);
                     
                     if(self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[0] == "leaf"){
                         // console.log("-----leaf id:", self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("+").pop());

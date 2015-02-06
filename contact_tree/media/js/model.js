@@ -18,6 +18,7 @@ var Tree_Model = Backbone.Model.extend({
 	    component: [],
 	    attribute_info: {},
 	    dataset_group: "all",
+	    stick_unique: "",
 
 	    fruit_control: 1,
 	    tree_data: {},

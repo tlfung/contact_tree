@@ -21,8 +21,6 @@ var RenderingView = Backbone.View.extend({
         this.model.bind('change:fruit_scale', this.redraw);
         this.model.bind('change:sub_leaf_len_scale', this.redraw);
         this.model.bind('change:dtl_branch_curve', this.redraw);
-        this.model.bind('change:abt_branch_curve', this.redraw);
-        this.model.bind('change:abt_branch_curve', this.redraw);
         this.model.bind('change:root_curve', this.redraw);
         this.model.bind('change:root_len_scale', this.redraw);
         this.model.bind('change:clicking_leaf', this.redraw);
@@ -1896,6 +1894,9 @@ var RenderingView = Backbone.View.extend({
             var point_in_canvas = [ (tree_rstpoint[begin_index[long_stick][0]]*this.scale) + this.translate_point[0], (tree_rstpoint[begin_index[long_stick][1]]*this.scale) + this.translate_point[1]];
             var stick_vector = [extra_slope[long_stick][0]/stick_len, extra_slope[long_stick][1]/stick_len];
             
+            var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"] + "#" + long_stick;
+            
+            /*
             // var hash = alters[long_stick][n]["id"]
             if(self.view == "inter"){
                 // var hash_index_id = alters[short_stick][count_short_stick]["id"] + "#" + short_stick;
@@ -1904,6 +1905,7 @@ var RenderingView = Backbone.View.extend({
             else{
                 var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"];
             }
+            */
             
             /*
             for(var i = 0; i < Math.round(stick_len*this.scale); i++){
@@ -1950,7 +1952,24 @@ var RenderingView = Backbone.View.extend({
             // var stick_leaf = this.draw_leaf(long_stick, alters[long_stick][n], leaf_line[long_stick], stick_m[long_stick], start_point, stick_v[long_stick]);
             sub_total_leaf += stick_leaf;
 
+            if(!jQuery.isEmptyObject(alters[long_stick][n])){
+                var hash_index_id = alters[long_stick][n]["id"] + "#" + long_stick;
+                if(this.subyear in this.hash_table){
+                    this.hash_table[this.subyear][hash_index_id] = [alters[long_stick][n]["id"], stick_leaf, alters[long_stick][n]["fruit"], layer+1, long_stick];
+                    
+                    // if(hash_index_id in this.hash_table[this.subyear]){}
+                    // else{
+                    //     this.hash_table[this.subyear][hash_index_id] = [alters[long_stick][n]["id"], stick_leaf, alters[long_stick][n]["fruit"], layer+1, long_stick];
+                    // } 
+                }
+                else{
+                    this.hash_table[this.subyear] = {};
+                    this.hash_table[this.subyear][hash_index_id] = [alters[long_stick][n]["id"], stick_leaf, alters[long_stick][n]["fruit"], layer+1, long_stick];
+                }
+            }
 
+
+            /*
             if(self.view == "inter" && !jQuery.isEmptyObject(alters[long_stick][n])){
                 var hash_index_id = alters[long_stick][n]["id"] + "#" + long_stick;
                 if(this.subyear in this.hash_table){
@@ -1980,15 +1999,8 @@ var RenderingView = Backbone.View.extend({
                 }
 
             }
+            */
             
-            // fruit
-            var attr = self.model.get("attribute");
-            // var draw_fruit = data_range[this.view][attr.fruit][1];
-            // if(alters[long_stick][n]["fruit"] == draw_fruit){
-            //     // this.tree_fruit(this.context, fruit_pos[long_stick][0], fruit_pos[long_stick][1]);
-            // }
-
-
             // short stick
             if(stick_pos[short_stick][count_short_stick] == n){
                 // this.tree_fruit(this.context, fruit_pos[short_stick][0], fruit_pos[short_stick][1], alters[short_stick][count_short_stick]["fruit"]);
@@ -2008,7 +2020,8 @@ var RenderingView = Backbone.View.extend({
                 var stick_len = Math.sqrt( Math.pow(extra_slope[short_stick][0],2) + Math.pow(extra_slope[short_stick][1],2) );
                 var point_in_canvas = [ (tree_rstpoint[begin_index[short_stick][0]]*this.scale) + this.translate_point[0], (tree_rstpoint[begin_index[short_stick][1]]*this.scale) + this.translate_point[1]];
                 var stick_vector = [extra_slope[short_stick][0]/stick_len, extra_slope[short_stick][1]/stick_len];
-                
+                var set_alter_id = this.subyear + "_" + alters[short_stick][count_short_stick]["id"] + "#" + short_stick;
+                /*
                 // var hash = alters[short_stick][n]["id"]
                 if(self.view == "inter"){
                     var set_alter_id = this.subyear + "_" + alters[short_stick][count_short_stick]["id"] + "#" + short_stick;
@@ -2016,6 +2029,7 @@ var RenderingView = Backbone.View.extend({
                 else{
                     var set_alter_id = this.subyear + "_" + alters[short_stick][count_short_stick]["id"];
                 }
+                */
                 
                 
                 if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
@@ -2036,6 +2050,22 @@ var RenderingView = Backbone.View.extend({
                 }
                 sub_total_leaf += stick_leaf;
 
+                if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
+                    var hash_index_id = alters[short_stick][count_short_stick]["id"] + "#" + short_stick;
+                    if(this.subyear in this.hash_table){
+                        this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
+                        
+                        // if(hash_index_id in this.hash_table[this.subyear]){}
+                        // else{
+                        //     this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
+                        // } 
+                    }
+                    else{
+                        this.hash_table[this.subyear] = {};
+                        this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
+                    }
+                }
+                /*
                 if(self.view == "inter" && !jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
                     var hash_index_id = alters[short_stick][count_short_stick]["id"] + "#" + short_stick;
                     if(this.subyear in this.hash_table){
@@ -2063,7 +2093,7 @@ var RenderingView = Backbone.View.extend({
                         this.hash_table[this.subyear][alters[short_stick][count_short_stick]["id"]] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
                     }
                 }
-                 
+                */                 
 
 
                 // if(alters[short_stick][count_short_stick]["fruit"] > draw_fruit){
@@ -2158,8 +2188,17 @@ var RenderingView = Backbone.View.extend({
 
     draw_left_branch: function(layer, num_alter, alters){
         var self = this;
-        // console.log("branch_l", num_alter);
         var stick_scale = 0;
+        stick_scale = num_alter/15;
+        if(num_alter < 15){
+            stick_scale = 1/1.5;
+        }
+        else{
+            if(stick_scale < 1){
+                stick_scale = 1;
+            }
+        }
+        /*
         if(this.view == "diary" || this.view == "inter"){
             stick_scale = num_alter/30;//1.7;
             if(stick_scale < 1){
@@ -2179,6 +2218,7 @@ var RenderingView = Backbone.View.extend({
             }
             
         }
+        */
         var stick_width = num_alter/stick_scale;
         // end point
         var tree_lstpoint = [0, 0, 0, 0];
@@ -2339,13 +2379,15 @@ var RenderingView = Backbone.View.extend({
             var stick_len = Math.sqrt( Math.pow(extra_slope[long_stick][0],2) + Math.pow(extra_slope[long_stick][1],2) );
             var point_in_canvas = [ (tree_lstpoint[begin_index[long_stick][0]]*this.scale) + this.translate_point[0], (tree_lstpoint[begin_index[long_stick][1]]*this.scale) + this.translate_point[1]];
             var stick_vector = [extra_slope[long_stick][0]/stick_len, extra_slope[long_stick][1]/stick_len];
-            
+            var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"] + "#" + long_stick;
+            /*
             // var hash = alters[long_stick][n]["id"]
             if(self.view == "inter")
                 var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"] + "#" + long_stick;
             else
                 var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"];
-            
+            */
+
             if(!jQuery.isEmptyObject(alters[long_stick][n])){
                 for(var i = 0; i < Math.round(stick_len*this.scale); i++){
                     var p_index = [Math.round((point_in_canvas[0]+stick_vector[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+stick_vector[1]*i)/self.c_detail)];
@@ -2370,7 +2412,24 @@ var RenderingView = Backbone.View.extend({
             }
             // var stick_leaf = this.draw_leaf(long_stick, alters[long_stick][n], leaf_line[long_stick], stick_m[long_stick], start_point, stick_v[long_stick]);
             sub_total_leaf += stick_leaf;
-            
+
+            if(!jQuery.isEmptyObject(alters[long_stick][n])){
+                var hash_index_id = alters[long_stick][n]["id"] + "#" + long_stick;
+                
+                if(this.subyear in this.hash_table){
+                    this.hash_table[this.subyear][hash_index_id] = [alters[long_stick][n]["id"], stick_leaf, alters[long_stick][n]["fruit"], layer+1, long_stick];
+                    // if(hash_index_id in this.hash_table[this.subyear]){}
+                    // else{
+                    //     this.hash_table[this.subyear][hash_index_id] = [alters[long_stick][n]["id"], stick_leaf, alters[long_stick][n]["fruit"], layer+1, long_stick];
+                    // } 
+                }
+                else{
+                    this.hash_table[this.subyear] = {};
+                    this.hash_table[this.subyear][hash_index_id] = [alters[long_stick][n]["id"], stick_leaf, alters[long_stick][n]["fruit"], layer+1, long_stick];
+                }
+               
+            }
+            /*
             if(self.view == "inter" && !jQuery.isEmptyObject(alters[long_stick][n])){
                 var hash_index_id = alters[long_stick][n]["id"] + "#" + long_stick;
                 
@@ -2404,6 +2463,7 @@ var RenderingView = Backbone.View.extend({
                     this.hash_table[this.subyear][alters[long_stick][n]["id"]] = [alters[long_stick][n]["id"], stick_leaf, alters[long_stick][n]["fruit"], layer+1, long_stick];
                 }
             }
+            */
             
             
             // fruit
@@ -2437,13 +2497,15 @@ var RenderingView = Backbone.View.extend({
                 var stick_len = Math.sqrt( Math.pow(extra_slope[short_stick][0],2) + Math.pow(extra_slope[short_stick][1],2) );
                 var point_in_canvas = [ (tree_lstpoint[begin_index[short_stick][0]]*this.scale) + this.translate_point[0], (tree_lstpoint[begin_index[short_stick][1]]*this.scale) + this.translate_point[1]];
                 var stick_vector = [extra_slope[short_stick][0]/stick_len, extra_slope[short_stick][1]/stick_len];
-                
+                var set_alter_id = this.subyear + "_" + alters[short_stick][count_short_stick]["id"] + "#" + short_stick;
+                /*
                 // var hash = alters[short_stick][n]["id"]
                 if(self.view == "inter")
                     var set_alter_id = this.subyear + "_" + alters[short_stick][count_short_stick]["id"] + "#" + short_stick;
                 else
                     var set_alter_id = this.subyear + "_" + alters[short_stick][count_short_stick]["id"];
-                
+                */
+
                 if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
                     for(var i = 0; i < Math.round(stick_len*this.scale); i++){
                         var p_index = [Math.round((point_in_canvas[0]+stick_vector[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+stick_vector[1]*i)/self.c_detail)];
@@ -2463,7 +2525,23 @@ var RenderingView = Backbone.View.extend({
                 // var stick_leaf = this.draw_leaf(short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
                 sub_total_leaf += stick_leaf;
 
-                                
+                if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
+                    var hash_index_id = alters[short_stick][count_short_stick]["id"] + "#" + short_stick;                    
+                    if(this.subyear in this.hash_table){
+                        this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
+                        // if(hash_index_id in this.hash_table[this.subyear]){}
+                        // else{
+                        //     this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
+                        // } 
+                    }
+                    else{
+                        this.hash_table[this.subyear] = {};
+                        this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
+                    }
+                
+                }
+
+                /*             
                 if(self.view == "inter" && !jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
                     var hash_index_id = alters[short_stick][count_short_stick]["id"] + "#" + short_stick;                    
                     if(this.subyear in this.hash_table){
@@ -2491,7 +2569,7 @@ var RenderingView = Backbone.View.extend({
                         this.hash_table[this.subyear][alters[short_stick][count_short_stick]["id"]] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
                     }  
                 }
-                
+                */
                 // if(alters[short_stick][count_short_stick]["fruit"] > draw_fruit){
                 //     this.tree_fruit(this.context, fruit_pos[short_stick][0], fruit_pos[short_stick][1]);
                 // }
@@ -2792,10 +2870,12 @@ var RenderingView = Backbone.View.extend({
 
             }
 
-            var set_alter_id = this.subyear + "_" + alter["id"];
+            // var set_alter_id = this.subyear + "_" + alter["id"];
+            var set_alter_id = this.subyear + "_" + alter["id"] + "#" + side;
+            /*
             if(self.view == "inter")
                 set_alter_id = this.subyear + "_" + alter["id"] + "#" + side;
-            
+            */
             if(g<len){
                 // control middle stick by ori_m
                 this.context.beginPath();
