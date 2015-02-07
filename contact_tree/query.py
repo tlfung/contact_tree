@@ -651,10 +651,7 @@ def one_contact(request):
         ego_info = json.loads(list_request[1])
         ego_group = list_request[2]
         table = list_request[3]
-        print attr
-        print ego_info
-        print ego_group
-        print table
+        
         # print request.GET['contact']
         # print ego_info
         if ego_group == "all":

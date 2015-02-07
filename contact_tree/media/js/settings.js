@@ -10,7 +10,8 @@ var drawing_canvas = {
     main_canvas: document.getElementById("c")
 };
 
-var time = ["2004", "2008", "2012"];
+// var time = ["2004", "2008", "2012"];
+// var time = [];
 var sub_ego = [];
 
 // var total_ego = {
@@ -19,10 +20,11 @@ var sub_ego = [];
 //     "2012": ["1", "15", "23", "33", "34", "36", "43", "46", "52", "57", "59", "60"]
 // };
 
-var international_countries = ["be", "de", "fi", "gb", "id", "it", "lu", "nl", "pl", "th", "tw", "vn"];
+// var international_countries = ["be", "de", "fi", "gb", "id", "it", "lu", "nl", "pl", "th", "tw", "vn"];
 
 var total_ego = {};
 
+/*
 var mapping_item = {
     "diary": ["alterid", "sex", "age", "yrknown", "feel", "howlong", "like", "month"],
     "DBLP": ["coauthor", "co_area_cat", "first_cooperation", "total_paper", "paper_year", "paper_authors", "tier1_paper", "area_detail_cat"],
@@ -31,10 +33,12 @@ var mapping_item = {
     // "inter": ["ego", "egosex", "egoage", "altersex", "place", "duration", "ego_education_length", "ego_hhsize"] //(2)
     // "inter": ["ego", "egosex", "egoage", "touch", "place", "duration", "ego_education_length", "ego_hhsize"] //(3)
 };
+*/
 
 var dataset_mode = ["combine_diary", "international"]; //push new dataset
 // var dataset_mode = [];
 
+/*
 var default_attribute = {
     "diary": {
         "stick": "alterid",
@@ -66,10 +70,10 @@ var default_attribute = {
         "fruit": "ego_education_length",
         "root": "place"
     }
-
 };
 
 var default_component = ["stick", "trunk", "branch", "bside", "leaf_color", "leaf_size", "fruit", "root"];
+*/
 
 var mapping_color = {
     // leaf_color: ["#927007", "#CF9D00", "#C2B208", "#699B1A", "#2E7523", "#214E33", "#1F4230", "#184E35", "#19432F"],
@@ -102,13 +106,13 @@ var mapping_color = {
 
 
 var mapping_size = {
-    leaf_size_table: [1, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30],
-    fruit_size_table: [0, 2, 6, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 32]
+    leaf_size_table: [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40],
+    fruit_size_table: [0, 2, 6, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40]
 };
 
 
-var cat_dblp = ["DB", "AI", "Vis", "Arch", "Dist", "Net", "WWW", "OS", "Sec", "PL", "SE", "Theory", "Crypto", "Bio", " "];
-
+// var cat_dblp = ["DB", "AI", "Vis", "Arch", "Dist", "Net", "WWW", "OS", "Sec", "PL", "SE", "Theory", "Crypto", "Bio", " "];
+/*
 var data_range = {
     "diary":{
         "sex": [1, 2],
@@ -148,9 +152,10 @@ var data_range = {
         "ego_education_length": [0, 4, 5]
     }
 };
+*/
 
 // var attribute_info = {};
-
+/*
 var component_attribute = {
     "diary":{
         "stick":["alterid"],
@@ -192,5 +197,6 @@ var component_attribute = {
         "author_root":["area_detail_cat", "paper_area_cat", "co_area_cat", "paper_authors", "paper_tier", "first_cooperation"]
     }
 };
+*/
 
 var initial_grid = [];

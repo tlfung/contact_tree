@@ -15,7 +15,7 @@ var Tree_Model = Backbone.Model.extend({
 
 	    attr_option: [],
 	    attribute: {},
-	    component: [],
+	    // component: [],
 	    attribute_info: {},
 	    dataset_group: "all",
 	    stick_unique: "",
@@ -54,7 +54,7 @@ var Tree_Model = Backbone.Model.extend({
   	initialize: function(args) {
 	    var self = this;
 	    console.log("in model initialize");
-	    self.set({"component": default_component});
+	    // self.set({"component": default_component});
 	    // var c_detail = self.get("canvas_detail")*self.get("canvas_scale");
 	    // self.set({"canvas_detail": c_detail});
 	    // self.set({"attr_option": mapping_item["diary"]});
@@ -127,7 +127,6 @@ var Tree_Model = Backbone.Model.extend({
 
 	        set_ego_list_json(result[0]);
 	        set_default_attr(result[1])
-	        // console.log(total_ego);
 	        var d = self.get("done_query_list");
 	        self.set({"done_query_list": d+1});
 	        self.trigger('change:attribute');        
@@ -193,9 +192,6 @@ var Tree_Model = Backbone.Model.extend({
 		    for(s in sub_request)
 		    	set_diary_json(result, s);
 	      		
-	      	// $("#submit_ego").removeAttr("disabled");
-	      	// $("#submit_ego").text("Done");
-	      	// $('.ego_checkbox').removeAttr("disabled");
 	      	self.trigger('change:tree_structure');
 	      	$("#submit_ego").removeAttr("disabled");
 	      	$( "#menu_dialog" ).dialog( "close" );
@@ -206,6 +202,8 @@ var Tree_Model = Backbone.Model.extend({
 	    
 	},
 
+
+	/************************* old code *********************************/
 	update_query_data: function(request){
 	    var self = this;
 	    var mode = self.get("view_mode");

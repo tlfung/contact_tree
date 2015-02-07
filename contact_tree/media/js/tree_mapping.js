@@ -35,7 +35,7 @@ var MappingView = Backbone.View.extend({
         this.attr_array = [];
         
         this.data_mode = self.model.get("view_mode");
-        this.set_default = default_attribute[this.data_mode];
+        // this.set_default = default_attribute[this.data_mode];
 
         self.set_option();
     },
