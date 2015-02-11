@@ -18,15 +18,19 @@ a:focus{ outline: none; }
 .relative{
   position: relative;
 }
+
 .left{
   float: left;
 }
+
 .right{
   float: right;
 }
+
 .center {
     text-align: center;
 }
+
 .auto_center{
   margin-left:auto;
   margin-right:auto;
@@ -59,6 +63,13 @@ a:focus{ outline: none; }
   border:solid 1;
   border-radius:5;
   background: gray;
+}
+
+.sidekey_map{
+  font-size:18;
+  border:solid 1;
+  border-radius:5;
+  visibility:hidden;
 }
 
 .description_box{

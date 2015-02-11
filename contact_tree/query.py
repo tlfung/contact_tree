@@ -183,7 +183,7 @@ def update_collection_data(table, attr_json):
             cur = db.query('SELECT COUNT(DISTINCT(`' + a + '`)) from ' + table + ' WHERE alterid ="' + str(temp_alter) + '" and egoid="' + str(temp_ego) + '";')
             alter_count = cur.fetchone()
             if alter_count['COUNT(DISTINCT(`' + a + '`))'] == 1:
-                print 'UPDATE dataset_collection SET `alter` = 1 WHERE attr="' + a + '" and dataset="' + table + '";'
+                # print 'UPDATE dataset_collection SET `alter` = 1 WHERE attr="' + a + '" and dataset="' + table + '";'
                 clause.execute('UPDATE dataset_collection SET `alter` = 1 WHERE attr="' + a + '" and dataset="' + table + '";')
 
     database.commit()
@@ -196,7 +196,7 @@ def get_dataset(request):
     if request.GET.get('data'):
         # ./contact_tree/data
         data_table = request.GET.get('data')
-        print "-----", data_table
+        
         cur = db.query("SELECT attr FROM dataset_collection WHERE dataset='" + data_table + "' and attr='dataset';")
         group = cur.fetchone()
         if group:
@@ -359,9 +359,10 @@ def csv2mysql(fn, table):
 ####################################### above is for database #####################################################
 
 def get_list_ego(request):
-    e_list = dict()
     final_return = []
+    e_list = dict()    
     default_attr = dict()
+    cmpt_attr = dict()
     
     db = DB()
     if request.GET.get('table'):
@@ -383,11 +384,11 @@ def get_list_ego(request):
             for e in allego:
                 if e[column] in e_list:
                     e_list[e[column]].append(e[myego])
+                    e_list[e[column]].sort(key=int)
                 else:
                     e_list[e[column]] = []
                     e_list[e[column]].append(e[myego])
                     
-
         final_return.append(e_list)
 
         default_attr["stick"] = "alterid"
@@ -419,6 +420,22 @@ def get_list_ego(request):
         default_attr["leaf_id"] = sort_candidate[-1][0]
 
         final_return.append(default_attr)
+
+        cur = db.query('SELECT * FROM dataset_collection WHERE attr!="dataset" and dataset="' + table + '";')
+        attr_info = cur.fetchall()
+        for info in attr_info:
+            detail_array = []
+            if int(info['attr_range']) < 20:
+                infocur = db.query('SELECT DISTINCT(`' + info['attr'] + '`) FROM ' + table + ';')
+                attr_detail = infocur.fetchall()
+                for d in attr_detail:
+                    detail_array.append(int(d[info['attr']]))
+                detail_array.sort(key=int)
+
+            cmpt_attr[info['attr']] = [detail_array, int(info['min']), int(info['max']), int(info['attr_range']), info['alter']]
+
+        # return the all the infomation of all the attr 
+        final_return.append(cmpt_attr)
 
         # files = glob.glob("contact_tree/data/" + request.GET.get('folder') + "/*.csv")
         # for fn in files:
@@ -726,6 +743,168 @@ def one_contact_update(request):
     return HttpResponse(return_json)
 
 
+def update_binary(request):
+    database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
+    clause = database.cursor()
+    # table = request.GET.get('contact')
+    # print request.GET['contact']
+    if request.GET.get('update'):
+        list_request = request.GET['update'].split(":=")[0].split(":-")
+        select_ego = request.GET['update'].split(":=")[1:]
+        print list_request
+        # select_ego = json.loads(list_request[0])
+        table = list_request[0]
+        ori_column = list_request[2]
+        new_column = list_request[1]
+        zero_val = list_request[3:]
+        print select_ego
+        print ori_column
+        print new_column
+        print zero_val
+
+        update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE (" + ori_column + "=" + zero_val[0]
+        update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE (" + ori_column + "!=" + zero_val[0]
+        for zero in zero_val[1:]:
+            update_query_zero += " OR " + ori_column + "=" + zero
+            update_query_one += " AND " + ori_column + "!=" + zero
+        if len(select_ego) > 0:
+            update_query_zero += ") AND ("
+            update_query_one += ") AND ("
+            for update_ego in select_ego[:-1]:
+                update_query_zero += "egoid=" + update_ego + " OR "
+                update_query_one += "egoid=" + update_ego + " OR "
+
+            update_query_zero += "egoid=" + select_ego[-1] + ");"
+            update_query_one += "egoid=" + select_ego[-1] + ");"     
+        else:
+            update_query_zero += ");"
+            update_query_one += ");"     
+
+        print update_query_zero
+        print update_query_one
+        clause.execute(update_query_zero)
+        clause.execute(update_query_one)
+        database.commit()
+
+    else:
+        raise Http404
+    
+    return_json = simplejson.dumps("done update", indent=4, use_decimal=True)
+    # print return_json
+    return HttpResponse(return_json)
+
+
+def update_layer(request):
+    database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
+    clause = database.cursor()
+    # table = request.GET.get('contact')
+    # print request.GET['contact']
+    if request.GET.get('update'):
+        list_request = request.GET['update'].split(":=")[0].split(":-")
+        select_ego = request.GET['update'].split(":=")[1:]
+        # print list_request
+        # select_ego = json.loads(list_request[0])
+        table = list_request[0]
+        ori_column = list_request[2]
+        new_column = list_request[1]
+        val_map = json.loads(list_request[3])
+        # print select_ego
+        # print ori_column
+        # print new_column
+        # print val_map
+
+        for ori_val in val_map:
+            update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(val_map[ori_val]) + " WHERE " + ori_column + "=" + str(ori_val) + ";"
+            # print update_layer_val
+            clause.execute(update_layer_val)
+
+        database.commit()
+
+    else:
+        raise Http404
+    
+    return_json = simplejson.dumps("done update", indent=4, use_decimal=True)
+    # print return_json
+    return HttpResponse(return_json)
+
+
+def restructure(request):
+    db = DB()
+    # table = request.GET.get('contact')
+    # print request.GET['contact']
+    if request.GET.get('restructure'):
+        list_request = request.GET['restructure'].split(":=")[0].split(":-")
+        ego_info = request.GET['restructure'].split(":=")[1:]
+        # print list_request
+        attr = select_ego = json.loads(list_request[2])
+        table = list_request[0]
+        ego_group = list_request[1]
+        # print select_ego
+        # print attr
+        # print table
+        final_structure = dict()
+
+        if ego_group == "all":
+            for e in ego_info:
+                precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + e + '";')
+                all_data = precur.fetchall()
+                cur = db.query('SELECT `alter` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
+                stick_unique = cur.fetchone()["alter"]
+                cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
+                branch_layer = int(cur.fetchone()["attr_range"])
+
+                if stick_unique == '1':
+                    # print "in_unique"
+                    one_structure = unique_stick(all_data, attr, branch_layer)
+
+                else:
+                    # print "in_duplicate"
+                    one_structure = duplicate_stick(all_data, attr, branch_layer)
+
+                final_structure["all"] = dict()
+                final_structure["all"][e] = one_structure
+
+        else:
+            subcur = db.query('SELECT DISTINCT(' + ego_group + ') FROM ' + table + ';')
+            sub_data = subcur.fetchall()
+            sub_dataset = []
+            for s in sub_data:
+                sub_dataset.append(s[ego_group])
+
+            for e in ego_info:
+                for sub in sub_dataset:
+                    precur = db.query('SELECT * FROM ' + table + ' WHERE dataset="' + sub + '" and egoid="' + e + '";')
+                    all_data = precur.fetchall()
+                    cur = db.query('SELECT `alter` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
+                    stick_unique = cur.fetchone()["alter"]
+                    cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
+                    branch_layer = int(cur.fetchone()["attr_range"])
+
+                    if stick_unique == '1':
+                        # print "in_unique"
+                        one_structure = unique_stick(all_data, attr, branch_layer)
+
+                    else:
+                        # print "in_duplicate"
+                        one_structure = duplicate_stick(all_data, attr, branch_layer)
+
+                    if sub in final_structure:
+                        final_structure[sub][e] = one_structure
+
+                    else:
+                        final_structure[sub] = dict()
+                        final_structure[sub][e] = one_structure
+
+
+    else:
+        raise Http404
+    
+    return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
+    # print return_json
+    return HttpResponse(return_json)
+       
+
+
 ############################ old code #################################
 # rewrite
 def list_author(request):
@@ -843,7 +1022,7 @@ def update_contact(request):
                 # print diary_table
                 d = create_json_sql(diary_table, egos[0], attr)
                 # data[egos[e]] = d
-                # print "--------\n", d[int(egos[0])]
+                
                 if egos[e] in data:
                     # final_data[egos[e]] = dict()
                     # data[egos[e]][egos[0]] = d[int(egos[0])]
@@ -876,7 +1055,7 @@ def get_country(request):
         with open("./contact_tree/data/final_12countries_KL.json", "rb") as json_file:
             raw_data = simplejson.load(json_file)
             for c in countries:
-                # print "---", c, "---"
+                
                 data = raw_data[c]
                 #structure(cmpt_array, data)
                 final_structure[c] = create_inter_structure(attr, data)

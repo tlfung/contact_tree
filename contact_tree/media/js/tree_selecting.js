@@ -32,7 +32,8 @@ var SelectingView = Backbone.View.extend({
             autoOpen: false,
             height: 400,
             width: 550,
-            modal: true
+            modal: true,
+            resizable: false
         });
         $( "#menu" ).click(function() {
             var mode = self.model.get("view_mode");
@@ -111,9 +112,9 @@ var SelectingView = Backbone.View.extend({
                             }
                             $("#group_container").show();
                         };
-                      set_dataset_group(result);
+                        set_dataset_group(result);
                       // dataset_mode
-                  });
+                });
                 
             }
 
@@ -128,7 +129,7 @@ var SelectingView = Backbone.View.extend({
             self.model.set({"dataset_group": ego_group});
             self.model.set({"view_mode":data_selected});
             // self.model.set({"tree_structure":{}});
-            
+            $('#egogroup').attr("disabled", true);
             var label = document.getElementById("selecting_label");
             label.innerHTML = data_selected.toUpperCase().replace("_", " ");
         });
@@ -170,7 +171,7 @@ var SelectingView = Backbone.View.extend({
         var name = "EGO";
         var sub = "";
         var select_ego = [];
-        
+        $('#egogroup').removeAttr("disabled");
         function opt_change(ego){
             // console.log("in opt_function", ego);
             // console.log("in opt_function", self.my_ego_selected);

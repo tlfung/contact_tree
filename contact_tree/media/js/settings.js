@@ -107,9 +107,10 @@ var mapping_color = {
 
 var mapping_size = {
     leaf_size_table: [2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40],
-    fruit_size_table: [0, 2, 6, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40]
+    fruit_size_table: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40]
 };
 
+var component_attribute = {};
 
 // var cat_dblp = ["DB", "AI", "Vis", "Arch", "Dist", "Net", "WWW", "OS", "Sec", "PL", "SE", "Theory", "Crypto", "Bio", " "];
 /*
@@ -155,6 +156,7 @@ var data_range = {
 */
 
 // var attribute_info = {};
+
 /*
 var component_attribute = {
     "diary":{

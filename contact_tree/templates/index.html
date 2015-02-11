@@ -227,40 +227,62 @@
 
     <!-- popup window -->
     <div id="sidekey_dialog" title="Customize Your Tree" class="popup_window_title">
-        <div id="sidekey_img" class="row text-center" style="float:left;  min-width:450px; width:55%; position: relative; border-right:solid 1 gray; overflow-x:auto;">
+        <div id="sidekey_img" class="row text-center" style="float:left;  min-width:400px; width:55%; position: relative; border-right:solid 1 gray; overflow-x:auto;">
             <img src="media/img/real_mix_tree.png" align="left" style="margin-left:20px; height:100%; padding-top:5px;"></img>
-            <div id="stick_label" class="sidekey_label" style="left:3%; top:20%;">
+            <!-- <div id="stick_label" class="sidekey_label" style="left:3%; top:20%;">
                 <span class="sidekey_cmpt">Stick</span>
-            </div>
-            <div id="trunk_label" class="sidekey_label" style="left:40%; top:70%;">
+            </div> -->
+            <div id="trunk_label" class="sidekey_label" style="left:48%; top:70%;">
                 <span class="sidekey_cmpt">Trunk Side</span>
+                <span id="trunk_map" class="sidekey_map">None</span>
             </div>
             <div id="branch_label" class="sidekey_label" style="left:5%; top:57%;">
-                <span class="sidekey_cmpt">Branch Layer</span>
+                <span class="sidekey_cmpt">Branch</span>
+                <span id="branch_map" class="sidekey_map">None</span>
             </div>
-            <div id="bside_label" class="sidekey_label" style="left:12%; top:46%;">
+            <div id="bside_label" class="sidekey_label" style="left:5%; top:46%;">
                 <span class="sidekey_cmpt">Branch Side</span>
+                <span id="bside_map" class="sidekey_map">None</span>
             </div>
-            <div id="root_label" class="sidekey_label" style="left:15%; top:80%;">
+            <div id="root_label" class="sidekey_label" style="left:13%; top:80%;">
                 <span class="sidekey_cmpt">Root</span>
+                <span id="root_map" class="sidekey_map">None</span>
             </div>
-            <div id="leaf_size_label" class="sidekey_label" style="left:50%; top:10%;">
+            <div id="leaf_size_label" class="sidekey_label" style="left:57%; top:9%;">
                 <span class="sidekey_cmpt">Leaf Size</span>
+                <span id="leaf_size_map" class="sidekey_map">None</span>
             </div>
-            <div id="leaf_color_label" class="sidekey_label" style="left:50%; top:14%;">
+            <div id="leaf_color_label" class="sidekey_label" style="left:57%; top:14%;">
                 <span class="sidekey_cmpt">Leaf Color</span>
+                <span id="leaf_color_map" class="sidekey_map">None</span>
             </div>
-            <div id="leaf_highlight_label" class="sidekey_label" style="left:50%; top:18%;">
+            <div id="leaf_highlight_label" class="sidekey_label" style="left:57%; top:19%;">
                 <span class="sidekey_cmpt">Leaf Highlight</span>
+                <span id="leaf_id_map" class="sidekey_map">None</span>
             </div>
-            <div id="fruit_size_label" class="sidekey_label" style="left:50%; top:38%;">
+            <div id="fruit_size_label" class="sidekey_label" style="left:57%; top:38%;">
                 <span class="sidekey_cmpt">Fruit Size</span>
+                <span id="fruit_size_map" class="sidekey_map">None</span>
+            </div>
+
+            <div id="block_layer" class="sidekey_label" style="left:0%; top:0%; width:100%; height:100%; opacity:0; display:none;">
             </div>
         </div>
 
-        <div id="sidekey_selection" style="display:none; width:45%; float:left; margin-top:5px; min-width:430px; overflow-x:auto; position:relative; margin-left:20px;">
+        <div id="sidekey_selection" style="display:none; width:45%; float:left; margin-top:5px; position:relative; margin-left:20px;">
             <div id="sidekey_title" class="myfont3"></div>
-            <div id="sidekey_description" class="myfont3" style="width:100%; height:15%; background: gray;"></div>
+            <div id="sidekey_description" class="myfont3" style="width:100%; height:15%; background: gray; margin-top:10px;"></div>
+            <div class="left" style="width:100%; margin-top:10px;">
+                <span class="left myfont3">Attribute Candidates:</span>
+                <select id="sidekeyselect" class="sidekey_selection" style="width:53%; margin-left:5px;">
+                </select>
+            </div>
+            <div id="sidekey_operation" class="left" style="width:100%; margin-top:10px; display:none;">
+                <span id="mark_group" class="left myfont3"></span><br>
+                <div id="mark_group_select" class="mark_group_checkbox left" style="width:100%; margin-left:5px; max-height:300px; overflow-y:auto;">
+                </div>
+            </div>
+            <button class="btn btn-default right" id="sidekey_submit" style="width:100%; margin-bottom:5px; display:none;">Done</button>
         </div>
         <!-- <div id="warnig_div" class="row" style="margin:0 5px 5px 5px">
             <span id="warnig" class="right myfont2" style="width: 270px; font-size:14; color:red; visibility:hidden;">Warning: You have duplicated mapping attribute!</span>

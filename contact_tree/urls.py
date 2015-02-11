@@ -19,7 +19,10 @@ urlpatterns = patterns('',
     (r'^update_author/$', query.upadte_author),
     (r'^upload_csv/$', query.upload_file),
     (r'^update_collection/$', query.update_collection_data),
-    (r'^collecting_data/$', query.create_csv2database)
+    (r'^collecting_data/$', query.create_csv2database),
+    (r'^update_binary/$', query.update_binary),
+    (r'^update_layer/$', query.update_layer),
+    (r'^update_structure/$', query.restructure)
     # (r'^set_attr/$', query.change_attr)
     # (r'^testing/$', query.test)
 )

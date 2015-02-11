@@ -16,7 +16,8 @@ var Tree_Model = Backbone.Model.extend({
 	    attr_option: [],
 	    attribute: {},
 	    // component: [],
-	    attribute_info: {},
+	    // attribute_info: {},
+	    // component_attribute: {},
 	    dataset_group: "all",
 	    stick_unique: "",
 
@@ -94,7 +95,7 @@ var Tree_Model = Backbone.Model.extend({
 	    var request_url = "datatable/?table="+request;
 	    d3.json(request_url, function(result){
 	        // console.log("in model.query_ego_list");
-	        // console.log(result);
+	        console.log(result);
 	        var set_ego_list_json = function(data){
 	          	total_ego = data;
 	          	var sub_array = [];
@@ -125,8 +126,18 @@ var Tree_Model = Backbone.Model.extend({
 	          	self.set({"attr_option": single_attr});
 	        };
 
+	        var set_attribute_info = function(data){
+	        	var mode = self.get("view_mode");
+	        	component_attribute[mode] = {};
+	        	for(a in data){
+	        		component_attribute[mode][a] = data[a];
+	        	}
+	        };
+
 	        set_ego_list_json(result[0]);
-	        set_default_attr(result[1])
+	        set_default_attr(result[1]);
+	        set_attribute_info(result[2]);
+
 	        var d = self.get("done_query_list");
 	        self.set({"done_query_list": d+1});
 	        self.trigger('change:attribute');        
@@ -161,7 +172,7 @@ var Tree_Model = Backbone.Model.extend({
 	    var mode = self.get("view_mode");
 	    
 	    var request_url = "get_contact/?contact="+request;
-	    console.log(request_url);
+	    // console.log(request_url);
 	    d3.json(request_url, function(result) {
 	      	// console.log("in model.query_one_contact");
 	      	// console.log(result);
@@ -173,7 +184,7 @@ var Tree_Model = Backbone.Model.extend({
 		        tree_structure[mode] = {};
 	      	}
 	      	// var tree_structure = self.get("tree_structure");
-	      	var set_diary_json = function(data, sub){
+	      	var set_structure = function(data, sub){
 	        	for(var d in data){
 	          		if(d in tree_structure[mode]){
 	            		tree_structure[mode][d][sub] = data[d][sub];            
@@ -190,7 +201,7 @@ var Tree_Model = Backbone.Model.extend({
 	      	// var new_attr = JSON.parse(request.split(":-")[0]);
 		    var sub_request = JSON.parse(request.split(":-")[1]);
 		    for(s in sub_request)
-		    	set_diary_json(result, s);
+		    	set_structure(result, s);
 	      		
 	      	self.trigger('change:tree_structure');
 	      	$("#submit_ego").removeAttr("disabled");
