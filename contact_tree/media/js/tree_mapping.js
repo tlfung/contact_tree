@@ -29,8 +29,8 @@ var MappingView = Backbone.View.extend({
 
         // this.model.bind('change:view_mode', this.set_option);
         // this.model.bind('change:attribute', this.set_option);
-        this.model.bind('change:attribute', this.set_component);
         this.model.bind('change:attribute', this.restructure);
+        this.model.bind('change:attribute', this.set_component);        
         
         // this.attribute = self.model.get("attribute");
         // this.myattribute = {};

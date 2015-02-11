@@ -611,7 +611,7 @@ def duplicate_stick(all_data, attr, branch_layer):
     structure["root"] = []
 
     root = attr['root']
-    # stick = "alterid"
+    stick = "alterid"
     leaf_id = attr['leaf_id']
 
     alter_array_right = []
@@ -622,6 +622,144 @@ def duplicate_stick(all_data, attr, branch_layer):
         alter_array_right.append([])
         alter_array_left.append([])
     structure["root"].append({})
+
+    for meeting in all_data:
+        # meeting = c
+        if meeting[root] not in structure["root"][0]:
+            structure["root"][0][meeting[root]] = dict()
+            structure["root"][0][meeting[root]]["length"] = 0
+            structure["root"][0][meeting[root]]["sub"] = [10 for i in range(12)] # may add attribute mapping
+            structure["root"][0][meeting[root]]["root_cat"] = meeting[root]
+            # print structure["root"]
+        else:
+            structure["root"][0][meeting[root]]["length"] += 1
+        # left
+        if meeting['ctree_trunk'] == 0:
+            level = 0
+            new_alter = -1
+            for l in range(branch_layer):
+                # level and up
+                if meeting["ctree_branch"] == l and meeting["ctree_bside"] == 1:
+                    if len(alter_array_left[level]) == 0:
+                        structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
+                        structure["left"][level]["level"]["up"][len(alter_array_left[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                        structure["left"][level]["level"]["down"].append({})
+                        alter_array_left[level].append(meeting[stick])
+
+                    else:
+                        count_alter = 0
+                        for a in alter_array_left[level]:
+                            if meeting[stick] == a:
+                                new_alter = count_alter
+                                break
+                            count_alter += 1
+                        if new_alter == -1:
+                            structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
+                            structure["left"][level]["level"]["up"][len(alter_array_left[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            structure["left"][level]["level"]["down"].append({})
+                            alter_array_left[level].append(meeting[stick])
+                        else:
+                            if is_empty(structure["left"][level]["level"]["up"][new_alter]):
+                                structure["left"][level]["level"]["up"][new_alter] = {"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []}
+                                structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            else:
+                                structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+
+                            # structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+
+                    break
+
+                # level and down
+                elif meeting["ctree_branch"] == l and meeting["ctree_bside"] == 0:
+                    if len(alter_array_left[level]) == 0:
+                        structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
+                        structure["left"][level]["level"]["down"][len(alter_array_left[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                        structure["left"][level]["level"]["up"].append({})
+                        alter_array_left[level].append(meeting[stick])
+                    else:
+                        count_alter = 0
+                        for a in alter_array_left[level]:
+                            if meeting[stick] == a:
+                                new_alter = count_alter
+                                break
+                            count_alter += 1
+                        if new_alter == -1:
+                            structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
+                            structure["left"][level]["level"]["down"][len(alter_array_left[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            structure["left"][level]["level"]["up"].append({})
+                            alter_array_left[level].append(meeting[stick])
+                        else:
+                            if is_empty(structure["left"][level]["level"]["down"][new_alter]):
+                                structure["left"][level]["level"]["down"][new_alter] = {"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []}
+                                structure["left"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            else:
+                                structure["left"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+
+                    break
+                level += 1
+        # right
+        else:
+            level = 0
+            new_alter = -1
+            for l in range(branch_layer):
+                # level and up
+                if meeting["ctree_branch"] == l and meeting["ctree_bside"] == 1:
+                    if len(alter_array_right[level]) == 0:
+                        structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
+                        structure["right"][level]["level"]["up"][len(alter_array_right[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                        structure["right"][level]["level"]["down"].append({})
+                        alter_array_right[level].append(meeting[stick])
+                    else:
+                        count_alter = 0
+                        for a in alter_array_right[level]:
+                            if meeting[stick] == a:
+                                new_alter = count_alter
+                                break
+                            count_alter += 1
+                        if new_alter == -1:
+                            structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
+                            structure["right"][level]["level"]["up"][len(alter_array_right[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            structure["right"][level]["level"]["down"].append({})
+                            alter_array_right[level].append(meeting[stick])
+                        else:
+                            if is_empty(structure["right"][level]["level"]["up"][new_alter]):
+                                structure["right"][level]["level"]["up"][new_alter] = {"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []}
+                                structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            else:
+                                structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                                
+                            # structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+
+                    break
+                # level and down
+                elif meeting["ctree_branch"] == l and meeting["ctree_bside"] == 0:
+                    if len(alter_array_right[level]) == 0:
+                        structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
+                        structure["right"][level]["level"]["down"][len(alter_array_right[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                        structure["right"][level]["level"]["up"].append({})
+                        alter_array_right[level].append(meeting[stick])
+                    else:
+                        count_alter = 0
+                        for a in alter_array_right[level]:
+                            if meeting[stick] == a:
+                                new_alter = count_alter
+                                break
+                            count_alter += 1
+                        if new_alter == -1:
+                            structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
+                            structure["right"][level]["level"]["down"][len(alter_array_right[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            structure["right"][level]["level"]["up"].append({})
+                            alter_array_right[level].append(meeting["alterid"])
+                        else:
+                            if is_empty(structure["right"][level]["level"]["down"][new_alter]):
+                                structure["right"][level]["level"]["down"][new_alter] = {"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []}
+                                structure["right"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            else:
+                                structure["right"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                                
+                    break
+                level += 1
+
 
     return structure
 
@@ -771,11 +909,11 @@ def update_binary(request):
             update_query_zero += ") AND ("
             update_query_one += ") AND ("
             for update_ego in select_ego[:-1]:
-                update_query_zero += "egoid=" + update_ego + " OR "
-                update_query_one += "egoid=" + update_ego + " OR "
+                update_query_zero += "egoid='" + update_ego + "' OR "
+                update_query_one += "egoid='" + update_ego + "' OR "
 
-            update_query_zero += "egoid=" + select_ego[-1] + ");"
-            update_query_one += "egoid=" + select_ego[-1] + ");"     
+            update_query_zero += "egoid='" + select_ego[-1] + "');"
+            update_query_one += "egoid='" + select_ego[-1] + "');"     
         else:
             update_query_zero += ");"
             update_query_one += ");"     
@@ -814,8 +952,17 @@ def update_layer(request):
         # print val_map
 
         for ori_val in val_map:
-            update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(val_map[ori_val]) + " WHERE " + ori_column + "=" + str(ori_val) + ";"
-            # print update_layer_val
+            update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(val_map[ori_val]) + " WHERE (" + ori_column + "=" + str(ori_val)
+            if len(select_ego) > 0:
+                update_layer_val += ") AND ("
+                for update_ego in select_ego[:-1]:
+                    update_layer_val += "egoid='" + update_ego + "' OR "
+
+                update_layer_val += "egoid='" + select_ego[-1] + "');"   
+            else:
+                update_query_zero += ");"
+                update_query_one += ");"
+            print update_layer_val
             clause.execute(update_layer_val)
 
         database.commit()
