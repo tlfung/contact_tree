@@ -181,11 +181,21 @@ var MappingView = Backbone.View.extend({
                 }                
                 
             }
-            $("#sidekey_submit").text("Dnoe");
-            $("#sidekey_submit").show();
+
+            $("#sidekey_submit_trunk").show();
+            $("#sidekey_submit_branch").hide();
+            $("#sidekey_submit_bside").hide();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_color").hide();
+            $("#sidekey_submit_leaf_highlight").hide();
+            $("#sidekey_submit_fruit_size").hide();
+
+            $("#sidekey_submit_trunk").text("Dnoe");
+            // $("#sidekey_submit").show();
         });
 
-        $("#sidekey_submit").click(function(){
+        $("#sidekey_submit_trunk").click(function(){
             var data_mode = self.model.get("view_mode");
             // var attr_map = self.model.get("attribute");
             // var attr_opt = self.model.get("attr_option");
@@ -193,8 +203,8 @@ var MappingView = Backbone.View.extend({
 
             console.log(self.model.get("attribute"));
             console.log(self.model.get("attr_option"));
-            $("#sidekey_submit").text("Update");
-            $("#sidekey_submit").attr("disabled", true);
+            $("#sidekey_submit_trunk").text("Update");
+            $("#sidekey_submit_trunk").attr("disabled", true);
             // $("#sidekey_img").attr("disabled", true);
             $("#block_layer").show();
 
@@ -209,7 +219,7 @@ var MappingView = Backbone.View.extend({
             }
 
             var request_url = "update_binary/?update="+update_info;
-            
+            console.log(request_url);
             d3.json(request_url, function(result){
                 console.log("finish update");
                 var set_update_info = function(data){
@@ -217,8 +227,8 @@ var MappingView = Backbone.View.extend({
                     var attr_opt = self.model.get("attr_option");
                     // console.log(data)
                     $("#block_layer").hide();
-                    $("#sidekey_submit").text("Done");
-                    $("#sidekey_submit").removeAttr("disabled");
+                    $("#sidekey_submit_trunk").text("Done");
+                    $("#sidekey_submit_trunk").removeAttr("disabled");
                     // attr_opt.replace(attr_map["trunk"], $("#sidekeyselect").val());
                     attr_opt[attr_opt.indexOf(attr_map["trunk"])] = $("#sidekeyselect").val();
                     attr_map["trunk"] = $("#sidekeyselect").val()
@@ -301,16 +311,24 @@ var MappingView = Backbone.View.extend({
 
             }
             
-            $("#sidekey_submit").text("Dnoe");
-            $("#sidekey_submit").show();
+            $("#sidekey_submit_trunk").hide();
+            $("#sidekey_submit_branch").show();
+            $("#sidekey_submit_bside").hide();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_color").hide();
+            $("#sidekey_submit_leaf_highlight").hide();
+            $("#sidekey_submit_fruit_size").hide();
+
+            $("#sidekey_submit_branch").text("Dnoe");
             
         });
 
-        $("#sidekey_submit").click(function(){
+        $("#sidekey_submit_branch").click(function(){
             var data_mode = self.model.get("view_mode");
             var ego_selections = self.model.get("selected_egos");
-            $("#sidekey_submit").text("Update");
-            $("#sidekey_submit").attr("disabled", true);
+            $("#sidekey_submit_branch").text("Update");
+            $("#sidekey_submit_branch").attr("disabled", true);
             // $("#sidekey_img").attr("disabled", true);
             $("#block_layer").show();
             var size_map = {};
@@ -331,7 +349,7 @@ var MappingView = Backbone.View.extend({
             
 
             var request_url = "update_layer/?update="+update_info;
-            
+            console.log(request_url);
             d3.json(request_url, function(result){
                 console.log("finish update");
                 var set_update_info = function(data){
@@ -339,8 +357,8 @@ var MappingView = Backbone.View.extend({
                     var attr_opt = self.model.get("attr_option");
                     // console.log(data)
                     $("#block_layer").hide();
-                    $("#sidekey_submit").text("Done");
-                    $("#sidekey_submit").removeAttr("disabled");
+                    $("#sidekey_submit_branch").text("Done");
+                    $("#sidekey_submit_branch").removeAttr("disabled");
 
                     attr_opt[attr_opt.indexOf(attr_map["branch"])] = $("#sidekeyselect").val();
                     attr_map["branch"] = $("#sidekeyselect").val()
@@ -441,11 +459,19 @@ var MappingView = Backbone.View.extend({
                 
             }
 
-            $("#sidekey_submit").text("Dnoe");
-            $("#sidekey_submit").show();
+            $("#sidekey_submit_trunk").hide();
+            $("#sidekey_submit_branch").hide();
+            $("#sidekey_submit_bside").show();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_color").hide();
+            $("#sidekey_submit_leaf_highlight").hide();
+            $("#sidekey_submit_fruit_size").hide();
+
+            $("#sidekey_submit_bside").text("Dnoe");
         });
 
-        $("#sidekey_submit").click(function(){
+        $("#sidekey_submit_bside").click(function(){
             var data_mode = self.model.get("view_mode");
             // var attr_map = self.model.get("attribute");
             // var attr_opt = self.model.get("attr_option");
@@ -453,8 +479,8 @@ var MappingView = Backbone.View.extend({
 
             console.log(self.model.get("attribute"));
             console.log(self.model.get("attr_option"));
-            $("#sidekey_submit").text("Update");
-            $("#sidekey_submit").attr("disabled", true);
+            $("#sidekey_submit_bside").text("Update");
+            $("#sidekey_submit_bside").attr("disabled", true);
             // $("#sidekey_img").attr("disabled", true);
             $("#block_layer").show();
 
@@ -469,7 +495,7 @@ var MappingView = Backbone.View.extend({
             }
 
             var request_url = "update_binary/?update="+update_info;
-            
+            console.log(request_url);
             d3.json(request_url, function(result){
                 console.log("finish update");
                 var set_update_info = function(data){
@@ -477,8 +503,8 @@ var MappingView = Backbone.View.extend({
                     var attr_opt = self.model.get("attr_option");
                     // console.log(data)
                     $("#block_layer").hide();
-                    $("#sidekey_submit").text("Done");
-                    $("#sidekey_submit").removeAttr("disabled");
+                    $("#sidekey_submit_bside").text("Done");
+                    $("#sidekey_submit_bside").removeAttr("disabled");
 
                     attr_opt[attr_opt.indexOf(attr_map["bside"])] = $("#sidekeyselect").val();
                     attr_map["bside"] = $("#sidekeyselect").val()
@@ -522,12 +548,21 @@ var MappingView = Backbone.View.extend({
         $("#sidekeyselect").change(function(){
 
             $("#mark_group_select").empty();
-            $("#sidekey_submit").text("Dnoe");
-            $("#sidekey_submit").show();
+
+            $("#sidekey_submit_trunk").hide();
+            $("#sidekey_submit_branch").hide();
+            $("#sidekey_submit_bside").hide();
+            $("#sidekey_submit_root").show();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_color").hide();
+            $("#sidekey_submit_leaf_highlight").hide();
+            $("#sidekey_submit_fruit_size").hide();
+
+            $("#sidekey_submit_root").text("Dnoe");
             
         });
 
-        $("#sidekey_submit").click(function(){
+        $("#sidekey_submit_root").click(function(){
             var attr_map = self.model.get("attribute");
             var attr_opt = self.model.get("attr_option");
             // console.log(component_attribute);
@@ -608,16 +643,24 @@ var MappingView = Backbone.View.extend({
 
             }
             
-            $("#sidekey_submit").text("Dnoe");
-            $("#sidekey_submit").show();
+            $("#sidekey_submit_trunk").hide();
+            $("#sidekey_submit_branch").hide();
+            $("#sidekey_submit_bside").hide();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").show();
+            $("#sidekey_submit_leaf_color").hide();
+            $("#sidekey_submit_leaf_highlight").hide();
+            $("#sidekey_submit_fruit_size").hide();
+
+            $("#sidekey_submit_leaf_size").text("Dnoe");
             
         });
 
-        $("#sidekey_submit").click(function(){
+        $("#sidekey_submit_leaf_size").click(function(){
             var data_mode = self.model.get("view_mode");
             var ego_selections = self.model.get("selected_egos");
-            $("#sidekey_submit").text("Update");
-            $("#sidekey_submit").attr("disabled", true);
+            $("#sidekey_submit_leaf_size").text("Update");
+            $("#sidekey_submit_leaf_size").attr("disabled", true);
             // $("#sidekey_img").attr("disabled", true);
             $("#block_layer").show();
             var size_map = {};
@@ -638,7 +681,7 @@ var MappingView = Backbone.View.extend({
             
 
             var request_url = "update_layer/?update="+update_info;
-            
+            console.log(request_url);
             d3.json(request_url, function(result){
                 console.log("finish update");
                 var set_update_info = function(data){
@@ -646,8 +689,8 @@ var MappingView = Backbone.View.extend({
                     var attr_opt = self.model.get("attr_option");
                     // console.log(data)
                     $("#block_layer").hide();
-                    $("#sidekey_submit").text("Done");
-                    $("#sidekey_submit").removeAttr("disabled");
+                    $("#sidekey_submit_leaf_size").text("Done");
+                    $("#sidekey_submit_leaf_size").removeAttr("disabled");
 
                     attr_opt[attr_opt.indexOf(attr_map["leaf_size"])] = $("#sidekeyselect").val();
                     attr_map["leaf_size"] = $("#sidekeyselect").val()
@@ -728,16 +771,24 @@ var MappingView = Backbone.View.extend({
 
             }
             
-            $("#sidekey_submit").text("Dnoe");
-            $("#sidekey_submit").show();
+            $("#sidekey_submit_trunk").hide();
+            $("#sidekey_submit_branch").hide();
+            $("#sidekey_submit_bside").hide();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_color").show();
+            $("#sidekey_submit_leaf_highlight").hide();
+            $("#sidekey_submit_fruit_size").hide();
+
+            $("#sidekey_submit_leaf_color").text("Dnoe");
             
         });
 
-        $("#sidekey_submit").click(function(){
+        $("#sidekey_submit_leaf_color").click(function(){
             var data_mode = self.model.get("view_mode");
             var ego_selections = self.model.get("selected_egos");
-            $("#sidekey_submit").text("Update");
-            $("#sidekey_submit").attr("disabled", true);
+            $("#sidekey_submit_leaf_color").text("Update");
+            $("#sidekey_submit_leaf_color").attr("disabled", true);
             // $("#sidekey_img").attr("disabled", true);
             $("#block_layer").show();
             var size_map = {};
@@ -758,7 +809,7 @@ var MappingView = Backbone.View.extend({
             
 
             var request_url = "update_layer/?update="+update_info;
-            
+            console.log(request_url);
             d3.json(request_url, function(result){
                 console.log("finish update");
                 var set_update_info = function(data){
@@ -766,8 +817,8 @@ var MappingView = Backbone.View.extend({
                     var attr_opt = self.model.get("attr_option");
                     // console.log(data)
                     $("#block_layer").hide();
-                    $("#sidekey_submit").text("Done");
-                    $("#sidekey_submit").removeAttr("disabled");
+                    $("#sidekey_submit_leaf_color").text("Done");
+                    $("#sidekey_submit_leaf_color").removeAttr("disabled");
 
                     attr_opt[attr_opt.indexOf(attr_map["leaf_color"])] = $("#sidekeyselect").val();
                     attr_map["leaf_color"] = $("#sidekeyselect").val()
@@ -810,12 +861,20 @@ var MappingView = Backbone.View.extend({
 
         $("#sidekeyselect").change(function(){
             $("#mark_group_select").empty();
-            $("#sidekey_submit").text("Dnoe");
-            $("#sidekey_submit").show();
             
+            $("#sidekey_submit_trunk").hide();
+            $("#sidekey_submit_branch").hide();
+            $("#sidekey_submit_bside").hide();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_color").hide();
+            $("#sidekey_submit_leaf_highlight").show();
+            $("#sidekey_submit_fruit_size").hide();
+
+            $("#sidekey_submit_leaf_highlight").text("Dnoe");
         });
 
-        $("#sidekey_submit").click(function(){
+        $("#sidekey_submit_leaf_highlight").click(function(){
             var attr_map = self.model.get("attribute");
             var attr_opt = self.model.get("attr_option");
             // console.log(component_attribute);
@@ -896,16 +955,24 @@ var MappingView = Backbone.View.extend({
 
             }
             
-            $("#sidekey_submit").text("Dnoe");
-            $("#sidekey_submit").show();
+            $("#sidekey_submit_trunk").hide();
+            $("#sidekey_submit_branch").hide();
+            $("#sidekey_submit_bside").hide();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_color").hide();
+            $("#sidekey_submit_leaf_highlight").hide();
+            $("#sidekey_submit_fruit_size").show();
+
+            $("#sidekey_submit_fruit_size").text("Dnoe");
             
         });
 
-        $("#sidekey_submit").click(function(){
+        $("#sidekey_submit_fruit_size").click(function(){
             var data_mode = self.model.get("view_mode");
             var ego_selections = self.model.get("selected_egos");
-            $("#sidekey_submit").text("Update");
-            $("#sidekey_submit").attr("disabled", true);
+            $("#sidekey_submit_fruit_size").text("Update");
+            $("#sidekey_submit_fruit_size").attr("disabled", true);
             // $("#sidekey_img").attr("disabled", true);
             $("#block_layer").show();
             var size_map = {};
@@ -926,7 +993,7 @@ var MappingView = Backbone.View.extend({
             
 
             var request_url = "update_layer/?update="+update_info;
-            
+            console.log(request_url);
             d3.json(request_url, function(result){
                 console.log("finish update");
                 var set_update_info = function(data){
@@ -934,8 +1001,8 @@ var MappingView = Backbone.View.extend({
                     var attr_opt = self.model.get("attr_option");
                     // console.log(data)
                     $("#block_layer").hide();
-                    $("#sidekey_submit").text("Done");
-                    $("#sidekey_submit").removeAttr("disabled");
+                    $("#sidekey_submit_fruit_size").text("Done");
+                    $("#sidekey_submit_fruit_size").removeAttr("disabled");
 
                     attr_opt[attr_opt.indexOf(attr_map["fruit_size"])] = $("#sidekeyselect").val();
                     attr_map["fruit_size"] = $("#sidekeyselect").val()
@@ -957,7 +1024,15 @@ var MappingView = Backbone.View.extend({
         $("#sidekey_selection").hide();
         $("#block_layer").hide();
         $("#sidekey_operation").hide();
-        $("#sidekey_submit").hide();
+        // $("#repeat_submit").hide();
+        $("#sidekey_submit_trunk").hide();
+        $("#sidekey_submit_branch").hide();
+        $("#sidekey_submit_bside").hide();
+        $("#sidekey_submit_root").hide();
+        $("#sidekey_submit_leaf_size").hide();
+        $("#sidekey_submit_leaf_color").hide();
+        $("#sidekey_submit_leaf_highlight").hide();
+        $("#sidekey_submit_fruit_size").hide();
         if(jQuery.isEmptyObject(myattribute)){
             $(".sidekey_map").css('visibility', 'hidden');
         }
