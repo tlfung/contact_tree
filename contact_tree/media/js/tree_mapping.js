@@ -112,7 +112,9 @@ var MappingView = Backbone.View.extend({
 
         $("#sidekey_selection").show();
         $("#sidekey_title").text("Trunk Mapping:");
-        $("#sidekey_description").text("Trunk Mapping Description");
+        $("#sidekey_description").text("The trunk side mapping will separate alters to place into left or right side of the trunk, \
+            so the attribute is better to be related with alter or we will random place the same alter into duplication sticks. \
+            If the attribute contains more than two categories, you will need to separate into two groups using check and uncheck.");
         // console.log("in trunk mapping: ", component_attribute[data_mode]);
         // console.log("in trunk mapping: ", attr_map);
         $("#sidekeyselect").empty();
@@ -261,7 +263,7 @@ var MappingView = Backbone.View.extend({
         console.log("in branch mapping");
         $("#sidekey_selection").show();
         $("#sidekey_title").text("Branch Layer Mapping:");
-        $("#sidekey_description").text("Branch Layer Mapping Description");
+        $("#sidekey_description").text("The branch mapping will place alter into different layer, so the attribute is better to be related with alter or we will random place the same alter into duplication sticks. This determines the height of the tree and it will be menful if this attribute is in a order.");
 
         $("#sidekeyselect").empty();
         var container = document.getElementById("sidekeyselect");
@@ -389,7 +391,7 @@ var MappingView = Backbone.View.extend({
         console.log("in bside mapping");
         $("#sidekey_selection").show();
         $("#sidekey_title").text("Branch Side Mapping:");
-        $("#sidekey_description").text("Branch Side Mapping Description");
+        $("#sidekey_description").text("The branch side mapping will separate alters to place into upper or lower side of the branch, and if the attribute is not related to alter information, we will map each alter into same position of the branch. If the attribute contains more than two categories, you will need to separate into two groups using check and uncheck.");
 
         $("#sidekeyselect").empty();
         var container = document.getElementById("sidekeyselect");
@@ -535,7 +537,7 @@ var MappingView = Backbone.View.extend({
         console.log("in root mapping");
         $("#sidekey_selection").show();
         $("#sidekey_title").text("Root Mapping:");
-        $("#sidekey_description").text("Root Mapping Description");
+        $("#sidekey_description").text("The root mapping will show the quantity of each different category of selected attribute. This can be seen as the summary of this tree with the selected attribute.");
 
         $("#sidekeyselect").empty();
         var container = document.getElementById("sidekeyselect");
@@ -593,7 +595,7 @@ var MappingView = Backbone.View.extend({
         console.log("in leaf_size mapping");
         $("#sidekey_selection").show();
         $("#sidekey_title").text("Leaf Size Mapping:");
-        $("#sidekey_description").text("Leaf Size Mapping Description");
+        $("#sidekey_description").text("The leaf size mapping will show the quantity of each contact as a leaf size, so the attribute is better to be related with the unique information. You also can choose the scale of the different between the size.");
 
         $("#sidekeyselect").empty();
         var container = document.getElementById("sidekeyselect");
@@ -721,7 +723,7 @@ var MappingView = Backbone.View.extend({
         console.log("in leaf_color mapping");
         $("#sidekey_selection").show();
         $("#sidekey_title").text("Leaf Color Mapping:");
-        $("#sidekey_description").text("Leaf Color Mapping Description");
+        $("#sidekey_description").text("The leaf color mapping will show the different category of each contact as a leaf color, so the attribute is better to be related with the unique information. You also can choose the group for the color.");
 
         $("#sidekeyselect").empty();
         var container = document.getElementById("sidekeyselect");
@@ -849,7 +851,7 @@ var MappingView = Backbone.View.extend({
         console.log("in leaf_highlight mapping");
         $("#sidekey_selection").show();
         $("#sidekey_title").text("Leaf Highlight Mapping:");
-        $("#sidekey_description").text("Leaf Highlight Mapping Description");
+        $("#sidekey_description").text("The leaf highlight mapping will show the every information whenever you hover your mouse on a leaf and highlight the leaves that share the same information.");
 
         $("#sidekeyselect").empty();
         var container = document.getElementById("sidekeyselect");
@@ -907,13 +909,13 @@ var MappingView = Backbone.View.extend({
         console.log("in fruit_size mapping");
         $("#sidekey_selection").show();
         $("#sidekey_title").text("Fruit Size Mapping:");
-        $("#sidekey_description").text("Fruit Size Mapping Description");
+        $("#sidekey_description").text("he fruit size mapping will show the quantity of the alter as a fruit size, so the attribute must to be related with alter or we will random select one value as its size. You also can choose the scale of the different between the size.");
 
         $("#sidekeyselect").empty();
         var container = document.getElementById("sidekeyselect");
         // container.setAttribute("class", "sidekey_selection");
         for(s in component_attribute[data_mode]){
-            if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["fruit_size"]))
+            if(component_attribute[data_mode][s][0].length == 0 || component_attribute[data_mode][s][4] != "1"|| (attr_opt.indexOf(s) != -1 && s != attr_map["fruit_size"]))
                 continue
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
