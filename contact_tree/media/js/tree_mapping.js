@@ -48,37 +48,44 @@ var MappingView = Backbone.View.extend({
             self.stick_map();
         });
         */
-
         $("#trunk_label").click(function() {
+            $("#sidekey_operation").hide();
             self.trunk_map();
 
         });
 
         $("#branch_label").click(function() {
+            $("#sidekey_operation").hide();
             self.branch_map();
         });
 
         $("#bside_label").click(function() {
+            $("#sidekey_operation").hide();
             self.bside_map();
         });
 
         $("#root_label").click(function() {
+            $("#sidekey_operation").hide();
             self.root_map();
         });
 
         $("#leaf_size_label").click(function() {
+            $("#sidekey_operation").hide();
             self.leaf_size_map();
         });
 
         $("#leaf_color_label").click(function() {
+            $("#sidekey_operation").hide();
             self.leaf_color_map();
         });
 
         $("#leaf_highlight_label").click(function() {
+            $("#sidekey_operation").hide();
             self.leaf_highlight_map();
         });
 
         $("#fruit_size_label").click(function() {
+            $("#sidekey_operation").hide();
             self.fruit_size_map();
         });        
 
@@ -112,7 +119,7 @@ var MappingView = Backbone.View.extend({
         var container = document.getElementById("sidekeyselect");
         // container.setAttribute("class", "sidekey_selection");
         for(s in component_attribute[data_mode]){
-            if(attr_opt.indexOf(s) != -1 && s != attr_map["trunk"])
+            if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["trunk"]))
                 continue
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
@@ -159,26 +166,26 @@ var MappingView = Backbone.View.extend({
             }
             else{
                 var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0].length
-                if(total_items > 0){
-                    for(var c = 0; c < total_items; c ++){
-                        var attr_label = document.createElement('label');
-                        var attr_input = document.createElement('input');
-                        var br = document.createElement("br");
-                        attr_label.innerHTML = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
+                // if(total_items > 0){
+                for(var c = 0; c < total_items; c ++){
+                    var attr_label = document.createElement('label');
+                    var attr_input = document.createElement('input');
+                    var br = document.createElement("br");
+                    attr_label.innerHTML = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
 
-                        attr_input.value = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
-                        attr_input.setAttribute("class", "myfont3 mark_group_checkbox");
-                        attr_input.setAttribute("style", "position:absolute; left:30px;");
-                        attr_input.type = "checkbox";
-                        attr_input.name = "mark_group_checkbox";
-                        if(c < total_items/2)
-                            attr_input.setAttribute("checked", true);
-                        attr_label.appendChild(attr_input);
-                        // attr_label.appendChild(br);
-                        attr_container.appendChild(attr_label);
-                        attr_container.appendChild(br);
-                    }
-                }                
+                    attr_input.value = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
+                    attr_input.setAttribute("class", "myfont3 mark_group_checkbox");
+                    attr_input.setAttribute("style", "position:absolute; left:30px;");
+                    attr_input.type = "checkbox";
+                    attr_input.name = "mark_group_checkbox";
+                    if(c < total_items/2)
+                        attr_input.setAttribute("checked", true);
+                    attr_label.appendChild(attr_input);
+                    // attr_label.appendChild(br);
+                    attr_container.appendChild(attr_label);
+                    attr_container.appendChild(br);
+                }
+                // }                
                 
             }
 
@@ -260,7 +267,7 @@ var MappingView = Backbone.View.extend({
         var container = document.getElementById("sidekeyselect");
         // container.setAttribute("class", "sidekey_selection");
         for(s in component_attribute[data_mode]){
-            if(attr_opt.indexOf(s) != -1 && s != attr_map["branch"])
+            if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["branch"]))
                 continue
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
@@ -279,37 +286,37 @@ var MappingView = Backbone.View.extend({
 
             // var br = document.createElement("br");
             var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
-            if(total_items.length > 0){
-                for(var c = 0; c < total_items.length; c ++){
-                    var br = document.createElement("br");
-                    var p = document.createElement("p");
-                    var select_container = document.createElement("select");
-                    var label_container = document.createElement("span");
-                    select_container.value = total_items[c];
-                    select_container.setAttribute("class", "mapping_selection");
-                    select_container.setAttribute("style", "position:absolute; left:30px;");
-                    select_container.id = "ori_attr_val_" + total_items[c];
-                    label_container.innerHTML = total_items[c];
-                    // br.innerHTML = "<p></p>";
+            // if(total_items.length > 0){
+            for(var c = 0; c < total_items.length; c ++){
+                var br = document.createElement("br");
+                var p = document.createElement("p");
+                var select_container = document.createElement("select");
+                var label_container = document.createElement("span");
+                select_container.value = total_items[c];
+                select_container.setAttribute("class", "mapping_selection");
+                select_container.setAttribute("style", "position:absolute; left:30px;");
+                select_container.id = "ori_attr_val_" + total_items[c];
+                label_container.innerHTML = total_items[c];
+                // br.innerHTML = "<p></p>";
 
-                    for(var f_size_range = 0; f_size_range <= 20; f_size_range ++){
-                        var selection_opt = document.createElement('option');
-                        selection_opt.value = f_size_range;
-                        selection_opt.innerHTML = f_size_range;
-                        selection_opt.setAttribute("class", "myfont3");
-                        if(f_size_range == total_items[c])
-                            selection_opt.setAttribute("selected", true);
-                        else if(20 < total_items[c] && f_size_range == 20)
-                            selection_opt.setAttribute("selected", true);
-                        select_container.appendChild(selection_opt);
-                    }
-                    attr_container.appendChild(label_container);
-                    attr_container.appendChild(select_container);
-                    attr_container.appendChild(br);
-                    attr_container.appendChild(p);
+                for(var f_size_range = 0; f_size_range <= 20; f_size_range ++){
+                    var selection_opt = document.createElement('option');
+                    selection_opt.value = f_size_range;
+                    selection_opt.innerHTML = f_size_range;
+                    selection_opt.setAttribute("class", "myfont3");
+                    if(f_size_range == total_items[c])
+                        selection_opt.setAttribute("selected", true);
+                    else if(20 < total_items[c] && f_size_range == 20)
+                        selection_opt.setAttribute("selected", true);
+                    select_container.appendChild(selection_opt);
                 }
-
+                attr_container.appendChild(label_container);
+                attr_container.appendChild(select_container);
+                attr_container.appendChild(br);
+                attr_container.appendChild(p);
             }
+
+            // }
             
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").show();
@@ -388,7 +395,7 @@ var MappingView = Backbone.View.extend({
         var container = document.getElementById("sidekeyselect");
         // container.setAttribute("class", "sidekey_selection");
         for(s in component_attribute[data_mode]){
-            if(attr_opt.indexOf(s) != -1 && s != attr_map["bside"])
+            if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["bside"]))
                 continue
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
@@ -435,26 +442,26 @@ var MappingView = Backbone.View.extend({
             }
             else{
                 var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0].length
-                if(total_items > 0){
-                    for(var c = 0; c < total_items; c ++){
-                        var attr_label = document.createElement('label');
-                        var attr_input = document.createElement('input');
-                        var br = document.createElement("br");
-                        attr_label.innerHTML = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
+                // if(total_items > 0){
+                for(var c = 0; c < total_items; c ++){
+                    var attr_label = document.createElement('label');
+                    var attr_input = document.createElement('input');
+                    var br = document.createElement("br");
+                    attr_label.innerHTML = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
 
-                        attr_input.value = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
-                        attr_input.setAttribute("class", "myfont3 mark_group_checkbox");
-                        attr_input.setAttribute("style", "position:absolute; left:30px;");
-                        attr_input.type = "checkbox";
-                        attr_input.name = "mark_group_checkbox";
-                        if(c < total_items/2)
-                            attr_input.setAttribute("checked", true);
-                        attr_label.appendChild(attr_input);
-                        // attr_label.appendChild(br);
-                        attr_container.appendChild(attr_label);
-                        attr_container.appendChild(br);
-                    }
+                    attr_input.value = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
+                    attr_input.setAttribute("class", "myfont3 mark_group_checkbox");
+                    attr_input.setAttribute("style", "position:absolute; left:30px;");
+                    attr_input.type = "checkbox";
+                    attr_input.name = "mark_group_checkbox";
+                    if(c < total_items/2)
+                        attr_input.setAttribute("checked", true);
+                    attr_label.appendChild(attr_input);
+                    // attr_label.appendChild(br);
+                    attr_container.appendChild(attr_label);
+                    attr_container.appendChild(br);
                 }
+                // }
                 
                 
             }
@@ -534,7 +541,7 @@ var MappingView = Backbone.View.extend({
         var container = document.getElementById("sidekeyselect");
         // container.setAttribute("class", "sidekey_selection");
         for(s in component_attribute[data_mode]){
-            if(attr_opt.indexOf(s) != -1 && s != attr_map["root"])
+            if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["root"]))
                 continue
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
@@ -592,7 +599,7 @@ var MappingView = Backbone.View.extend({
         var container = document.getElementById("sidekeyselect");
         // container.setAttribute("class", "sidekey_selection");
         for(s in component_attribute[data_mode]){
-            if(attr_opt.indexOf(s) != -1 && s != attr_map["leaf_size"])
+            if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["leaf_size"]))
                 continue
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
@@ -611,37 +618,37 @@ var MappingView = Backbone.View.extend({
 
             // var br = document.createElement("br");
             var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
-            if(total_items.length > 0){
-                for(var c = 0; c < total_items.length; c ++){
-                    var br = document.createElement("br");
-                    var p = document.createElement("p");
-                    var select_container = document.createElement("select");
-                    var label_container = document.createElement("span");
-                    select_container.value = total_items[c];
-                    select_container.setAttribute("class", "mapping_selection");
-                    select_container.setAttribute("style", "position:absolute; left:30px;");
-                    select_container.id = "ori_attr_val_" + total_items[c];
-                    label_container.innerHTML = total_items[c];
-                    // br.innerHTML = "<p></p>";
+            // if(total_items.length > 0){
+            for(var c = 0; c < total_items.length; c ++){
+                var br = document.createElement("br");
+                var p = document.createElement("p");
+                var select_container = document.createElement("select");
+                var label_container = document.createElement("span");
+                select_container.value = total_items[c];
+                select_container.setAttribute("class", "mapping_selection");
+                select_container.setAttribute("style", "position:absolute; left:30px;");
+                select_container.id = "ori_attr_val_" + total_items[c];
+                label_container.innerHTML = total_items[c];
+                // br.innerHTML = "<p></p>";
 
-                    for(var f_size_range = 0; f_size_range <= 20; f_size_range ++){
-                        var selection_opt = document.createElement('option');
-                        selection_opt.value = f_size_range;
-                        selection_opt.innerHTML = f_size_range;
-                        selection_opt.setAttribute("class", "myfont3");
-                        if(f_size_range == total_items[c])
-                            selection_opt.setAttribute("selected", true);
-                        else if(20 < total_items[c] && f_size_range == 20)
-                            selection_opt.setAttribute("selected", true);
-                        select_container.appendChild(selection_opt);
-                    }
-                    attr_container.appendChild(label_container);
-                    attr_container.appendChild(select_container);
-                    attr_container.appendChild(br);
-                    attr_container.appendChild(p);
+                for(var f_size_range = 0; f_size_range <= 20; f_size_range ++){
+                    var selection_opt = document.createElement('option');
+                    selection_opt.value = f_size_range;
+                    selection_opt.innerHTML = f_size_range;
+                    selection_opt.setAttribute("class", "myfont3");
+                    if(f_size_range == total_items[c])
+                        selection_opt.setAttribute("selected", true);
+                    else if(20 < total_items[c] && f_size_range == 20)
+                        selection_opt.setAttribute("selected", true);
+                    select_container.appendChild(selection_opt);
                 }
-
+                attr_container.appendChild(label_container);
+                attr_container.appendChild(select_container);
+                attr_container.appendChild(br);
+                attr_container.appendChild(p);
             }
+
+            // }
             
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").hide();
@@ -720,7 +727,7 @@ var MappingView = Backbone.View.extend({
         var container = document.getElementById("sidekeyselect");
         // container.setAttribute("class", "sidekey_selection");
         for(s in component_attribute[data_mode]){
-            if(attr_opt.indexOf(s) != -1 && s != attr_map["leaf_color"])
+            if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["leaf_color"]))
                 continue
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
@@ -739,37 +746,37 @@ var MappingView = Backbone.View.extend({
 
             // var br = document.createElement("br");
             var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
-            if(total_items.length > 0){
-                for(var c = 0; c < total_items.length; c ++){
-                    var br = document.createElement("br");
-                    var p = document.createElement("p");
-                    var select_container = document.createElement("select");
-                    var label_container = document.createElement("span");
-                    select_container.value = total_items[c];
-                    select_container.setAttribute("class", "mapping_selection");
-                    select_container.setAttribute("style", "position:absolute; left:30px;");
-                    select_container.id = "ori_attr_val_" + total_items[c];
-                    label_container.innerHTML = total_items[c];
-                    // br.innerHTML = "<p></p>";
+            // if(total_items.length > 0){
+            for(var c = 0; c < total_items.length; c ++){
+                var br = document.createElement("br");
+                var p = document.createElement("p");
+                var select_container = document.createElement("select");
+                var label_container = document.createElement("span");
+                select_container.value = total_items[c];
+                select_container.setAttribute("class", "mapping_selection");
+                select_container.setAttribute("style", "position:absolute; left:30px;");
+                select_container.id = "ori_attr_val_" + total_items[c];
+                label_container.innerHTML = total_items[c];
+                // br.innerHTML = "<p></p>";
 
-                    for(var f_size_range = 0; f_size_range <= 20; f_size_range ++){
-                        var selection_opt = document.createElement('option');
-                        selection_opt.value = f_size_range;
-                        selection_opt.innerHTML = f_size_range;
-                        selection_opt.setAttribute("class", "myfont3");
-                        if(f_size_range == total_items[c])
-                            selection_opt.setAttribute("selected", true);
-                        else if(20 < total_items[c] && f_size_range == 20)
-                            selection_opt.setAttribute("selected", true);
-                        select_container.appendChild(selection_opt);
-                    }
-                    attr_container.appendChild(label_container);
-                    attr_container.appendChild(select_container);
-                    attr_container.appendChild(br);
-                    attr_container.appendChild(p);
+                for(var f_size_range = 0; f_size_range <= 20; f_size_range ++){
+                    var selection_opt = document.createElement('option');
+                    selection_opt.value = f_size_range;
+                    selection_opt.innerHTML = f_size_range;
+                    selection_opt.setAttribute("class", "myfont3");
+                    if(f_size_range == total_items[c])
+                        selection_opt.setAttribute("selected", true);
+                    else if(20 < total_items[c] && f_size_range == 20)
+                        selection_opt.setAttribute("selected", true);
+                    select_container.appendChild(selection_opt);
                 }
-
+                attr_container.appendChild(label_container);
+                attr_container.appendChild(select_container);
+                attr_container.appendChild(br);
+                attr_container.appendChild(p);
             }
+
+            // }
             
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").hide();
@@ -860,8 +867,10 @@ var MappingView = Backbone.View.extend({
         }
 
         $("#sidekeyselect").change(function(){
+            $("#sidekey_operation").show();
             $("#mark_group_select").empty();
-            
+            $("#mark_group").text("Select Leaf Highlight Infomation:");
+
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").hide();
             $("#sidekey_submit_bside").hide();
@@ -904,7 +913,7 @@ var MappingView = Backbone.View.extend({
         var container = document.getElementById("sidekeyselect");
         // container.setAttribute("class", "sidekey_selection");
         for(s in component_attribute[data_mode]){
-            if(attr_opt.indexOf(s) != -1 && s != attr_map["fruit_size"])
+            if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["fruit_size"]))
                 continue
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
@@ -923,37 +932,37 @@ var MappingView = Backbone.View.extend({
 
             // var br = document.createElement("br");
             var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
-            if(total_items.length > 0){
-                for(var c = 0; c < total_items.length; c ++){
-                    var br = document.createElement("br");
-                    var p = document.createElement("p");
-                    var select_container = document.createElement("select");
-                    var label_container = document.createElement("span");
-                    select_container.value = total_items[c];
-                    select_container.setAttribute("class", "mapping_selection");
-                    select_container.setAttribute("style", "position:absolute; left:30px;");
-                    select_container.id = "ori_attr_val_" + total_items[c];
-                    label_container.innerHTML = total_items[c];
-                    // br.innerHTML = "<p></p>";
+            // if(total_items.length > 0){
+            for(var c = 0; c < total_items.length; c ++){
+                var br = document.createElement("br");
+                var p = document.createElement("p");
+                var select_container = document.createElement("select");
+                var label_container = document.createElement("span");
+                select_container.value = total_items[c];
+                select_container.setAttribute("class", "mapping_selection");
+                select_container.setAttribute("style", "position:absolute; left:30px;");
+                select_container.id = "ori_attr_val_" + total_items[c];
+                label_container.innerHTML = total_items[c];
+                // br.innerHTML = "<p></p>";
 
-                    for(var f_size_range = 0; f_size_range <= 20; f_size_range ++){
-                        var selection_opt = document.createElement('option');
-                        selection_opt.value = f_size_range;
-                        selection_opt.innerHTML = f_size_range;
-                        selection_opt.setAttribute("class", "myfont3");
-                        if(f_size_range == total_items[c])
-                            selection_opt.setAttribute("selected", true);
-                        else if(20 < total_items[c] && f_size_range == 20)
-                            selection_opt.setAttribute("selected", true);
-                        select_container.appendChild(selection_opt);
-                    }
-                    attr_container.appendChild(label_container);
-                    attr_container.appendChild(select_container);
-                    attr_container.appendChild(br);
-                    attr_container.appendChild(p);
+                for(var f_size_range = 0; f_size_range <= 20; f_size_range ++){
+                    var selection_opt = document.createElement('option');
+                    selection_opt.value = f_size_range;
+                    selection_opt.innerHTML = f_size_range;
+                    selection_opt.setAttribute("class", "myfont3");
+                    if(f_size_range == total_items[c])
+                        selection_opt.setAttribute("selected", true);
+                    else if(20 < total_items[c] && f_size_range == 20)
+                        selection_opt.setAttribute("selected", true);
+                    select_container.appendChild(selection_opt);
                 }
-
+                attr_container.appendChild(label_container);
+                attr_container.appendChild(select_container);
+                attr_container.appendChild(br);
+                attr_container.appendChild(p);
             }
+
+            // }
             
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").hide();
