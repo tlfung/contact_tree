@@ -84,16 +84,25 @@ var UploadView = Backbone.View.extend({
                         for(var i = 1; i < err[obj].length; i ++)
                              error_text += ', "' + err[obj][i] + '"';
                     }
-                    if(obj == "missing"){
-                        error_text += '<b>Missing value in column: </b><br>"' + err[obj][0][0] + '"';
-                        for(var i = 1; i < err[obj].length; i ++)
-                             error_text += ', "' + err[obj][i][0] + '"';
+                    // if(obj == "missing"){
+                    //     error_text += '<b>Missing value in column: </b><br>"' + err[obj][0][0] + '"';
+                    //     for(var i = 1; i < err[obj].length; i ++)
+                    //          error_text += ', "' + err[obj][i][0] + '"';
+                    // }
+                    // if(obj == "intext"){
+                    //     error_text += '<b>Contain text in column: </b><br>"' + err[obj][0] + '"';
+                    //     for(var i = 1; i < err[obj].length; i ++)
+                    //          error_text += ', "' + err[obj][i] + '"';
+                    // }
+                    if(obj == "insert_error"){
+                        error_text += 'Type and value not match...<br>';
                     }
-                    if(obj == "intext"){
-                        error_text += '<b>Contain text in column: </b><br>"' + err[obj][0] + '"';
+                    if(obj == "inbool"){
+                        error_text += '<b>Boolean type has more than two values:</b><br>"' + err[obj][0] + '"';
                         for(var i = 1; i < err[obj].length; i ++)
                              error_text += ', "' + err[obj][i] + '"';
                     }
+                    
                 error_text += "<br>"
                 }
             }

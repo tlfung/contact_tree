@@ -55,8 +55,8 @@ def upload_file(request):
     
     return HttpResponse(localtime)
 
-
-def test_type(table):
+# not use
+def test_type_old(table):
     db = DB()
     final_attr_info = dict()
     final_info = []
@@ -114,6 +114,77 @@ def test_type(table):
         return [final_attr_info, attr_info]
     
 
+def test_type(table, attr_type):
+    db = DB()
+    final_attr_info = dict()
+    final_info = []
+    attr_info = dict()
+    cur = db.query('SHOW columns FROM ' + table + ';')
+    all_attr = cur.fetchall()
+    total_missing = 0
+    defult_col = 0
+    # final_attr_info["missing"] = []
+    final_attr_info["default"] = []
+    # final_attr_info["incat"] = []
+    final_attr_info["inbool"] = []
+
+    
+    temp_default = []
+    for field in attr_type:
+        print field
+        # final_attr_info[f] = []
+        temp_missing = []
+        missing = 0
+        if field == 'egoid' or field == 'alterid':
+            temp_default.append(field)
+            defult_col += 1
+        if field != 'e_id' and field != 'egoid' and field != 'alterid':
+            attr_info[field] = dict()
+            attr_info[field]["TYPE"] = attr_type[field]               
+            # if attr_type[field] == 'categorical':    
+            if attr_type[field] == 'numerical':
+                a_cur = db.query('SELECT MIN(cast(`' + field + '` as unsigned)), MAX(cast(`' + field + '` as unsigned)) FROM ' + table + ' WHERE `'+ field + '` is not NULL;')
+                f_val = a_cur.fetchone()
+                # attr_info[field] = dict()
+                for ff in f_val:
+                    attr_info[field][ff.split("(")[0]] = f_val[ff]
+                attr_info[field]["RANGE"] = attr_info[field]["MAX"] - attr_info[field]["MIN"] + 1
+            
+            elif attr_type[field] == 'boolean':
+                a_cur = db.query('SELECT MIN(`' + field + '`), MAX(`' + field + '`), COUNT(DISTINCT(`' + field + '`)) FROM ' + table + ' WHERE `'+ field + '` is not NULL;')
+                f_val = a_cur.fetchone()
+                # attr_info[field] = dict()
+                for ff in f_val:
+                    attr_info[field][ff.split("(")[0]] = f_val[ff]
+                if attr_info[field]["COUNT"] > 2:
+                    final_attr_info["inbool"].append(field)
+                attr_info[field]["RANGE"] = attr_info[field]["COUNT"]
+            else:
+                # print 'SELECT MIN(`' + field + '`), MAX(`' + field + '`), COUNT(DISTINCT(`' + field + '`)) FROM ' + table + ' WHERE `'+ field + '` is not NULL;'
+                a_cur = db.query('SELECT MIN(`' + field + '`), MAX(`' + field + '`), COUNT(DISTINCT(`' + field + '`)) FROM ' + table + ' WHERE `'+ field + '` is not NULL;')
+                f_val = a_cur.fetchone()
+                # attr_info[field] = dict()
+                for ff in f_val:
+                    attr_info[field][ff.split("(")[0]] = f_val[ff]
+                # if attr_info[f]["COUNT"] > 20:
+                #     final_attr_info["incat"].append(f)
+                attr_info[field]["RANGE"] = attr_info[field]["COUNT"]
+
+            # else:
+
+    if defult_col == 2:
+        if len(final_attr_info["inbool"]) == 0:
+            return [table, attr_info]
+        else:
+            return [final_attr_info, attr_info]
+    else:
+        if 'egoid' not in temp_default:
+            final_attr_info["default"].append('egoid')
+        if 'alterid' not in temp_default:
+            final_attr_info["default"].append('alterid')
+        return [final_attr_info, attr_info]
+    
+
 def create_csv2database(request):
     final_attr_info = dict()
     database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
@@ -130,9 +201,13 @@ def create_csv2database(request):
         print csvfile
         # print attr_json
         # print "./contact_tree/data/upload/" + csvfile + ".csv"
-        csv2mysql("./contact_tree/data/upload/" + csvfile + ".csv", table)
+        attr_type = csv2mysql("./contact_tree/data/upload/" + csvfile + ".csv", table)
+        if attr_type == -1:
+            jsondata = simplejson.dumps({"insert_error": "Type and value not match"}, indent=4, use_decimal=True)
+            # print jsondata
+            return HttpResponse(jsondata)
 
-        final_attr_info = test_type(table)
+        final_attr_info = test_type(table, attr_type)
         if final_attr_info[0] == table:
             for c in tree_cmpt:
                 clause.execute('ALTER TABLE ' + table + ' ADD COLUMN `ctree_' + c + '` INT NULL DEFAULT NULL;')
@@ -164,10 +239,11 @@ def update_collection_data(table, attr_json):
     # print attr_json
     clause.execute('DELETE FROM dataset_collection WHERE dataset = "' + table + '";')
     for a in attr_json:
-        my_attr = '"' + table + '", "' + a + '", "' + str(attr_json[a]["MIN"]) + '", "' + str(attr_json[a]["MAX"]) + '", "' + str(attr_json[a]["RANGE"]) + '"'
+        print a, attr_json[a]
+        my_attr = '"' + table + '", "' + a + '", "' + str(attr_json[a]["MIN"]) + '", "' + str(attr_json[a]["MAX"]) + '", "' + str(attr_json[a]["RANGE"]) + '", "' + str(attr_json[a]["TYPE"]) + '"'
         # print my_attr
         # print 'INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, relation, `type`, ego_mark) VALUES (' + my_attr + ');'
-        clause.execute('INSERT INTO dataset_collection (dataset, attr, min, max, attr_range) VALUES (%s);' %my_attr)
+        clause.execute('INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, type) VALUES (%s);' %my_attr)
     
     database.commit()
 
@@ -184,7 +260,7 @@ def update_collection_data(table, attr_json):
             alter_count = cur.fetchone()
             if alter_count['COUNT(DISTINCT(`' + a + '`))'] == 1:
                 # print 'UPDATE dataset_collection SET `alter` = 1 WHERE attr="' + a + '" and dataset="' + table + '";'
-                clause.execute('UPDATE dataset_collection SET `alter` = 1 WHERE attr="' + a + '" and dataset="' + table + '";')
+                clause.execute('UPDATE dataset_collection SET `alter_info` = 1 WHERE attr="' + a + '" and dataset="' + table + '";')
 
     database.commit()
 
@@ -307,6 +383,19 @@ def safe_col(s):
     return re.sub('\W+', '_', s.lower()).strip('_')
 
 
+def define_type(s):
+    if s == 'categorical':
+        return "varchar(32) NULL DEFAULT NULL"
+    elif s == 'numerical':
+        return "int NULL DEFAULT NULL"
+    elif s == 'boolean':
+        return "char(1) NULL DEFAULT NULL"
+    elif s == 'id':
+        return "varchar(64) NULL DEFAULT NULL"
+    else:
+        return "varchar(64) NULL DEFAULT NULL"
+
+
 def csv2mysql(fn, table):
     # table = fn.split("\\").pop().split(".")[0]
     database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
@@ -315,45 +404,71 @@ def csv2mysql(fn, table):
     col_types = get_col_types(fn)
     # print col_types
     header = None
+    col_types = None
+    attribute_info = dict()
     for row in csv.reader(open(fn)):
-        if header:
-            clause.execute(insert_sql, row)
+        # if header:
+        if col_types:
+            # clause.execute(insert_sql, row)
+            if '' in row:
+                row[row.index('')] = None
+                # attribute_info[header[count_col].replace('`', '')] = col
+            # print insert_sql, row
+            try:
+                clause.execute(insert_sql, row)
+            except MySQLdb.OperationalError:
+                return -1
             
         else:
-            header = []
-            for col in row:
-                header.append("`"+safe_col(col)+"`")
-            print header
+            if header:
+                col_types = []
+                count_col = 0
+                for col in row:
+                    col_types.append(define_type(col))
+                    attribute_info[header[count_col].replace('`', '')] = col
+                    count_col += 1
+                print col_types
+
+                schema_sql = get_schema(table, header, col_types)
+                #print schema_sql
+
+                #create table
+                # print 'DROP TABLE IF EXISTS %s;' %table
+                clause.execute('DROP TABLE IF EXISTS %s;' %table)
+
+                # clause.execute('SELECT "%s" FROM INFORMATION_SCHEMA.TABLES LIMIT 1;' % table)
+                # if clause.fetchone():
+                #     return 0
+                # else:
+                clause.execute(schema_sql)
+                
+                # create index for more efficient access
+                try:
+                    clause.execute('CREATE INDEX ids ON %s (e_id);' % table)
+                    #db.query('CREATE INDEX ids ON %s (id);' % table)
+                except MySQLdb.OperationalError:
+                    pass # index already exists
+
+                print 'Inserting rows ...'
+                # SQL string for inserting data
+                insert_sql = get_insert(table, header)
+
+
+            else:
+                header = []
+                for col in row:
+                    header.append("`"+safe_col(col)+"`")
+                print header
+
             #sys.exit()
-            schema_sql = get_schema(table, header, col_types)
-            #print schema_sql
-
-            #create table
-            # print 'DROP TABLE IF EXISTS %s;' %table
-            clause.execute('DROP TABLE IF EXISTS %s;' %table)
-
-            # clause.execute('SELECT "%s" FROM INFORMATION_SCHEMA.TABLES LIMIT 1;' % table)
-            # if clause.fetchone():
-            #     return 0
-            # else:
-            clause.execute(schema_sql)
             
-            # create index for more efficient access
-            try:
-                clause.execute('CREATE INDEX ids ON %s (e_id);' % table)
-                #db.query('CREATE INDEX ids ON %s (id);' % table)
-            except MySQLdb.OperationalError:
-                pass # index already exists
-
-            print 'Inserting rows ...'
-            # SQL string for inserting data
-            insert_sql = get_insert(table, header)
-    
     # commit rows to database
     print 'Committing rows to database ...'
-    #db.commit()
     database.commit()
     print 'Done!'
+
+    print attribute_info
+    return attribute_info
 
 
 ####################################### above is for database #####################################################
@@ -393,7 +508,7 @@ def get_list_ego(request):
 
         default_attr["stick"] = "alterid"
         
-        cur = db.query('SELECT * FROM dataset_collection WHERE attr_range < 20 and dataset="' + table + '" and `alter`="1";')
+        cur = db.query('SELECT * FROM dataset_collection WHERE attr_range < 20 and dataset="' + table + '" and `alter_info`="1";')
         relate_alter = cur.fetchall()
         candidate = dict()
         for relate in relate_alter:
@@ -406,7 +521,7 @@ def get_list_ego(request):
         default_attr["fruit_size"] = sort_candidate[2][0]
         default_attr["branch"] = sort_candidate[-1][0]
 
-        cur = db.query('SELECT * FROM dataset_collection WHERE attr_range > 3 and dataset="' + table + '" and `alter`is NULL;')
+        cur = db.query('SELECT * FROM dataset_collection WHERE attr_range > 3 and dataset="' + table + '" and `alter_info`is NULL;')
         relate_ego = cur.fetchall()
         ego_candidate = dict()
         for relate in relate_ego:
@@ -813,8 +928,8 @@ def one_contact(request):
             for e in ego_info:
                 precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + e + '";')
                 all_data = precur.fetchall()
-                cur = db.query('SELECT `alter` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
-                stick_unique = cur.fetchone()["alter"]
+                cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
+                stick_unique = cur.fetchone()["alter_info"]
                 cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
                 branch_layer = int(cur.fetchone()["attr_range"])
 
@@ -834,8 +949,8 @@ def one_contact(request):
                 for sub in ego_info[e]:
                     precur = db.query('SELECT * FROM ' + table + ' WHERE dataset="' + sub + '" and egoid="' + e + '";')
                     all_data = precur.fetchall()
-                    cur = db.query('SELECT `alter` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
-                    stick_unique = cur.fetchone()["alter"]
+                    cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
+                    stick_unique = cur.fetchone()["alter_info"]
                     cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
                     branch_layer = int(cur.fetchone()["attr_range"])
 
@@ -995,8 +1110,8 @@ def restructure(request):
             for e in ego_info:
                 precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + e + '";')
                 all_data = precur.fetchall()
-                cur = db.query('SELECT `alter` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
-                stick_unique = cur.fetchone()["alter"]
+                cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
+                stick_unique = cur.fetchone()["alter_info"]
                 cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
                 branch_layer = int(cur.fetchone()["attr_range"])
 
@@ -1022,8 +1137,8 @@ def restructure(request):
                 for sub in sub_dataset:
                     precur = db.query('SELECT * FROM ' + table + ' WHERE dataset="' + sub + '" and egoid="' + e + '";')
                     all_data = precur.fetchall()
-                    cur = db.query('SELECT `alter` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
-                    stick_unique = cur.fetchone()["alter"]
+                    cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
+                    stick_unique = cur.fetchone()["alter_info"]
                     cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
                     branch_layer = int(cur.fetchone()["attr_range"])
 

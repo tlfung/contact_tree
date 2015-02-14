@@ -50,42 +50,106 @@ var MappingView = Backbone.View.extend({
         */
         $("#trunk_label").click(function() {
             $("#sidekey_operation").hide();
+            $("#sidekey_submit_trunk").hide();
+            $("#sidekey_submit_branch").hide();
+            $("#sidekey_submit_bside").hide();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_color").hide();
+            $("#sidekey_submit_leaf_highlight").hide();
+            $("#sidekey_submit_fruit_size").hide();
             self.trunk_map();
 
         });
 
         $("#branch_label").click(function() {
             $("#sidekey_operation").hide();
+            $("#sidekey_submit_trunk").hide();
+            $("#sidekey_submit_branch").hide();
+            $("#sidekey_submit_bside").hide();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_color").hide();
+            $("#sidekey_submit_leaf_highlight").hide();
+            $("#sidekey_submit_fruit_size").hide();
             self.branch_map();
         });
 
         $("#bside_label").click(function() {
             $("#sidekey_operation").hide();
+            $("#sidekey_submit_trunk").hide();
+            $("#sidekey_submit_branch").hide();
+            $("#sidekey_submit_bside").hide();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_color").hide();
+            $("#sidekey_submit_leaf_highlight").hide();
+            $("#sidekey_submit_fruit_size").hide();
             self.bside_map();
         });
 
         $("#root_label").click(function() {
             $("#sidekey_operation").hide();
+            $("#sidekey_submit_trunk").hide();
+            $("#sidekey_submit_branch").hide();
+            $("#sidekey_submit_bside").hide();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_color").hide();
+            $("#sidekey_submit_leaf_highlight").hide();
+            $("#sidekey_submit_fruit_size").hide();
             self.root_map();
         });
 
         $("#leaf_size_label").click(function() {
             $("#sidekey_operation").hide();
+            $("#sidekey_submit_trunk").hide();
+            $("#sidekey_submit_branch").hide();
+            $("#sidekey_submit_bside").hide();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_color").hide();
+            $("#sidekey_submit_leaf_highlight").hide();
+            $("#sidekey_submit_fruit_size").hide();
             self.leaf_size_map();
         });
 
         $("#leaf_color_label").click(function() {
             $("#sidekey_operation").hide();
+            $("#sidekey_submit_trunk").hide();
+            $("#sidekey_submit_branch").hide();
+            $("#sidekey_submit_bside").hide();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_color").hide();
+            $("#sidekey_submit_leaf_highlight").hide();
+            $("#sidekey_submit_fruit_size").hide();
             self.leaf_color_map();
         });
 
         $("#leaf_highlight_label").click(function() {
             $("#sidekey_operation").hide();
+            $("#sidekey_submit_trunk").hide();
+            $("#sidekey_submit_branch").hide();
+            $("#sidekey_submit_bside").hide();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_color").hide();
+            $("#sidekey_submit_leaf_highlight").hide();
+            $("#sidekey_submit_fruit_size").hide();
             self.leaf_highlight_map();
         });
 
         $("#fruit_size_label").click(function() {
             $("#sidekey_operation").hide();
+            $("#sidekey_submit_trunk").hide();
+            $("#sidekey_submit_branch").hide();
+            $("#sidekey_submit_bside").hide();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_color").hide();
+            $("#sidekey_submit_leaf_highlight").hide();
+            $("#sidekey_submit_fruit_size").hide();
             self.fruit_size_map();
         });        
 

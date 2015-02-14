@@ -131,7 +131,8 @@ var SelectingView = Backbone.View.extend({
             // self.model.set({"tree_structure":{}});
             $('#egogroup').attr("disabled", true);
             var label = document.getElementById("selecting_label");
-            label.innerHTML = data_selected.toUpperCase().replace("_", " ");
+            label.innerHTML = "";
+            // label.innerHTML = data_selected.toUpperCase().replace("_", " ");
         });
     },
 
