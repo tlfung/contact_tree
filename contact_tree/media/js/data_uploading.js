@@ -20,9 +20,10 @@ var UploadView = Backbone.View.extend({
         // open the dialog
         $( "#import_dialog" ).dialog({
             autoOpen: false,
-            height: 500,
+            height: 600,
             width: 600,
-            modal: true
+            modal: true,
+            resizable: false
         });
 
         $( "#import" ).click(function() {
@@ -102,6 +103,9 @@ var UploadView = Backbone.View.extend({
                         for(var i = 1; i < err[obj].length; i ++)
                              error_text += ', "' + err[obj][i] + '"';
                     }
+                    if(obj == "lackofdata"){
+                        error_text += 'Lack of useful attrubutes...<br>';
+                    }
                     
                 error_text += "<br>"
                 }
@@ -136,7 +140,7 @@ var UploadView = Backbone.View.extend({
                     
                 else{
                     var report_text = set_error(result);
-                    console.log(report_text);
+                    // console.log(report_text);
                     $('#err_report').html(report_text);
                 }
                 $("#filename").removeAttr("disabled");

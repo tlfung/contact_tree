@@ -127,8 +127,9 @@ def test_type(table, attr_type):
     final_attr_info["default"] = []
     # final_attr_info["incat"] = []
     final_attr_info["inbool"] = []
+    # final_attr_info["lackdata"] = []
 
-    
+    useful_data = 0
     temp_default = []
     for field in attr_type:
         print field
@@ -141,14 +142,26 @@ def test_type(table, attr_type):
         if field != 'e_id' and field != 'egoid' and field != 'alterid':
             attr_info[field] = dict()
             attr_info[field]["TYPE"] = attr_type[field]               
-            # if attr_type[field] == 'categorical':    
-            if attr_type[field] == 'numerical':
+            if attr_type[field] == 'categorical':
+                # print 'SELECT MIN(`' + field + '`), MAX(`' + field + '`), COUNT(DISTINCT(`' + field + '`)) FROM ' + table + ' WHERE `'+ field + '` is not NULL;'
+                a_cur = db.query('SELECT MIN(`' + field + '`), MAX(`' + field + '`), COUNT(DISTINCT(`' + field + '`)) FROM ' + table + ' WHERE `'+ field + '` is not NULL;')
+                f_val = a_cur.fetchone()
+                # attr_info[field] = dict()
+                for ff in f_val:
+                    attr_info[field][ff.split("(")[0]] = f_val[ff]
+                # if attr_info[f]["COUNT"] > 20:
+                #     final_attr_info["incat"].append(f)
+                attr_info[field]["RANGE"] = attr_info[field]["COUNT"]
+                useful_data += 1
+
+            elif attr_type[field] == 'numerical':
                 a_cur = db.query('SELECT MIN(cast(`' + field + '` as unsigned)), MAX(cast(`' + field + '` as unsigned)) FROM ' + table + ' WHERE `'+ field + '` is not NULL;')
                 f_val = a_cur.fetchone()
                 # attr_info[field] = dict()
                 for ff in f_val:
                     attr_info[field][ff.split("(")[0]] = f_val[ff]
                 attr_info[field]["RANGE"] = attr_info[field]["MAX"] - attr_info[field]["MIN"] + 1
+                useful_data += 1
             
             elif attr_type[field] == 'boolean':
                 a_cur = db.query('SELECT MIN(`' + field + '`), MAX(`' + field + '`), COUNT(DISTINCT(`' + field + '`)) FROM ' + table + ' WHERE `'+ field + '` is not NULL;')
@@ -159,6 +172,7 @@ def test_type(table, attr_type):
                 if attr_info[field]["COUNT"] > 2:
                     final_attr_info["inbool"].append(field)
                 attr_info[field]["RANGE"] = attr_info[field]["COUNT"]
+                useful_data += 1
             else:
                 # print 'SELECT MIN(`' + field + '`), MAX(`' + field + '`), COUNT(DISTINCT(`' + field + '`)) FROM ' + table + ' WHERE `'+ field + '` is not NULL;'
                 a_cur = db.query('SELECT MIN(`' + field + '`), MAX(`' + field + '`), COUNT(DISTINCT(`' + field + '`)) FROM ' + table + ' WHERE `'+ field + '` is not NULL;')
@@ -170,7 +184,19 @@ def test_type(table, attr_type):
                 #     final_attr_info["incat"].append(f)
                 attr_info[field]["RANGE"] = attr_info[field]["COUNT"]
 
+                if attr_info[field]["COUNT"] == 2:
+                    attr_info[field]["TYPE"] = "boolean"
+                    useful_data += 1
+                elif attr_info[field]["COUNT"] < 20:
+                    attr_info[field]["TYPE"] = "categorical"
+                    useful_data += 1
+                else:
+                    attr_info[field]["TYPE"] = "id"
+
             # else:
+
+    if useful_data < 5:
+        return [{"lackofdata": [useful_data]}, attr_info]
 
     if defult_col == 2:
         if len(final_attr_info["inbool"]) == 0:
