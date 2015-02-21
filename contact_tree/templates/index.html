@@ -229,7 +229,7 @@
     <!-- popup window -->
     <div id="sidekey_dialog" title="Customize Your Tree" class="popup_window_title">
         <div id="sidekey_img" class="row text-center" style="float:left;  min-width:400px; width:55%; position: relative; border-right:solid 1 gray; overflow-x:auto;">
-            <img src="media/img/real_mix_tree.png" align="left" style="margin-left:20px; height:100%; padding-top:5px;"></img>
+            <img id="mapping_img" src="media/img/real_mix_tree.png" align="left" style="margin-left:20px; height:100%; padding-top:5px;"></img>
             <!-- <div id="stick_label" class="sidekey_label" style="left:3%; top:20%;">
                 <span class="sidekey_cmpt">Stick</span>
             </div> -->
@@ -241,7 +241,7 @@
                 <span class="sidekey_cmpt">Branch</span>
                 <span id="branch_map" class="sidekey_map">None</span>
             </div>
-            <div id="bside_label" class="sidekey_label" style="left:5%; top:46%;">
+            <div id="bside_label" class="sidekey_label" style="left:3%; top:37%;">
                 <span class="sidekey_cmpt">Branch Side</span>
                 <span id="bside_map" class="sidekey_map">None</span>
             </div>
@@ -272,26 +272,28 @@
 
         <div id="sidekey_selection" style="display:none; width:45%; float:left; margin-top:5px; position:relative; margin-left:20px;">
             <div id="sidekey_title" class="myfont3"></div>
-            <div id="sidekey_description" class="myfont4" style="width:100%; min-height:15%; background:rgba(128, 128, 128, 0.38); border-radius:5; margin-top:5px; text-align:justify"></div>
+            <div id="sidekey_description" class="myfont4" style="display:none; width:100%; min-height:15%; background:rgba(128, 128, 128, 0.38); border-radius:5; margin-top:5px; text-align:justify"></div>
             <div class="left" style="width:100%; margin-top:10px;">
                 <span class="left myfont3">Attribute Candidates:</span>
-                <select id="sidekeyselect" class="sidekey_selection" style="width:53%; margin-left:5px;">
+                <select id="sidekeyselect" class="sidekey_selection" style="width:53%;">
                 </select>
             </div>
-            <div id="sidekey_operation" class="left" style="width:100%; margin-top:10px; display:none;">
-                <span id="mark_group" class="left myfont3"></span><br>
-                <div id="mark_group_select" class="mark_group_checkbox left" style="width:100%; margin-left:5px; max-height:300px; overflow-y:auto;">
+            <div id="sidekey_operation" class="left" style="width:100%; /*margin-top:10px;*/ display:none;">
+                <!-- <div id="attribute_list" class="left" style="width:100%; margin-left:5px;">
+                </div><br> -->
+                <span id="mark_group" class="left myfont3"></span>
+                <div id="mark_group_select" class="mark_group_checkbox left" style="width:100%; /*margin-left:5px;*/">
                 </div>
             </div>
             
-            <button class="btn btn-default right" id="sidekey_submit_trunk" style="width:100%; margin-bottom:5px; display:none;">Done</button>
-            <button class="btn btn-default right" id="sidekey_submit_branch" style="width:100%; margin-bottom:5px; display:none;">Done</button>
-            <button class="btn btn-default right" id="sidekey_submit_bside" style="width:100%; margin-bottom:5px; display:none;">Done</button>
-            <button class="btn btn-default right" id="sidekey_submit_root" style="width:100%; margin-bottom:5px; display:none;">Done</button>
-            <button class="btn btn-default right" id="sidekey_submit_leaf_size" style="width:100%; margin-bottom:5px; display:none;">Done</button>
-            <button class="btn btn-default right" id="sidekey_submit_leaf_color" style="width:100%; margin-bottom:5px; display:none;">Done</button>
-            <button class="btn btn-default right" id="sidekey_submit_leaf_highlight" style="width:100%; margin-bottom:5px; display:none;">Done</button>
-            <button class="btn btn-default right" id="sidekey_submit_fruit_size" style="width:100%; margin-bottom:5px; display:none;">Done</button>
+            <button class="btn btn-default right" id="sidekey_submit_trunk" style="width:100%; margin-top:10px; display:none;">Done</button>
+            <button class="btn btn-default right" id="sidekey_submit_branch" style="width:100%; margin-top:10px; display:none;">Done</button>
+            <button class="btn btn-default right" id="sidekey_submit_bside" style="width:100%; margin-top:10px; display:none;">Done</button>
+            <button class="btn btn-default right" id="sidekey_submit_root" style="width:100%; margin-top:10px; display:none;">Done</button>
+            <button class="btn btn-default right" id="sidekey_submit_leaf_size" style="width:100%; margin-top:10px; display:none;">Done</button>
+            <button class="btn btn-default right" id="sidekey_submit_leaf_color" style="width:100%; margin-top:10px; display:none;">Done</button>
+            <button class="btn btn-default right" id="sidekey_submit_leaf_highlight" style="width:100%; margin-top:10px; display:none;">Done</button>
+            <button class="btn btn-default right" id="sidekey_submit_fruit_size" style="width:100%; margin-top:10px; display:none;">Done</button>
             <!-- <div id="repeat_submit" style="width:100%; margin-bottom:5px; display:none;"> -->
                 <!-- <button class="btn btn-default right" id="sidekey_submit" style="width:100%; margin-bottom:5px; display:none;">Done</button> -->
             <!-- </div> -->
@@ -371,7 +373,7 @@
 
 
     <div id="menu_dialog" title="Choose Display Data" class="popup_window_title" style="overflow:hidden;">
-        <div class="left" style="width:50%;">
+        <div id="ego_container" class="left" style="width:50%;">
             <span class="left myfont3">Datase:</span>
             <select id="dataselect" style="width:70%; margin-left:5px;">
                 <option value="0">Dataset</option>
@@ -383,7 +385,7 @@
         </div>
         <div id="group_container" class="left" style="margin-left:10px; width:45%; display:none;">
             <span class="left myfont3">Group:</span>
-            <select id="egogroup" style="width:75%; margin-left:5px;">
+            <select id="egogroup" style="width:70%; margin-left:5px;">
                 <option value="0">Ego group</option>
                 <option value="all">All</option>
             </select>        

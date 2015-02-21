@@ -2741,7 +2741,7 @@ var RenderingView = Backbone.View.extend({
                     var color = mapping_color.leaf_color[sum_leaf[g].color];
                     var leaf_id = sum_leaf[g].leaf_id;
                     
-                    if(self.leaf_hovor == leaf_id){
+                    if(leaf_id != "none" && self.leaf_hovor == leaf_id){
                         radius = leaf_table[sum_leaf[g].size]*2;
                         if(next > 0){
                             point_y += dir_v[1]*radius*0.75;
@@ -2784,73 +2784,60 @@ var RenderingView = Backbone.View.extend({
                         // var clicking_point;
                         // var point_in_canvas = [ (p[0]*this.scale) + this.translate_point[0], (p[1]*this.scale) + this.translate_point[1]];
                         // console.log("point: ", point_x, point_y);
-                        if(self.view == "else" && self.scale < 0.3){
-                            this.leaf_style_0(this.context, point_x, point_y, radius, color, angle, leaf_id, 0);
-                        }
-                        else{
-                            if(self.view == "inter"){}
-                            else{
-                                for(var leaf_x = 0; leaf_x < 2.5*radius*this.scale; leaf_x++){
-                                    for(var leaf_y = -radius*this.scale*0.25; leaf_y < radius*this.scale*0.25; leaf_y++){
-                                        // x = xcos - ysin, y = ycos + xsin
-                                        var real_x = (point_x*this.scale + this.translate_point[0]) + (leaf_x*Math.cos(angle) - leaf_y*Math.sin(angle));
-                                        var real_y = (point_y*this.scale + this.translate_point[1]) + (leaf_y*Math.cos(angle) + leaf_x*Math.sin(angle));
-                                        // var real_x = (point_x*this.scale + leaf_x)*Math.cos(angle) - (point_y*this.scale  + leaf_y)*Math.sin(angle);
-                                        // var real_y = (point_y*this.scale + leaf_y)*Math.cos(angle) + (point_x*this.scale  + leaf_x)*Math.sin(angle);
-                                        
-                                        // var clicking_point = [Math.round((real_x + this.translate_point[0])/self.c_detail), Math.round((real_y + this.translate_point[1]*this.scale)/self.c_detail)];
-                                        var clicking_point = [Math.round(real_x/self.c_detail), Math.round(real_y/self.c_detail)];
-                                        if(clicking_point[0] >= 0 && clicking_point[0] <= this.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= this.myCanvas.height/self.c_detail){
-                                            this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+" +  leaf_id;
-                                        }
-                                    }
-                                    
+                        for(var leaf_x = 0; leaf_x < 2.5*radius*this.scale; leaf_x++){
+                            for(var leaf_y = -radius*this.scale*0.25; leaf_y < radius*this.scale*0.25; leaf_y++){
+                                // x = xcos - ysin, y = ycos + xsin
+                                var real_x = (point_x*this.scale + this.translate_point[0]) + (leaf_x*Math.cos(angle) - leaf_y*Math.sin(angle));
+                                var real_y = (point_y*this.scale + this.translate_point[1]) + (leaf_y*Math.cos(angle) + leaf_x*Math.sin(angle));
+                                // var real_x = (point_x*this.scale + leaf_x)*Math.cos(angle) - (point_y*this.scale  + leaf_y)*Math.sin(angle);
+                                // var real_y = (point_y*this.scale + leaf_y)*Math.cos(angle) + (point_x*this.scale  + leaf_x)*Math.sin(angle);
+                                
+                                // var clicking_point = [Math.round((real_x + this.translate_point[0])/self.c_detail), Math.round((real_y + this.translate_point[1]*this.scale)/self.c_detail)];
+                                var clicking_point = [Math.round(real_x/self.c_detail), Math.round(real_y/self.c_detail)];
+                                if(clicking_point[0] >= 0 && clicking_point[0] <= this.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= this.myCanvas.height/self.c_detail){
+                                    if(leaf_id != "none")
+                                        this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+" +  leaf_id;
+                                    else
+                                        this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+ ";
                                 }
                             }
-                                                        
-                            // angle = -Math.atan(m);
-                            this.leaf_style_1(this.context, point_x, point_y, radius, color, angle, leaf_id);
+                            
                         }
-                        
+                        this.leaf_style_1(this.context, point_x, point_y, radius, color, angle, leaf_id);
+                                                
                     }
                     else{
                         angle = angle - (Math.PI/4);
-                        if(self.view == "else" && self.scale < 0.3){
-                            this.leaf_style_0(this.context, point_x, point_y, radius, color, angle, leaf_id, 1);
-                        }
-                        else{
-                            if(self.view == "inter"){}
-                            else{
-                                for(var leaf_x = 0; leaf_x < 2.5*radius*this.scale; leaf_x++){
-                                    for(var leaf_y = -radius*this.scale*0.5; leaf_y < radius*this.scale*0.5; leaf_y++){
-                                        // x = xcos - ysin, y = ycos + xsin
-                                        var real_x = (point_x*this.scale + this.translate_point[0]) + (leaf_x*Math.cos(angle) - leaf_y*Math.sin(angle));
-                                        var real_y = (point_y*this.scale + this.translate_point[1]) + (leaf_y*Math.cos(angle) + leaf_x*Math.sin(angle));
-                                        // var real_x = (point_x*this.scale + leaf_x)*Math.cos(angle) - (point_y*this.scale  + leaf_y)*Math.sin(angle);
-                                        // var real_y = (point_y*this.scale + leaf_y)*Math.cos(angle) + (point_x*this.scale  + leaf_x)*Math.sin(angle);
-                                        
-                                        // var clicking_point = [Math.round((real_x + this.translate_point[0])/self.c_detail), Math.round((real_y + this.translate_point[1]*this.scale)/self.c_detail)];
-                                        var clicking_point = [Math.round(real_x/self.c_detail), Math.round(real_y/self.c_detail)];
-                                        if(clicking_point[0] >= 0 && clicking_point[0] <= this.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= this.myCanvas.height/self.c_detail){
-                                            this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+" +  leaf_id;
-                                        }
-                                    }
-                                    
+                        for(var leaf_x = 0; leaf_x < 2.5*radius*this.scale; leaf_x++){
+                            for(var leaf_y = -radius*this.scale*0.5; leaf_y < radius*this.scale*0.5; leaf_y++){
+                                // x = xcos - ysin, y = ycos + xsin
+                                var real_x = (point_x*this.scale + this.translate_point[0]) + (leaf_x*Math.cos(angle) - leaf_y*Math.sin(angle));
+                                var real_y = (point_y*this.scale + this.translate_point[1]) + (leaf_y*Math.cos(angle) + leaf_x*Math.sin(angle));
+                                // var real_x = (point_x*this.scale + leaf_x)*Math.cos(angle) - (point_y*this.scale  + leaf_y)*Math.sin(angle);
+                                // var real_y = (point_y*this.scale + leaf_y)*Math.cos(angle) + (point_x*this.scale  + leaf_x)*Math.sin(angle);
+                                
+                                // var clicking_point = [Math.round((real_x + this.translate_point[0])/self.c_detail), Math.round((real_y + this.translate_point[1]*this.scale)/self.c_detail)];
+                                var clicking_point = [Math.round(real_x/self.c_detail), Math.round(real_y/self.c_detail)];
+                                if(clicking_point[0] >= 0 && clicking_point[0] <= this.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= this.myCanvas.height/self.c_detail){
+                                    if(leaf_id != "none")
+                                        this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+" +  leaf_id;
+                                    else
+                                        this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+ ";
                                 }
                             }
-                            // angle = -Math.atan(m);
-                            this.leaf_style_1(this.context, point_x, point_y, radius, color, angle, leaf_id);                            
+                            
                         }
+                        this.leaf_style_1(this.context, point_x, point_y, radius, color, angle, leaf_id);
                         
                     }
 
                     if(h>0){
                         if(h==1){
                             var max = Math.max(leaf_table[sum_leaf[g].size], leaf_table[sum_leaf[g-1].size]);
-                            if(self.leaf_hovor == sum_leaf[g].leaf_id){
+                            if(sum_leaf[g].leaf_id != "none" && self.leaf_hovor == sum_leaf[g].leaf_id){
                                 max = leaf_table[sum_leaf[g].size]*4;
                             }
-                            else if(self.leaf_hovor == sum_leaf[g-1].leaf_id){
+                            else if(sum_leaf[g].leaf_id != "none" && self.leaf_hovor == sum_leaf[g-1].leaf_id){
                                 max = leaf_table[sum_leaf[g-1].size]*4;
                             }
                                                         
@@ -2858,7 +2845,7 @@ var RenderingView = Backbone.View.extend({
                         }
                         else{
                             next = leaf_table[sum_leaf[g].size]/2;
-                            if(self.leaf_hovor == sum_leaf[g].leaf_id){
+                            if(sum_leaf[g].leaf_id != "none" && self.leaf_hovor == sum_leaf[g].leaf_id){
                                 next = leaf_table[sum_leaf[g].size]*2;
                             }
                         }
@@ -3648,7 +3635,7 @@ var RenderingView = Backbone.View.extend({
         var self = this;
         ctx.save();
         this.context.lineWidth = 1;
-        if(self.leaf_hovor == l_id){
+        if(l_id != "none" && self.leaf_hovor == l_id){
             this.context.lineWidth = 25;
         }
         this.context.strokeStyle = mapping_color.leaf_stork;//line's color

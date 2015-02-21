@@ -20,8 +20,10 @@ var UploadView = Backbone.View.extend({
         // open the dialog
         $( "#import_dialog" ).dialog({
             autoOpen: false,
-            height: 600,
-            width: 600,
+            // height: 600,
+            // width: 600,
+            height: $(window).width()*0.5*0.9,
+            width: $(window).width()*0.5,
             modal: true,
             resizable: false
         });

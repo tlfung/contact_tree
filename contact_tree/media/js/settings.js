@@ -111,6 +111,7 @@ var mapping_size = {
 };
 
 var component_attribute = {};
+var attribute_mapping = {};
 
 // var cat_dblp = ["DB", "AI", "Vis", "Arch", "Dist", "Net", "WWW", "OS", "Sec", "PL", "SE", "Theory", "Crypto", "Bio", " "];
 /*

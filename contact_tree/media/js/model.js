@@ -132,6 +132,7 @@ var Tree_Model = Backbone.Model.extend({
 	        	for(a in data){
 	        		component_attribute[mode][a] = data[a];
 	        	}
+	        	component_attribute[mode]["none"] = [["none"], 0, 0, 0, 1, "none"];
 	        };
 
 	        set_ego_list_json(result[0]);

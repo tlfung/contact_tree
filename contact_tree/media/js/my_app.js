@@ -18,12 +18,44 @@ window.cancelRequestAnimFrame = ( function() {
         clearTimeout;
 } )();
 
+
+function resize_dialog(h, w){
+    $( "#import_dialog" ).dialog({
+        autoOpen: false,
+        // height: 600,
+        // width: 600,
+        height: w*0.5*0.9,
+        width: w*0.5,
+        modal: true,
+        resizable: false
+    });
+    $( "#sidekey_dialog" ).dialog({
+        autoOpen: false,
+        // height: 600,
+        // width: 800,
+        height: w*0.7*0.7,
+        width: w*0.7,
+        modal: true,
+        resizable: false
+    });
+    $( "#menu_dialog" ).dialog({
+        autoOpen: false,
+        height: w*0.4*0.7,
+        width: w*0.4,
+        modal: true,
+        resizable: false
+    });
+    $("#divTable_menu").css({'height': w*0.4*0.7*0.75});
+    // $(".myfont3").css({'font-size': 18*w/1260});
+    
+};
+
 var MyApp = function MyApp(){
+    var self = this;
     if ( arguments.callee._singletonInstance )
         return arguments.callee._singletonInstance;
     arguments.callee._singletonInstance = this;
-
-    var self = this;
+    
     // init models
     this.model = new Tree_Model();
     
@@ -43,6 +75,7 @@ var MyApp = function MyApp(){
         self.model.set({"canvas_width": myCanvas.width});
         self.model.trigger('change:canvas_width');
         self.model.set({"canvas_grid": a_grid});
+        resize_dialog($(window).height(), $(window).width());
     };
 
     var arr_grid = self.model.get("canvas_grid");

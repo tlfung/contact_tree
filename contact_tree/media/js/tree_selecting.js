@@ -30,11 +30,16 @@ var SelectingView = Backbone.View.extend({
         // open the dialog
         $( "#menu_dialog" ).dialog({
             autoOpen: false,
-            height: 400,
-            width: 550,
+            // height: 400,
+            // width: 550,
+            height: $(window).width()*0.4*0.7,
+            width: $(window).width()*0.4,
             modal: true,
             resizable: false
         });
+
+        $("#divTable_menu").css({'height': ($(window).width()*0.4*0.7) - $("ego_container").height() - $("main_title").height() - 100}); // - $("ui-id-2").height() 
+
         $( "#menu" ).click(function() {
             var mode = self.model.get("view_mode");
             $( "#menu_dialog" ).dialog( "open" );
@@ -67,6 +72,7 @@ var SelectingView = Backbone.View.extend({
             
             self.my_ego_selected = {};
             self.my_ego_display = {};
+            attribute_mapping = {};
 
             self.model.set({"canvas_translate": [0, 0]});
             self.model.set({"canvas_scale": 0.15});
@@ -222,7 +228,7 @@ var SelectingView = Backbone.View.extend({
             var now_attr = JSON.stringify(self.model.get("attribute"));
             var now_mode = self.model.get("view_mode");
 
-            var requst = now_attr + ":-" + self.my_ego + ":-" + now_mode;
+            var requst = now_attr + ":-" + self.my_ego + ":-" + now_mode + ":-" + JSON.stringify(attribute_mapping);
             self.model.update_data(requst);
             // button click event
             $("#submit_ego").click(function(){ // store selecting data

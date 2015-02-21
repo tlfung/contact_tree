@@ -533,32 +533,167 @@ def get_list_ego(request):
         final_return.append(e_list)
 
         default_attr["stick"] = "alterid"
+
+        cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range < 20 and dataset="' + table + '" and `alter_info`="1" ORDER BY attr_range;')
+        all_attr = cur.fetchall()
+        # candidate1 = dict()
+        candidate1 = []
+        for relate in all_attr:
+            candidate1.append(relate['attr'])
+            # candidate1[relate['attr']] = int(relate["attr_range"])
+        # print candidate1
+
+        required_cmpt = ["trunk", "bside", "branch"]
+        if len(candidate1) >= 3:
+            default_attr["trunk"] = candidate1[0]
+            default_attr["bside"] = candidate1[1]
+            default_attr["branch"] = candidate1[-1]
+            
+        elif len(candidate1) == 2:
+            default_attr["trunk"] = candidate1[0]
+            default_attr["bside"] = candidate1[1]
+
+            cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range >= 20 and dataset="' + table + '" and `alter_info`="1" and `type`="numerical" ORDER BY attr_range;')
+            all_attr = cur.fetchall()
+            # candidate2 = dict()
+            candidate2 = []
+            for relate in all_attr:
+                candidate2.append(relate['attr'])
+                # candidate2[relate['attr']] = int(relate["attr_range"])
+            if len(candidate2) > 0:
+                default_attr["branch"] = candidate2[-1]
+            else:
+                default_attr["branch"] = candidate1[-1]
+                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
+                all_attr = cur.fetchone()
+                default_attr["bside"] = all_attr['attr']
+
+        elif len(candidate1) == 1:
+            default_attr["trunk"] = candidate1[0]
+
+            cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range >= 20 and dataset="' + table + '" and `alter_info`="1" and `type`="numerical" ORDER BY attr_range;')
+            all_attr = cur.fetchall()
+            # candidate2 = dict()
+            candidate2 = []
+            for relate in all_attr:
+                candidate2.append(relate['attr'])
+                # candidate2[relate['attr']] = int(relate["attr_range"])
+            if len(candidate2) > 1:
+                default_attr["bside"] = candidate2[0]
+                default_attr["branch"] = candidate2[-1]
+            elif len(candidate2) > 0:
+                default_attr["branch"] = candidate2[-1]
+
+                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
+                all_attr = cur.fetchall()
+                # candidate3 = dict()
+                candidate3 = []
+                # max_group3 = 0
+                for relate in all_attr:
+                    # max_group3 = int(relate["attr_range"])
+                    candidate3.append(relate['attr'])
+                    # candidate3[relate['attr']] = int(relate["attr_range"])
+                if len(candidate3) > 0:
+                    default_attr["bside"] = candidate3[0]
+            else:
+                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
+                all_attr = cur.fetchall()
+                # candidate3 = dict()
+                candidate3 = []
+                # max_group3 = 0
+                for relate in all_attr:
+                    # max_group3 = int(relate["attr_range"])
+                    candidate3.append(relate['attr'])
+                    # candidate3[relate['attr']] = int(relate["attr_range"])
+                if len(candidate3) > 0:
+                    default_attr["bside"] = candidate3[0]
+                    default_attr["branch"] = candidate3[0]
+
+        elif len(candidate1) == 0:
+            cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range >= 20 and dataset="' + table + '" and `alter_info`="1" and `type`="numerical" ORDER BY attr_range;')
+            all_attr = cur.fetchall()
+            # candidate2 = dict()
+            candidate2 = []
+            for relate in all_attr:
+                candidate2.append(relate['attr'])
+                # candidate2[relate['attr']] = int(relate["attr_range"])
+            if len(candidate2) > 2:
+                default_attr["trunk"] = candidate2[0]
+                default_attr["bside"] = candidate2[1]
+                default_attr["branch"] = candidate2[-1]
+            elif len(candidate2) == 2:
+                default_attr["trunk"] = candidate2[0]
+                default_attr["branch"] = candidate2[1]
+                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
+                all_attr = cur.fetchall()
+                # candidate3 = dict()
+                candidate3 = []
+                # max_group3 = 0
+                for relate in all_attr:
+                    # max_group3 = int(relate["attr_range"])
+                    candidate3.append(relate['attr'])
+                if len(candidate3) > 0:
+                    default_attr["bside"] = candidate2[1]
+            elif len(candidate2) == 1:
+                default_attr["trunk"] = candidate2[0]
+                # default_attr["branch"] = candidate2[1]
+                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
+                all_attr = cur.fetchall()
+                # candidate3 = dict()
+                candidate3 = []
+                # max_group3 = 0
+                for relate in all_attr:
+                    # max_group3 = int(relate["attr_range"])
+                    candidate3.append(relate['attr'])
+                if len(candidate3) > 0:
+                    default_attr["bside"] = candidate3[0]
+                    default_attr["branch"] = candidate3[1]
+            else:
+                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
+                all_attr = cur.fetchall()
+                # candidate3 = dict()
+                candidate3 = []
+                # max_group3 = 0
+                for relate in all_attr:
+                    # max_group3 = int(relate["attr_range"])
+                    candidate3.append(relate['attr'])
+                if len(candidate3) > 0:
+                    default_attr["trunk"] = candidate3[0]
+                    default_attr["bside"] = candidate3[1]
+                    default_attr["branch"] = candidate3[2]
+
+        default_attr["fruit_size"] = "none"
+
+        default_attr["leaf_color"] = "none"
+        default_attr["leaf_size"] = "none"
+        default_attr["root"] = "none"
+        default_attr["leaf_id"] = "none"
         
-        cur = db.query('SELECT * FROM dataset_collection WHERE attr_range < 20 and dataset="' + table + '" and `alter_info`="1";')
-        relate_alter = cur.fetchall()
-        candidate = dict()
-        for relate in relate_alter:
-            candidate[relate['attr']] = int(relate["attr_range"])
-        # candidate_range = sorted(candidate.values(), key=int)
-        sort_candidate = sorted(candidate.items(), key=operator.itemgetter(1))
+        # cur = db.query('SELECT * FROM dataset_collection WHERE attr_range < 20 and dataset="' + table + '" and `alter_info`="1";')
+        # relate_alter = cur.fetchall()
+        # candidate = dict()
+        # for relate in relate_alter:
+        #     candidate[relate['attr']] = int(relate["attr_range"])
+        # # candidate_range = sorted(candidate.values(), key=int)
+        # sort_candidate = sorted(candidate.items(), key=operator.itemgetter(1))
         
-        default_attr["trunk"] = sort_candidate[0][0]
-        default_attr["bside"] = sort_candidate[1][0]
-        default_attr["fruit_size"] = sort_candidate[2][0]
-        default_attr["branch"] = sort_candidate[-1][0]
+        # default_attr["trunk"] = sort_candidate[0][0]
+        # default_attr["bside"] = sort_candidate[1][0]
+        # default_attr["fruit_size"] = sort_candidate[2][0]
+        # default_attr["branch"] = sort_candidate[-1][0]
 
-        cur = db.query('SELECT * FROM dataset_collection WHERE attr_range > 3 and dataset="' + table + '" and `alter_info`is NULL;')
-        relate_ego = cur.fetchall()
-        ego_candidate = dict()
-        for relate in relate_ego:
-            ego_candidate[relate['attr']] = int(relate["attr_range"])
+        # cur = db.query('SELECT * FROM dataset_collection WHERE attr_range > 3 and dataset="' + table + '" and `alter_info`is NULL;')
+        # relate_ego = cur.fetchall()
+        # ego_candidate = dict()
+        # for relate in relate_ego:
+        #     ego_candidate[relate['attr']] = int(relate["attr_range"])
 
-        sort_candidate = sorted(ego_candidate.items(), key=operator.itemgetter(1))
+        # sort_candidate = sorted(ego_candidate.items(), key=operator.itemgetter(1))
 
-        default_attr["leaf_color"] = sort_candidate[0][0]
-        default_attr["leaf_size"] = sort_candidate[1][0]
-        default_attr["root"] = sort_candidate[2][0]
-        default_attr["leaf_id"] = sort_candidate[-1][0]
+        # default_attr["leaf_color"] = sort_candidate[0][0]
+        # default_attr["leaf_size"] = sort_candidate[1][0]
+        # default_attr["root"] = sort_candidate[2][0]
+        # default_attr["leaf_id"] = sort_candidate[-1][0]
 
         final_return.append(default_attr)
 
@@ -566,14 +701,20 @@ def get_list_ego(request):
         attr_info = cur.fetchall()
         for info in attr_info:
             detail_array = []
-            if int(info['attr_range']) < 20:
+            if info['type'] == "categorical":
                 infocur = db.query('SELECT DISTINCT(`' + info['attr'] + '`) FROM ' + table + ';')
                 attr_detail = infocur.fetchall()
-                for d in attr_detail:
-                    detail_array.append(int(d[info['attr']]))
-                detail_array.sort(key=int)
+                if info['min'].isdigit():
+                    for d in attr_detail:
+                        detail_array.append(int(d[info['attr']]))  
+                    detail_array.sort(key=int)
+                else:
+                    detail_array.append(d[info['attr']]) 
 
-            cmpt_attr[info['attr']] = [detail_array, int(info['min']), int(info['max']), int(info['attr_range']), info['alter']]
+            elif info['type'] == "numerical":
+                detail_array = [">", "<=", "="]
+
+            cmpt_attr[info['attr']] = [detail_array, info['min'], info['max'], info['attr_range'], info['alter'], info['type']]
 
         # return the all the infomation of all the attr 
         final_return.append(cmpt_attr)
@@ -609,8 +750,7 @@ def unique_stick(all_data, attr, branch_layer):
     structure = dict()
     # print stick_unique
     structure["right"] = []
-    structure["left"] = []
-    structure["root"] = []
+    structure["left"] = []  
 
     root = attr['root']
     stick = "alterid"
@@ -630,18 +770,27 @@ def unique_stick(all_data, attr, branch_layer):
         alter_array_left_up.append([])
         alter_array_right_down.append([])
         alter_array_left_down.append([])
-    structure["root"].append({})
+
+    if root != "none":
+        structure["root"] = []
+        structure["root"].append({})
 
     for meeting in all_data:
         # meeting = c
-        if meeting[root] not in structure["root"][0]:
-            structure["root"][0][meeting[root]] = dict()
-            structure["root"][0][meeting[root]]["length"] = 0
-            structure["root"][0][meeting[root]]["sub"] = [10 for i in range(12)] # may add attribute mapping
-            structure["root"][0][meeting[root]]["root_cat"] = meeting[root]
-            # print structure["root"]
+        if root != "none":
+            if meeting[root] not in structure["root"][0]:
+                structure["root"][0][meeting[root]] = dict()
+                structure["root"][0][meeting[root]]["length"] = 0
+                structure["root"][0][meeting[root]]["sub"] = [10 for i in range(12)] # may add attribute mapping
+                structure["root"][0][meeting[root]]["root_cat"] = meeting[root]
+                # print structure["root"]
+            else:
+                structure["root"][0][meeting[root]]["length"] += 1
+
+        if leaf_id == "none":
+            leaf_highlights = "none"
         else:
-            structure["root"][0][meeting[root]]["length"] += 1
+            leaf_highlights = meeting[leaf_id]
         # left
         if meeting['ctree_trunk'] == 0:
             level = 0
@@ -651,7 +800,7 @@ def unique_stick(all_data, attr, branch_layer):
                 if meeting["ctree_branch"] == l and meeting["ctree_bside"] == 1:
                     if len(alter_array_left_up[level]) == 0:
                         structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                        structure["left"][level]["level"]["up"][len(alter_array_left_up[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                        structure["left"][level]["level"]["up"][len(alter_array_left_up[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                         alter_array_left_up[level].append(meeting[stick])
 
                     else:
@@ -663,10 +812,10 @@ def unique_stick(all_data, attr, branch_layer):
                             count_alter += 1
                         if new_alter == -1:
                             structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                            structure["left"][level]["level"]["up"][len(alter_array_left_up[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            structure["left"][level]["level"]["up"][len(alter_array_left_up[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                             alter_array_left_up[level].append(meeting["alterid"])
                         else:
-                            structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
 
                     break
 
@@ -674,7 +823,7 @@ def unique_stick(all_data, attr, branch_layer):
                 elif meeting["ctree_branch"] == l and meeting["ctree_bside"] == 0:
                     if len(alter_array_left_down[level]) == 0:
                         structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                        structure["left"][level]["level"]["down"][len(alter_array_left_down[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                        structure["left"][level]["level"]["down"][len(alter_array_left_down[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                         alter_array_left_down[level].append(meeting[stick])
                     else:
                         count_alter = 0
@@ -685,10 +834,10 @@ def unique_stick(all_data, attr, branch_layer):
                             count_alter += 1
                         if new_alter == -1:
                             structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                            structure["left"][level]["level"]["down"][len(alter_array_left_down[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            structure["left"][level]["level"]["down"][len(alter_array_left_down[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                             alter_array_left_down[level].append(meeting[stick])
                         else:
-                            structure["left"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            structure["left"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
 
                     break
                 level += 1
@@ -701,7 +850,7 @@ def unique_stick(all_data, attr, branch_layer):
                 if meeting["ctree_branch"] == l and meeting["ctree_bside"] == 1:
                     if len(alter_array_right_up[level]) == 0:
                         structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                        structure["right"][level]["level"]["up"][len(alter_array_right_up[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                        structure["right"][level]["level"]["up"][len(alter_array_right_up[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                         alter_array_right_up[level].append(meeting[stick])
                     else:
                         count_alter = 0
@@ -712,17 +861,17 @@ def unique_stick(all_data, attr, branch_layer):
                             count_alter += 1
                         if new_alter == -1:
                             structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                            structure["right"][level]["level"]["up"][len(alter_array_right_up[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            structure["right"][level]["level"]["up"][len(alter_array_right_up[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                             alter_array_right_up[level].append(meeting[stick])
                         else:
-                            structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
 
                     break
                 # level and down
                 elif meeting["ctree_branch"] == l and meeting["ctree_bside"] == 0:
                     if len(alter_array_right_down[level]) == 0:
                         structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                        structure["right"][level]["level"]["down"][len(alter_array_right_down[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                        structure["right"][level]["level"]["down"][len(alter_array_right_down[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                         alter_array_right_down[level].append(meeting[stick])
                     else:
                         count_alter = 0
@@ -733,10 +882,10 @@ def unique_stick(all_data, attr, branch_layer):
                             count_alter += 1
                         if new_alter == -1:
                             structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                            structure["right"][level]["level"]["down"][len(alter_array_right_down[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            structure["right"][level]["level"]["down"][len(alter_array_right_down[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                             alter_array_right_down[level].append(meeting["alterid"])
                         else:
-                            structure["right"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            structure["right"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
 
                     break
                 level += 1
@@ -749,7 +898,6 @@ def duplicate_stick(all_data, attr, branch_layer):
     # print stick_unique
     structure["right"] = []
     structure["left"] = []
-    structure["root"] = []
 
     root = attr['root']
     stick = "alterid"
@@ -762,18 +910,27 @@ def duplicate_stick(all_data, attr, branch_layer):
         structure["left"].append({"level": {"up": [], "down": []}})
         alter_array_right.append([])
         alter_array_left.append([])
-    structure["root"].append({})
 
+    if root != "none":
+        structure["root"] = []
+        structure["root"].append({})
+    
     for meeting in all_data:
         # meeting = c
-        if meeting[root] not in structure["root"][0]:
-            structure["root"][0][meeting[root]] = dict()
-            structure["root"][0][meeting[root]]["length"] = 0
-            structure["root"][0][meeting[root]]["sub"] = [10 for i in range(12)] # may add attribute mapping
-            structure["root"][0][meeting[root]]["root_cat"] = meeting[root]
-            # print structure["root"]
+        if root != "none":
+            if meeting[root] not in structure["root"][0]:
+                structure["root"][0][meeting[root]] = dict()
+                structure["root"][0][meeting[root]]["length"] = 0
+                structure["root"][0][meeting[root]]["sub"] = [10 for i in range(12)] # may add attribute mapping
+                structure["root"][0][meeting[root]]["root_cat"] = meeting[root]
+                # print structure["root"]
+            else:
+                structure["root"][0][meeting[root]]["length"] += 1
+
+        if leaf_id == "none":
+            leaf_highlights = "none"
         else:
-            structure["root"][0][meeting[root]]["length"] += 1
+            leaf_highlights = meeting[leaf_id]
         # left
         if meeting['ctree_trunk'] == 0:
             level = 0
@@ -783,7 +940,7 @@ def duplicate_stick(all_data, attr, branch_layer):
                 if meeting["ctree_branch"] == l and meeting["ctree_bside"] == 1:
                     if len(alter_array_left[level]) == 0:
                         structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                        structure["left"][level]["level"]["up"][len(alter_array_left[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                        structure["left"][level]["level"]["up"][len(alter_array_left[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                         structure["left"][level]["level"]["down"].append({})
                         alter_array_left[level].append(meeting[stick])
 
@@ -796,17 +953,17 @@ def duplicate_stick(all_data, attr, branch_layer):
                             count_alter += 1
                         if new_alter == -1:
                             structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                            structure["left"][level]["level"]["up"][len(alter_array_left[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            structure["left"][level]["level"]["up"][len(alter_array_left[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                             structure["left"][level]["level"]["down"].append({})
                             alter_array_left[level].append(meeting[stick])
                         else:
                             if is_empty(structure["left"][level]["level"]["up"][new_alter]):
                                 structure["left"][level]["level"]["up"][new_alter] = {"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []}
-                                structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                                structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                             else:
-                                structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                                structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
 
-                            # structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            # structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
 
                     break
 
@@ -814,7 +971,7 @@ def duplicate_stick(all_data, attr, branch_layer):
                 elif meeting["ctree_branch"] == l and meeting["ctree_bside"] == 0:
                     if len(alter_array_left[level]) == 0:
                         structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                        structure["left"][level]["level"]["down"][len(alter_array_left[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                        structure["left"][level]["level"]["down"][len(alter_array_left[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                         structure["left"][level]["level"]["up"].append({})
                         alter_array_left[level].append(meeting[stick])
                     else:
@@ -826,15 +983,15 @@ def duplicate_stick(all_data, attr, branch_layer):
                             count_alter += 1
                         if new_alter == -1:
                             structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                            structure["left"][level]["level"]["down"][len(alter_array_left[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            structure["left"][level]["level"]["down"][len(alter_array_left[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                             structure["left"][level]["level"]["up"].append({})
                             alter_array_left[level].append(meeting[stick])
                         else:
                             if is_empty(structure["left"][level]["level"]["down"][new_alter]):
                                 structure["left"][level]["level"]["down"][new_alter] = {"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []}
-                                structure["left"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                                structure["left"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                             else:
-                                structure["left"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                                structure["left"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
 
                     break
                 level += 1
@@ -847,7 +1004,7 @@ def duplicate_stick(all_data, attr, branch_layer):
                 if meeting["ctree_branch"] == l and meeting["ctree_bside"] == 1:
                     if len(alter_array_right[level]) == 0:
                         structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                        structure["right"][level]["level"]["up"][len(alter_array_right[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                        structure["right"][level]["level"]["up"][len(alter_array_right[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                         structure["right"][level]["level"]["down"].append({})
                         alter_array_right[level].append(meeting[stick])
                     else:
@@ -859,24 +1016,24 @@ def duplicate_stick(all_data, attr, branch_layer):
                             count_alter += 1
                         if new_alter == -1:
                             structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                            structure["right"][level]["level"]["up"][len(alter_array_right[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            structure["right"][level]["level"]["up"][len(alter_array_right[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                             structure["right"][level]["level"]["down"].append({})
                             alter_array_right[level].append(meeting[stick])
                         else:
                             if is_empty(structure["right"][level]["level"]["up"][new_alter]):
                                 structure["right"][level]["level"]["up"][new_alter] = {"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []}
-                                structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                                structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                             else:
-                                structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                                structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                                 
-                            # structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            # structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
 
                     break
                 # level and down
                 elif meeting["ctree_branch"] == l and meeting["ctree_bside"] == 0:
                     if len(alter_array_right[level]) == 0:
                         structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                        structure["right"][level]["level"]["down"][len(alter_array_right[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                        structure["right"][level]["level"]["down"][len(alter_array_right[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                         structure["right"][level]["level"]["up"].append({})
                         alter_array_right[level].append(meeting[stick])
                     else:
@@ -888,15 +1045,15 @@ def duplicate_stick(all_data, attr, branch_layer):
                             count_alter += 1
                         if new_alter == -1:
                             structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                            structure["right"][level]["level"]["down"][len(alter_array_right[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                            structure["right"][level]["level"]["down"][len(alter_array_right[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                             structure["right"][level]["level"]["up"].append({})
                             alter_array_right[level].append(meeting["alterid"])
                         else:
                             if is_empty(structure["right"][level]["level"]["down"][new_alter]):
                                 structure["right"][level]["level"]["down"][new_alter] = {"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []}
-                                structure["right"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                                structure["right"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                             else:
-                                structure["right"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": meeting[leaf_id]})
+                                structure["right"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
                                 
                     break
                 level += 1
@@ -905,32 +1062,94 @@ def duplicate_stick(all_data, attr, branch_layer):
     return structure
 
 
-def set_default_mapping(all_data, table, attr):
+def set_default_mapping(all_data, table, attr, mapping):
     # print "set_default_mapping"
     db = DB()
+    branch_index = []
+    binary_index = dict()
+    
     for d in all_data:
-        for compt in attr:
+        for compt in attr:                
             if compt == 'trunk' or compt == 'bside':
-                cur = db.query('SELECT min, max, attr_range FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
-                collecting_data = cur.fetchone()
-                mid = math.floor((int(collecting_data['max']) + int(collecting_data['min']))/2)
-                if int(d[attr[compt]]) <= int(mid):
-                    # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
-                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                if attr[compt] in mapping:
+                    if d[attr[compt]] in mapping[attr[compt]]["0"]:
+                        # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
+                        db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                    else:
+                        # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
+                        db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
+
                 else:
-                    # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
-                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
+                    cur = db.query('SELECT min, max, attr_range, type FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
+                    collecting_data = cur.fetchone()
+                    if str(collecting_data['min']).isdigit():
+                        mid = math.floor((int(collecting_data['max']) + int(collecting_data['min']))/2)
+                        if int(d[attr[compt]]) <= int(mid):
+                            # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
+                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                        else:
+                            # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
+                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
+                    else:
+                        if compt in binary_index:
+                            if binary_index[compt].index(d[attr[compt]]) < len(binary_index[compt])/2:
+                                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
+                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                            else:
+                                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
+                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
+
+                        else:
+                            binary_index[compt] = []
+                            precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + table + ';')
+                            real_data = precur.fetchall()
+                            for d in real_data:
+                                binary_index[compt].append(d["DISTINCT(' + attr[compt] + ')"])
+
+                            if binary_index[compt].index(d[attr[compt]]) < len(binary_index[compt])/2:
+                                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
+                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                            else:
+                                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
+                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
+
 
             if compt == 'fruit_size' or compt == 'leaf_size' or compt == 'leaf_color' or compt == 'branch':
-                cur1 = db.query('SELECT min FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
+                cur1 = db.query('SELECT * FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
                 collecting_data = cur1.fetchone()
-                
-                reorder = int(d[attr[compt]]) - int(collecting_data['min'])
-                if reorder > 15:
-                    reorder = 15 # set restrictions
-                
-                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=' + str(reorder) + ' WHERE e_id=' + str(d['e_id']) + ';'
-                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(reorder) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                if attr[compt] == "none":
+                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=3 WHERE e_id=' + str(d['e_id']) + ';')
+                else:
+                    if attr[compt] in mapping:
+                        for cat in mapping[attr[compt]]:
+                            if d[attr[compt]] in mapping[attr[compt]][cat]:
+                                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
+                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + cat + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                break
+                    else:
+                        if str(collecting_data['min']).isdigit():
+                            if collecting_data['attr_range'] < 20:
+                                reorder = int(d[attr[compt]]) - int(collecting_data['min'])
+                                if reorder > 15:
+                                    reorder = 15 # set restrictions
+                            else:
+                                if len(branch_index) == 0:
+                                    for r in range(int(collecting_data['min']) + (collecting_data['attr_range']/10), int(collecting_data['max'])- (collecting_data['attr_range']/10), collecting_data['attr_range']/10):
+                                        branch_index.append(r)
+                                    print branch_index
+                                reorder = takeClosest(int(d[attr[compt]]), branch_index)
+                            # print 'UPDATE ' + table + ' SET ctree_' + compt + '=' + str(reorder) + ' WHERE e_id=' + str(d['e_id']) + ';'
+                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(reorder) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                        else:
+                            if len(branch_index) == 0:
+                                precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + table + ';')
+                                real_data = precur.fetchall()
+                                for d in real_data:
+                                    branch_index.append(d["DISTINCT(' + attr[compt] + ')"])
+                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(branch_index.index(d[attr[compt]])) + ' WHERE e_id=' + str(d['e_id']) + ';')
+
+                    
+                    
 
     db.conn.commit()
 
@@ -1009,10 +1228,13 @@ def one_contact_update(request):
         attr = json.loads(list_request[0])
         ego = list_request[1]
         table = list_request[2]
+        mapping = json.loads(list_request[3])
+        print list_request
+        print mapping
         # attr['branch'] = 'age'
         precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + ego + '";')
         all_data = precur.fetchall()
-        set_default_mapping(all_data, table, attr)
+        set_default_mapping(all_data, table, attr, mapping)
 
     else:
         raise Http404
@@ -1025,6 +1247,7 @@ def one_contact_update(request):
 def update_binary(request):
     database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
     clause = database.cursor()
+    db = DB()
     # table = request.GET.get('contact')
     # print request.GET['contact']
     if request.GET.get('update'):
@@ -1036,29 +1259,35 @@ def update_binary(request):
         ori_column = list_request[2]
         new_column = list_request[1]
         zero_val = list_request[3:]
-        print select_ego
-        print ori_column
-        print new_column
-        print zero_val
+        # print select_ego
+        # print ori_column
+        # print new_column
+        # print zero_val
+        typecur = db.query('SELECT `type` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + ori_column + '";')
+        mytype = typecur.fetchone()["type"]
+        print mytype
+        if mytype == "categorical":
+            update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE (" + ori_column + "=" + zero_val[0]
+            update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE (" + ori_column + "!=" + zero_val[0]
+            for zero in zero_val[1:]:
+                update_query_zero += " OR " + ori_column + "=" + zero
+                update_query_one += " AND " + ori_column + "!=" + zero
+            if len(select_ego) > 0:
+                update_query_zero += ") AND ("
+                update_query_one += ") AND ("
+                for update_ego in select_ego[:-1]:
+                    update_query_zero += "egoid='" + update_ego + "' OR "
+                    update_query_one += "egoid='" + update_ego + "' OR "
 
-        update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE (" + ori_column + "=" + zero_val[0]
-        update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE (" + ori_column + "!=" + zero_val[0]
-        for zero in zero_val[1:]:
-            update_query_zero += " OR " + ori_column + "=" + zero
-            update_query_one += " AND " + ori_column + "!=" + zero
-        if len(select_ego) > 0:
-            update_query_zero += ") AND ("
-            update_query_one += ") AND ("
-            for update_ego in select_ego[:-1]:
-                update_query_zero += "egoid='" + update_ego + "' OR "
-                update_query_one += "egoid='" + update_ego + "' OR "
-
-            update_query_zero += "egoid='" + select_ego[-1] + "');"
-            update_query_one += "egoid='" + select_ego[-1] + "');"     
+                update_query_zero += "egoid='" + select_ego[-1] + "');"
+                update_query_one += "egoid='" + select_ego[-1] + "');"     
+            else:
+                update_query_zero += ");"
+                update_query_one += ");"     
         else:
-            update_query_zero += ");"
-            update_query_one += ");"     
-
+            update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE " + ori_column + "<=" + str(zero_val[0]) + ";"
+            update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE " + ori_column + ">" + str(zero_val[0]) + ";"
+            
         print update_query_zero
         print update_query_one
         clause.execute(update_query_zero)
@@ -2560,4 +2789,6 @@ def is_empty(any_structure):
         # print('Structure is empty.')
         return True
 
+def takeClosest(num, collection):
+   return min(collection,key=lambda x:abs(x-num))
     
