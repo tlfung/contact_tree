@@ -701,7 +701,7 @@ def get_list_ego(request):
         attr_info = cur.fetchall()
         for info in attr_info:
             detail_array = []
-            if info['type'] == "categorical":
+            if info['type'] == "categorical" or info['attr_range'] < 20:
                 infocur = db.query('SELECT DISTINCT(`' + info['attr'] + '`) FROM ' + table + ';')
                 attr_detail = infocur.fetchall()
                 if info['min'].isdigit():
@@ -1067,17 +1067,24 @@ def set_default_mapping(all_data, table, attr, mapping):
     db = DB()
     branch_index = []
     binary_index = dict()
-    
+    print mapping
     for d in all_data:
         for compt in attr:                
             if compt == 'trunk' or compt == 'bside':
                 if attr[compt] in mapping:
-                    if d[attr[compt]] in mapping[attr[compt]]["0"]:
-                        # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
-                        db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                    if str(collecting_data['min']).isdigit():
+                        if int(d[attr[compt]]) <= int(mapping[attr[compt]]["0"][0]):
+                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                        else:
+                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';') 
+                    
                     else:
-                        # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
-                        db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
+                        if d[attr[compt]] in mapping[attr[compt]]["0"]:
+                            # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
+                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                        else:
+                            # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
+                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')                        
 
                 else:
                     cur = db.query('SELECT min, max, attr_range, type FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
@@ -1121,11 +1128,22 @@ def set_default_mapping(all_data, table, attr, mapping):
                     db.query('UPDATE ' + table + ' SET ctree_' + compt + '=3 WHERE e_id=' + str(d['e_id']) + ';')
                 else:
                     if attr[compt] in mapping:
-                        for cat in mapping[attr[compt]]:
-                            if d[attr[compt]] in mapping[attr[compt]][cat]:
-                                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
-                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + cat + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                break
+                        if collecting_data["attr_range"] < 20 or collecting_data["type"] == "categorical":
+                            for cat in mapping[attr[compt]]:
+                                if d[attr[compt]] in mapping[attr[compt]][cat]:
+                                    # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
+                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + cat + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                    break
+                        else:
+                            if d[attr[compt]] <= mapping[0]:
+                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                            elif d[attr[compt]] > mapping[-1]:
+                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(mapping)-1) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                            else:
+                                for order in range(1, len(mapping)-1):
+                                    if d[attr[compt]] > mapping[order-1] and d[attr[compt]] <= mapping[order]:
+                                        db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                        break
                     else:
                         if str(collecting_data['min']).isdigit():
                             if collecting_data['attr_range'] < 20:
@@ -1266,27 +1284,44 @@ def update_binary(request):
         typecur = db.query('SELECT `type` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + ori_column + '";')
         mytype = typecur.fetchone()["type"]
         print mytype
+
+        if len(select_ego) == 0:
+            return_json = simplejson.dumps("no update", indent=4, use_decimal=True)
+            # print return_json
+            return HttpResponse(return_json)
+
         if mytype == "categorical":
             update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE (" + ori_column + "=" + zero_val[0]
             update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE (" + ori_column + "!=" + zero_val[0]
             for zero in zero_val[1:]:
                 update_query_zero += " OR " + ori_column + "=" + zero
                 update_query_one += " AND " + ori_column + "!=" + zero
-            if len(select_ego) > 0:
-                update_query_zero += ") AND ("
-                update_query_one += ") AND ("
-                for update_ego in select_ego[:-1]:
-                    update_query_zero += "egoid='" + update_ego + "' OR "
-                    update_query_one += "egoid='" + update_ego + "' OR "
+            
+            update_query_zero += ") AND ("
+            update_query_one += ") AND ("
+            for update_ego in select_ego[:-1]:
+                update_query_zero += "egoid='" + update_ego + "' OR "
+                update_query_one += "egoid='" + update_ego + "' OR "
 
-                update_query_zero += "egoid='" + select_ego[-1] + "');"
-                update_query_one += "egoid='" + select_ego[-1] + "');"     
-            else:
-                update_query_zero += ");"
-                update_query_one += ");"     
+            update_query_zero += "egoid='" + select_ego[-1] + "');"
+            update_query_one += "egoid='" + select_ego[-1] + "');"     
+        
         else:
-            update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE " + ori_column + "<=" + str(zero_val[0]) + ";"
-            update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE " + ori_column + ">" + str(zero_val[0]) + ";"
+            update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE (" + ori_column + "<=" + str(zero_val[0])
+            update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE (" + ori_column + ">" + str(zero_val[0])
+
+            # if len(select_ego) > 0:
+            update_query_zero += ") AND ("
+            update_query_one += ") AND ("
+            for update_ego in select_ego[:-1]:
+                update_query_zero += "egoid='" + update_ego + "' OR "
+                update_query_one += "egoid='" + update_ego + "' OR "
+
+            update_query_zero += "egoid='" + select_ego[-1] + "');"
+            update_query_one += "egoid='" + select_ego[-1] + "');"     
+            # else:
+            #     update_query_zero += ");"
+            #     update_query_one += ");"
             
         print update_query_zero
         print update_query_one
@@ -1307,6 +1342,7 @@ def update_layer(request):
     clause = database.cursor()
     # table = request.GET.get('contact')
     # print request.GET['contact']
+    db = DB()
     if request.GET.get('update'):
         list_request = request.GET['update'].split(":=")[0].split(":-")
         select_ego = request.GET['update'].split(":=")[1:]
@@ -1316,24 +1352,67 @@ def update_layer(request):
         ori_column = list_request[2]
         new_column = list_request[1]
         val_map = json.loads(list_request[3])
-        # print select_ego
-        # print ori_column
-        # print new_column
-        # print val_map
+        print select_ego
+        print ori_column
+        print new_column
+        print val_map
 
-        for ori_val in val_map:
-            update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(val_map[ori_val]) + " WHERE (" + ori_column + "=" + str(ori_val)
-            if len(select_ego) > 0:
+        typecur = db.query('SELECT `attr_range`, `type` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + ori_column + '";')
+        myinfo = typecur.fetchone()
+        mytype = myinfo["type"]
+        myrange = myinfo["attr_range"]
+
+        if len(select_ego) == 0:
+            # update_layer_val += ");"
+            return_json = simplejson.dumps("no update", indent=4, use_decimal=True)
+            print return_json
+            return HttpResponse(return_json)
+
+        if mytype == "categorical" or myrange < 20:
+            for ori_val in val_map:
+                update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(val_map[ori_val]) + " WHERE (" + ori_column + "=" + str(ori_val)
+                # if len(select_ego) > 0:
                 update_layer_val += ") AND ("
                 for update_ego in select_ego[:-1]:
                     update_layer_val += "egoid='" + update_ego + "' OR "
 
                 update_layer_val += "egoid='" + select_ego[-1] + "');"   
-            else:
-                update_query_zero += ");"
-                update_query_one += ");"
-            print update_layer_val
-            clause.execute(update_layer_val)
+                # else:
+                #     update_layer_val += ");"
+                    
+                print update_layer_val
+                clause.execute(update_layer_val)
+        else:
+            for layer_order in range(len(val_map)):
+                if layer_order == 0:
+                    update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order) + " WHERE (`" + ori_column + "`<=" + str(val_map[layer_order])
+                    # if len(select_ego) > 0:
+                    update_layer_val += ") AND ("
+                    for update_ego in select_ego[:-1]:
+                        update_layer_val += "egoid='" + update_ego + "' OR "
+
+                    update_layer_val += "egoid='" + select_ego[-1] + "');"  
+                elif layer_order == len(val_map)-1:
+                    update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order) + " WHERE (`" + ori_column + "`>" + str(val_map[layer_order])
+                    # if len(select_ego) > 0:
+                    update_layer_val += ") AND ("
+                    for update_ego in select_ego[:-1]:
+                        update_layer_val += "egoid='" + update_ego + "' OR "
+
+                    update_layer_val += "egoid='" + select_ego[-1] + "');"  
+                else:
+                    update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order) + " WHERE (" + str(val_map[layer_order-1]) + "<`" + ori_column + "` AND `" + ori_column + "`<=" + str(val_map[layer_order])
+                    # if len(select_ego) > 0:
+                    update_layer_val += ") AND ("
+                    for update_ego in select_ego[:-1]:
+                        update_layer_val += "egoid='" + update_ego + "' OR "
+
+                    update_layer_val += "egoid='" + select_ego[-1] + "');"
+                # else:
+                #     update_layer_val += ");"
+                    
+                # print update_layer_val
+                clause.execute(update_layer_val)
 
         database.commit()
 

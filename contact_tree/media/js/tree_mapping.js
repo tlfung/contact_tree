@@ -506,6 +506,368 @@ var MappingView = Backbone.View.extend({
 
         $("#sidekeyselect").change(function(){
             $("#mark_group_select").empty();
+            var revert = "d";
+            if( $("#sidekeyselect").val() != "none"){
+                var data_mode = self.model.get("view_mode");
+                var attr_map = self.model.get("attribute");
+                // console.log(component_attribute);
+                // console.log(component_attribute[data_mode]);
+                // console.log(data_mode);
+                // console.log(component_attribute[data_mode][$("#sidekeyselect").val()]);
+                $("#sidekey_operation").show();
+                var attr_container = document.getElementById("mark_group_select");
+                // $("#mark_group").text("✔ as Left Side of Trunk:");
+                $("#mark_group").hide();
+                // if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][0].length < 20){
+                    var group = document.createElement("div");
+                    var list = document.createElement("ul");
+                    group.setAttribute("class", "column left first");
+
+                    list.id = "mapping_group";
+                    list.setAttribute("class", "sortable-list");
+
+                    list.setAttribute("style", "background-color:rgba(125, 96, 66, 0.7);");
+
+                    
+                    var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0].length;
+                    for(var c = total_items-1; c >= 0; c--){
+                        var item = document.createElement("li");
+                        item.setAttribute("class", "sortable-item");
+                        item.innerHTML = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
+                        item.value = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
+                        list.appendChild(item);
+                    }
+                    group.appendChild(list);
+                    attr_container.appendChild(group);
+
+                    $('#mark_group_select .sortable-list').sortable({
+                        connectWith: '#mark_group_select .sortable-list'
+                    });
+                }
+                else{
+                    var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
+                    var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
+                    var attr_range = component_attribute[data_mode][$("#sidekeyselect").val()][3];
+
+                    var sep = document.createElement("div");
+                    var gap = document.createElement("div");
+                    var gap_title = document.createElement("span");
+                    var gap_input = document.createElement("select");
+                    var revert_button = document.createElement("button");
+                    var group_slider = document.createElement("div");
+                    var range = document.createElement("div");
+                    // var range_min = document.createElement("span");
+                    // var range_max = document.createElement("span");
+                    
+                    gap_input.id = "sep_gap";
+                    revert_button.id = "revert_button";
+                    revert_button.innerHTML = "Revert Value";
+                    revert_button.setAttribute("class", "right");
+                    gap_input.setAttribute("style", "width:100px");
+                    group_slider.id = "layer_slider";
+                    gap.setAttribute("style", "margin-top:10px;");
+
+                    gap_title.innerHTML = "Total Layer: ";
+                    gap_title.setAttribute("class", "myfont3");
+                    sep.id = "sep_group";
+                    sep.setAttribute("style", "margin:15 0 0 30; position:relative;");
+                    
+                    group_slider.setAttribute("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + 400 + ";");
+                    group_slider.setAttribute("class", "left");
+
+                    for(var s=4; s < 20; s++){
+                        var opt = document.createElement("option");
+                        opt.value = s;
+                        opt.innerHTML = s;
+                        opt.setAttribute("class", "myfont3");
+                        if(s == 10)
+                            opt.setAttribute("selected", true);
+                        gap_input.appendChild(opt);
+                    }
+
+                    // group_slider.appendChild(group_handle);
+                    gap.appendChild(gap_title);
+                    gap.appendChild(gap_input);
+                    gap.appendChild(revert_button);
+                    // range.appendChild(range_min);
+                    // range.appendChild(range_max);
+                    attr_container.appendChild(gap);
+                    attr_container.appendChild(group_slider);
+                    attr_container.appendChild(range);
+                    attr_container.appendChild(sep);
+
+                    var gap = attr_range/10;
+                    var slider_val = [];
+                    
+                    for(var g = gap; g <= attr_max; g+=gap){
+                        slider_val.push(Math.round(g*100)/100);
+                    }
+                    
+                    $("#layer_slider").slider({
+                        orientation: "vertical",
+                        // range: "min",
+                        min: attr_min,
+                        max: attr_max,
+                        values: slider_val,
+                        step: 0.1,
+                        slide: function( event, ui ) {
+                            // console.log("handle_id:", ui.handle.id.split("_").pop());
+                            var v = parseInt(ui.handle.id.split("_").pop());
+                            var display = "#layer_" + v;
+                            if(v < slider_val.length-1 && ui.values[v] > ui.values[v+1]-0.5){
+                                $("#layer_slider").slider('values', v, ui.values[v+1]-0.5); 
+                                $(display).val(ui.values[v+1]-0.5);
+                                return false;
+                            }
+                            if(v > 0 && ui.values[v] < ui.values[v-1]+0.5){
+                                $("#layer_slider").slider('values', v, ui.values[v-1]+0.5); 
+                                $(display).val(ui.values[v-1]+0.5);
+                                return false;
+                            }
+                            $(display).val(ui.values[v]);
+                        }
+                    });
+                    $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
+                    $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
+
+                    $("#sep_group").empty();
+                    var sep_container = document.getElementById("sep_group");
+                    var handle = $('#layer_slider A.ui-slider-handle');   
+                    var my_offset = handle.eq(slider_val.length-1).offset().top;
+                    // console.log("++++", handle.eq(1).parent().offset());
+                    // console.log("++++", handle.eq(1).parent());
+                    for(var v = slider_val.length-1; v >= 0; v--){
+                        handle.eq(v).attr('id', "layer_handle_" + v);
+                        // console.log("----", handle.eq(v).offset().top);
+                        var sep_layer = document.createElement("div");
+                        var sep_layer_title = document.createElement("span");
+                        var sep_layer_input = document.createElement("input");
+                        sep_layer_title.innerHTML = "Layer " + v + ": ";
+                        sep_layer.id = "sep_group_pos_" + v;
+                        // sep_layer.setAttribute("style", "padding-bottom:" + margin_top + "px; position:relative;");
+                        sep_layer.setAttribute("style", "top:" + (handle.eq(v).offset().top-my_offset) + "; position:absolute;");
+                        sep_layer_input.setAttribute("class", "layer_order");
+                        sep_layer_input.setAttribute("style", "width:100px; position:absolute; left:60; top:-1; border:0;");
+
+                        sep_layer_input.value = slider_val[v];
+                        sep_layer_input.id = "layer_" + v;
+
+                        sep_layer.appendChild(sep_layer_title);
+                        sep_layer.appendChild(sep_layer_input);
+                        sep_container.appendChild(sep_layer);
+                    }
+
+                    
+                    $("#revert_button").click(function(){
+                        var my_revert = "a";
+                        if(revert == "a")
+                            my_revert = "d";
+                        
+                        var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
+                        var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
+                        var attr_range = component_attribute[data_mode][$("#sidekeyselect").val()][3];
+                        var gap = attr_range/$("#sep_gap").val();
+                        var new_slider_val = [];
+                        var real_slider_val = [];
+                        for(var g = gap; g <= attr_max; g+=gap){
+                            if(my_revert == "a")
+                                new_slider_val.push(0-Math.round(g*100)/100);
+                            else
+                                new_slider_val.push(Math.round(g*100)/100);
+                        }
+
+                        if(my_revert == "a")
+                            new_slider_val = new_slider_val.reverse();
+                        
+                        // $("#layer_slider").empty();
+                        $("#layer_slider").slider( "destroy" );
+                        $("#layer_slider").attr("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (40*$("#sep_gap").val()) + ";");
+                        if(my_revert == "a"){
+                            $("#layer_slider").slider({
+                                orientation: "vertical",
+                                // range: "min",
+                                min: 0-attr_max,
+                                max: 0-attr_min,
+                                values: new_slider_val,
+                                step: 0.1,
+                                slide: function( event, ui ) {
+                                    var v = parseInt(ui.handle.id.split("_").pop());
+                                    // console.log("handle_id:", v, "handle_value:", ui.values[v]);
+                                    var display = "#layer_" + v;
+                                    if(v < new_slider_val.length-1 && ui.values[v] > ui.values[v+1]-0.5){
+                                        $("#layer_slider").slider('values', v, ui.values[v+1]-0.5); 
+                                        $(display).val(0-(ui.values[v+1]-0.5));
+                                        return false;
+                                    }
+                                    if(v > 0 && ui.values[v] < ui.values[v-1]+0.5){
+                                        $("#layer_slider").slider('values', v, ui.values[v-1]+0.5); 
+                                        $(display).val(0-(ui.values[v-1]+0.5));
+                                        return false;
+                                    }
+                                    $(display).val(0-ui.values[v]);
+                                }
+                            });
+
+                        }
+                        else{
+                            $("#layer_slider").slider({
+                                orientation: "vertical",
+                                // range: "min",
+                                min: attr_min,
+                                max: attr_max,
+                                values: new_slider_val,
+                                step: 0.1,
+                                slide: function( event, ui ) {
+                                    // console.log("handle_id:", ui.handle.id.split("_").pop());
+                                    var v = parseInt(ui.handle.id.split("_").pop());
+                                    var display = "#layer_" + v;
+                                    if(v < new_slider_val.length-1 && ui.values[v] > ui.values[v+1]-0.5){
+                                        $("#layer_slider").slider('values', v, ui.values[v+1]-0.5); 
+                                        $(display).val(ui.values[v+1]-0.5);
+                                        return false;
+                                    }
+                                    if(v > 0 && ui.values[v] < ui.values[v-1]+0.5){
+                                        $("#layer_slider").slider('values', v, ui.values[v-1]+0.5); 
+                                        $(display).val(ui.values[v-1]+0.5);
+                                        return false;
+                                    }
+                                    $(display).val(ui.values[v]);
+                                }
+                            });
+                        }
+                        
+                        $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
+                        $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
+
+                        $("#sep_group").empty();
+                        var sep_container = document.getElementById("sep_group");
+                        var handle = $('#layer_slider A.ui-slider-handle');   
+
+                        var my_offset = handle.eq(new_slider_val.length-1).offset().top;
+                        // if(my_revert == "a")
+                        //     my_offset = handle.eq(0).offset().top;
+
+                        for(var v = new_slider_val.length-1; v >= 0; v--){
+                            handle.eq(v).attr('id', "layer_handle_" + v);
+                            
+                            var sep_layer = document.createElement("div");
+                            var sep_layer_title = document.createElement("span");
+                            var sep_layer_input = document.createElement("input");
+                            sep_layer_title.innerHTML = "Layer " + v + ": ";
+                            sep_layer.id = "sep_group_pos_" + v;
+                            // sep_layer.setAttribute("style", "padding-bottom:" + margin_top + "px; position:relative;");
+                            // if(my_revert == "a")
+                            //     sep_layer.setAttribute("style", "top:" + (my_offset-handle.eq(v).offset().top) + "; position:absolute;");
+                            // else
+                            sep_layer.setAttribute("style", "top:" + (handle.eq(v).offset().top-my_offset) + "; position:absolute;");
+                            
+                            sep_layer_input.setAttribute("style", "width:100px; position:absolute; left:60; top:-1; border:0;");
+                            sep_layer_input.setAttribute("class", "layer_order");
+
+                            if(my_revert == "a")
+                                sep_layer_input.value = 0-new_slider_val[v];
+                            else
+                                sep_layer_input.value = new_slider_val[v];
+                            sep_layer_input.id = "layer_" + v;
+
+                            sep_layer.appendChild(sep_layer_title);
+                            sep_layer.appendChild(sep_layer_input);
+                            sep_container.appendChild(sep_layer);
+                        } 
+                        revert = my_revert;
+                        
+                    });
+
+                    $("#sep_gap").change(function(){
+                        revert = "d";
+                        var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
+                        var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
+                        var attr_range = component_attribute[data_mode][$("#sidekeyselect").val()][3];
+                        var gap = attr_range/$("#sep_gap").val();
+                        var new_slider_val = [];
+                    
+                        for(var g = gap; g <= attr_max; g+=gap){
+                            new_slider_val.push(Math.round(g*100)/100);
+                        }
+                        
+                        // $("#layer_slider").empty();
+                        $("#layer_slider").slider( "destroy" );
+                        $("#layer_slider").attr("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (40*$("#sep_gap").val()) + ";");
+                    
+                        $("#layer_slider").slider({
+                            orientation: "vertical",
+                            // range: "min",
+                            min: attr_min,
+                            max: attr_max,
+                            values: new_slider_val,
+                            step: 0.1,
+                            slide: function( event, ui ) {
+                                // console.log("handle_id:", ui.handle.id.split("_").pop());
+                                var v = parseInt(ui.handle.id.split("_").pop());
+                                var display = "#layer_" + v;
+                                if(v < new_slider_val.length-1 && ui.values[v] > ui.values[v+1]-0.5){
+                                    $("#layer_slider").slider('values', v, ui.values[v+1]-0.5); 
+                                    $(display).val(ui.values[v+1]-0.5);
+                                    return false;
+                                }
+                                if(v > 0 && ui.values[v] < ui.values[v-1]+0.5){
+                                    $("#layer_slider").slider('values', v, ui.values[v-1]+0.5); 
+                                    $(display).val(ui.values[v-1]+0.5);
+                                    return false;
+                                }
+                                $(display).val(ui.values[v]);
+                            }
+                            /*
+                            slide: function( event, ui ) {
+                                for(var v = 0; v < new_slider_val.length; v++){
+                                    var display = "#layer_" + v;
+                                    $(display).val(ui.values[v]);
+                                }
+                            }
+                            */
+                        });
+                        $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
+                        $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
+
+                        $("#sep_group").empty();
+                        var sep_container = document.getElementById("sep_group");
+                        var handle = $('#layer_slider A.ui-slider-handle');   
+
+                        var my_offset = handle.eq(new_slider_val.length-1).offset().top;
+                        
+                        for(var v = new_slider_val.length-1; v >= 0; v--){
+                            handle.eq(v).attr('id', "layer_handle_" + v);
+                            
+                            var sep_layer = document.createElement("div");
+                            var sep_layer_title = document.createElement("span");
+                            var sep_layer_input = document.createElement("input");
+                            sep_layer_title.innerHTML = "Layer " + v + ": ";
+                            sep_layer.id = "sep_group_pos_" + v;
+                            // sep_layer.setAttribute("style", "padding-bottom:" + margin_top + "px; position:relative;");
+                            sep_layer.setAttribute("style", "top:" + (handle.eq(v).offset().top-my_offset) + "; position:absolute;");
+                            
+                            sep_layer_input.setAttribute("style", "width:100px; position:absolute; left:60; top:-1; border:0;");
+                            sep_layer_input.value = new_slider_val[v];
+                            sep_layer_input.id = "layer_" + v;
+                            sep_layer_input.setAttribute("class", "layer_order");
+
+                            sep_layer.appendChild(sep_layer_title);
+                            sep_layer.appendChild(sep_layer_input);
+                            sep_container.appendChild(sep_layer);
+                        } 
+                    });
+
+                    // $(".layer_order").change(function(){
+                    //     var handle_on_change = parseInt(this.id.split("_").pop());
+                    //     $("#layer_slider").slider('values', handle_on_change, this.value);
+
+                    // });
+                    
+                }
+                
+            }
+            /*
             if( $("#sidekeyselect").val() != "none"){
                 $("#sidekey_operation").show();
                 $("#mark_group").text("Select Branch Layer:");
@@ -544,6 +906,7 @@ var MappingView = Backbone.View.extend({
                 }
                 
             }
+            */
 
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_bside").hide();
@@ -565,8 +928,74 @@ var MappingView = Backbone.View.extend({
             $("#sidekey_submit_branch").attr("disabled", true);
             // $("#sidekey_img").attr("disabled", true);
             $("#block_layer").show();
-            var size_map = {};
+            
 
+            if(attr_map["branch"] in attribute_mapping){
+                console.log(attribute_mapping);
+                delete attribute_mapping[attr_map["branch"]];
+                // attribute_mapping[$("#sidekeyselect").val()] = {"0": [], "1": []};
+            }
+
+            if($("#sidekeyselect").val() == "none"){}
+            
+            else{
+                // var update_info = data_mode + ":-ctree_branch:-" + $("#sidekeyselect").val();
+                var update_info = data_mode + ":-ctree_branch:-" + $("#sidekeyselect").val();
+                // if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][0].length < 20){
+                    var layer_map = {};
+                    attribute_mapping[$("#sidekeyselect").val()] = {};
+                    count_layer = component_attribute[data_mode][$("#sidekeyselect").val()][0].length-1;
+                    $('#mapping_group').children().each(function(){
+                        // console.log($(this));
+                        // console.log($(this).val());
+                        // console.log(attribute_mapping);
+                        attribute_mapping[$("#sidekeyselect").val()][$(this).val()] = count_layer;
+                        layer_map[$(this).val()] = count_layer;
+                        count_layer--;
+                    });
+                    update_info += ":-" + JSON.stringify(layer_map);
+                }
+                else{
+                    var layer_map = [];
+                    attribute_mapping[$("#sidekeyselect").val()] = []
+                    for(var v = 0; v < $("#sep_gap").val(); v++){
+                        var layer_id = "#layer_" + v;
+                        layer_map.push($(layer_id).val());
+                        attribute_mapping[$("#sidekeyselect").val()].push($(layer_id).val());
+                    }
+                    update_info += ":-" + JSON.stringify(layer_map);
+                }
+                
+                for(ego in ego_selections){
+                    update_info += ":=" + ego;
+                }
+
+                var request_url = "update_layer/?update="+update_info;
+                console.log(request_url);
+                d3.json(request_url, function(result){
+                    console.log("finish update");
+                    var set_update_info = function(data){
+                        var attr_map = self.model.get("attribute");
+                        var attr_opt = self.model.get("attr_option");
+                        // console.log(data)
+                        $("#block_layer").hide();
+                        $("#sidekey_submit_branch").text("Done");
+                        $("#sidekey_submit_branch").removeAttr("disabled");
+                        // attr_opt.replace(attr_map["branch"], $("#sidekeyselect").val());
+                        attr_opt[attr_opt.indexOf(attr_map["branch"])] = $("#sidekeyselect").val();
+                        attr_map["branch"] = $("#sidekeyselect").val()
+                        self.model.set({"attribute": attr_map});
+                        self.model.set({"attr_option": attr_opt});
+                        self.model.trigger('change:attribute');
+                        // console.log(self.model.get("attribute"));
+                        // console.log(self.model.get("attr_option"));
+                    };
+                    set_update_info(result);
+                });
+            }
+
+            /*
             var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
             for(var c = 0; c < total_items.length; c ++){
                 var item_id = "#ori_attr_val_" + total_items[c];
@@ -603,6 +1032,7 @@ var MappingView = Backbone.View.extend({
                 };
                 set_update_info(result);
             });
+            */
 
         });
     },
@@ -1064,45 +1494,58 @@ var MappingView = Backbone.View.extend({
             $("#sidekey_submit_leaf_size").attr("disabled", true);
             // $("#sidekey_img").attr("disabled", true);
             $("#block_layer").show();
-            var size_map = {};
 
-            var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
-            for(var c = 0; c < total_items.length; c ++){
-                var item_id = "#ori_attr_val_" + total_items[c];
-                size_map[total_items[c]] = $(item_id).val();
-            }
-            
-            var update_info = data_mode + ":-ctree_leaf_size:-" + $("#sidekeyselect").val() + ":-" + JSON.stringify(size_map);
-
-            
-            for(ego in ego_selections){
-                update_info += ":=" + ego;
+            if(attr_map["leaf_size"] in attribute_mapping){
+                console.log(attribute_mapping);
+                delete attribute_mapping[attr_map["leaf_size"]];
+                // attribute_mapping[$("#sidekeyselect").val()] = {"0": [], "1": []};
             }
 
+            if($("#sidekeyselect").val() == "none"){}
+            else{
+                var size_map = {};
+                attribute_mapping[$("#sidekeyselect").val()] = {};
+                var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
+                for(var c = 0; c < total_items.length; c ++){
+                    var item_id = "#ori_attr_val_" + total_items[c];
+                    attribute_mapping[$("#sidekeyselect").val()][total_items[c]] = $(item_id).val();
+                    size_map[total_items[c]] = $(item_id).val();
+                }
+                
+                var update_info = data_mode + ":-ctree_leaf_size:-" + $("#sidekeyselect").val() + ":-" + JSON.stringify(size_map);
+
+                
+                for(ego in ego_selections){
+                    update_info += ":=" + ego;
+                }
+
+                
+
+                var request_url = "update_layer/?update="+update_info;
+                console.log(request_url);
+                d3.json(request_url, function(result){
+                    console.log("finish update");
+                    var set_update_info = function(data){
+                        var attr_map = self.model.get("attribute");
+                        var attr_opt = self.model.get("attr_option");
+                        // console.log(data)
+                        $("#block_layer").hide();
+                        $("#sidekey_submit_leaf_size").text("Done");
+                        $("#sidekey_submit_leaf_size").removeAttr("disabled");
+
+                        attr_opt[attr_opt.indexOf(attr_map["leaf_size"])] = $("#sidekeyselect").val();
+                        attr_map["leaf_size"] = $("#sidekeyselect").val()
+                        self.model.set({"attribute": attr_map});
+                        self.model.set({"attr_option": attr_opt});
+                        self.model.trigger('change:attribute');
+                        // console.log(self.model.get("attribute"));
+                        // console.log(self.model.get("attr_option"));
+                    };
+                    set_update_info(result);
+                });
+
+            }
             
-
-            var request_url = "update_layer/?update="+update_info;
-            console.log(request_url);
-            d3.json(request_url, function(result){
-                console.log("finish update");
-                var set_update_info = function(data){
-                    var attr_map = self.model.get("attribute");
-                    var attr_opt = self.model.get("attr_option");
-                    // console.log(data)
-                    $("#block_layer").hide();
-                    $("#sidekey_submit_leaf_size").text("Done");
-                    $("#sidekey_submit_leaf_size").removeAttr("disabled");
-
-                    attr_opt[attr_opt.indexOf(attr_map["leaf_size"])] = $("#sidekeyselect").val();
-                    attr_map["leaf_size"] = $("#sidekeyselect").val()
-                    self.model.set({"attribute": attr_map});
-                    self.model.set({"attr_option": attr_opt});
-                    self.model.trigger('change:attribute');
-                    // console.log(self.model.get("attribute"));
-                    // console.log(self.model.get("attr_option"));
-                };
-                set_update_info(result);
-            });
 
         });
     },
@@ -1466,6 +1909,10 @@ var MappingView = Backbone.View.extend({
                 cmpt_id += cmpt + "_map";
                 // console.log(cmpt_id);
                 $(cmpt_id).text(myattribute[cmpt]);
+                if(myattribute[cmpt] == "none")
+                    $(cmpt_id).attr('style', 'background: rgb(252, 180, 183);');
+                else
+                    $(cmpt_id).attr('style', 'background: rgb(245, 244, 174);');
             }
             $(".sidekey_map").css('visibility', 'visible');
             

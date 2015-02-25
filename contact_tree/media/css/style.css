@@ -77,7 +77,8 @@ a:focus{ outline: none; }
   font-size:18;
   border:solid 1;
   border-radius:5;
-  background: gray;
+  background: white;
+  padding: 0 3 0 3;
 }
 
 .sidekey_map{
@@ -85,6 +86,9 @@ a:focus{ outline: none; }
   border:solid 1;
   border-radius:5;
   visibility:hidden;
+  background: rgb(245, 244, 174);
+  /*background: rgb(252, 180, 183);*/
+  padding: 0 3 0 3;
 }
 
 .description_box{

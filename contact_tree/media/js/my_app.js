@@ -45,8 +45,15 @@ function resize_dialog(h, w){
         modal: true,
         resizable: false
     });
-    $("#divTable_menu").css({'height': w*0.4*0.7*0.75});
+
+    var menu_container = (w*0.4*0.7) - 50 - $("#main_title").height() - $("#ego_container").height();
+    
+    $("#divTable_menu").css({'height': menu_container});
     // $(".myfont3").css({'font-size': 18*w/1260});
+    var sidekey_container = (w*0.7*0.7) - 125 - $("#sidekey_title").height() - $("#attribute_candidate").height() - $("#sidekey_submit_trunk").height();
+    // var sidekey_container = (w*0.7*0.7) - 200
+    $("#sidekey_operation").css({'max-height': sidekey_container});   
+    $("#mark_group_select").css({'max-height': sidekey_container}); 
     
 };
 
