@@ -25,7 +25,9 @@ var LabelView = Backbone.View.extend({
         var my_mode = self.model.get("view_mode");
         // var all_tree = my_mode.toUpperCase().replace("_", " ") + ":";
         var all_tree_len = my_mode.toUpperCase().split("_");
-        var all_tree = my_mode.toUpperCase().split("_")[2];
+        var all_tree = my_mode.toUpperCase();
+        if(all_tree_len > 2)
+            all_tree = my_mode.toUpperCase().split("_")[2];
         // replace(/_/g, " ") + ":";
         for( var a = 3; a < all_tree_len.length; a++){
             all_tree += " " + all_tree_len[a];
