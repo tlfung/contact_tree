@@ -365,8 +365,8 @@ var RenderingView = Backbone.View.extend({
 
                 // var grd = this.context.createLinearGradient(tree_rstpoint[0], tree_rstpoint[1], tree_rstpoint[0]+(Math.log(total_leaf["up"])+1)*15, tree_rstpoint[1]);
                 var grd = this.context.createLinearGradient(0, 0, (Math.log(total_leaf["up"])+1)*25, 0);
-                grd.addColorStop(0, mapping_color.leaf_color[stop[0]]);
-                grd.addColorStop(1, mapping_color.leaf_color[stop[1]]);
+                grd.addColorStop(0, mapping_color.render_leaf_color[stop[0]]);
+                grd.addColorStop(1, mapping_color.render_leaf_color[stop[1]]);
 
                 this.context.fillStyle = grd;
                 // this.context.strokeStyle ='#809C73';//line's color
@@ -429,8 +429,8 @@ var RenderingView = Backbone.View.extend({
 
                     // var grd = this.context.createLinearGradient(tree_rstpoint[0], tree_rstpoint[1], tree_rstpoint[0]+(Math.log(total_leaf["down"])+1)*15, tree_rstpoint[1]);
                     var grd = this.context.createLinearGradient(0, 0, (Math.log(total_leaf["down"])+1)*25, 0);
-                    grd.addColorStop(0, mapping_color.leaf_color[stop[0]]);
-                    grd.addColorStop(1, mapping_color.leaf_color[stop[1]]);
+                    grd.addColorStop(0, mapping_color.render_leaf_color[stop[0]]);
+                    grd.addColorStop(1, mapping_color.render_leaf_color[stop[1]]);
 
                     this.context.fillStyle = grd;
                     // this.context.strokeStyle ='#809C73';//line's color
@@ -511,8 +511,8 @@ var RenderingView = Backbone.View.extend({
 
                 // var grd = this.context.createLinearGradient(tree_rstpoint[0], tree_rstpoint[1], tree_rstpoint[0]+(Math.log(total_leaf["down"])+1)*15, tree_rstpoint[1]);
                 var grd = this.context.createLinearGradient(0, 0, (Math.log(total_leaf["down"])+1)*25, 0);
-                grd.addColorStop(0, mapping_color.leaf_color[stop[0]]);
-                grd.addColorStop(1, mapping_color.leaf_color[stop[1]]);
+                grd.addColorStop(0, mapping_color.render_leaf_color[stop[0]]);
+                grd.addColorStop(1, mapping_color.render_leaf_color[stop[1]]);
                 this.context.fillStyle = grd;
                 // this.context.strokeStyle ='#809C73';//line's color
 
@@ -677,8 +677,8 @@ var RenderingView = Backbone.View.extend({
                 // console.log("left fruit up: ", layer, "---", fruit_u);
                 // var grd = this.context.createLinearGradient(tree_lstpoint[0], tree_lstpoint[1], tree_lstpoint[0]-(Math.log(total_leaf["up"])+1)*15, tree_lstpoint[1]);
                 var grd = this.context.createLinearGradient(0, 0, -(Math.log(total_leaf["up"])+1)*25, 0);
-                grd.addColorStop(0, mapping_color.leaf_color[stop[0]]);
-                grd.addColorStop(1, mapping_color.leaf_color[stop[1]]);
+                grd.addColorStop(0, mapping_color.render_leaf_color[stop[0]]);
+                grd.addColorStop(1, mapping_color.render_leaf_color[stop[1]]);
                 
                 this.context.fillStyle = grd;
                 // this.context.strokeStyle ='#809C73';//line's color
@@ -738,8 +738,8 @@ var RenderingView = Backbone.View.extend({
 
                     // var grd = this.context.createLinearGradient(tree_lstpoint[0], tree_lstpoint[1], tree_lstpoint[0]-(Math.log(total_leaf["down"])+1)*15, tree_lstpoint[1]);
                     var grd = this.context.createLinearGradient(0, 0, -(Math.log(total_leaf["down"])+1)*25, 0);
-                    grd.addColorStop(0, mapping_color.leaf_color[stop[0]]);
-                    grd.addColorStop(1, mapping_color.leaf_color[stop[1]]);
+                    grd.addColorStop(0, mapping_color.render_leaf_color[stop[0]]);
+                    grd.addColorStop(1, mapping_color.render_leaf_color[stop[1]]);
 
                     this.context.fillStyle = grd;
                     // this.context.strokeStyle ='#809C73';//line's color
@@ -815,8 +815,8 @@ var RenderingView = Backbone.View.extend({
 
                 // var grd = this.context.createLinearGradient(tree_lstpoint[2], tree_lstpoint[3], tree_lstpoint[2]-(Math.log(total_leaf["down"])+1)*15, tree_lstpoint[3]);
                 var grd = this.context.createLinearGradient(0, 0, -(Math.log(total_leaf["down"])+1)*25, 0);
-                grd.addColorStop(0, mapping_color.leaf_color[stop[0]]);
-                grd.addColorStop(1, mapping_color.leaf_color[stop[1]]);
+                grd.addColorStop(0, mapping_color.render_leaf_color[stop[0]]);
+                grd.addColorStop(1, mapping_color.render_leaf_color[stop[1]]);
 
                 this.context.fillStyle = grd;
                 // this.context.strokeStyle ='#809C73';//line's color
@@ -2738,7 +2738,7 @@ var RenderingView = Backbone.View.extend({
 
                 for(var h = 0; h < cluster; h++){ 
                     var radius = leaf_table[sum_leaf[g].size];                    
-                    var color = mapping_color.leaf_color[sum_leaf[g].color];
+                    var color = mapping_color.render_leaf_color[sum_leaf[g].color];
                     var leaf_id = sum_leaf[g].leaf_id;
                     
                     if(leaf_id != "none" && self.leaf_hovor == leaf_id){
@@ -3024,7 +3024,7 @@ var RenderingView = Backbone.View.extend({
         // console.log(author_area);
         var grd_root = ctx.createLinearGradient((px_r + px_l)/2, py+200, (px_r + px_l)/2, py+400);
         grd_root.addColorStop(0, mapping_color.root);
-        grd_root.addColorStop(1, mapping_color.roots_color[author_area]);
+        grd_root.addColorStop(1, mapping_color.render_roots_color[author_area]);
         ctx.fillStyle = grd_root;
         ctx.strokeStyle = grd_root;
         
@@ -3235,7 +3235,7 @@ var RenderingView = Backbone.View.extend({
 
                 grd_root = ctx.createLinearGradient((px_r + px_l)/2, py+200, (px_r + px_l)/2, py+400);
                 grd_root.addColorStop(0, mapping_color.root);
-                grd_root.addColorStop(1, mapping_color.roots_color[r]);
+                grd_root.addColorStop(1, mapping_color.render_roots_color[r]);
                 ctx.fillStyle = grd_root;
                 ctx.strokeStyle = grd_root;
 
@@ -3385,7 +3385,7 @@ var RenderingView = Backbone.View.extend({
 
                 grd_root = ctx.createLinearGradient((px_r + px_l)/2, py+200, (px_r + px_l)/2, py+400);
                 grd_root.addColorStop(0, mapping_color.root);
-                grd_root.addColorStop(1, mapping_color.roots_color[r]);
+                grd_root.addColorStop(1, mapping_color.render_roots_color[r]);
                 ctx.fillStyle = grd_root;
                 ctx.strokeStyle = grd_root;
 
@@ -3702,8 +3702,8 @@ var RenderingView = Backbone.View.extend({
         
         // this.context.fillStyle ='rgb(0,'+color[c]+',0)';//fill color
         var grd=ctx.createRadialGradient(cx, cy, 30, cx, cy, radius+10);
-        grd.addColorStop(0, mapping_color.leaf_color[stop[0]]);
-        grd.addColorStop(1, mapping_color.leaf_color[stop[1]]);
+        grd.addColorStop(0, mapping_color.render_leaf_color[stop[0]]);
+        grd.addColorStop(1, mapping_color.render_leaf_color[stop[1]]);
         // ctx.strokeStyle = '376941';//num.toString();//line's color
         ctx.fillStyle = grd;
         ctx.beginPath(); 

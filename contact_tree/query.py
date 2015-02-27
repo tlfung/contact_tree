@@ -778,14 +778,14 @@ def unique_stick(all_data, attr, branch_layer):
     for meeting in all_data:
         # meeting = c
         if root != "none":
-            if meeting[root] not in structure["root"][0]:
-                structure["root"][0][meeting[root]] = dict()
-                structure["root"][0][meeting[root]]["length"] = 0
-                structure["root"][0][meeting[root]]["sub"] = [10 for i in range(12)] # may add attribute mapping
-                structure["root"][0][meeting[root]]["root_cat"] = meeting[root]
+            if meeting["ctree_root"] not in structure["root"][0]:
+                structure["root"][0][meeting["ctree_root"]] = dict()
+                structure["root"][0][meeting["ctree_root"]]["length"] = 0
+                structure["root"][0][meeting["ctree_root"]]["sub"] = [10 for i in range(12)] # may add attribute mapping
+                structure["root"][0][meeting["ctree_root"]]["root_cat"] = meeting["ctree_root"]
                 # print structure["root"]
             else:
-                structure["root"][0][meeting[root]]["length"] += 1
+                structure["root"][0][meeting["ctree_root"]]["length"] += 1
 
         if leaf_id == "none":
             leaf_highlights = "none"
@@ -918,14 +918,14 @@ def duplicate_stick(all_data, attr, branch_layer):
     for meeting in all_data:
         # meeting = c
         if root != "none":
-            if meeting[root] not in structure["root"][0]:
-                structure["root"][0][meeting[root]] = dict()
-                structure["root"][0][meeting[root]]["length"] = 0
-                structure["root"][0][meeting[root]]["sub"] = [10 for i in range(12)] # may add attribute mapping
-                structure["root"][0][meeting[root]]["root_cat"] = meeting[root]
+            if meeting["ctree_root"] not in structure["root"][0]:
+                structure["root"][0][meeting["ctree_root"]] = dict()
+                structure["root"][0][meeting["ctree_root"]]["length"] = 0
+                structure["root"][0][meeting["ctree_root"]]["sub"] = [10 for i in range(12)] # may add attribute mapping
+                structure["root"][0][meeting["ctree_root"]]["root_cat"] = meeting["ctree_root"]
                 # print structure["root"]
             else:
-                structure["root"][0][meeting[root]]["length"] += 1
+                structure["root"][0][meeting["ctree_root"]]["length"] += 1
 
         if leaf_id == "none":
             leaf_highlights = "none"
@@ -1121,7 +1121,7 @@ def set_default_mapping(all_data, table, attr, mapping):
                                 db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
 
 
-            if compt == 'fruit_size' or compt == 'leaf_size' or compt == 'leaf_color' or compt == 'branch':
+            if compt == 'fruit_size' or compt == 'leaf_size' or compt == 'leaf_color' or compt == 'branch' or compt == 'root':
                 cur1 = db.query('SELECT * FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
                 collecting_data = cur1.fetchone()
                 if attr[compt] == "none":
@@ -1131,41 +1131,45 @@ def set_default_mapping(all_data, table, attr, mapping):
                         db.query('UPDATE ' + table + ' SET ctree_' + compt + '=3 WHERE e_id=' + str(d['e_id']) + ';')
                 else:
                     if attr[compt] in mapping:
-                        if compt == 'branch':
-                            if collecting_data["attr_range"] < 20 or collecting_data["type"] == "categorical":
-                                for cat in mapping[attr[compt]]:
-                                    if d[attr[compt]] in mapping[attr[compt]][cat]:
-                                        # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
-                                        db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + cat + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                        break
-                            else:
-                                if d[attr[compt]] <= mapping[0]:
-                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
-                                elif d[attr[compt]] >= mapping[-1]:
-                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(mapping)-1) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                else:
-                                    for order in range(1, len(mapping)-1):
-                                        if d[attr[compt]] > mapping[order-1] and d[attr[compt]] <= mapping[order]:
-                                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                            break
+                        # if compt == 'branch':
+                        #     if collecting_data["attr_range"] < 20 or collecting_data["type"] == "categorical":
+                        #         print mapping[attr[compt]]
+                        #         for cat in mapping[attr[compt]]:
+                        #             # if d[attr[compt]] in mapping[attr[compt]][cat]:
+                        #             if d[attr[compt]] == cat:
+                        #                 # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
+                        #                 db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(mapping[attr[compt]][cat]) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                        #                 break
+                        #     else:
+                        #         if int(d[attr[compt]]) <= int(mapping[attr[compt]][0]):
+                        #             db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                        #         elif int(d[attr[compt]]) >= int(mapping[attr[compt]][-1]):
+                        #             db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(mapping)-1) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                        #         else:
+                        #             for order in range(1, len(mapping[attr[compt]])-1):
+                        #                 if int(d[attr[compt]]) > int(mapping[attr[compt]][order-1]) and int(d[attr[compt]]) <= int(mapping[attr[compt]][order]):
+                        #                     db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                        #                     break
+                        # else:
+                        if collecting_data["type"] == "categorical":
+                            for cat in mapping[attr[compt]]:
+                                # if d[attr[compt]] in mapping[attr[compt]][cat]:
+                                if d[attr[compt]] == cat:
+                                    # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
+                                    # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + cat + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(mapping[attr[compt]][cat]) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                    break
                         else:
-                            if collecting_data["type"] == "categorical":
-                                for cat in mapping[attr[compt]]:
-                                    if d[attr[compt]] in mapping[attr[compt]][cat]:
-                                        # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
-                                        db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + cat + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                        break
+                            if int(d[attr[compt]]) <= int(mapping[attr[compt]][0]):
+                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
                             else:
-                                if d[attr[compt]] <= mapping[0]:
-                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
-                                elif d[attr[compt]] >= mapping[-1]:
-                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(mapping)-1) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                else:
-                                    for order in range(1, len(mapping)-1):
-                                        if d[attr[compt]] > mapping[order-1] and d[attr[compt]] <= mapping[order]:
-                                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                            break
-
+                                for order in range(1, len(mapping[attr[compt]])):
+                                    if int(d[attr[compt]]) > int(mapping[attr[compt]][order-1]) and int(d[attr[compt]]) <= int(mapping[attr[compt]][order]):
+                                        db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                        if int(d[attr[compt]]) >= int(mapping[attr[compt]][-1]):
+                                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(mapping)) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                        break
+                                    
                     else:
                         if str(collecting_data['min']).isdigit():
                             if collecting_data['attr_range'] < 20:
@@ -1186,10 +1190,7 @@ def set_default_mapping(all_data, table, attr, mapping):
                                 real_data = precur.fetchall()
                                 for d in real_data:
                                     branch_index.append(d["DISTINCT(' + attr[compt] + ')"])
-                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(branch_index.index(d[attr[compt]])) + ' WHERE e_id=' + str(d['e_id']) + ';')
-
-                    
-                    
+                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(branch_index.index(d[attr[compt]])) + ' WHERE e_id=' + str(d['e_id']) + ';')                   
 
     db.conn.commit()
 
@@ -1313,8 +1314,8 @@ def update_binary(request):
             return HttpResponse(return_json)
 
         if mytype == "categorical":
-            update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE (" + ori_column + "=" + zero_val[0]
-            update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE (" + ori_column + "!=" + zero_val[0]
+            update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE (`" + ori_column + "`=" + zero_val[0]
+            update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE (`" + ori_column + "`!=" + zero_val[0]
             for zero in zero_val[1:]:
                 update_query_zero += " OR " + ori_column + "=" + zero
                 update_query_one += " AND " + ori_column + "!=" + zero
@@ -1329,8 +1330,8 @@ def update_binary(request):
             update_query_one += "egoid='" + select_ego[-1] + "');"     
         
         else:
-            update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE (" + ori_column + "<=" + str(zero_val[0])
-            update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE (" + ori_column + ">" + str(zero_val[0])
+            update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE (`" + ori_column + "`<=" + str(zero_val[0])
+            update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE (`" + ori_column + "`>" + str(zero_val[0])
 
             # if len(select_ego) > 0:
             update_query_zero += ") AND ("
@@ -1374,10 +1375,10 @@ def update_layer(request):
         ori_column = list_request[2]
         new_column = list_request[1]
         val_map = json.loads(list_request[3])
-        print select_ego
-        print ori_column
-        print new_column
-        print val_map
+        # print select_ego
+        # print ori_column
+        # print new_column
+        # print val_map
 
         typecur = db.query('SELECT `attr_range`, `type` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + ori_column + '";')
         myinfo = typecur.fetchone()
@@ -1389,10 +1390,9 @@ def update_layer(request):
             return_json = simplejson.dumps("no update", indent=4, use_decimal=True)
             print return_json
             return HttpResponse(return_json)
-
-        if mytype == "categorical" or myrange < 20:
+        if mytype == "categorical":
             for ori_val in val_map:
-                update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(val_map[ori_val]) + " WHERE (" + ori_column + "=" + str(ori_val)
+                update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(val_map[ori_val]) + " WHERE (`" + ori_column + "`=" + str(ori_val)
                 # if len(select_ego) > 0:
                 update_layer_val += ") AND ("
                 for update_ego in select_ego[:-1]:
@@ -1402,20 +1402,12 @@ def update_layer(request):
                 # else:
                 #     update_layer_val += ");"
                     
-                print update_layer_val
+                # print update_layer_val
                 clause.execute(update_layer_val)
         else:
             for layer_order in range(len(val_map)):
                 if layer_order == 0:
                     update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order) + " WHERE (`" + ori_column + "`<=" + str(val_map[layer_order])
-                    # if len(select_ego) > 0:
-                    update_layer_val += ") AND ("
-                    for update_ego in select_ego[:-1]:
-                        update_layer_val += "egoid='" + update_ego + "' OR "
-
-                    update_layer_val += "egoid='" + select_ego[-1] + "');"  
-                elif layer_order == len(val_map)-1:
-                    update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order) + " WHERE (`" + ori_column + "`>=" + str(val_map[layer_order])
                     # if len(select_ego) > 0:
                     update_layer_val += ") AND ("
                     for update_ego in select_ego[:-1]:
@@ -1430,10 +1422,21 @@ def update_layer(request):
                         update_layer_val += "egoid='" + update_ego + "' OR "
 
                     update_layer_val += "egoid='" + select_ego[-1] + "');"
+                    
+                    if layer_order == len(val_map)-1:
+                        print update_layer_val
+                        clause.execute(update_layer_val)
+                        update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order+1) + " WHERE (`" + ori_column + "`>=" + str(val_map[layer_order])
+                        # if len(select_ego) > 0:
+                        update_layer_val += ") AND ("
+                        for update_ego in select_ego[:-1]:
+                            update_layer_val += "egoid='" + update_ego + "' OR "
+
+                        update_layer_val += "egoid='" + select_ego[-1] + "');"  
                 # else:
                 #     update_layer_val += ");"
                     
-                # print update_layer_val
+                print update_layer_val
                 clause.execute(update_layer_val)
 
         database.commit()

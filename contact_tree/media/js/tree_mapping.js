@@ -205,6 +205,7 @@ var MappingView = Backbone.View.extend({
             container.appendChild(selection_opt);
         }
 
+        $("#sidekeyselect").unbind();
         $("#sidekeyselect").change(function(){
             $("#mark_group_select").empty();
             if( $("#sidekeyselect").val() != "none"){
@@ -504,6 +505,7 @@ var MappingView = Backbone.View.extend({
             container.appendChild(selection_opt);
         }
 
+        $("#sidekeyselect").unbind();
         $("#sidekeyselect").change(function(){
             $("#mark_group_select").empty();
             var revert = "d";
@@ -518,8 +520,8 @@ var MappingView = Backbone.View.extend({
                 var attr_container = document.getElementById("mark_group_select");
                 // $("#mark_group").text("✔ as Left Side of Trunk:");
                 $("#mark_group").hide();
-                // if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][0].length < 20){
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                // if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][0].length < 20){
                     var group = document.createElement("div");
                     var list = document.createElement("ul");
                     group.setAttribute("class", "column left first");
@@ -941,8 +943,8 @@ var MappingView = Backbone.View.extend({
             else{
                 // var update_info = data_mode + ":-ctree_branch:-" + $("#sidekeyselect").val();
                 var update_info = data_mode + ":-ctree_branch:-" + $("#sidekeyselect").val();
-                // if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][0].length < 20){
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                // if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][0].length < 20){
                     var layer_map = {};
                     attribute_mapping[$("#sidekeyselect").val()] = {};
                     count_layer = component_attribute[data_mode][$("#sidekeyselect").val()][0].length-1;
@@ -959,7 +961,7 @@ var MappingView = Backbone.View.extend({
                 else{
                     var layer_map = [];
                     attribute_mapping[$("#sidekeyselect").val()] = []
-                    for(var v = 0; v < $("#sep_gap").val(); v++){
+                    for(var v = 0; v <= $("#sep_gap").val(); v++){
                         var layer_id = "#layer_" + v;
                         layer_map.push($(layer_id).val());
                         attribute_mapping[$("#sidekeyselect").val()].push($(layer_id).val());
@@ -1066,6 +1068,7 @@ var MappingView = Backbone.View.extend({
             container.appendChild(selection_opt);
         }
 
+        $("#sidekeyselect").unbind();
         $("#sidekeyselect").change(function(){
             $("#mark_group_select").empty();
             if( $("#sidekeyselect").val() != "none"){
@@ -1361,18 +1364,300 @@ var MappingView = Backbone.View.extend({
             container.appendChild(selection_opt);
         }
 
+        $("#sidekeyselect").unbind();
         $("#sidekeyselect").change(function(){
             $("#mark_group_select").empty();
             if( $("#sidekeyselect").val() != "none"){
-                // $("#mark_group_select").empty();
+                $("#sidekey_operation").show();
+                var attr_container = document.getElementById("mark_group_select");
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                    var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
+                    // if(total_items.length > 0){
+                    for(var c = 0; c < total_items.length; c ++){
+                        var br = document.createElement("br");
+                        var p = document.createElement("p");
+                        var select_container = document.createElement("select");
+                        var label_container = document.createElement("span");
+                        select_container.value = total_items[c];
+                        select_container.setAttribute("class", "mapping_selection");
+                        // select_container.setAttribute("style", "width:100px; position:absolute; left:30px;");
+                        select_container.id = "ori_attr_val_" + total_items[c];
+                        label_container.innerHTML = total_items[c];
 
-                // $("#sidekey_submit_trunk").hide();
-                // $("#sidekey_submit_branch").hide();
-                // $("#sidekey_submit_bside").hide();
-                // $("#sidekey_submit_leaf_size").hide();
-                // $("#sidekey_submit_leaf_color").hide();
-                // $("#sidekey_submit_leaf_highlight").hide();
-                // $("#sidekey_submit_fruit_size").hide();
+                        for(var l_color = 0; l_color < mapping_color.roots_color.length; l_color++){
+                            var selection_opt = document.createElement('option');
+                            selection_opt.value = l_color;
+                            // selection_opt.innerHTML = mapping_color.roots_color[l_color];
+                            selection_opt.setAttribute("class", "myfont3");
+                            selection_opt.setAttribute("style", "background-color:" + mapping_color.roots_color[l_color] + ";");
+                            if(l_color == c){
+                                selection_opt.setAttribute("selected", true);
+                                select_container.setAttribute("style", "width:100px; position:absolute; left:30px; background-color:" + mapping_color.roots_color[l_color] + ";");
+                            }
+                                
+                            else if(mapping_color.roots_color.length < c && l_color == mapping_color.roots_color.length-1){
+                                selection_opt.setAttribute("selected", true);
+                                select_container.setAttribute("style", "width:100px; position:absolute; left:30px; background-color:" + mapping_color.roots_color[mapping_color.roots_color.length-1] + ";");
+                            }
+                                
+                            select_container.appendChild(selection_opt);
+                            
+                        }
+                        attr_container.appendChild(label_container);
+                        attr_container.appendChild(select_container);
+                        attr_container.appendChild(br);
+                        attr_container.appendChild(p);
+                    }
+                }
+                else{
+                    var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
+                    var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
+                    var attr_range = component_attribute[data_mode][$("#sidekeyselect").val()][3];
+
+                    var sep = document.createElement("div");
+                    var gap = document.createElement("div");
+                    var gap_title = document.createElement("span");
+                    var gap_input = document.createElement("select");
+                    // var revert_button = document.createElement("button");
+                    var group_slider = document.createElement("div");
+                    var range = document.createElement("div");
+                    // var range_min = document.createElement("span");
+                    // var range_max = document.createElement("span");
+                    
+                    gap_input.id = "sep_gap";
+                    // revert_button.id = "revert_button";
+                    // revert_button.innerHTML = "Revert";
+                    // revert_button.setAttribute("class", "right");
+                    gap_input.setAttribute("style", "width:100px");
+                    group_slider.id = "layer_slider";
+                    gap.setAttribute("style", "margin-top:10px;");
+
+                    gap_title.innerHTML = "Number of Difference: ";
+                    gap_title.setAttribute("class", "myfont3");
+                    sep.id = "sep_group";
+                    sep.setAttribute("style", "margin:15 0 0 30; position:relative;");
+                    
+                    group_slider.setAttribute("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + 240 + ";");
+                    group_slider.setAttribute("class", "left");
+
+                    for(var s=2; s <= 15; s++){
+                        var opt = document.createElement("option");
+                        opt.value = s;
+                        opt.innerHTML = s;
+                        opt.setAttribute("class", "myfont3");
+                        if(s == 6)
+                            opt.setAttribute("selected", true);
+                        gap_input.appendChild(opt);
+                    }
+
+                    // group_slider.appendChild(group_handle);
+                    gap.appendChild(gap_title);
+                    gap.appendChild(gap_input);
+                    // gap.appendChild(revert_button);
+                    // range.appendChild(range_min);
+                    // range.appendChild(range_max);
+                    attr_container.appendChild(gap);
+                    attr_container.appendChild(group_slider);
+                    attr_container.appendChild(range);
+                    attr_container.appendChild(sep);
+
+                    var gap = attr_range/6;
+                    var slider_val = [];
+                    
+                    for(var g = gap; g <= attr_max; g+=gap){
+                        slider_val.push(Math.round(g*100)/100);
+                    }
+                    
+                    $("#layer_slider").slider({
+                        orientation: "vertical",
+                        // range: "min",
+                        min: attr_min,
+                        max: attr_max,
+                        values: slider_val,
+                        step: 0.1,
+                        slide: function( event, ui ) {
+                            // console.log("handle_id:", ui.handle.id.split("_").pop());
+                            var v = parseInt(ui.handle.id.split("_").pop());
+                            var display = "#layer_" + v;
+                            if(v < slider_val.length-1 && ui.values[v] > ui.values[v+1]-0.5){
+                                $("#layer_slider").slider('values', v, ui.values[v+1]-0.5); 
+                                $(display).val(ui.values[v+1]-0.5);
+                                return false;
+                            }
+                            if(v > 0 && ui.values[v] < ui.values[v-1]+0.5){
+                                $("#layer_slider").slider('values', v, ui.values[v-1]+0.5); 
+                                $(display).val(ui.values[v-1]+0.5);
+                                return false;
+                            }
+                            $(display).val(ui.values[v]);
+                        }
+                    });
+                    $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
+                    $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
+
+                    $("#sep_group").empty();
+                    var sep_container = document.getElementById("sep_group");
+                    var handle = $('#layer_slider A.ui-slider-handle');   
+                    var my_offset = handle.eq(slider_val.length-1).offset().top;
+                    // console.log("++++", handle.eq(1).parent().offset());
+                    // console.log("++++", handle.eq(1).parent());
+                    for(var v = slider_val.length-1; v >= 0; v--){
+                        handle.eq(v).attr('id', "layer_handle_" + v);
+                        
+                        // console.log("----", handle.eq(v).offset().top);
+                        var sep_layer = document.createElement("div");
+                        // var sep_layer_title = document.createElement("span");
+                        var color_container = document.createElement("select");
+                        var sep_layer_input = document.createElement("input");
+                        color_container.value = v;
+                        color_container.setAttribute("class", "mapping_selection");
+                        color_container.id = "ori_attr_val_" + v;
+                        // sep_layer_title.innerHTML = "Leaf Group " + v + ": ";
+                        sep_layer.id = "sep_group_pos_" + v;
+                        // color_container.id = "ori_attr_val_" + total_items[c];
+                        // sep_layer.setAttribute("style", "padding-bottom:" + margin_top + "px; position:relative;");
+                        sep_layer.setAttribute("style", "top:" + (handle.eq(v).offset().top-my_offset) + "; position:absolute;");
+                        sep_layer_input.setAttribute("class", "layer_order");
+                        sep_layer_input.setAttribute("style", "width:100px; position:absolute; left:90; top:-1; border:0;");
+
+                        sep_layer_input.value = slider_val[v];
+                        sep_layer_input.id = "layer_" + v;
+
+                        for(var l_color = 0; l_color < mapping_color.roots_color.length; l_color++){
+                            var selection_opt = document.createElement('option');
+                            selection_opt.value = l_color;
+                            // selection_opt.innerHTML = mapping_color.roots_color[l_color];
+                            selection_opt.setAttribute("class", "myfont3");
+                            selection_opt.setAttribute("style", "background-color:" + mapping_color.roots_color[l_color] + ";");
+                            if(l_color == v){
+                                selection_opt.setAttribute("selected", true);
+                                color_container.setAttribute("style", "width:50px; position:absolute; left:30px; background-color:" + mapping_color.roots_color[l_color] + ";");
+                            }
+                                
+                            else if(mapping_color.roots_color.length < v && l_color == mapping_color.roots_color.length-1){
+                                selection_opt.setAttribute("selected", true);
+                                color_container.setAttribute("style", "width:50px; position:absolute; left:30px; background-color:" + mapping_color.roots_color[mapping_color.roots_color.length-1] + ";");
+                            }
+                                
+                            color_container.appendChild(selection_opt);
+                            
+                        }
+
+                        // sep_layer.appendChild(sep_layer_title);
+                        sep_layer.appendChild(color_container);                        
+                        sep_layer.appendChild(sep_layer_input);
+                        sep_container.appendChild(sep_layer);
+                        // handle.eq(v).attr('style', "height:" + (0.5+v*0.1) + "em");
+                        // handle.eq(v).css({'height': (0.5+v*0.1) + 'em'});
+                    }
+
+                    $("#sep_gap").change(function(){
+                        var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
+                        var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
+                        var attr_range = component_attribute[data_mode][$("#sidekeyselect").val()][3];
+                        var gap = attr_range/$("#sep_gap").val();
+                        var new_slider_val = [];
+                    
+                        for(var g = gap; g <= attr_max; g+=gap){
+                            new_slider_val.push(Math.round(g*100)/100);
+                        }
+                        
+                        // $("#layer_slider").empty();
+                        $("#layer_slider").slider( "destroy" );
+                        $("#layer_slider").attr("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (40*$("#sep_gap").val()) + ";");
+                    
+                        $("#layer_slider").slider({
+                            orientation: "vertical",
+                            // range: "min",
+                            min: attr_min,
+                            max: attr_max,
+                            values: new_slider_val,
+                            step: 0.1,
+                            slide: function( event, ui ) {
+                                // console.log("handle_id:", ui.handle.id.split("_").pop());
+                                var v = parseInt(ui.handle.id.split("_").pop());
+                                var display = "#layer_" + v;
+                                if(v < new_slider_val.length-1 && ui.values[v] > ui.values[v+1]-0.5){
+                                    $("#layer_slider").slider('values', v, ui.values[v+1]-0.5); 
+                                    $(display).val(ui.values[v+1]-0.5);
+                                    return false;
+                                }
+                                if(v > 0 && ui.values[v] < ui.values[v-1]+0.5){
+                                    $("#layer_slider").slider('values', v, ui.values[v-1]+0.5); 
+                                    $(display).val(ui.values[v-1]+0.5);
+                                    return false;
+                                }
+                                $(display).val(ui.values[v]);
+                            }
+                            
+                        });
+                        $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
+                        $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
+
+                        $("#sep_group").empty();
+                        var sep_container = document.getElementById("sep_group");
+                        var handle = $('#layer_slider A.ui-slider-handle');   
+                        var my_offset = handle.eq(new_slider_val.length-1).offset().top;
+
+                        for(var v = new_slider_val.length-1; v >= 0; v--){
+                            handle.eq(v).attr('id', "layer_handle_" + v);
+
+                            var sep_layer = document.createElement("div");
+                            // var sep_layer_title = document.createElement("span");
+                            var color_container = document.createElement("select");
+                            var sep_layer_input = document.createElement("input");
+                            color_container.value = v;
+                            color_container.setAttribute("class", "mapping_selection");
+                            color_container.id = "ori_attr_val_" + v;
+                            // sep_layer_title.innerHTML = "Leaf Group " + v + ": ";
+                            sep_layer.id = "sep_group_pos_" + v;
+                            // color_container.id = "ori_attr_val_" + total_items[c];
+                            // sep_layer.setAttribute("style", "padding-bottom:" + margin_top + "px; position:relative;");
+                            sep_layer.setAttribute("style", "top:" + (handle.eq(v).offset().top-my_offset) + "; position:absolute;");
+                            sep_layer_input.setAttribute("class", "layer_order");
+                            sep_layer_input.setAttribute("style", "width:100px; position:absolute; left:90; top:-1; border:0;");
+
+                            sep_layer_input.value = new_slider_val[v];
+                            sep_layer_input.id = "layer_" + v;
+
+                            for(var l_color = 0; l_color < mapping_color.roots_color.length; l_color++){
+                                var selection_opt = document.createElement('option');
+                                selection_opt.value = l_color;
+                                // selection_opt.innerHTML = mapping_color.roots_color[l_color];
+                                selection_opt.setAttribute("class", "myfont3");
+                                selection_opt.setAttribute("style", "background-color:" + mapping_color.roots_color[l_color] + ";");
+                                if(l_color == v){
+                                    selection_opt.setAttribute("selected", true);
+                                    color_container.setAttribute("style", "width:50px; position:absolute; left:30px; background-color:" + mapping_color.roots_color[l_color] + ";");
+                                }
+                                    
+                                else if(mapping_color.roots_color.length < v && l_color == mapping_color.roots_color.length-1){
+                                    selection_opt.setAttribute("selected", true);
+                                    color_container.setAttribute("style", "width:50px; position:absolute; left:30px; background-color:" + mapping_color.roots_color[mapping_color.roots_color.length-1] + ";");
+                                }
+                                    
+                                color_container.appendChild(selection_opt);
+                                
+                            }
+
+                            // sep_layer.appendChild(sep_layer_title);
+                            sep_layer.appendChild(color_container);                        
+                            sep_layer.appendChild(sep_layer_input);
+                            sep_container.appendChild(sep_layer);
+                            // handle.eq(v).attr('style', "height:" + (0.5+v*0.1) + "em");
+                            // handle.eq(v).css({'height': (0.5+v*0.1) + 'em'});
+                        }
+                        $(".mapping_selection").change(function(){
+                            this.style.background = mapping_color.roots_color[this.value];
+                        });
+
+                    });
+
+                }
+                
+                $(".mapping_selection").change(function(){
+                    this.style.background = mapping_color.roots_color[this.value];
+                });
             }
 
             $("#sidekey_submit_trunk").hide();
@@ -1389,18 +1674,79 @@ var MappingView = Backbone.View.extend({
         });
 
         $("#sidekey_submit_root").click(function(){
-            var attr_map = self.model.get("attribute");
-            var attr_opt = self.model.get("attr_option");
-            // console.log(component_attribute);
-            // console.log(component_attribute[data_mode]);
-            // console.log(data_mode);
-            // console.log(component_attribute[data_mode][$("#sidekeyselect").val()]);
-            
-            attr_opt[attr_opt.indexOf(attr_map["root"])] = $("#sidekeyselect").val();
-            attr_map["root"] = $("#sidekeyselect").val()
-            self.model.set({"attribute": attr_map});
-            self.model.set({"attr_option": attr_opt});
-            self.model.trigger('change:attribute');
+            var data_mode = self.model.get("view_mode");
+            var ego_selections = self.model.get("selected_egos");
+            $("#sidekey_submit_root").text("Update");
+            $("#sidekey_submit_root").attr("disabled", true);
+            // $("#sidekey_img").attr("disabled", true);
+            $("#block_layer").show();
+            if(attr_map["root"] in attribute_mapping){
+                console.log(attribute_mapping);
+                delete attribute_mapping[attr_map["root"]];
+            }
+
+            if($("#sidekeyselect").val() == "none"){}
+
+            else{
+                mapping_color.render_roots_color = [];
+                var update_info = data_mode + ":-ctree_root:-" + $("#sidekeyselect").val();
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                    var size_map = {};
+                    attribute_mapping[$("#sidekeyselect").val()] = {};
+                    var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
+                    for(var c = 0; c < total_items.length; c ++){
+                        var item_id = "#ori_attr_val_" + total_items[c];
+                        // attribute_mapping[$("#sidekeyselect").val()][total_items[c]] = $(item_id).val();
+                        // size_map[total_items[c]] = $(item_id).val();
+                        attribute_mapping[$("#sidekeyselect").val()][total_items[c]] = c;
+                        size_map[total_items[c]] = c;
+                        mapping_color.render_roots_color.push(mapping_color.roots_color[$(item_id).val()]);
+                    }
+                    
+                    update_info += ":-" + JSON.stringify(size_map);
+                    
+                }
+                else{
+                    var layer_map = [];
+                    attribute_mapping[$("#sidekeyselect").val()] = []
+                    for(var v = 0; v < $("#sep_gap").val(); v++){
+                        var layer_id = "#layer_" + v;
+                        var selector_id = "#ori_attr_val_" + v;
+                        layer_map.push($(layer_id).val());
+                        attribute_mapping[$("#sidekeyselect").val()].push($(layer_id).val());
+                        mapping_color.render_roots_color.push(mapping_color.roots_color[$(selector_id).val()]);
+                    }
+                    update_info += ":-" + JSON.stringify(layer_map);
+                }
+                for(ego in ego_selections){
+                    update_info += ":=" + ego;
+                }
+            }
+
+
+            var request_url = "update_layer/?update="+update_info;
+            console.log(request_url);
+            d3.json(request_url, function(result){
+                console.log("finish update");
+                var set_update_info = function(data){
+                    var attr_map = self.model.get("attribute");
+                    var attr_opt = self.model.get("attr_option");
+                    // console.log(data)
+                    $("#block_layer").hide();
+                    $("#sidekey_submit_root").text("Done");
+                    $("#sidekey_submit_root").removeAttr("disabled");
+
+                    attr_opt[attr_opt.indexOf(attr_map["root"])] = $("#sidekeyselect").val();
+                    attr_map["root"] = $("#sidekeyselect").val()
+                    self.model.set({"attribute": attr_map});
+                    self.model.set({"attr_option": attr_opt});
+                    self.model.trigger('change:attribute');
+                    // console.log(self.model.get("attribute"));
+                    // console.log(self.model.get("attr_option"));
+                };
+                set_update_info(result);
+            });
+
         });
     },
 
@@ -1437,6 +1783,7 @@ var MappingView = Backbone.View.extend({
         }
 
 
+        $("#sidekeyselect").unbind();
         $("#sidekeyselect").change(function(){
             $("#mark_group_select").empty();
             var revert = "d";
@@ -1916,48 +2263,306 @@ var MappingView = Backbone.View.extend({
             container.appendChild(selection_opt);
         }
 
+        $("#sidekeyselect").unbind();
         $("#sidekeyselect").change(function(){
             $("#mark_group_select").empty();
             if( $("#sidekeyselect").val() != "none"){                
                 $("#sidekey_operation").show();
-                $("#mark_group").text("Select Leaf Color Range:");
+                // $("#mark_group").text("Select Leaf Color Range:");
                 var attr_container = document.getElementById("mark_group_select");
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                    // var br = document.createElement("br");
+                    var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
+                    // if(total_items.length > 0){
+                    for(var c = 0; c < total_items.length; c ++){
+                        var br = document.createElement("br");
+                        var p = document.createElement("p");
+                        var select_container = document.createElement("select");
+                        var label_container = document.createElement("span");
+                        select_container.value = total_items[c];
+                        select_container.setAttribute("class", "mapping_selection");
+                        // select_container.setAttribute("style", "width:100px; position:absolute; left:30px;");
+                        select_container.id = "ori_attr_val_" + total_items[c];
+                        label_container.innerHTML = total_items[c];
 
-                // var br = document.createElement("br");
-                var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
-                // if(total_items.length > 0){
-                for(var c = 0; c < total_items.length; c ++){
-                    var br = document.createElement("br");
-                    var p = document.createElement("p");
-                    var select_container = document.createElement("select");
-                    var label_container = document.createElement("span");
-                    select_container.value = total_items[c];
-                    select_container.setAttribute("class", "mapping_selection");
-                    select_container.setAttribute("style", "position:absolute; left:30px;");
-                    select_container.id = "ori_attr_val_" + total_items[c];
-                    label_container.innerHTML = total_items[c];
-                    // br.innerHTML = "<p></p>";
-
-                    for(var f_size_range = 0; f_size_range <= 20; f_size_range ++){
-                        var selection_opt = document.createElement('option');
-                        selection_opt.value = f_size_range;
-                        selection_opt.innerHTML = f_size_range;
-                        selection_opt.setAttribute("class", "myfont3");
-                        if(f_size_range == total_items[c])
-                            selection_opt.setAttribute("selected", true);
-                        else if(20 < total_items[c] && f_size_range == 20)
-                            selection_opt.setAttribute("selected", true);
-                        select_container.appendChild(selection_opt);
+                        for(var l_color = 0; l_color < mapping_color.leaf_color.length; l_color++){
+                            var selection_opt = document.createElement('option');
+                            selection_opt.value = l_color;
+                            // selection_opt.innerHTML = mapping_color.leaf_color[l_color];
+                            selection_opt.setAttribute("class", "myfont3");
+                            selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
+                            if(l_color == c){
+                                selection_opt.setAttribute("selected", true);
+                                select_container.setAttribute("style", "width:100px; position:absolute; left:30px; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                            }
+                                
+                            else if(mapping_color.leaf_color.length < c && l_color == mapping_color.leaf_color.length-1){
+                                selection_opt.setAttribute("selected", true);
+                                select_container.setAttribute("style", "width:100px; position:absolute; left:30px; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
+                            }
+                                
+                            select_container.appendChild(selection_opt);
+                            
+                        }
+                        attr_container.appendChild(label_container);
+                        attr_container.appendChild(select_container);
+                        attr_container.appendChild(br);
+                        attr_container.appendChild(p);
                     }
-                    attr_container.appendChild(label_container);
-                    attr_container.appendChild(select_container);
-                    attr_container.appendChild(br);
-                    attr_container.appendChild(p);
+
                 }
+                else{
+                    var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
+                    var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
+                    var attr_range = component_attribute[data_mode][$("#sidekeyselect").val()][3];
 
-                // }
+                    var sep = document.createElement("div");
+                    var gap = document.createElement("div");
+                    var gap_title = document.createElement("span");
+                    var gap_input = document.createElement("select");
+                    // var revert_button = document.createElement("button");
+                    var group_slider = document.createElement("div");
+                    var range = document.createElement("div");
+                    // var range_min = document.createElement("span");
+                    // var range_max = document.createElement("span");
+                    
+                    gap_input.id = "sep_gap";
+                    // revert_button.id = "revert_button";
+                    // revert_button.innerHTML = "Revert";
+                    // revert_button.setAttribute("class", "right");
+                    gap_input.setAttribute("style", "width:100px");
+                    group_slider.id = "layer_slider";
+                    gap.setAttribute("style", "margin-top:10px;");
 
+                    gap_title.innerHTML = "Number of Difference: ";
+                    gap_title.setAttribute("class", "myfont3");
+                    sep.id = "sep_group";
+                    sep.setAttribute("style", "margin:15 0 0 30; position:relative;");
+                    
+                    group_slider.setAttribute("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:" + 240 + ";");
+                    group_slider.setAttribute("class", "left");
+
+                    for(var s=2; s <= 10; s++){
+                        var opt = document.createElement("option");
+                        opt.value = s;
+                        opt.innerHTML = s;
+                        opt.setAttribute("class", "myfont3");
+                        if(s == 6)
+                            opt.setAttribute("selected", true);
+                        gap_input.appendChild(opt);
+                    }
+
+                    // group_slider.appendChild(group_handle);
+                    gap.appendChild(gap_title);
+                    gap.appendChild(gap_input);
+                    // gap.appendChild(revert_button);
+                    // range.appendChild(range_min);
+                    // range.appendChild(range_max);
+                    attr_container.appendChild(gap);
+                    attr_container.appendChild(group_slider);
+                    attr_container.appendChild(range);
+                    attr_container.appendChild(sep);
+
+                    var gap = attr_range/6;
+                    var slider_val = [];
+                    
+                    for(var g = gap; g <= attr_max; g+=gap){
+                        slider_val.push(Math.round(g*100)/100);
+                    }
+                    
+                    $("#layer_slider").slider({
+                        orientation: "vertical",
+                        // range: "min",
+                        min: attr_min,
+                        max: attr_max,
+                        values: slider_val,
+                        step: 0.1,
+                        slide: function( event, ui ) {
+                            // console.log("handle_id:", ui.handle.id.split("_").pop());
+                            var v = parseInt(ui.handle.id.split("_").pop());
+                            var display = "#layer_" + v;
+                            if(v < slider_val.length-1 && ui.values[v] > ui.values[v+1]-0.5){
+                                $("#layer_slider").slider('values', v, ui.values[v+1]-0.5); 
+                                $(display).val(ui.values[v+1]-0.5);
+                                return false;
+                            }
+                            if(v > 0 && ui.values[v] < ui.values[v-1]+0.5){
+                                $("#layer_slider").slider('values', v, ui.values[v-1]+0.5); 
+                                $(display).val(ui.values[v-1]+0.5);
+                                return false;
+                            }
+                            $(display).val(ui.values[v]);
+                        }
+                    });
+                    $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
+                    $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
+
+                    $("#sep_group").empty();
+                    var sep_container = document.getElementById("sep_group");
+                    var handle = $('#layer_slider A.ui-slider-handle');   
+                    var my_offset = handle.eq(slider_val.length-1).offset().top;
+                    // console.log("++++", handle.eq(1).parent().offset());
+                    // console.log("++++", handle.eq(1).parent());
+                    for(var v = slider_val.length-1; v >= 0; v--){
+                        handle.eq(v).attr('id', "layer_handle_" + v);
+                        
+                        // console.log("----", handle.eq(v).offset().top);
+                        var sep_layer = document.createElement("div");
+                        // var sep_layer_title = document.createElement("span");
+                        var color_container = document.createElement("select");
+                        var sep_layer_input = document.createElement("input");
+                        color_container.value = v;
+                        color_container.setAttribute("class", "mapping_selection");
+                        color_container.id = "ori_attr_val_" + v;
+                        // sep_layer_title.innerHTML = "Leaf Group " + v + ": ";
+                        sep_layer.id = "sep_group_pos_" + v;
+                        // color_container.id = "ori_attr_val_" + total_items[c];
+                        // sep_layer.setAttribute("style", "padding-bottom:" + margin_top + "px; position:relative;");
+                        sep_layer.setAttribute("style", "top:" + (handle.eq(v).offset().top-my_offset) + "; position:absolute;");
+                        sep_layer_input.setAttribute("class", "layer_order");
+                        sep_layer_input.setAttribute("style", "width:100px; position:absolute; left:90; top:-1; border:0;");
+
+                        sep_layer_input.value = slider_val[v];
+                        sep_layer_input.id = "layer_" + v;
+
+                        for(var l_color = 0; l_color < mapping_color.leaf_color.length; l_color++){
+                            var selection_opt = document.createElement('option');
+                            selection_opt.value = l_color;
+                            // selection_opt.innerHTML = mapping_color.leaf_color[l_color];
+                            selection_opt.setAttribute("class", "myfont3");
+                            selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
+                            if(l_color == v){
+                                selection_opt.setAttribute("selected", true);
+                                color_container.setAttribute("style", "width:50px; position:absolute; left:30px; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                            }
+                                
+                            else if(mapping_color.leaf_color.length < v && l_color == mapping_color.leaf_color.length-1){
+                                selection_opt.setAttribute("selected", true);
+                                color_container.setAttribute("style", "width:50px; position:absolute; left:30px; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
+                            }
+                                
+                            color_container.appendChild(selection_opt);
+                            
+                        }
+
+                        // sep_layer.appendChild(sep_layer_title);
+                        sep_layer.appendChild(color_container);                        
+                        sep_layer.appendChild(sep_layer_input);
+                        sep_container.appendChild(sep_layer);
+                        // handle.eq(v).attr('style', "height:" + (0.5+v*0.1) + "em");
+                        // handle.eq(v).css({'height': (0.5+v*0.1) + 'em'});
+                    }
+
+                    $("#sep_gap").change(function(){
+                        var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
+                        var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
+                        var attr_range = component_attribute[data_mode][$("#sidekeyselect").val()][3];
+                        var gap = attr_range/$("#sep_gap").val();
+                        var new_slider_val = [];
+                    
+                        for(var g = gap; g <= attr_max; g+=gap){
+                            new_slider_val.push(Math.round(g*100)/100);
+                        }
+                        
+                        // $("#layer_slider").empty();
+                        $("#layer_slider").slider( "destroy" );
+                        $("#layer_slider").attr("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:" + (40*$("#sep_gap").val()) + ";");
+                    
+                        $("#layer_slider").slider({
+                            orientation: "vertical",
+                            // range: "min",
+                            min: attr_min,
+                            max: attr_max,
+                            values: new_slider_val,
+                            step: 0.1,
+                            slide: function( event, ui ) {
+                                // console.log("handle_id:", ui.handle.id.split("_").pop());
+                                var v = parseInt(ui.handle.id.split("_").pop());
+                                var display = "#layer_" + v;
+                                if(v < new_slider_val.length-1 && ui.values[v] > ui.values[v+1]-0.5){
+                                    $("#layer_slider").slider('values', v, ui.values[v+1]-0.5); 
+                                    $(display).val(ui.values[v+1]-0.5);
+                                    return false;
+                                }
+                                if(v > 0 && ui.values[v] < ui.values[v-1]+0.5){
+                                    $("#layer_slider").slider('values', v, ui.values[v-1]+0.5); 
+                                    $(display).val(ui.values[v-1]+0.5);
+                                    return false;
+                                }
+                                $(display).val(ui.values[v]);
+                            }
+                            
+                        });
+                        $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
+                        $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
+
+                        $("#sep_group").empty();
+                        var sep_container = document.getElementById("sep_group");
+                        var handle = $('#layer_slider A.ui-slider-handle');   
+                        var my_offset = handle.eq(new_slider_val.length-1).offset().top;
+
+                        for(var v = new_slider_val.length-1; v >= 0; v--){
+                            handle.eq(v).attr('id', "layer_handle_" + v);
+
+                            var sep_layer = document.createElement("div");
+                            // var sep_layer_title = document.createElement("span");
+                            var color_container = document.createElement("select");
+                            var sep_layer_input = document.createElement("input");
+                            color_container.value = v;
+                            color_container.setAttribute("class", "mapping_selection");
+                            color_container.id = "ori_attr_val_" + v;
+                            // sep_layer_title.innerHTML = "Leaf Group " + v + ": ";
+                            sep_layer.id = "sep_group_pos_" + v;
+                            // color_container.id = "ori_attr_val_" + total_items[c];
+                            // sep_layer.setAttribute("style", "padding-bottom:" + margin_top + "px; position:relative;");
+                            sep_layer.setAttribute("style", "top:" + (handle.eq(v).offset().top-my_offset) + "; position:absolute;");
+                            sep_layer_input.setAttribute("class", "layer_order");
+                            sep_layer_input.setAttribute("style", "width:100px; position:absolute; left:90; top:-1; border:0;");
+
+                            sep_layer_input.value = new_slider_val[v];
+                            sep_layer_input.id = "layer_" + v;
+
+                            for(var l_color = 0; l_color < mapping_color.leaf_color.length; l_color++){
+                                var selection_opt = document.createElement('option');
+                                selection_opt.value = l_color;
+                                // selection_opt.innerHTML = mapping_color.leaf_color[l_color];
+                                selection_opt.setAttribute("class", "myfont3");
+                                selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                if(l_color == v){
+                                    selection_opt.setAttribute("selected", true);
+                                    color_container.setAttribute("style", "width:50px; position:absolute; left:30px; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                }
+                                    
+                                else if(mapping_color.leaf_color.length < v && l_color == mapping_color.leaf_color.length-1){
+                                    selection_opt.setAttribute("selected", true);
+                                    color_container.setAttribute("style", "width:50px; position:absolute; left:30px; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
+                                }
+                                    
+                                color_container.appendChild(selection_opt);
+                                
+                            }
+
+                            // sep_layer.appendChild(sep_layer_title);
+                            sep_layer.appendChild(color_container);                        
+                            sep_layer.appendChild(sep_layer_input);
+                            sep_container.appendChild(sep_layer);
+                            // handle.eq(v).attr('style', "height:" + (0.5+v*0.1) + "em");
+                            // handle.eq(v).css({'height': (0.5+v*0.1) + 'em'});
+                        }
+                        $(".mapping_selection").change(function(){
+                            this.style.background = mapping_color.leaf_color[this.value];
+                        });
+
+                    });
+
+                }
+                
             }
+
+            $(".mapping_selection").change(function(){
+                this.style.background = mapping_color.leaf_color[this.value];
+            });
+
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").hide();
             $("#sidekey_submit_bside").hide();
@@ -1978,22 +2583,58 @@ var MappingView = Backbone.View.extend({
             $("#sidekey_submit_leaf_color").attr("disabled", true);
             // $("#sidekey_img").attr("disabled", true);
             $("#block_layer").show();
-            var size_map = {};
-
-            var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
-            for(var c = 0; c < total_items.length; c ++){
-                var item_id = "#ori_attr_val_" + total_items[c];
-                size_map[total_items[c]] = $(item_id).val();
-            }
-            
-            var update_info = data_mode + ":-ctree_leaf_color:-" + $("#sidekeyselect").val() + ":-" + JSON.stringify(size_map);
-
-            
-            for(ego in ego_selections){
-                update_info += ":=" + ego;
+            if(attr_map["leaf_color"] in attribute_mapping){
+                console.log(attribute_mapping);
+                delete attribute_mapping[attr_map["leaf_color"]];
             }
 
+            // var size_map = {};
+
+            // var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
+            // for(var c = 0; c < total_items.length; c ++){
+            //     var item_id = "#ori_attr_val_" + total_items[c];
+            //     size_map[total_items[c]] = $(item_id).val();
+            // }
+
+            if($("#sidekeyselect").val() == "none"){}
+
+            else{
+                mapping_color.render_leaf_color = [];
+                var update_info = data_mode + ":-ctree_leaf_color:-" + $("#sidekeyselect").val();
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                    var size_map = {};
+                    attribute_mapping[$("#sidekeyselect").val()] = {};
+                    var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
+                    for(var c = 0; c < total_items.length; c ++){
+                        var item_id = "#ori_attr_val_" + total_items[c];
+                        // attribute_mapping[$("#sidekeyselect").val()][total_items[c]] = $(item_id).val();
+                        // size_map[total_items[c]] = $(item_id).val();
+                        attribute_mapping[$("#sidekeyselect").val()][total_items[c]] = c;
+                        size_map[total_items[c]] = c;
+                        mapping_color.render_leaf_color.push(mapping_color.leaf_color[$(item_id).val()]);
+                    }
+                    
+                    update_info += ":-" + JSON.stringify(size_map);
+                    
+                }
+                else{
+                    var layer_map = [];
+                    attribute_mapping[$("#sidekeyselect").val()] = []
+                    for(var v = 0; v < $("#sep_gap").val(); v++){
+                        var layer_id = "#layer_" + v;
+                        var selector_id = "#ori_attr_val_" + v;
+                        layer_map.push($(layer_id).val());
+                        attribute_mapping[$("#sidekeyselect").val()].push($(layer_id).val());
+                        mapping_color.render_leaf_color.push(mapping_color.leaf_color[$(selector_id).val()]);
+                    }
+                    update_info += ":-" + JSON.stringify(layer_map);
+                }
+                for(ego in ego_selections){
+                    update_info += ":=" + ego;
+                }
+            }
             
+            // var update_info = data_mode + ":-ctree_leaf_color:-" + $("#sidekeyselect").val() + ":-" + JSON.stringify(size_map);            
 
             var request_url = "update_layer/?update="+update_info;
             console.log(request_url);
@@ -2050,12 +2691,14 @@ var MappingView = Backbone.View.extend({
             container.appendChild(selection_opt);
         }
 
+        $("#sidekeyselect").unbind();
         $("#sidekeyselect").change(function(){
             $("#mark_group_select").empty();
             if( $("#sidekeyselect").val() != "none"){
                 $("#sidekey_operation").show();
                 $("#mark_group").text("Highlight Leaf of Infomation: " + $("#sidekeyselect").val());                
             }
+
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").hide();
             $("#sidekey_submit_bside").hide();
@@ -2075,9 +2718,10 @@ var MappingView = Backbone.View.extend({
             // console.log(component_attribute[data_mode]);
             // console.log(data_mode);
             // console.log(component_attribute[data_mode][$("#sidekeyselect").val()]);
-            
+
+            // attribute_mapping[$("#sidekeyselect").val()].push($(layer_id).val());
             attr_opt[attr_opt.indexOf(attr_map["leaf_id"])] = $("#sidekeyselect").val();
-            attr_map["leaf_id"] = $("#sidekeyselect").val()
+            attr_map["leaf_id"] = $("#sidekeyselect").val();
             self.model.set({"attribute": attr_map});
             self.model.set({"attr_option": attr_opt});
             self.model.trigger('change:attribute');
@@ -2102,7 +2746,7 @@ var MappingView = Backbone.View.extend({
         for(s in component_attribute[data_mode]){
             if(s == "none"){}
             else{
-                if(component_attribute[data_mode][s][0].length == 0 /*|| component_attribute[data_mode][s][4] != "1"*/ || (attr_opt.indexOf(s) != -1 && s != attr_map["fruit_size"]))
+                if(component_attribute[data_mode][s][0].length == 0 || component_attribute[data_mode][s][4] != "1" || (attr_opt.indexOf(s) != -1 && s != attr_map["fruit_size"]))
                     continue
             }
             var selection_opt = document.createElement('option');
@@ -2117,6 +2761,7 @@ var MappingView = Backbone.View.extend({
             container.appendChild(selection_opt);
         }
 
+        $("#sidekeyselect").unbind();
         $("#sidekeyselect").change(function(){
             $("#mark_group_select").empty();
             var revert = "d";
@@ -2262,7 +2907,7 @@ var MappingView = Backbone.View.extend({
                         var sep_layer = document.createElement("div");
                         var sep_layer_title = document.createElement("span");
                         var sep_layer_input = document.createElement("input");
-                        sep_layer_title.innerHTML = "Leaf Group " + v + ": ";
+                        sep_layer_title.innerHTML = "Fruit Group " + v + ": ";
                         sep_layer.id = "sep_group_pos_" + v;
                         // sep_layer.setAttribute("style", "padding-bottom:" + margin_top + "px; position:relative;");
                         sep_layer.setAttribute("style", "top:" + (handle.eq(v).offset().top-my_offset) + "; position:absolute;");
@@ -2376,7 +3021,7 @@ var MappingView = Backbone.View.extend({
                             var sep_layer = document.createElement("div");
                             var sep_layer_title = document.createElement("span");
                             var sep_layer_input = document.createElement("input");
-                            sep_layer_title.innerHTML = "Leaf Group " + v + ": ";
+                            sep_layer_title.innerHTML = "Fruit Group " + v + ": ";
                             sep_layer.id = "sep_group_pos_" + v;
                             // sep_layer.setAttribute("style", "padding-bottom:" + margin_top + "px; position:relative;");
                             // if(my_revert == "a")
@@ -2459,7 +3104,7 @@ var MappingView = Backbone.View.extend({
                             var sep_layer = document.createElement("div");
                             var sep_layer_title = document.createElement("span");
                             var sep_layer_input = document.createElement("input");
-                            sep_layer_title.innerHTML = "Leaf Group " + v + ": ";
+                            sep_layer_title.innerHTML = "Fruit Group " + v + ": ";
                             sep_layer.id = "sep_group_pos_" + v;
                             // sep_layer.setAttribute("style", "padding-bottom:" + margin_top + "px; position:relative;");
                             sep_layer.setAttribute("style", "top:" + (handle.eq(v).offset().top-my_offset) + "; position:absolute;");
