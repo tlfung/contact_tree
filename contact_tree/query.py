@@ -1162,12 +1162,12 @@ def set_default_mapping(all_data, table, attr, mapping):
                         else:
                             if int(d[attr[compt]]) <= int(mapping[attr[compt]][0]):
                                 db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                            elif int(d[attr[compt]]) >= int(mapping[attr[compt]][-1]):
+                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(mapping)) + ' WHERE e_id=' + str(d['e_id']) + ';')
                             else:
                                 for order in range(1, len(mapping[attr[compt]])):
                                     if int(d[attr[compt]]) > int(mapping[attr[compt]][order-1]) and int(d[attr[compt]]) <= int(mapping[attr[compt]][order]):
                                         db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                        if int(d[attr[compt]]) >= int(mapping[attr[compt]][-1]):
-                                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(mapping)) + ' WHERE e_id=' + str(d['e_id']) + ';')
                                         break
                                     
                     else:

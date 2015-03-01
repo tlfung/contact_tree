@@ -91,6 +91,13 @@ a:focus{ outline: none; }
   padding: 0 3 0 3;
 }
 
+.layer_label{
+  border:solid 1; 
+  border-radius:3; 
+  position:absolute; 
+  background:whitesmoke;
+}
+
 .description_box{
   border:solid 1;
   border-radius:5;

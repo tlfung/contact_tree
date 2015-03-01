@@ -570,11 +570,15 @@ var MappingView = Backbone.View.extend({
                     group_slider.id = "layer_slider";
                     gap.setAttribute("style", "margin-top:10px;");
 
+                    range.id = "sep_range";
+                    range.setAttribute("style", "margin:15 0 0 0; position:relative; width:65px;");
+                    range.setAttribute("class", "left");
+
                     gap_title.innerHTML = "Total Layer: ";
                     gap_title.setAttribute("class", "myfont3");
                     sep.id = "sep_group";
-                    sep.setAttribute("style", "margin:15 0 0 30; position:relative;");
-                    
+                    sep.setAttribute("style", "margin:15 0 0 10; position:relative;");
+                    sep.setAttribute("class", "left");
                     group_slider.setAttribute("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + 400 + ";");
                     group_slider.setAttribute("class", "left");
 
@@ -595,8 +599,8 @@ var MappingView = Backbone.View.extend({
                     // range.appendChild(range_min);
                     // range.appendChild(range_max);
                     attr_container.appendChild(gap);
-                    attr_container.appendChild(group_slider);
                     attr_container.appendChild(range);
+                    attr_container.appendChild(group_slider);
                     attr_container.appendChild(sep);
 
                     var gap = attr_range/10;
@@ -613,6 +617,7 @@ var MappingView = Backbone.View.extend({
                         max: attr_max,
                         values: slider_val,
                         step: 0.1,
+                        /*
                         slide: function( event, ui ) {
                             // console.log("handle_id:", ui.handle.id.split("_").pop());
                             var v = parseInt(ui.handle.id.split("_").pop());
@@ -629,35 +634,101 @@ var MappingView = Backbone.View.extend({
                             }
                             $(display).val(ui.values[v]);
                         }
+                        */
+                        slide: function( event, ui ) {
+                            // console.log("handle_id:", ui.handle.id.split("_").pop());
+                            var v = parseInt(ui.handle.id.split("_").pop());
+                            var display = "#layer_" + v;
+                            var label2 = "#title_" + (v+1);
+                            var label1 = "#title_" + v;                            
+                            var on_handle = "#layer_handle_"+ v;
+                            if(v < slider_val.length-1 && ui.values[v] > Math.round((ui.values[v+1]-0.5)*100)/100){
+                                $("#layer_slider").slider('values', v, Math.round((ui.values[v+1]-0.5)*100)/100); 
+                                $(display).val(Math.round((ui.values[v+1]-0.5)*100)/100);
+                                $(display).css({"top": $(on_handle).position().top});
+                                // $(label).css({"top": $(on_handle).position().top});
+                                return false;
+                            }
+                            if(v > 0 && ui.values[v] < Math.round((ui.values[v-1]+0.5)*100)/100){
+                                $("#layer_slider").slider('values', v, Math.round((ui.values[v-1]+0.5)*100)/100); 
+                                $(display).val(Math.round((ui.values[v-1]+0.5)*100)/100);
+                                $(display).css({"top": $(on_handle).position().top});
+                                // $(label).css({"top": $(on_handle).position().top});
+                                return false;
+                            }
+                            $(display).css({"top": $(on_handle).position().top});
+                            if(v == 0){
+                                var up_handle = "#layer_handle_"+ (v+1);
+                                $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                            }
+                            else if(v == slider_val.length-1){
+                                var down_handle = "#layer_handle_"+ (v-1);
+                                $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                            }
+                            else{
+                                var down_handle = "#layer_handle_"+ (v-1);
+                                var up_handle = "#layer_handle_"+ (v+1);
+                                $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                            }
+                            
+                            $(display).val(Math.round((ui.values[v])*100)/100);
+                        }
                     });
                     $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
                     $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
 
                     $("#sep_group").empty();
+                    $("#sep_range").empty();
+                    
                     var sep_container = document.getElementById("sep_group");
                     var handle = $('#layer_slider A.ui-slider-handle');   
-                    var my_offset = handle.eq(slider_val.length-1).offset().top;
+                    var range_container = document.getElementById("sep_range");
+                    // var my_offset = handle.eq(slider_val.length-1).offset().top;
                     // console.log("++++", handle.eq(1).parent().offset());
                     // console.log("++++", handle.eq(1).parent());
                     for(var v = slider_val.length-1; v >= 0; v--){
+                        // console.log("OFFSET:", handle.eq(v).offset());
+                        // console.log("POSITION:", handle.eq(v).position());
                         handle.eq(v).attr('id', "layer_handle_" + v);
                         // console.log("----", handle.eq(v).offset().top);
-                        var sep_layer = document.createElement("div");
-                        var sep_layer_title = document.createElement("span");
+                        // var sep_layer = document.createElement("div");                        
+                        if(v == 0){
+                            var sep_layer_title = document.createElement("span");
+                            // sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()+handle.eq(v).position().top)/2 + "; position:absolute;");
+                            sep_layer_title.setAttribute("class", "layer_label");
+                            sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()-3) + ";");
+                            sep_layer_title.innerHTML = "Layer " + v + "";
+                            sep_layer_title.id = "title_" + v;
+                            range_container.appendChild(sep_layer_title);
+                        }   
+                        else{
+                            var sep_layer_title = document.createElement("span");
+                            sep_layer_title.setAttribute("class", "layer_label");
+                            sep_layer_title.setAttribute("style", "top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + ";");
+                            sep_layer_title.innerHTML = "Layer " + v + "";
+                            sep_layer_title.id = "title_" + v;
+                            range_container.appendChild(sep_layer_title);
+                            if(v == slider_val.length-1){
+                                var sep_layer_title = document.createElement("span");
+                                sep_layer_title.setAttribute("class", "layer_label");
+                                sep_layer_title.setAttribute("style", "top:-15;");
+                                sep_layer_title.innerHTML = "Layer " + (v+1) + "";
+                                sep_layer_title.id = "title_" + v;
+                                range_container.appendChild(sep_layer_title);
+                            }
+                        }                 
                         var sep_layer_input = document.createElement("input");
-                        sep_layer_title.innerHTML = "Layer " + v + ": ";
-                        sep_layer.id = "sep_group_pos_" + v;
-                        // sep_layer.setAttribute("style", "padding-bottom:" + margin_top + "px; position:relative;");
-                        sep_layer.setAttribute("style", "top:" + (handle.eq(v).offset().top-my_offset) + "; position:absolute;");
-                        sep_layer_input.setAttribute("class", "layer_order");
-                        sep_layer_input.setAttribute("style", "width:100px; position:absolute; left:60; top:-1; border:0;");
 
+                        sep_layer_input.setAttribute("class", "layer_order");
+                        // sep_layer_input.setAttribute("style", "width:80px; position:absolute; border:solid 1; border-radius:3; background:none;");
+                        sep_layer_input.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; width:100px; position:absolute; background:none; border:0;");
+                        sep_layer_input.setAttribute("readonly", "readonly");
                         sep_layer_input.value = slider_val[v];
                         sep_layer_input.id = "layer_" + v;
 
-                        sep_layer.appendChild(sep_layer_title);
-                        sep_layer.appendChild(sep_layer_input);
-                        sep_container.appendChild(sep_layer);
+                        sep_container.appendChild(sep_layer_input);
+                        
                     }
 
                     
@@ -697,17 +768,40 @@ var MappingView = Backbone.View.extend({
                                     var v = parseInt(ui.handle.id.split("_").pop());
                                     // console.log("handle_id:", v, "handle_value:", ui.values[v]);
                                     var display = "#layer_" + v;
-                                    if(v < new_slider_val.length-1 && ui.values[v] > ui.values[v+1]-0.5){
-                                        $("#layer_slider").slider('values', v, ui.values[v+1]-0.5); 
-                                        $(display).val(0-(ui.values[v+1]-0.5));
+                                    var label2 = "#title_" + (v+1);
+                                    var label1 = "#title_" + v;                            
+                                    var on_handle = "#layer_handle_"+ v;
+                                    if(v < new_slider_val.length-1 && ui.values[v] > Math.round((ui.values[v+1]-0.5)*100)/100){
+                                        $("#layer_slider").slider('values', v, Math.round((ui.values[v+1]-0.5)*100)/100); 
+                                        $(display).val(Math.round((0-(ui.values[v+1]-0.5))*100)/100);
+                                        $(display).css({"top": $(on_handle).position().top});
+                                        // $(label).css({"top": $(on_handle).position().top});
                                         return false;
                                     }
-                                    if(v > 0 && ui.values[v] < ui.values[v-1]+0.5){
-                                        $("#layer_slider").slider('values', v, ui.values[v-1]+0.5); 
-                                        $(display).val(0-(ui.values[v-1]+0.5));
+                                    if(v > 0 && ui.values[v] < Math.round((ui.values[v-1]+0.5)*100)/100){
+                                        $("#layer_slider").slider('values', v, Math.round((ui.values[v-1]+0.5)*100)/100); 
+                                        $(display).val(Math.round((0-(ui.values[v-1]+0.5))*100)/100);
+                                        $(display).css({"top": $(on_handle).position().top});
+                                        // $(label).css({"top": $(on_handle).position().top});
                                         return false;
                                     }
-                                    $(display).val(0-ui.values[v]);
+                                    $(display).css({"top": $(on_handle).position().top});
+                                    // $(label).css({"top": $(on_handle).position().top});
+                                    if(v == 0){
+                                        var up_handle = "#layer_handle_"+ (v+1);
+                                        $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    else if(v == new_slider_val.length-1){
+                                        var down_handle = "#layer_handle_"+ (v-1);
+                                        $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    else{
+                                        var down_handle = "#layer_handle_"+ (v-1);
+                                        var up_handle = "#layer_handle_"+ (v+1);
+                                        $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                        $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    $(display).val(Math.round((0-ui.values[v])*100)/100);
                                 }
                             });
 
@@ -724,17 +818,40 @@ var MappingView = Backbone.View.extend({
                                     // console.log("handle_id:", ui.handle.id.split("_").pop());
                                     var v = parseInt(ui.handle.id.split("_").pop());
                                     var display = "#layer_" + v;
-                                    if(v < new_slider_val.length-1 && ui.values[v] > ui.values[v+1]-0.5){
-                                        $("#layer_slider").slider('values', v, ui.values[v+1]-0.5); 
-                                        $(display).val(ui.values[v+1]-0.5);
+                                    var label2 = "#title_" + (v+1);
+                                    var label1 = "#title_" + v;
+                                    var on_handle = "#layer_handle_"+ v;
+                                    if(v < new_slider_val.length-1 && ui.values[v] > Math.round((ui.values[v+1]-0.5)*100)/100){
+                                        $("#layer_slider").slider('values', v, Math.round((ui.values[v+1]-0.5)*100)/100); 
+                                        $(display).val(Math.round((ui.values[v+1]-0.5)*100)/100);
+                                        $(display).css({"top": $(on_handle).position().top});
+                                        // $(label).css({"top": $(on_handle).position().top});
                                         return false;
                                     }
-                                    if(v > 0 && ui.values[v] < ui.values[v-1]+0.5){
-                                        $("#layer_slider").slider('values', v, ui.values[v-1]+0.5); 
-                                        $(display).val(ui.values[v-1]+0.5);
+                                    if(v > 0 && ui.values[v] < Math.round((ui.values[v-1]+0.5)*100)/100){
+                                        $("#layer_slider").slider('values', v, Math.round((ui.values[v-1]+0.5)*100)/100); 
+                                        $(display).val(Math.round((ui.values[v-1]+0.5)*100)/100);
+                                        $(display).css({"top": $(on_handle).position().top});
+                                        // $(label).css({"top": $(on_handle).position().top});
                                         return false;
                                     }
-                                    $(display).val(ui.values[v]);
+                                    $(display).css({"top": $(on_handle).position().top});
+                                    // $(label).css({"top": $(on_handle).position().top});
+                                    if(v == 0){
+                                        var up_handle = "#layer_handle_"+ (v+1);
+                                        $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    else if(v == new_slider_val.length-1){
+                                        var down_handle = "#layer_handle_"+ (v-1);
+                                        $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    else{
+                                        var down_handle = "#layer_handle_"+ (v-1);
+                                        var up_handle = "#layer_handle_"+ (v+1);
+                                        $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                        $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    $(display).val(Math.round((ui.values[v])*100)/100);
                                 }
                             });
                         }
@@ -743,40 +860,63 @@ var MappingView = Backbone.View.extend({
                         $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
 
                         $("#sep_group").empty();
+                        $("#sep_range").empty();
                         var sep_container = document.getElementById("sep_group");
                         var handle = $('#layer_slider A.ui-slider-handle');   
-
-                        var my_offset = handle.eq(new_slider_val.length-1).offset().top;
-                        // if(my_revert == "a")
-                        //     my_offset = handle.eq(0).offset().top;
+                        var range_container = document.getElementById("sep_range");
 
                         for(var v = new_slider_val.length-1; v >= 0; v--){
+                            // console.log("OFFSET:", handle.eq(v).offset());
+                            // console.log("POSITION:", handle.eq(v).position());
                             handle.eq(v).attr('id', "layer_handle_" + v);
-                            
-                            var sep_layer = document.createElement("div");
-                            var sep_layer_title = document.createElement("span");
-                            var sep_layer_input = document.createElement("input");
-                            sep_layer_title.innerHTML = "Layer " + v + ": ";
-                            sep_layer.id = "sep_group_pos_" + v;
-                            // sep_layer.setAttribute("style", "padding-bottom:" + margin_top + "px; position:relative;");
-                            // if(my_revert == "a")
-                            //     sep_layer.setAttribute("style", "top:" + (my_offset-handle.eq(v).offset().top) + "; position:absolute;");
-                            // else
-                            sep_layer.setAttribute("style", "top:" + (handle.eq(v).offset().top-my_offset) + "; position:absolute;");
-                            
-                            sep_layer_input.setAttribute("style", "width:100px; position:absolute; left:60; top:-1; border:0;");
-                            sep_layer_input.setAttribute("class", "layer_order");
+                            // console.log("----", handle.eq(v).offset().top);
+                            // var sep_layer = document.createElement("div");
 
+                            if(v == 0){
+                                var sep_layer_title = document.createElement("span");
+                                sep_layer_title.setAttribute("class", "layer_label");
+                                // sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()+handle.eq(v).position().top)/2 + "; position:absolute;");
+                                sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()-3) + ";");
+                                sep_layer_title.innerHTML = "Layer " + v + "";
+                                sep_layer_title.id = "title_" + v;
+                                range_container.appendChild(sep_layer_title);
+                            }   
+                            else{
+                                var sep_layer_title = document.createElement("span");
+                                sep_layer_title.setAttribute("class", "layer_label");
+                                sep_layer_title.setAttribute("style", "top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + ";");
+                                sep_layer_title.innerHTML = "Layer " + v + "";
+                                sep_layer_title.id = "title_" + v;
+                                range_container.appendChild(sep_layer_title);
+                                if(v == new_slider_val.length-1){
+                                    var sep_layer_title = document.createElement("span");
+                                    sep_layer_title.setAttribute("class", "layer_label");
+                                    sep_layer_title.setAttribute("style", "top:-15;");
+                                    sep_layer_title.innerHTML = "Layer " + (v+1) + "";
+                                    sep_layer_title.id = "title_" + v;
+                                    range_container.appendChild(sep_layer_title);
+                                }
+                            }
+                            var sep_layer_input = document.createElement("input");
+                            // var sep_layer_input = document.createElement("span");
+                            // sep_layer.id = "sep_group_pos_" + v;
+                            // sep_layer.setAttribute("style", "padding-bottom:" + margin_top + "px; position:relative;");
+                            // sep_layer.setAttribute("style", "top:" + (handle.eq(v).offset().top-my_offset) + "; position:absolute;");
+                            // sep_layer.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; position:absolute;");
+                            sep_layer_input.setAttribute("class", "layer_order");
+                            // sep_layer_input.setAttribute("style", "width:80px; position:absolute; border:solid 1; border-radius:3; background:none;");
+                            sep_layer_input.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; width:100px; position:absolute; background:none; border:0;");
+                            sep_layer_input.setAttribute("readonly", "readonly");
                             if(my_revert == "a")
                                 sep_layer_input.value = 0-new_slider_val[v];
                             else
                                 sep_layer_input.value = new_slider_val[v];
                             sep_layer_input.id = "layer_" + v;
 
-                            sep_layer.appendChild(sep_layer_title);
-                            sep_layer.appendChild(sep_layer_input);
-                            sep_container.appendChild(sep_layer);
-                        } 
+                            // sep_layer.appendChild(sep_layer_input);
+                            sep_container.appendChild(sep_layer_input);
+                        }
+
                         revert = my_revert;
                         
                     });
@@ -808,17 +948,40 @@ var MappingView = Backbone.View.extend({
                                 // console.log("handle_id:", ui.handle.id.split("_").pop());
                                 var v = parseInt(ui.handle.id.split("_").pop());
                                 var display = "#layer_" + v;
-                                if(v < new_slider_val.length-1 && ui.values[v] > ui.values[v+1]-0.5){
-                                    $("#layer_slider").slider('values', v, ui.values[v+1]-0.5); 
-                                    $(display).val(ui.values[v+1]-0.5);
+                                var label2 = "#title_" + (v+1);
+                                var label1 = "#title_" + v;
+                                var on_handle = "#layer_handle_"+ v;
+                                if(v < new_slider_val.length-1 && ui.values[v] > Math.round((ui.values[v+1]-0.5)*100)/100){
+                                    $("#layer_slider").slider('values', v, Math.round((ui.values[v+1]-0.5)*100)/100); 
+                                    $(display).val(Math.round((ui.values[v+1]-0.5)*100)/100);
+                                    $(display).css({"top": $(on_handle).position().top});
+                                    // $(label).css({"top": $(on_handle).position().top});
                                     return false;
                                 }
-                                if(v > 0 && ui.values[v] < ui.values[v-1]+0.5){
-                                    $("#layer_slider").slider('values', v, ui.values[v-1]+0.5); 
-                                    $(display).val(ui.values[v-1]+0.5);
+                                if(v > 0 && ui.values[v] < Math.round((ui.values[v-1]+0.5)*100)/100){
+                                    $("#layer_slider").slider('values', v, Math.round((ui.values[v-1]+0.5)*100)/100); 
+                                    $(display).val(Math.round((ui.values[v-1]+0.5)*100)/100);
+                                    $(display).css({"top": $(on_handle).position().top});
+                                    // $(label).css({"top": $(on_handle).position().top});
                                     return false;
                                 }
-                                $(display).val(ui.values[v]);
+                                $(display).css({"top": $(on_handle).position().top});
+                                // $(label).css({"top": $(on_handle).position().top});
+                                if(v == 0){
+                                    var up_handle = "#layer_handle_"+ (v+1);
+                                    $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                                else if(v == new_slider_val.length-1){
+                                    var down_handle = "#layer_handle_"+ (v-1);
+                                    $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                                else{
+                                    var down_handle = "#layer_handle_"+ (v-1);
+                                    var up_handle = "#layer_handle_"+ (v+1);
+                                    $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                    $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                                $(display).val(Math.round((ui.values[v])*100)/100);
                             }
                             /*
                             slide: function( event, ui ) {
@@ -833,9 +996,56 @@ var MappingView = Backbone.View.extend({
                         $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
 
                         $("#sep_group").empty();
+                        $("#sep_range").empty();
                         var sep_container = document.getElementById("sep_group");
                         var handle = $('#layer_slider A.ui-slider-handle');   
+                        var range_container = document.getElementById("sep_range");
 
+                        for(var v = new_slider_val.length-1; v >= 0; v--){
+                            // console.log("OFFSET:", handle.eq(v).offset());
+                            // console.log("POSITION:", handle.eq(v).position());
+                            handle.eq(v).attr('id', "layer_handle_" + v);
+
+                            if(v == 0){
+                                var sep_layer_title = document.createElement("span");
+                                // sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()+handle.eq(v).position().top)/2 + "; position:absolute;");
+                                sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()-3) + ";");
+                                sep_layer_title.setAttribute("class", "layer_label");
+                                sep_layer_title.innerHTML = "Layer " + v + "";
+                                sep_layer_title.id = "title_" + v;
+                                range_container.appendChild(sep_layer_title);
+                            }   
+                            else{
+                                var sep_layer_title = document.createElement("span");
+                                sep_layer_title.setAttribute("style", "top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + ";");
+                                sep_layer_title.setAttribute("class", "layer_label");
+                                sep_layer_title.innerHTML = "Layer " + v + "";
+                                sep_layer_title.id = "title_" + v;
+                                range_container.appendChild(sep_layer_title);
+                                if(v == new_slider_val.length-1){
+                                    var sep_layer_title = document.createElement("span");
+                                    sep_layer_title.setAttribute("class", "layer_label");
+                                    sep_layer_title.setAttribute("style", "top:-15;");
+                                    sep_layer_title.innerHTML = "Layer " + (v+1) + "";
+                                    sep_layer_title.id = "title_" + v;
+                                    range_container.appendChild(sep_layer_title);
+                                }
+                            }
+                            // var sep_layer = document.createElement("div");
+                            var sep_layer_input = document.createElement("input");
+                            // sep_layer.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; position:absolute;");
+                            sep_layer_input.setAttribute("class", "layer_order");
+                            // sep_layer_input.setAttribute("style", "width:80px; position:absolute; border:solid 1; border-radius:3; background:none;");
+                            sep_layer_input.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; width:100px; position:absolute; background:none; border:0;");
+                            sep_layer_input.setAttribute("readonly", "readonly");
+                            
+                            sep_layer_input.value = new_slider_val[v];
+                            sep_layer_input.id = "layer_" + v;
+
+                            // sep_layer.appendChild(sep_layer_input);
+                            sep_container.appendChild(sep_layer_input);
+                        }
+                        /*
                         var my_offset = handle.eq(new_slider_val.length-1).offset().top;
                         
                         for(var v = new_slider_val.length-1; v >= 0; v--){
@@ -858,6 +1068,7 @@ var MappingView = Backbone.View.extend({
                             sep_layer.appendChild(sep_layer_input);
                             sep_container.appendChild(sep_layer);
                         } 
+                        */
                     });
 
                     // $(".layer_order").change(function(){
@@ -1383,6 +1594,7 @@ var MappingView = Backbone.View.extend({
                         // select_container.setAttribute("style", "width:100px; position:absolute; left:30px;");
                         select_container.id = "ori_attr_val_" + total_items[c];
                         label_container.innerHTML = total_items[c];
+                        label_container.setAttribute("style", "position:absolute; left:125px;");
 
                         for(var l_color = 0; l_color < mapping_color.roots_color.length; l_color++){
                             var selection_opt = document.createElement('option');
@@ -1392,19 +1604,20 @@ var MappingView = Backbone.View.extend({
                             selection_opt.setAttribute("style", "background-color:" + mapping_color.roots_color[l_color] + ";");
                             if(l_color == c){
                                 selection_opt.setAttribute("selected", true);
-                                select_container.setAttribute("style", "width:100px; position:absolute; left:30px; background-color:" + mapping_color.roots_color[l_color] + ";");
+                                select_container.setAttribute("style", "width:100px; position:absolute; background-color:" + mapping_color.roots_color[l_color] + ";");
                             }
                                 
                             else if(mapping_color.roots_color.length < c && l_color == mapping_color.roots_color.length-1){
                                 selection_opt.setAttribute("selected", true);
-                                select_container.setAttribute("style", "width:100px; position:absolute; left:30px; background-color:" + mapping_color.roots_color[mapping_color.roots_color.length-1] + ";");
+                                select_container.setAttribute("style", "width:100px; position:absolute; background-color:" + mapping_color.roots_color[mapping_color.roots_color.length-1] + ";");
                             }
                                 
                             select_container.appendChild(selection_opt);
                             
                         }
-                        attr_container.appendChild(label_container);
                         attr_container.appendChild(select_container);
+                        attr_container.appendChild(label_container);
+                        
                         attr_container.appendChild(br);
                         attr_container.appendChild(p);
                     }
