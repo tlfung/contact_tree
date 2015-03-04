@@ -195,10 +195,13 @@ var MappingView = Backbone.View.extend({
                 if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["trunk"]))
                     continue
             }
-            
+
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
-            selection_opt.innerHTML = s;
+            if(s != "none" && component_attribute[data_mode][s][4] == 1)
+                selection_opt.innerHTML = s + "(distinct)";
+            else
+                selection_opt.innerHTML = s;
             selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["trunk"])
                 selection_opt.setAttribute("selected", true);
@@ -220,7 +223,7 @@ var MappingView = Backbone.View.extend({
                 // $("#mark_group").text("✔ as Left Side of Trunk: 【NOTE】");
                 $("#mark_group").html("<b>NOTE: Blue</b> as left trunk | <b>Red</b> as right trunk");
                 $("#mark_group").show();
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
                     var group1 = document.createElement("div");
                     var group2 = document.createElement("div");
                     var list1 = document.createElement("ul");
@@ -421,7 +424,7 @@ var MappingView = Backbone.View.extend({
             
             else{
                 var update_info = data_mode + ":-ctree_trunk:-" + $("#sidekeyselect").val();
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
                     attribute_mapping[$("#sidekeyselect").val()] = {"0": [], "1": []};
                     /*
                     $('.mark_group_checkbox:checked').each(function(){
@@ -516,7 +519,10 @@ var MappingView = Backbone.View.extend({
             }
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
-            selection_opt.innerHTML = s;
+            if(s != "none" && component_attribute[data_mode][s][4] == 1)
+                selection_opt.innerHTML = s + "(distinct)";
+            else
+                selection_opt.innerHTML = s;
             selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["branch"])
                 selection_opt.setAttribute("selected", true);
@@ -538,8 +544,8 @@ var MappingView = Backbone.View.extend({
                 var attr_container = document.getElementById("mark_group_select");
                 $("#mark_group").html("<b>NOTE: Order</b> the attributes as the branch order</b>");
                 $("#mark_group").show();
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
-                // if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][0].length < 20){
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
+                // if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean" || component_attribute[data_mode][$("#sidekeyselect").val()][0].length < 20){
                     var group = document.createElement("div");
                     var list = document.createElement("ul");
                     group.setAttribute("class", "column left first");
@@ -684,18 +690,29 @@ var MappingView = Backbone.View.extend({
                             if(v == 0){
                                 var up_handle = "#layer_handle_"+ (v+1);
                                 $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
-                                
+                               
+                                // console.log("overlap:", isOverlap(up_handle,"#layer_handle_0"));
                             }
                             else if(v == slider_val.length-1){
                                 var down_handle = "#layer_handle_"+ (v-1);
                                 $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
-                                
+                                // console.log("overlap:", isOverlap(down_handle, on_handle));
                             }
                             else{
                                 var down_handle = "#layer_handle_"+ (v-1);
                                 var up_handle = "#layer_handle_"+ (v+1);
                                 $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
                                 $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                /*
+                                var label_dn = "#title_" + (v-1);
+                                var label_up = "#title_" + (v+2);
+                                if($(label1).position().top >= $(label_dn).position().top-10) ){
+                                    $(label1).css({"top": $(label_dn).position().top-10)});
+                                }
+                                if($(label2).position().top <= $(label_up).position().top+10) ){
+                                    $(label2).css({"top": $(label_up).position().top+10)});
+                                }
+                                */
                             }
                             
                             $(display).val(Math.round((ui.values[v])*100)/100);
@@ -724,7 +741,7 @@ var MappingView = Backbone.View.extend({
                             var sep_layer_title = document.createElement("span");
                             // sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()+handle.eq(v).position().top)/2 + "; position:absolute;");
                             sep_layer_title.setAttribute("class", "layer_label");
-                            sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()-3) + ";");
+                            sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()+3) + ";");
                             sep_layer_title.innerHTML = "Layer " + (v+1);
                             sep_layer_title.id = "title_" + v;
                             range_container.appendChild(sep_layer_title);
@@ -1193,8 +1210,8 @@ var MappingView = Backbone.View.extend({
             else{
                 // var update_info = data_mode + ":-ctree_branch:-" + $("#sidekeyselect").val();
                 var update_info = data_mode + ":-ctree_branch:-" + $("#sidekeyselect").val();
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
-                // if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][0].length < 20){
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
+                // if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean" || component_attribute[data_mode][$("#sidekeyselect").val()][0].length < 20){
                     var layer_map = {};
                     attribute_mapping[$("#sidekeyselect").val()] = {};
                     count_layer = component_attribute[data_mode][$("#sidekeyselect").val()][0].length-1;
@@ -1311,7 +1328,10 @@ var MappingView = Backbone.View.extend({
             }
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
-            selection_opt.innerHTML = s;
+            if(s != "none" && component_attribute[data_mode][s][4] == 1)
+                selection_opt.innerHTML = s + "(distinct)";
+            else
+                selection_opt.innerHTML = s;
             selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["bside"])
                 selection_opt.setAttribute("selected", true);
@@ -1332,7 +1352,7 @@ var MappingView = Backbone.View.extend({
                 var attr_container = document.getElementById("mark_group_select");
                 $("#mark_group").html("<b>NOTE: Blue</b> as upper side | <b>Red</b> as lower side");
                 $("#mark_group").show();
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
                     var group1 = document.createElement("div");
                     var group2 = document.createElement("div");
                     var list1 = document.createElement("ul");
@@ -1520,7 +1540,7 @@ var MappingView = Backbone.View.extend({
 
             else{
                 var update_info = data_mode + ":-ctree_bside:-" + $("#sidekeyselect").val();
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
                     attribute_mapping[$("#sidekeyselect").val()] = {"0": [], "1": []};
                     /*
                     $('.mark_group_checkbox:checked').each(function(){
@@ -1539,7 +1559,7 @@ var MappingView = Backbone.View.extend({
                         console.log($(this));
                         console.log($(this).val());
                         // update_info += ":-" + $(this).val();
-                        aattribute_mapping[$("#sidekeyselect").val()]["1"].push(component_attribute[data_mode][$("#sidekeyselect").val()][0][$(this).val()]);
+                        attribute_mapping[$("#sidekeyselect").val()]["1"].push(component_attribute[data_mode][$("#sidekeyselect").val()][0][$(this).val()]);
                     });
                     for(ego in ego_selections){
                         update_info += ":=" + ego;
@@ -1613,7 +1633,10 @@ var MappingView = Backbone.View.extend({
             }
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
-            selection_opt.innerHTML = s;
+            if(s != "none" && component_attribute[data_mode][s][4] == 1)
+                selection_opt.innerHTML = s + "(distinct)";
+            else
+                selection_opt.innerHTML = s;
             selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["root"])
                 selection_opt.setAttribute("selected", true);
@@ -1628,7 +1651,7 @@ var MappingView = Backbone.View.extend({
                 $("#mark_group").html("<b>NOTE: Color</b> as different categories");
                 $("#mark_group").show();
                 var attr_container = document.getElementById("mark_group_select");
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
                     var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
                     // var br = document.createElement("br");
                     // attr_container.appendChild(br);
@@ -2143,7 +2166,7 @@ var MappingView = Backbone.View.extend({
             else{
                 mapping_color.render_roots_color = [];
                 var update_info = data_mode + ":-ctree_root:-" + $("#sidekeyselect").val();
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
                     var size_map = {};
                     attribute_mapping[$("#sidekeyselect").val()] = {};
                     var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
@@ -2228,6 +2251,9 @@ var MappingView = Backbone.View.extend({
             if(component_attribute[data_mode][s][4] == "1" && s != "none")
                 selection_opt.innerHTML = s + "(distinct)";
             else
+                if(s != "none" && component_attribute[data_mode][s][4] == 1)
+                selection_opt.innerHTML = s + "(distinct)";
+            else
                 selection_opt.innerHTML = s;
             selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["leaf_size"])
@@ -2245,7 +2271,7 @@ var MappingView = Backbone.View.extend({
                 $("#mark_group").html("<b>NOTE: Leaf size scale</b> of the attributes mapping");
                 $("#mark_group").show();
                 var attr_container = document.getElementById("mark_group_select");
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
                     var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
                     // if(total_items.length > 0){
                     
@@ -3025,7 +3051,7 @@ var MappingView = Backbone.View.extend({
             if($("#sidekeyselect").val() == "none"){}
             else{   
                 var update_info = data_mode + ":-ctree_leaf_size:-" + $("#sidekeyselect").val();             
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
                     var size_map = {};
                     attribute_mapping[$("#sidekeyselect").val()] = {};
                     var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
@@ -3105,7 +3131,10 @@ var MappingView = Backbone.View.extend({
             }
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
-            selection_opt.innerHTML = s;
+            if(s != "none" && component_attribute[data_mode][s][4] == 1)
+                selection_opt.innerHTML = s + "(distinct)";
+            else
+                selection_opt.innerHTML = s;
             selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["leaf_color"])
                 selection_opt.setAttribute("selected", true);
@@ -3120,7 +3149,7 @@ var MappingView = Backbone.View.extend({
                 $("#mark_group").html("<b>NOTE: Color</b> as different categories");
                 $("#mark_group").show();
                 var attr_container = document.getElementById("mark_group_select");
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
                     var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
                     // if(total_items.length > 0){
                     for(var c = 0; c < total_items.length; c ++){
@@ -3632,7 +3661,7 @@ var MappingView = Backbone.View.extend({
             else{
                 mapping_color.render_leaf_color = [];
                 var update_info = data_mode + ":-ctree_leaf_color:-" + $("#sidekeyselect").val();
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
                     var size_map = {};
                     attribute_mapping[$("#sidekeyselect").val()] = {};
                     var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
@@ -3714,7 +3743,10 @@ var MappingView = Backbone.View.extend({
             }
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
-            selection_opt.innerHTML = s;
+            if(s != "none" && component_attribute[data_mode][s][4] == 1)
+                selection_opt.innerHTML = s + "(distinct)";
+            else
+                selection_opt.innerHTML = s;
             selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["leaf_id"])
                 selection_opt.setAttribute("selected", true);
@@ -3803,7 +3835,7 @@ var MappingView = Backbone.View.extend({
                 $("#mark_group").show();
                 // $("#mark_group").text("Select Leaf Size Range:");
                 var attr_container = document.getElementById("mark_group_select");
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
                     // var br = document.createElement("br");
                     var instruction_container = document.createElement("span");
                     instruction_container.innerHTML = "Select Leaf Size Range:";
@@ -4555,7 +4587,7 @@ var MappingView = Backbone.View.extend({
             if($("#sidekeyselect").val() == "none"){}
             else{   
                 var update_info = data_mode + ":-ctree_fruit_size:-" + $("#sidekeyselect").val();             
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
+                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
                     var size_map = {};
                     attribute_mapping[$("#sidekeyselect").val()] = {};
                     var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]

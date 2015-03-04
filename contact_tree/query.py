@@ -283,7 +283,7 @@ def update_collection_data(table, attr_json):
             continue
         else:
             # print 'SELECT COUNT(DISTINCT(`' + a + '`)) from ' + table + ' WHERE alterid ="' + str(temp_alter) + '" and egoid="' + str(temp_ego) + '";'
-            cur = db.query('SELECT COUNT(DISTINCT(`' + a + '`)) from ' + table + ' WHERE alterid ="' + str(temp_alter) + '" and egoid="' + str(temp_ego) + '";')
+            cur = db.query('SELECT COUNT(DISTINCT(`' + a + '`)) from ' + table + ' WHERE alterid ="' + str(temp_alter) + '" and egoid="' + str(temp_ego) + '" AND `' + a + '` != "";')
             alter_count = cur.fetchone()
             if alter_count['COUNT(DISTINCT(`' + a + '`))'] == 1:
                 # print 'UPDATE dataset_collection SET `alter` = 1 WHERE attr="' + a + '" and dataset="' + table + '";'
@@ -705,7 +705,7 @@ def get_list_ego(request):
         attr_info = cur.fetchall()
         for info in attr_info:
             detail_array = []
-            if info['type'] == "categorical" or info['attr_range'] < 20:
+            if info['type'] == "boolean" or info['type'] == "categorical" or info['attr_range'] < 20:
                 infocur = db.query('SELECT DISTINCT(`' + info['attr'] + '`) FROM ' + table + ' WHERE `' + info['attr'] + '` != "";')
                 attr_detail = infocur.fetchall()
                 if info['min'].isdigit():
@@ -719,7 +719,7 @@ def get_list_ego(request):
             elif info['type'] == "numerical":
                 detail_array = [">", "<=", "="]
 
-            cmpt_attr[info['attr']] = [detail_array, info['min'], info['max'], info['attr_range'], info['alter'], info['type']]
+            cmpt_attr[info['attr']] = [detail_array, info['min'], info['max'], info['attr_range'], info['alter_info'], info['type']]
 
         # return the all the infomation of all the attr 
         final_return.append(cmpt_attr)
@@ -786,7 +786,7 @@ def unique_stick(all_data, attr, branch_layer):
             if attr[a] != 'none' and meeting[attr[a]] is None: # == -100:
                 check_none += 1
         if check_none > 0:
-            print meeting
+            # print meeting
             continue
 
         # meeting = c
@@ -1177,7 +1177,7 @@ def set_default_mapping(all_data, table, attr, mapping):
                         #                     db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
                         #                     break
                         # else:
-                        if collecting_data["type"] == "categorical":
+                        if collecting_data["type"] == "categorical" or collecting_data["type"] == "boolean":
                             for cat in mapping[attr[compt]]:
                                 # if d[attr[compt]] in mapping[attr[compt]][cat]:
                                 if d[attr[compt]] == cat:
@@ -1341,12 +1341,12 @@ def update_binary(request):
             # print return_json
             return HttpResponse(return_json)
 
-        if mytype == "categorical":
-            update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE (`" + ori_column + "`=" + zero_val[0]
-            update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE (`" + ori_column + "`!=" + zero_val[0]
+        if mytype == "categorical" or mytype == "boolean":
+            update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE (`" + ori_column + "`='" + zero_val[0] + "'"
+            update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE (`" + ori_column + "`!='" + zero_val[0] + "'"
             for zero in zero_val[1:]:
-                update_query_zero += " OR " + ori_column + "=" + zero
-                update_query_one += " AND " + ori_column + "!=" + zero
+                update_query_zero += " OR " + ori_column + "='" + zero + "'"
+                update_query_one += " AND " + ori_column + "!='" + zero + "'"
             
             update_query_zero += ") AND ("
             update_query_one += ") AND ("
@@ -1420,9 +1420,9 @@ def update_layer(request):
             return_json = simplejson.dumps("no update", indent=4, use_decimal=True)
             print return_json
             return HttpResponse(return_json)
-        if mytype == "categorical":
+        if mytype == "categorical" or mytype == "boolean":
             for ori_val in val_map:
-                update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(val_map[ori_val]) + " WHERE (`" + ori_column + "`=" + str(ori_val)
+                update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(val_map[ori_val]) + " WHERE (`" + ori_column + "`='" + str(ori_val) + "'"
                 # if len(select_ego) > 0:
                 update_layer_val += ") AND ("
                 for update_ego in select_ego[:-1]:
