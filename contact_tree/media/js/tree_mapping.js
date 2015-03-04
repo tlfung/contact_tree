@@ -684,12 +684,12 @@ var MappingView = Backbone.View.extend({
                             if(v == 0){
                                 var up_handle = "#layer_handle_"+ (v+1);
                                 $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
-                                console.log("overlap:", isOverlap(up_handle,"#layer_handle_0"));
+                                
                             }
                             else if(v == slider_val.length-1){
                                 var down_handle = "#layer_handle_"+ (v-1);
                                 $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
-                                console.log("overlap:", isOverlap(down_handle, on_handle));
+                                
                             }
                             else{
                                 var down_handle = "#layer_handle_"+ (v-1);
