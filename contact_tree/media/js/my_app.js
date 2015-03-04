@@ -50,9 +50,9 @@ function resize_dialog(h, w){
     
     $("#divTable_menu").css({'height': menu_container});
     // $(".myfont3").css({'font-size': 18*w/1260});
-    var sidekey_container = (w*0.7*0.7) - 125 - $("#sidekey_title").height() - $("#attribute_candidate").height() - $("#sidekey_submit_trunk").height();
+    var sidekey_container = (w*0.7*0.7) - 150 - $("#sidekey_title").height() - $("#attribute_candidate").height() - $("#sidekey_submit_trunk").height() - $("#mark_group").height();
     // var sidekey_container = (w*0.7*0.7) - 200
-    $("#sidekey_operation").css({'max-height': sidekey_container});   
+    // $("#sidekey_operation").css({'max-height': sidekey_container});   
     $("#mark_group_select").css({'max-height': sidekey_container}); 
     
 };

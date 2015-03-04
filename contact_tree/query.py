@@ -228,6 +228,7 @@ def create_csv2database(request):
         # print attr_json
         # print "./contact_tree/data/upload/" + csvfile + ".csv"
         attr_type = csv2mysql("./contact_tree/data/upload/" + csvfile + ".csv", table)
+        print attr_type
         if attr_type == -1:
             jsondata = simplejson.dumps({"insert_error": "Type and value not match"}, indent=4, use_decimal=True)
             # print jsondata
@@ -261,7 +262,7 @@ def update_collection_data(table, attr_json):
     database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
     clause = database.cursor()
     db = DB()
-    
+    db.query('SET SQL_SAFE_UPDATES = 0;')
     # print attr_json
     clause.execute('DELETE FROM dataset_collection WHERE dataset = "' + table + '";')
     for a in attr_json:
@@ -289,6 +290,7 @@ def update_collection_data(table, attr_json):
                 clause.execute('UPDATE dataset_collection SET `alter_info` = 1 WHERE attr="' + a + '" and dataset="' + table + '";')
 
     database.commit()
+    db.query('SET SQL_SAFE_UPDATES = 1;')
 
 
 def get_dataset(request):
@@ -436,13 +438,15 @@ def csv2mysql(fn, table):
         # if header:
         if col_types:
             # clause.execute(insert_sql, row)
-            if '' in row:
-                row[row.index('')] = None
+            for x in range(len(row)):
+                if row[x] == '':
+                    row[x] = None
                 # attribute_info[header[count_col].replace('`', '')] = col
             # print insert_sql, row
             try:
                 clause.execute(insert_sql, row)
             except MySQLdb.OperationalError:
+                print "Error:", row
                 return -1
             
         else:
@@ -702,15 +706,16 @@ def get_list_ego(request):
         for info in attr_info:
             detail_array = []
             if info['type'] == "categorical" or info['attr_range'] < 20:
-                infocur = db.query('SELECT DISTINCT(`' + info['attr'] + '`) FROM ' + table + ';')
+                infocur = db.query('SELECT DISTINCT(`' + info['attr'] + '`) FROM ' + table + ' WHERE `' + info['attr'] + '` != "";')
                 attr_detail = infocur.fetchall()
                 if info['min'].isdigit():
                     for d in attr_detail:
                         detail_array.append(int(d[info['attr']]))  
                     detail_array.sort(key=int)
                 else:
-                    detail_array.append(d[info['attr']]) 
-
+                    for d in attr_detail:
+                        detail_array.append(d[info['attr']]) 
+                
             elif info['type'] == "numerical":
                 detail_array = [">", "<=", "="]
 
@@ -776,6 +781,14 @@ def unique_stick(all_data, attr, branch_layer):
         structure["root"].append({})
 
     for meeting in all_data:
+        check_none = 0
+        for a in attr:
+            if attr[a] != 'none' and meeting[attr[a]] is None: # == -100:
+                check_none += 1
+        if check_none > 0:
+            print meeting
+            continue
+
         # meeting = c
         if root != "none":
             if meeting["ctree_root"] not in structure["root"][0]:
@@ -916,6 +929,14 @@ def duplicate_stick(all_data, attr, branch_layer):
         structure["root"].append({})
     
     for meeting in all_data:
+        check_none = 0
+        for a in attr:
+            if attr[a] != 'none' and meeting[attr[a]] is None: # == -100:
+                check_none += 1
+        if check_none > 0:
+            print meeting
+            continue
+
         # meeting = c
         if root != "none":
             if meeting["ctree_root"] not in structure["root"][0]:
@@ -1067,9 +1088,14 @@ def set_default_mapping(all_data, table, attr, mapping):
     db = DB()
     branch_index = []
     binary_index = dict()
+    db.query('SET SQL_SAFE_UPDATES = 0;')
     # print mapping
     for d in all_data:
-        for compt in attr:                
+        for compt in attr: 
+            if attr[compt] != 'none' and d[attr[compt]] is None:
+                print 'UPDATE ' + table + ' SET ctree_' + compt + '=-100 WHERE e_id=' + str(d['e_id']) + ';'
+                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=-100 WHERE e_id=' + str(d['e_id']) + ';')
+                continue               
             if compt == 'trunk' or compt == 'bside':
                 if attr[compt] in mapping:
                     if str(collecting_data['min']).isdigit():
@@ -1193,6 +1219,7 @@ def set_default_mapping(all_data, table, attr, mapping):
                             db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(branch_index.index(d[attr[compt]])) + ' WHERE e_id=' + str(d['e_id']) + ';')                   
 
     db.conn.commit()
+    db.query('SET SQL_SAFE_UPDATES = 1;')
 
 
 def one_contact(request):
@@ -1289,6 +1316,7 @@ def update_binary(request):
     database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
     clause = database.cursor()
     db = DB()
+    db.query('SET SQL_SAFE_UPDATES = 0;')
     # table = request.GET.get('contact')
     # print request.GET['contact']
     if request.GET.get('update'):
@@ -1346,11 +1374,12 @@ def update_binary(request):
             #     update_query_zero += ");"
             #     update_query_one += ");"
             
-        # print update_query_zero
+        print update_query_zero
         # print update_query_one
         clause.execute(update_query_zero)
         clause.execute(update_query_one)
         database.commit()
+        db.query('SET SQL_SAFE_UPDATES = 1;')
 
     else:
         raise Http404
@@ -1366,6 +1395,7 @@ def update_layer(request):
     # table = request.GET.get('contact')
     # print request.GET['contact']
     db = DB()
+    db.query('SET SQL_SAFE_UPDATES = 0;')
     if request.GET.get('update'):
         list_request = request.GET['update'].split(":=")[0].split(":-")
         select_ego = request.GET['update'].split(":=")[1:]
@@ -1440,12 +1470,14 @@ def update_layer(request):
                 clause.execute(update_layer_val)
 
         database.commit()
+        db.query('SET SQL_SAFE_UPDATES = 1;')
 
     else:
         raise Http404
     
     return_json = simplejson.dumps("done update", indent=4, use_decimal=True)
     # print return_json
+
     return HttpResponse(return_json)
 
 

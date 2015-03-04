@@ -104,6 +104,12 @@ a:focus{ outline: none; }
   width:100%;
 }
 
+.mark_box{
+  border: solid 1 gray;
+  border-radius: 5;
+  background: rgb(252, 243, 226);
+}
+
 .full_width{
 	width:100%
 }

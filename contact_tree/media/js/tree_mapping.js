@@ -217,8 +217,9 @@ var MappingView = Backbone.View.extend({
                 // console.log(component_attribute[data_mode][$("#sidekeyselect").val()]);
                 $("#sidekey_operation").show();
                 var attr_container = document.getElementById("mark_group_select");
-                // $("#mark_group").text("✔ as Left Side of Trunk:");
-                $("#mark_group").hide();
+                // $("#mark_group").text("✔ as Left Side of Trunk: 【NOTE】");
+                $("#mark_group").html("<b>NOTE: Blue</b> as left trunk | <b>Red</b> as right trunk");
+                $("#mark_group").show();
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
                     var group1 = document.createElement("div");
                     var group2 = document.createElement("div");
@@ -243,7 +244,8 @@ var MappingView = Backbone.View.extend({
                         var item = document.createElement("li");
                         item.setAttribute("class", "sortable-item");
                         item.innerHTML = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
-                        item.value = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
+                        // item.value = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
+                        item.value = c;
                         if(c < total_items/2)
                             list1.appendChild(item);
                         else
@@ -261,22 +263,26 @@ var MappingView = Backbone.View.extend({
                 else{
                     var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
                     var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
+                    // attr_container.setAttribute("style", "position:relative; width:100%;");
 
                     var sep = document.createElement("div");
                     var sep_title = document.createElement("span");
-                    var sep_input = document.createElement("input");
+                    // var sep_input = document.createElement("input");
                     var group_slider = document.createElement("div");
                     var range = document.createElement("div");
                     var range_min = document.createElement("span");
                     var range_max = document.createElement("span");
                     
-                    sep_input.id = "sep_group";
-                    sep_title.innerHTML = "Separate in: ";
+                    sep_title.id = "sep_group";
+                    sep_title.innerHTML = Math.floor((attr_min + attr_max)/2);
+                    sep_title.value = Math.floor((attr_min + attr_max)/2);
                     group_slider.id = "binary_slider";
-                    sep_title.setAttribute("class", "myfont3");
-                    sep.setAttribute("style", "margin-top:10px;");
-                    group_slider.setAttribute("style", "background:rgba(236, 91, 94, 0.5); margin-top:10px; margin-left:5px;");
+                    sep_title.setAttribute("style", "position:absolute;");
+                    sep.setAttribute("style", "margin-top:10px; position:relative; width:100%; margin-left:5px; height:30px;");
+                    // group_slider.setAttribute("style", "background:rgba(236, 91, 94, 0.5); margin-top:30px; margin-left:5px; width:100%;");
+                    group_slider.setAttribute("style", "background:rgba(236, 91, 94, 0.5); position:absolute; top:25px; width:100%;");
 
+                    range.setAttribute("style", " width:100%; margin-top:10px;");
                     range_min.innerHTML = attr_min;
                     range_max.innerHTML = attr_max;
                     range_min.setAttribute("class", "left");
@@ -285,13 +291,16 @@ var MappingView = Backbone.View.extend({
 
                     // group_slider.appendChild(group_handle);
                     sep.appendChild(sep_title);
-                    sep.appendChild(sep_input);
+                    sep.appendChild(group_slider);
+                    // sep.appendChild(sep_input);
                     range.appendChild(range_min);
                     range.appendChild(range_max);
                     attr_container.appendChild(sep);
-                    attr_container.appendChild(group_slider);
+                    // attr_container.appendChild(sep_title);
+                    // attr_container.appendChild(group_slider);
                     attr_container.appendChild(range);
 
+                    $("#sep_group").css({"left": 100*(Math.floor((attr_min + attr_max)/2)-attr_min)/((attr_max-attr_min)+1) + "%"})
                     
                     $("#binary_slider").slider({
                         orientation: "horizontal",
@@ -300,11 +309,19 @@ var MappingView = Backbone.View.extend({
                         max: attr_max,
                         value: Math.floor((attr_min + attr_max)/2),
                         slide: function( event, ui ) {
-                            // console.log("slider val: ", ui.value);
+                            // console.log("====", event);
+                            // console.log("====", ui);
+                            $("#sep_group").text(ui.value);
                             $("#sep_group").val(ui.value);
+                            // $("#sep_group").css({"left": $(this).find('.ui-slider-handle').position().left});
+                            // $("#sep_group").css({"left": $(ui.handle).position().left});
+                            $("#sep_group").css({"left": 100*(ui.value-attr_min)/((attr_max-attr_min)+1) + "%"});
                         }
                     });
+                    
+
                     $('#binary_slider .ui-slider-range').css({'background':'rgba(33, 178, 239, 0.5)'});
+                    /*
                     $("#sep_group").val(Math.floor((attr_min + attr_max)/2));
 
                     $("#sep_group").change(function(){
@@ -314,6 +331,7 @@ var MappingView = Backbone.View.extend({
                         if(this.value < attr_min) this.value = attr_min;
                         $("#binary_slider").slider("value", this.value);
                     });
+                    */
                     
                 }
 
@@ -339,7 +357,7 @@ var MappingView = Backbone.View.extend({
                         attr_container.appendChild(attr_label);
                         attr_container.appendChild(br);
                     }
-                    // $("#sidekey_submit").text("Dnoe");
+                    // $("#sidekey_submit").text("Done");
                 }
                 else{
                     var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0].length
@@ -376,7 +394,7 @@ var MappingView = Backbone.View.extend({
             $("#sidekey_submit_fruit_size").hide();
             
             $("#sidekey_submit_trunk").show();
-            $("#sidekey_submit_trunk").text("Dnoe");
+            $("#sidekey_submit_trunk").text("Done");
             // $("#sidekey_submit").show();
         });
 
@@ -412,17 +430,17 @@ var MappingView = Backbone.View.extend({
                     });
                     */
                     $('#mapping_group1').children().each(function(){
-                        console.log($(this));
-                        console.log($(this).val());
-                        console.log(attribute_mapping);
-                        update_info += ":-" + $(this).val();
-                        attribute_mapping[$("#sidekeyselect").val()]["0"].push($(this).val());
+                        // console.log($(this));
+                        // console.log($(this).val());
+                        // console.log(attribute_mapping);
+                        update_info += ":-" + component_attribute[data_mode][$("#sidekeyselect").val()][0][$(this).val()];
+                        attribute_mapping[$("#sidekeyselect").val()]["0"].push(component_attribute[data_mode][$("#sidekeyselect").val()][0][$(this).val()]);
                     });
                     $('#mapping_group2').children().each(function(){
-                        console.log($(this));
-                        console.log($(this).val());
+                        // console.log($(this));
+                        // console.log($(this).val());
                         // update_info += ":-" + $(this).val();
-                        attribute_mapping[$("#sidekeyselect").val()]["1"].push($(this).val());
+                        attribute_mapping[$("#sidekeyselect").val()]["1"].push(component_attribute[data_mode][$("#sidekeyselect").val()][0][$(this).val()]);
                     });
                     for(ego in ego_selections){
                         update_info += ":=" + ego;
@@ -518,8 +536,8 @@ var MappingView = Backbone.View.extend({
                 // console.log(component_attribute[data_mode][$("#sidekeyselect").val()]);
                 $("#sidekey_operation").show();
                 var attr_container = document.getElementById("mark_group_select");
-                // $("#mark_group").text("✔ as Left Side of Trunk:");
-                $("#mark_group").hide();
+                $("#mark_group").html("<b>NOTE: Order</b> the attributes as the branch order</b>");
+                $("#mark_group").show();
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
                 // if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][0].length < 20){
                     var group = document.createElement("div");
@@ -568,7 +586,7 @@ var MappingView = Backbone.View.extend({
                     revert_button.setAttribute("class", "right");
                     gap_input.setAttribute("style", "width:100px");
                     group_slider.id = "layer_slider";
-                    gap.setAttribute("style", "margin-top:10px;");
+                    gap.setAttribute("style", "margin-top:5px;");
 
                     range.id = "sep_range";
                     range.setAttribute("style", "margin:15 0 0 0; position:relative; width:65px;");
@@ -579,10 +597,13 @@ var MappingView = Backbone.View.extend({
                     sep.id = "sep_group";
                     sep.setAttribute("style", "margin:15 0 0 10; position:relative;");
                     sep.setAttribute("class", "left");
-                    group_slider.setAttribute("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + 400 + ";");
+                    group_slider.setAttribute("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + 500 + ";");
                     group_slider.setAttribute("class", "left");
 
-                    for(var s=4; s < 20; s++){
+                    var total_gap = 20;
+                    if(attr_range < 10)
+                        total_gap = attr_range*2;
+                    for(var s=4; s < total_gap; s++){
                         var opt = document.createElement("option");
                         opt.value = s;
                         opt.innerHTML = s;
@@ -603,11 +624,14 @@ var MappingView = Backbone.View.extend({
                     attr_container.appendChild(group_slider);
                     attr_container.appendChild(sep);
 
-                    var gap = attr_range/10;
+                    var gap = attr_range/9;
                     var slider_val = [];
                     
-                    for(var g = gap; g <= attr_max; g+=gap){
+                    for(var g = attr_min; g <= attr_max; g+=gap){
                         slider_val.push(Math.round(g*100)/100);
+                    }
+                    if(slider_val.length < 9){
+                        slider_val.push(attr_max);
                     }
                     
                     $("#layer_slider").slider({
@@ -660,10 +684,12 @@ var MappingView = Backbone.View.extend({
                             if(v == 0){
                                 var up_handle = "#layer_handle_"+ (v+1);
                                 $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                console.log("overlap:", isOverlap(up_handle,"#layer_handle_0"));
                             }
                             else if(v == slider_val.length-1){
                                 var down_handle = "#layer_handle_"+ (v-1);
                                 $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                console.log("overlap:", isOverlap(down_handle, on_handle));
                             }
                             else{
                                 var down_handle = "#layer_handle_"+ (v-1);
@@ -673,6 +699,7 @@ var MappingView = Backbone.View.extend({
                             }
                             
                             $(display).val(Math.round((ui.values[v])*100)/100);
+                           
                         }
                     });
                     $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
@@ -698,7 +725,7 @@ var MappingView = Backbone.View.extend({
                             // sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()+handle.eq(v).position().top)/2 + "; position:absolute;");
                             sep_layer_title.setAttribute("class", "layer_label");
                             sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()-3) + ";");
-                            sep_layer_title.innerHTML = "Layer " + v + "";
+                            sep_layer_title.innerHTML = "Layer " + (v+1);
                             sep_layer_title.id = "title_" + v;
                             range_container.appendChild(sep_layer_title);
                         }   
@@ -706,14 +733,14 @@ var MappingView = Backbone.View.extend({
                             var sep_layer_title = document.createElement("span");
                             sep_layer_title.setAttribute("class", "layer_label");
                             sep_layer_title.setAttribute("style", "top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + ";");
-                            sep_layer_title.innerHTML = "Layer " + v + "";
+                            sep_layer_title.innerHTML = "Layer " + (v+1);
                             sep_layer_title.id = "title_" + v;
                             range_container.appendChild(sep_layer_title);
                             if(v == slider_val.length-1){
                                 var sep_layer_title = document.createElement("span");
                                 sep_layer_title.setAttribute("class", "layer_label");
                                 sep_layer_title.setAttribute("style", "top:-15;");
-                                sep_layer_title.innerHTML = "Layer " + (v+1) + "";
+                                sep_layer_title.innerHTML = "Layer " + (v+2);
                                 sep_layer_title.id = "title_" + v;
                                 range_container.appendChild(sep_layer_title);
                             }
@@ -740,14 +767,22 @@ var MappingView = Backbone.View.extend({
                         var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
                         var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
                         var attr_range = component_attribute[data_mode][$("#sidekeyselect").val()][3];
-                        var gap = attr_range/$("#sep_gap").val();
+                        var gap = attr_range/($("#sep_gap").val()-1);
                         var new_slider_val = [];
                         var real_slider_val = [];
-                        for(var g = gap; g <= attr_max; g+=gap){
+                        for(var g = attr_min; g <= attr_max; g+=gap){
                             if(my_revert == "a")
                                 new_slider_val.push(0-Math.round(g*100)/100);
                             else
                                 new_slider_val.push(Math.round(g*100)/100);
+                        }
+
+                        if(new_slider_val.length < $("#sep_gap").val()-1){
+                            if(my_revert == "a")
+                                new_slider_val.push(0-attr_max);
+                            else
+                                new_slider_val.push(attr_max);
+                            
                         }
 
                         if(my_revert == "a")
@@ -755,7 +790,7 @@ var MappingView = Backbone.View.extend({
                         
                         // $("#layer_slider").empty();
                         $("#layer_slider").slider( "destroy" );
-                        $("#layer_slider").attr("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (40*$("#sep_gap").val()) + ";");
+                        $("#layer_slider").attr("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (50*$("#sep_gap").val()) + ";");
                         if(my_revert == "a"){
                             $("#layer_slider").slider({
                                 orientation: "vertical",
@@ -877,7 +912,7 @@ var MappingView = Backbone.View.extend({
                                 sep_layer_title.setAttribute("class", "layer_label");
                                 // sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()+handle.eq(v).position().top)/2 + "; position:absolute;");
                                 sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()-3) + ";");
-                                sep_layer_title.innerHTML = "Layer " + v + "";
+                                sep_layer_title.innerHTML = "Layer " + (v+1);
                                 sep_layer_title.id = "title_" + v;
                                 range_container.appendChild(sep_layer_title);
                             }   
@@ -885,14 +920,14 @@ var MappingView = Backbone.View.extend({
                                 var sep_layer_title = document.createElement("span");
                                 sep_layer_title.setAttribute("class", "layer_label");
                                 sep_layer_title.setAttribute("style", "top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + ";");
-                                sep_layer_title.innerHTML = "Layer " + v + "";
+                                sep_layer_title.innerHTML = "Layer " + (v+1);
                                 sep_layer_title.id = "title_" + v;
                                 range_container.appendChild(sep_layer_title);
                                 if(v == new_slider_val.length-1){
                                     var sep_layer_title = document.createElement("span");
                                     sep_layer_title.setAttribute("class", "layer_label");
                                     sep_layer_title.setAttribute("style", "top:-15;");
-                                    sep_layer_title.innerHTML = "Layer " + (v+1) + "";
+                                    sep_layer_title.innerHTML = "Layer " + (v+2);
                                     sep_layer_title.id = "title_" + v;
                                     range_container.appendChild(sep_layer_title);
                                 }
@@ -926,16 +961,20 @@ var MappingView = Backbone.View.extend({
                         var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
                         var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
                         var attr_range = component_attribute[data_mode][$("#sidekeyselect").val()][3];
-                        var gap = attr_range/$("#sep_gap").val();
+                        var gap = attr_range/($("#sep_gap").val()-1);
                         var new_slider_val = [];
-                    
-                        for(var g = gap; g <= attr_max; g+=gap){
+                        
+                        for(var g = attr_min; g <= attr_max; g+=gap){
                             new_slider_val.push(Math.round(g*100)/100);
+                        }
+
+                        if(new_slider_val.length < $("#sep_gap").val()-1){
+                            new_slider_val.push(attr_max);
                         }
                         
                         // $("#layer_slider").empty();
                         $("#layer_slider").slider( "destroy" );
-                        $("#layer_slider").attr("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (40*$("#sep_gap").val()) + ";");
+                        $("#layer_slider").attr("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (50*$("#sep_gap").val()) + ";");
                     
                         $("#layer_slider").slider({
                             orientation: "vertical",
@@ -1011,7 +1050,7 @@ var MappingView = Backbone.View.extend({
                                 // sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()+handle.eq(v).position().top)/2 + "; position:absolute;");
                                 sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()-3) + ";");
                                 sep_layer_title.setAttribute("class", "layer_label");
-                                sep_layer_title.innerHTML = "Layer " + v + "";
+                                sep_layer_title.innerHTML = "Layer " + (v+1);
                                 sep_layer_title.id = "title_" + v;
                                 range_container.appendChild(sep_layer_title);
                             }   
@@ -1019,14 +1058,14 @@ var MappingView = Backbone.View.extend({
                                 var sep_layer_title = document.createElement("span");
                                 sep_layer_title.setAttribute("style", "top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + ";");
                                 sep_layer_title.setAttribute("class", "layer_label");
-                                sep_layer_title.innerHTML = "Layer " + v + "";
+                                sep_layer_title.innerHTML = "Layer " + (v+1);
                                 sep_layer_title.id = "title_" + v;
                                 range_container.appendChild(sep_layer_title);
                                 if(v == new_slider_val.length-1){
                                     var sep_layer_title = document.createElement("span");
                                     sep_layer_title.setAttribute("class", "layer_label");
                                     sep_layer_title.setAttribute("style", "top:-15;");
-                                    sep_layer_title.innerHTML = "Layer " + (v+1) + "";
+                                    sep_layer_title.innerHTML = "Layer " + (v+2);
                                     sep_layer_title.id = "title_" + v;
                                     range_container.appendChild(sep_layer_title);
                                 }
@@ -1130,7 +1169,7 @@ var MappingView = Backbone.View.extend({
             $("#sidekey_submit_fruit_size").hide();
             
             $("#sidekey_submit_branch").show();
-            $("#sidekey_submit_branch").text("Dnoe");
+            $("#sidekey_submit_branch").text("Done");
             
         });
 
@@ -1172,7 +1211,7 @@ var MappingView = Backbone.View.extend({
                 else{
                     var layer_map = [];
                     attribute_mapping[$("#sidekeyselect").val()] = []
-                    for(var v = 0; v <= $("#sep_gap").val(); v++){
+                    for(var v = 0; v < $("#sep_gap").val()-1; v++){
                         var layer_id = "#layer_" + v;
                         layer_map.push($(layer_id).val());
                         attribute_mapping[$("#sidekeyselect").val()].push($(layer_id).val());
@@ -1291,7 +1330,8 @@ var MappingView = Backbone.View.extend({
                 // console.log(component_attribute[data_mode][$("#sidekeyselect").val()]);
                 $("#sidekey_operation").show();
                 var attr_container = document.getElementById("mark_group_select");
-                $("#mark_group").hide();
+                $("#mark_group").html("<b>NOTE: Blue</b> as upper side | <b>Red</b> as lower side");
+                $("#mark_group").show();
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
                     var group1 = document.createElement("div");
                     var group2 = document.createElement("div");
@@ -1315,6 +1355,7 @@ var MappingView = Backbone.View.extend({
                         var item = document.createElement("li");
                         item.setAttribute("class", "sortable-item");
                         item.innerHTML = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
+                        item.value = c;
                         if(c < total_items/2)
                             list1.appendChild(item);
                         else
@@ -1342,29 +1383,30 @@ var MappingView = Backbone.View.extend({
                     var range_min = document.createElement("span");
                     var range_max = document.createElement("span");
                     
-                    sep_input.id = "sep_group";
-                    sep_title.innerHTML = "Separate in: ";
+                    sep_title.id = "sep_group";
+                    sep_title.innerHTML = Math.floor((attr_min + attr_max)/2);
+                    sep_title.value = Math.floor((attr_min + attr_max)/2);
+                    sep_title.setAttribute("style", "position:absolute;");
                     group_slider.id = "binary_slider";
                     sep_title.setAttribute("class", "myfont3");
-                    sep.setAttribute("style", "margin-top:10px;");
-                    group_slider.setAttribute("style", "background:rgba(33, 178, 239, 0.4); margin-top:10px; margin-left:5px;");
+                    sep.setAttribute("style", "margin-top:10px; position:relative; width:100%; margin-left:5px; height:30px;");
+                    group_slider.setAttribute("style", "background:rgba(33, 178, 239, 0.4); position:absolute; top:25px; width:100%;");
 
+                    range.setAttribute("style", " width:100%; margin-top:10px;");
                     range_min.innerHTML = attr_min;
                     range_max.innerHTML = attr_max;
                     range_min.setAttribute("class", "left");
                     range_max.setAttribute("class", "right");
 
-
-                    // group_slider.appendChild(group_handle);
                     sep.appendChild(sep_title);
-                    sep.appendChild(sep_input);
+                    sep.appendChild(group_slider);
                     range.appendChild(range_min);
                     range.appendChild(range_max);
                     attr_container.appendChild(sep);
-                    attr_container.appendChild(group_slider);
                     attr_container.appendChild(range);
 
-                    
+                    $("#sep_group").css({"left": 100*(Math.floor((attr_min + attr_max)/2)-attr_min)/((attr_max-attr_min)+1) + "%"})
+                                        
                     $("#binary_slider").slider({
                         orientation: "horizontal",
                         range: "min",
@@ -1373,12 +1415,15 @@ var MappingView = Backbone.View.extend({
                         value: Math.floor((attr_min + attr_max)/2),
                         slide: function( event, ui ) {
                             // console.log("slider val: ", ui.value);
+                            $("#sep_group").text(ui.value);
                             $("#sep_group").val(ui.value);
+                            // $("#sep_group").css({"left": $(this).find('.ui-slider-handle').position().left});
+                            // $("#sep_group").css({"left": $(ui.handle).position().left});
+                            $("#sep_group").css({"left": 100*(ui.value-attr_min)/((attr_max-attr_min)+1) + "%"});
                         }
                     });
                     $('#binary_slider .ui-slider-range').css({'background':'rgba(246, 91, 94, 0.6)'});
-                    $("#sep_group").val(Math.floor((attr_min + attr_max)/2));
-
+                    
                     $("#sep_group").change(function(){
                         // var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
                         // var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
@@ -1412,7 +1457,7 @@ var MappingView = Backbone.View.extend({
                         attr_container.appendChild(attr_label);
                         attr_container.appendChild(br);
                     }
-                    // $("#sidekey_submit").text("Dnoe");
+                    // $("#sidekey_submit").text("Done");
                 }
                 else{
                     var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0].length
@@ -1449,7 +1494,7 @@ var MappingView = Backbone.View.extend({
             $("#sidekey_submit_fruit_size").hide();
             
             $("#sidekey_submit_bside").show();
-            $("#sidekey_submit_bside").text("Dnoe");
+            $("#sidekey_submit_bside").text("Done");
         });
 
         $("#sidekey_submit_bside").click(function(){
@@ -1484,17 +1529,17 @@ var MappingView = Backbone.View.extend({
                     });
                     */
                     $('#mapping_group1').children().each(function(){
-                        console.log($(this));
-                        console.log($(this).val());
-                        console.log(attribute_mapping);
-                        update_info += ":-" + $(this).val();
-                        attribute_mapping[$("#sidekeyselect").val()]["0"].push($(this).val());
+                        // console.log($(this));
+                        // console.log($(this).val());
+                        // console.log(attribute_mapping);
+                        update_info += ":-" + component_attribute[data_mode][$("#sidekeyselect").val()][0][$(this).val()];
+                        attribute_mapping[$("#sidekeyselect").val()]["0"].push(component_attribute[data_mode][$("#sidekeyselect").val()][0][$(this).val()]);
                     });
                     $('#mapping_group2').children().each(function(){
                         console.log($(this));
                         console.log($(this).val());
                         // update_info += ":-" + $(this).val();
-                        attribute_mapping[$("#sidekeyselect").val()]["1"].push($(this).val());
+                        aattribute_mapping[$("#sidekeyselect").val()]["1"].push(component_attribute[data_mode][$("#sidekeyselect").val()][0][$(this).val()]);
                     });
                     for(ego in ego_selections){
                         update_info += ":=" + ego;
@@ -1580,13 +1625,33 @@ var MappingView = Backbone.View.extend({
             $("#mark_group_select").empty();
             if( $("#sidekeyselect").val() != "none"){
                 $("#sidekey_operation").show();
+                $("#mark_group").html("<b>NOTE: Color</b> as different categories");
+                $("#mark_group").show();
                 var attr_container = document.getElementById("mark_group_select");
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
                     var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
+                    // var br = document.createElement("br");
+                    // attr_container.appendChild(br);
                     // if(total_items.length > 0){
                     for(var c = 0; c < total_items.length; c ++){
                         var br = document.createElement("br");
                         var p = document.createElement("p");
+                        if(c == 0){
+                            var br1 = document.createElement("br");
+                            var p1 = document.createElement("p");
+                            var c1 = document.createElement("span");
+                            var c2 = document.createElement("span");
+                            c1.innerHTML = "Color Map";
+                            c2.innerHTML = "Attribute Data";
+                            c1.setAttribute("class", "myfont3");
+                            c2.setAttribute("class", "myfont3");
+                            c2.setAttribute("style", "position:absolute; left:125px;");
+                            attr_container.appendChild(c1);
+                            attr_container.appendChild(c2);
+                            
+                            attr_container.appendChild(br1);
+                            attr_container.appendChild(p1);
+                        }
                         var select_container = document.createElement("select");
                         var label_container = document.createElement("span");
                         select_container.value = c;
@@ -1638,21 +1703,24 @@ var MappingView = Backbone.View.extend({
                     gap_input.setAttribute("style", "width:100px");
 
                     group_slider.id = "layer_slider";
-                    gap.setAttribute("style", "margin-top:10px;");
+                    gap.setAttribute("style", "margin-top:10px; margin-bottom: 10px;");
 
                     range.id = "sep_range";
-                    range.setAttribute("style", "margin:15 0 0 0; position:relative; width:65px;");
+                    range.setAttribute("style", "margin:15 0 0 0; position:relative; width:125px;");
                     range.setAttribute("class", "left");
 
-                    gap_title.innerHTML = "Total Layer: ";
+                    gap_title.innerHTML = "Total Categories: ";
                     gap_title.setAttribute("class", "myfont3");
                     sep.id = "sep_group";
                     sep.setAttribute("style", "margin:15 0 0 10; position:relative;");
                     sep.setAttribute("class", "left");
-                    group_slider.setAttribute("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + 400 + ";");
+                    group_slider.setAttribute("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + 300 + ";");
                     group_slider.setAttribute("class", "left");
 
-                    for(var s=2; s <= 15; s++){
+                    var total_gap = mapping_color.roots_color.length;
+                    if(attr_range < mapping_color.roots_color.length/2)
+                        total_gap = attr_range*2-1;
+                    for(var s=2; s <= total_gap; s++){
                         var opt = document.createElement("option");
                         opt.value = s;
                         opt.innerHTML = s;
@@ -1664,17 +1732,38 @@ var MappingView = Backbone.View.extend({
 
                     gap.appendChild(gap_title);
                     gap.appendChild(gap_input);
-                    
                     attr_container.appendChild(gap);
+
+                    var br1 = document.createElement("br");
+                    var p1 = document.createElement("p");
+                    var c1 = document.createElement("span");
+                    var c2 = document.createElement("span");
+
+                    c1.innerHTML = "Color Map";
+                    c2.innerHTML = "Attribute Data";
+                    c1.setAttribute("class", "myfont3");
+                    c2.setAttribute("class", "myfont3");
+                    c2.setAttribute("style", "margin-left:50px;");
+                    attr_container.appendChild(c1);
+                    attr_container.appendChild(c2);
+                    
+                    attr_container.appendChild(br1);
+                    attr_container.appendChild(p1);
+
+                    
+                    
                     attr_container.appendChild(range);
                     attr_container.appendChild(group_slider);
                     attr_container.appendChild(sep);
 
-                    var gap = attr_range/6;
+                    var gap = attr_range/5;
                     var slider_val = [];
                     
-                    for(var g = gap; g <= attr_max; g+=gap){
+                    for(var g = attr_min; g <= attr_max; g+=gap){
                         slider_val.push(Math.round(g*100)/100);
+                    }
+                    if(slider_val.length < 5){
+                        slider_val.push(attr_max);
                     }
                     
                     $("#layer_slider").slider({
@@ -1686,7 +1775,6 @@ var MappingView = Backbone.View.extend({
                         step: 0.1,
                         
                         slide: function( event, ui ) {
-                            // console.log("handle_id:", ui.handle.id.split("_").pop());
                             var v = parseInt(ui.handle.id.split("_").pop());
                             var display = "#layer_" + v;
                             var label2 = "#ori_attr_val_" + (v+1);
@@ -1755,12 +1843,12 @@ var MappingView = Backbone.View.extend({
                                 selection_opt.setAttribute("style", "background-color:" + mapping_color.roots_color[l_color] + ";");
                                 if(l_color == v){
                                     selection_opt.setAttribute("selected", true);
-                                    color_container.setAttribute("style", "width:50px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.roots_color[l_color] + ";");
+                                    color_container.setAttribute("style", "width:100px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.roots_color[l_color] + ";");
                                 }
                                     
                                 else if(mapping_color.roots_color.length < v && l_color == mapping_color.roots_color.length-1){
                                     selection_opt.setAttribute("selected", true);
-                                    color_container.setAttribute("style", "width:50px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.roots_color[mapping_color.roots_color.length-1] + ";");
+                                    color_container.setAttribute("style", "width:100px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.roots_color[mapping_color.roots_color.length-1] + ";");
                                 }
                                     
                                 color_container.appendChild(selection_opt);
@@ -1782,12 +1870,12 @@ var MappingView = Backbone.View.extend({
                                 selection_opt.setAttribute("style", "background-color:" + mapping_color.roots_color[l_color] + ";");
                                 if(l_color == v){
                                     selection_opt.setAttribute("selected", true);
-                                    color_container.setAttribute("style", "width:50px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.roots_color[l_color] + ";");
+                                    color_container.setAttribute("style", "width:100px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.roots_color[l_color] + ";");
                                 }
                                     
                                 else if(mapping_color.roots_color.length < v && l_color == mapping_color.roots_color.length-1){
                                     selection_opt.setAttribute("selected", true);
-                                    color_container.setAttribute("style", "width:50px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.roots_color[mapping_color.roots_color.length-1] + ";");
+                                    color_container.setAttribute("style", "width:100px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.roots_color[mapping_color.roots_color.length-1] + ";");
                                 }
                                     
                                 color_container.appendChild(selection_opt);
@@ -1809,12 +1897,12 @@ var MappingView = Backbone.View.extend({
                                     selection_opt.setAttribute("style", "background-color:" + mapping_color.roots_color[l_color] + ";");
                                     if(l_color == (v+1)){
                                         selection_opt.setAttribute("selected", true);
-                                        color_container.setAttribute("style", "width:50px; position:absolute; top:-15; background-color:" + mapping_color.roots_color[l_color] + ";");
+                                        color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.roots_color[l_color] + ";");
                                     }
                                         
                                     else if(mapping_color.roots_color.length < v && l_color == mapping_color.roots_color.length-1){
                                         selection_opt.setAttribute("selected", true);
-                                        color_container.setAttribute("style", "width:50px; position:absolute; top:-15; background-color:" + mapping_color.roots_color[mapping_color.roots_color.length-1] + ";");
+                                        color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.roots_color[mapping_color.roots_color.length-1] + ";");
                                     }
                                         
                                     color_container.appendChild(selection_opt);
@@ -1841,16 +1929,20 @@ var MappingView = Backbone.View.extend({
                         var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
                         var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
                         var attr_range = component_attribute[data_mode][$("#sidekeyselect").val()][3];
-                        var gap = attr_range/$("#sep_gap").val();
+                        var gap = attr_range/($("#sep_gap").val()-1);
                         var new_slider_val = [];
                     
-                        for(var g = gap; g <= attr_max; g+=gap){
+                        for(var g = attr_min; g <= attr_max; g+=gap){
                             new_slider_val.push(Math.round(g*100)/100);
+                        }
+
+                        if(new_slider_val.length < $("#sep_gap").val()-1){
+                            new_slider_val.push(attr_max);
                         }
                         
                         // $("#layer_slider").empty();
                         $("#layer_slider").slider( "destroy" );
-                        $("#layer_slider").attr("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (40*$("#sep_gap").val()) + ";");
+                        $("#layer_slider").attr("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (50*$("#sep_gap").val()) + ";");
                     
                         $("#layer_slider").slider({
                             orientation: "vertical",
@@ -1928,12 +2020,12 @@ var MappingView = Backbone.View.extend({
                                     selection_opt.setAttribute("style", "background-color:" + mapping_color.roots_color[l_color] + ";");
                                     if(l_color == v){
                                         selection_opt.setAttribute("selected", true);
-                                        color_container.setAttribute("style", "width:50px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.roots_color[l_color] + ";");
+                                        color_container.setAttribute("style", "width:100px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.roots_color[l_color] + ";");
                                     }
                                         
                                     else if(mapping_color.roots_color.length < v && l_color == mapping_color.roots_color.length-1){
                                         selection_opt.setAttribute("selected", true);
-                                        color_container.setAttribute("style", "width:50px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.roots_color[mapping_color.roots_color.length-1] + ";");
+                                        color_container.setAttribute("style", "width:100px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.roots_color[mapping_color.roots_color.length-1] + ";");
                                     }
                                         
                                     color_container.appendChild(selection_opt);
@@ -1955,12 +2047,12 @@ var MappingView = Backbone.View.extend({
                                     selection_opt.setAttribute("style", "background-color:" + mapping_color.roots_color[l_color] + ";");
                                     if(l_color == v){
                                         selection_opt.setAttribute("selected", true);
-                                        color_container.setAttribute("style", "width:50px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.roots_color[l_color] + ";");
+                                        color_container.setAttribute("style", "width:100px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.roots_color[l_color] + ";");
                                     }
                                         
                                     else if(mapping_color.roots_color.length < v && l_color == mapping_color.roots_color.length-1){
                                         selection_opt.setAttribute("selected", true);
-                                        color_container.setAttribute("style", "width:50px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.roots_color[mapping_color.roots_color.length-1] + ";");
+                                        color_container.setAttribute("style", "width:100px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.roots_color[mapping_color.roots_color.length-1] + ";");
                                     }
                                         
                                     color_container.appendChild(selection_opt);
@@ -1982,12 +2074,12 @@ var MappingView = Backbone.View.extend({
                                         selection_opt.setAttribute("style", "background-color:" + mapping_color.roots_color[l_color] + ";");
                                         if(l_color == (v+1)){
                                             selection_opt.setAttribute("selected", true);
-                                            color_container.setAttribute("style", "width:50px; position:absolute; top:-15; background-color:" + mapping_color.roots_color[l_color] + ";");
+                                            color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.roots_color[l_color] + ";");
                                         }
                                             
                                         else if(mapping_color.roots_color.length < v && l_color == mapping_color.roots_color.length-1){
                                             selection_opt.setAttribute("selected", true);
-                                            color_container.setAttribute("style", "width:50px; position:absolute; top:-15; background-color:" + mapping_color.roots_color[mapping_color.roots_color.length-1] + ";");
+                                            color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.roots_color[mapping_color.roots_color.length-1] + ";");
                                         }
                                             
                                         color_container.appendChild(selection_opt);
@@ -2030,7 +2122,7 @@ var MappingView = Backbone.View.extend({
             $("#sidekey_submit_fruit_size").hide();
 
             $("#sidekey_submit_root").show();
-            $("#sidekey_submit_root").text("Dnoe");
+            $("#sidekey_submit_root").text("Done");
             
         });
 
@@ -2070,7 +2162,7 @@ var MappingView = Backbone.View.extend({
                 else{
                     var layer_map = [];
                     attribute_mapping[$("#sidekeyselect").val()] = []
-                    for(var v = 0; v < $("#sep_gap").val(); v++){
+                    for(var v = 0; v < $("#sep_gap").val()-1; v++){
                         var layer_id = "#layer_" + v;
                         var selector_id = "#ori_attr_val_" + v;
                         layer_map.push($(layer_id).val());
@@ -2150,23 +2242,30 @@ var MappingView = Backbone.View.extend({
             // var revert = "d";
             if( $("#sidekeyselect").val() != "none"){   
                 $("#sidekey_operation").show();
-                // $("#mark_group").text("Select Leaf Size Range:");
+                $("#mark_group").html("<b>NOTE: Leaf size scale</b> of the attributes mapping");
+                $("#mark_group").show();
                 var attr_container = document.getElementById("mark_group_select");
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
-                    // var br = document.createElement("br");
-                    var instruction_container = document.createElement("span");
-                    instruction_container.innerHTML = "Select Leaf Size Range:";
-                    instruction_container.setAttribute("class", "left myfont3");
                     var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
                     // if(total_items.length > 0){
-                    attr_container.appendChild(instruction_container);
                     
-                    var br = document.createElement("br");
-                    var p = document.createElement("p");
-                    attr_container.appendChild(br);
-                    attr_container.appendChild(p);
-                    
-                    for(var c = 0; c < total_items.length; c ++){                       
+                    for(var c = 0; c < total_items.length; c ++){   
+                        if(c == 0){
+                            var br1 = document.createElement("br");
+                            var p1 = document.createElement("p");
+                            var c1 = document.createElement("span");
+                            var c2 = document.createElement("span");
+                            c1.innerHTML = "Size Scale";
+                            c2.innerHTML = "Attribute Data";
+                            c1.setAttribute("class", "myfont3");
+                            c2.setAttribute("class", "myfont3");
+                            c2.setAttribute("style", "margin-left: 60px;");
+                            attr_container.appendChild(c1);
+                            attr_container.appendChild(c2);
+                            
+                            attr_container.appendChild(br1);
+                            attr_container.appendChild(p1);
+                        }                    
                         var select_container = document.createElement("div");
                         var oneitem = document.createElement("img");
                         var leafslider = document.createElement("div");
@@ -2212,7 +2311,6 @@ var MappingView = Backbone.View.extend({
                             max: 10,
                             value: c,
                             slide: function( event, ui) {
-                                // console.log("=========", ui);
                                 // console.log(this.id);
                                 var myid = this.id;
                                 // console.log("leaf slider val: ", ui.value);
@@ -2313,7 +2411,10 @@ var MappingView = Backbone.View.extend({
                     group_slider.setAttribute("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:" + 300 + ";");
                     group_slider.setAttribute("class", "left");
 
-                    for(var s=2; s < 10; s++){
+                    var total_gap = 10;
+                    if(attr_range < 5)
+                        total_gap = attr_range*2-1;
+                    for(var s=2; s <= total_gap; s++){
                         var opt = document.createElement("option");
                         opt.value = s;
                         opt.innerHTML = s;
@@ -2326,20 +2427,39 @@ var MappingView = Backbone.View.extend({
                     // group_slider.appendChild(group_handle);
                     gap.appendChild(gap_title);
                     gap.appendChild(gap_input);
-
                     attr_container.appendChild(gap);
+
+                    var br1 = document.createElement("br");
+                    var p1 = document.createElement("p");
+                    var c1 = document.createElement("span");
+                    var c2 = document.createElement("span");
+
+                    c1.innerHTML = "Size Scale";
+                    c2.innerHTML = "Attribute Data";
+                    c1.setAttribute("class", "myfont3");
+                    c2.setAttribute("class", "myfont3");
+                    c2.setAttribute("style", "margin-left:90px;");
+                    attr_container.appendChild(c1);
+                    attr_container.appendChild(c2);
+                    
+                    attr_container.appendChild(br1);
+                    attr_container.appendChild(p1);
+
                     attr_container.appendChild(range);
                     attr_container.appendChild(group_slider);                    
                     attr_container.appendChild(sep);
 
-                    var gap = attr_range/6;
+                    var gap = attr_range/5;
                     var slider_val = [];
                     
-                    for(var g = gap; g <= attr_max; g+=gap){
+                    for(var g = attr_min; g <= attr_max; g+=gap){
                         slider_val.push(Math.round(g*100)/100);
                     }
-                    
-                   $("#layer_slider").slider({
+                    if(slider_val.length < 5){
+                        slider_val.push(attr_max);
+                    }
+
+                    $("#layer_slider").slider({
                         orientation: "vertical",
                         // range: "min",
                         min: attr_min,
@@ -2601,11 +2721,15 @@ var MappingView = Backbone.View.extend({
                         var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
                         var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
                         var attr_range = component_attribute[data_mode][$("#sidekeyselect").val()][3];
-                        var gap = attr_range/$("#sep_gap").val();
+                        var gap = attr_range/($("#sep_gap").val()-1);
                         var new_slider_val = [];
                     
-                        for(var g = gap; g <= attr_max; g+=gap){
+                        for(var g = attr_min; g <= attr_max; g+=gap){
                             new_slider_val.push(Math.round(g*100)/100);
+                        }
+
+                        if(new_slider_val.length < $("#sep_gap").val()-1){
+                            new_slider_val.push(attr_max);
                         }
                         
                         // $("#layer_slider").empty();
@@ -2880,7 +3004,7 @@ var MappingView = Backbone.View.extend({
             $("#sidekey_submit_fruit_size").hide();
             
             $("#sidekey_submit_leaf_size").show();
-            $("#sidekey_submit_leaf_size").text("Dnoe");
+            $("#sidekey_submit_leaf_size").text("Done");
             
         });
 
@@ -2918,7 +3042,7 @@ var MappingView = Backbone.View.extend({
                 else{
                     var layer_map = [];
                     attribute_mapping[$("#sidekeyselect").val()] = []
-                    for(var v = 0; v < $("#sep_gap").val(); v++){
+                    for(var v = 0; v < $("#sep_gap").val()-1; v++){
                         var layer_id = "#slider_label_" + v;
                         layer_map.push($(layer_id).val());
                         attribute_mapping[$("#sidekeyselect").val()].push($(layer_id).val());
@@ -2993,11 +3117,29 @@ var MappingView = Backbone.View.extend({
             $("#mark_group_select").empty();
             if( $("#sidekeyselect").val() != "none"){
                 $("#sidekey_operation").show();
+                $("#mark_group").html("<b>NOTE: Color</b> as different categories");
+                $("#mark_group").show();
                 var attr_container = document.getElementById("mark_group_select");
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
                     var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
                     // if(total_items.length > 0){
                     for(var c = 0; c < total_items.length; c ++){
+                        if(c == 0){
+                            var br1 = document.createElement("br");
+                            var p1 = document.createElement("p");
+                            var c1 = document.createElement("span");
+                            var c2 = document.createElement("span");
+                            c1.innerHTML = "Color Map";
+                            c2.innerHTML = "Attribute Data";
+                            c1.setAttribute("class", "myfont3");
+                            c2.setAttribute("class", "myfont3");
+                            c2.setAttribute("style", "position:absolute; left:125px;");
+                            attr_container.appendChild(c1);
+                            attr_container.appendChild(c2);
+                            
+                            attr_container.appendChild(br1);
+                            attr_container.appendChild(p1);
+                        }
                         var br = document.createElement("br");
                         var p = document.createElement("p");
                         var select_container = document.createElement("select");
@@ -3054,7 +3196,7 @@ var MappingView = Backbone.View.extend({
                     gap.setAttribute("style", "margin-top:10px;");
 
                     range.id = "sep_range";
-                    range.setAttribute("style", "margin:15 0 0 0; position:relative; width:65px;");
+                    range.setAttribute("style", "margin:15 0 0 0; position:relative; width:125px;");
                     range.setAttribute("class", "left");
 
                     gap_title.innerHTML = "Total Layer: ";
@@ -3062,10 +3204,13 @@ var MappingView = Backbone.View.extend({
                     sep.id = "sep_group";
                     sep.setAttribute("style", "margin:15 0 0 10; position:relative;");
                     sep.setAttribute("class", "left");
-                    group_slider.setAttribute("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:" + 400 + ";");
+                    group_slider.setAttribute("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:" + 300 + ";");
                     group_slider.setAttribute("class", "left");
 
-                    for(var s=2; s < 10; s++){
+                    var total_gap = mapping_color.leaf_color.length;
+                    if(attr_range < mapping_color.leaf_color.length/2)
+                        total_gap = attr_range*2-1;
+                    for(var s=2; s <= total_gap; s++){
                         var opt = document.createElement("option");
                         opt.value = s;
                         opt.innerHTML = s;
@@ -3077,17 +3222,36 @@ var MappingView = Backbone.View.extend({
 
                     gap.appendChild(gap_title);
                     gap.appendChild(gap_input);
-                    
                     attr_container.appendChild(gap);
+
+                    var br1 = document.createElement("br");
+                    var p1 = document.createElement("p");
+                    var c1 = document.createElement("span");
+                    var c2 = document.createElement("span");
+
+                    c1.innerHTML = "Color Map";
+                    c2.innerHTML = "Attribute Data";
+                    c1.setAttribute("class", "myfont3");
+                    c2.setAttribute("class", "myfont3");
+                    c2.setAttribute("style", "margin-left:50px;");
+                    attr_container.appendChild(c1);
+                    attr_container.appendChild(c2);
+                    
+                    attr_container.appendChild(br1);
+                    attr_container.appendChild(p1);
+
                     attr_container.appendChild(range);
                     attr_container.appendChild(group_slider);
                     attr_container.appendChild(sep);
 
-                    var gap = attr_range/6;
+                    var gap = attr_range/5;
                     var slider_val = [];
                     
-                    for(var g = gap; g <= attr_max; g+=gap){
+                    for(var g = attr_min; g <= attr_max; g+=gap){
                         slider_val.push(Math.round(g*100)/100);
+                    }
+                    if(slider_val.length < 5){
+                        slider_val.push(attr_max);
                     }
                     
                     $("#layer_slider").slider({
@@ -3168,12 +3332,12 @@ var MappingView = Backbone.View.extend({
                                 selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
                                 if(l_color == v){
                                     selection_opt.setAttribute("selected", true);
-                                    color_container.setAttribute("style", "width:50px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                    color_container.setAttribute("style", "width:100px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.leaf_color[l_color] + ";");
                                 }
                                     
                                 else if(mapping_color.leaf_color.length < v && l_color == mapping_color.leaf_color.length-1){
                                     selection_opt.setAttribute("selected", true);
-                                    color_container.setAttribute("style", "width:50px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
+                                    color_container.setAttribute("style", "width:100px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
                                 }
                                     
                                 color_container.appendChild(selection_opt);
@@ -3195,12 +3359,12 @@ var MappingView = Backbone.View.extend({
                                 selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
                                 if(l_color == v){
                                     selection_opt.setAttribute("selected", true);
-                                    color_container.setAttribute("style", "width:50px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                    color_container.setAttribute("style", "width:100px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.leaf_color[l_color] + ";");
                                 }
                                     
                                 else if(mapping_color.leaf_color.length < v && l_color == mapping_color.leaf_color.length-1){
                                     selection_opt.setAttribute("selected", true);
-                                    color_container.setAttribute("style", "width:50px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
+                                    color_container.setAttribute("style", "width:100px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
                                 }
                                     
                                 color_container.appendChild(selection_opt);
@@ -3222,12 +3386,12 @@ var MappingView = Backbone.View.extend({
                                     selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
                                     if(l_color == (v+1)){
                                         selection_opt.setAttribute("selected", true);
-                                        color_container.setAttribute("style", "width:50px; position:absolute; top:-15; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                        color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.leaf_color[l_color] + ";");
                                     }
                                         
                                     else if(mapping_color.leaf_color.length < v && l_color == mapping_color.leaf_color.length-1){
                                         selection_opt.setAttribute("selected", true);
-                                        color_container.setAttribute("style", "width:50px; position:absolute; top:-15; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
+                                        color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
                                     }
                                         
                                     color_container.appendChild(selection_opt);
@@ -3254,11 +3418,15 @@ var MappingView = Backbone.View.extend({
                         var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
                         var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
                         var attr_range = component_attribute[data_mode][$("#sidekeyselect").val()][3];
-                        var gap = attr_range/$("#sep_gap").val();
+                        var gap = attr_range/($("#sep_gap").val()-1);
                         var new_slider_val = [];
                     
-                        for(var g = gap; g <= attr_max; g+=gap){
+                        for(var g = attr_min; g <= attr_max; g+=gap){
                             new_slider_val.push(Math.round(g*100)/100);
+                        }
+
+                        if(new_slider_val.length < $("#sep_gap").val()-1){
+                            new_slider_val.push(attr_max);
                         }
                         
                         // $("#layer_slider").empty();
@@ -3341,12 +3509,12 @@ var MappingView = Backbone.View.extend({
                                     selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
                                     if(l_color == v){
                                         selection_opt.setAttribute("selected", true);
-                                        color_container.setAttribute("style", "width:50px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                        color_container.setAttribute("style", "width:100px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.leaf_color[l_color] + ";");
                                     }
                                         
                                     else if(mapping_color.leaf_color.length < v && l_color == mapping_color.leaf_color.length-1){
                                         selection_opt.setAttribute("selected", true);
-                                        color_container.setAttribute("style", "width:50px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
+                                        color_container.setAttribute("style", "width:100px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
                                     }
                                         
                                     color_container.appendChild(selection_opt);
@@ -3368,12 +3536,12 @@ var MappingView = Backbone.View.extend({
                                     selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
                                     if(l_color == v){
                                         selection_opt.setAttribute("selected", true);
-                                        color_container.setAttribute("style", "width:50px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                        color_container.setAttribute("style", "width:100px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.leaf_color[l_color] + ";");
                                     }
                                         
                                     else if(mapping_color.leaf_color.length < v && l_color == mapping_color.leaf_color.length-1){
                                         selection_opt.setAttribute("selected", true);
-                                        color_container.setAttribute("style", "width:50px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
+                                        color_container.setAttribute("style", "width:100px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
                                     }
                                         
                                     color_container.appendChild(selection_opt);
@@ -3395,12 +3563,12 @@ var MappingView = Backbone.View.extend({
                                         selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
                                         if(l_color == (v+1)){
                                             selection_opt.setAttribute("selected", true);
-                                            color_container.setAttribute("style", "width:50px; position:absolute; top:-15; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                            color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.leaf_color[l_color] + ";");
                                         }
                                             
                                         else if(mapping_color.leaf_color.length < v && l_color == mapping_color.leaf_color.length-1){
                                             selection_opt.setAttribute("selected", true);
-                                            color_container.setAttribute("style", "width:50px; position:absolute; top:-15; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
+                                            color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
                                         }
                                             
                                         color_container.appendChild(selection_opt);
@@ -3443,7 +3611,7 @@ var MappingView = Backbone.View.extend({
             $("#sidekey_submit_fruit_size").hide();
 
             $("#sidekey_submit_leaf_color").show();
-            $("#sidekey_submit_leaf_color").text("Dnoe");
+            $("#sidekey_submit_leaf_color").text("Done");
             
         });
 
@@ -3483,7 +3651,7 @@ var MappingView = Backbone.View.extend({
                 else{
                     var layer_map = [];
                     attribute_mapping[$("#sidekeyselect").val()] = []
-                    for(var v = 0; v < $("#sep_gap").val(); v++){
+                    for(var v = 0; v < $("#sep_gap").val()-1; v++){
                         var layer_id = "#layer_" + v;
                         var selector_id = "#ori_attr_val_" + v;
                         layer_map.push($(layer_id).val());
@@ -3558,7 +3726,9 @@ var MappingView = Backbone.View.extend({
             $("#mark_group_select").empty();
             if( $("#sidekeyselect").val() != "none"){
                 $("#sidekey_operation").show();
-                $("#mark_group").text("Highlight Leaf of Infomation: " + $("#sidekeyselect").val());                
+                $("#mark_group").html("<b>NOTE: Highlight \"" + $("#sidekeyselect").val() + "\"</b> information on leaf<br><b>");
+                $("#mark_group").show();
+                // $("#mark_group").text("Highlight Leaf of Infomation: " + $("#sidekeyselect").val());                
             }
 
             $("#sidekey_submit_trunk").hide();
@@ -3570,7 +3740,7 @@ var MappingView = Backbone.View.extend({
             $("#sidekey_submit_fruit_size").hide();
 
             $("#sidekey_submit_leaf_highlight").show();
-            $("#sidekey_submit_leaf_highlight").text("Dnoe");
+            $("#sidekey_submit_leaf_highlight").text("Done");
         });
 
         $("#sidekey_submit_leaf_highlight").click(function(){
@@ -3629,6 +3799,8 @@ var MappingView = Backbone.View.extend({
             // var revert = "d";
             if( $("#sidekeyselect").val() != "none"){   
                 $("#sidekey_operation").show();
+                $("#mark_group").html("<b>NOTE: Fruit size scale</b> of the attributes mapping");
+                $("#mark_group").show();
                 // $("#mark_group").text("Select Leaf Size Range:");
                 var attr_container = document.getElementById("mark_group_select");
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical"){
@@ -3645,7 +3817,23 @@ var MappingView = Backbone.View.extend({
                     attr_container.appendChild(br);
                     attr_container.appendChild(p);
                     
-                    for(var c = 0; c < total_items.length; c ++){                       
+                    for(var c = 0; c < total_items.length; c ++){        
+                        if(c == 0){
+                            var br1 = document.createElement("br");
+                            var p1 = document.createElement("p");
+                            var c1 = document.createElement("span");
+                            var c2 = document.createElement("span");
+                            c1.innerHTML = "Size Scale";
+                            c2.innerHTML = "Attribute Data";
+                            c1.setAttribute("class", "myfont3");
+                            c2.setAttribute("class", "myfont3");
+                            c2.setAttribute("style", "margin-left: 60px;");
+                            attr_container.appendChild(c1);
+                            attr_container.appendChild(c2);
+                            
+                            attr_container.appendChild(br1);
+                            attr_container.appendChild(p1);
+                        }                  
                         var select_container = document.createElement("div");
                         var oneitem = document.createElement("img");
                         var leafslider = document.createElement("div");
@@ -3753,7 +3941,10 @@ var MappingView = Backbone.View.extend({
                     group_slider.setAttribute("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:" + 300 + ";");
                     group_slider.setAttribute("class", "left");
 
-                    for(var s=2; s < 10; s++){
+                    var total_gap = 10;
+                    if(attr_range < 5)
+                        total_gap = attr_range*2-1;
+                    for(var s=2; s <= total_gap; s++){
                         var opt = document.createElement("option");
                         opt.value = s;
                         opt.innerHTML = s;
@@ -3766,17 +3957,36 @@ var MappingView = Backbone.View.extend({
                     // group_slider.appendChild(group_handle);
                     gap.appendChild(gap_title);
                     gap.appendChild(gap_input);
-
                     attr_container.appendChild(gap);
+
+                    var br1 = document.createElement("br");
+                    var p1 = document.createElement("p");
+                    var c1 = document.createElement("span");
+                    var c2 = document.createElement("span");
+
+                    c1.innerHTML = "Size Scale";
+                    c2.innerHTML = "Attribute Data";
+                    c1.setAttribute("class", "myfont3");
+                    c2.setAttribute("class", "myfont3");
+                    c2.setAttribute("style", "margin-left:90px;");
+                    attr_container.appendChild(c1);
+                    attr_container.appendChild(c2);
+                    
+                    attr_container.appendChild(br1);
+                    attr_container.appendChild(p1);
+
                     attr_container.appendChild(range);
                     attr_container.appendChild(group_slider);                    
                     attr_container.appendChild(sep);
 
-                    var gap = attr_range/6;
+                    var gap = attr_range/5;
                     var slider_val = [];
                     
-                    for(var g = gap; g <= attr_max; g+=gap){
+                    for(var g = attr_min; g <= attr_max; g+=gap){
                         slider_val.push(Math.round(g*100)/100);
+                    }
+                    if(slider_val.length < 5){
+                        slider_val.push(attr_max);
                     }
                     
                    $("#layer_slider").slider({
@@ -4041,13 +4251,17 @@ var MappingView = Backbone.View.extend({
                         var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
                         var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
                         var attr_range = component_attribute[data_mode][$("#sidekeyselect").val()][3];
-                        var gap = attr_range/$("#sep_gap").val();
+                        var gap = attr_range/($("#sep_gap").val()-1);
                         var new_slider_val = [];
                     
-                        for(var g = gap; g <= attr_max; g+=gap){
+                        for(var g = attr_min; g <= attr_max; g+=gap){
                             new_slider_val.push(Math.round(g*100)/100);
                         }
-                        
+
+                        if(new_slider_val.length < $("#sep_gap").val()-1){
+                            new_slider_val.push(attr_max);
+                        }
+
                         // $("#layer_slider").empty();
                         $("#layer_slider").slider( "destroy" );
                         $("#layer_slider").attr("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:" + (50*$("#sep_gap").val()) + ";");
@@ -4320,7 +4534,7 @@ var MappingView = Backbone.View.extend({
             $("#sidekey_submit_leaf_highlight").hide();
 
             $("#sidekey_submit_fruit_size").show();
-            $("#sidekey_submit_fruit_size").text("Dnoe");
+            $("#sidekey_submit_fruit_size").text("Done");
             
         });
 
@@ -4358,7 +4572,7 @@ var MappingView = Backbone.View.extend({
                 else{
                     var layer_map = [];
                     attribute_mapping[$("#sidekeyselect").val()] = []
-                    for(var v = 0; v < $("#sep_gap").val(); v++){
+                    for(var v = 0; v < $("#sep_gap").val()-1; v++){
                         var layer_id = "#slider_label_" + v;
                         layer_map.push($(layer_id).val());
                         attribute_mapping[$("#sidekeyselect").val()].push($(layer_id).val());
@@ -4405,6 +4619,7 @@ var MappingView = Backbone.View.extend({
         $("#sidekey_selection").hide();
         $("#block_layer").hide();
         $("#sidekey_operation").hide();
+        $("#mark_group").hide();
         // $("#repeat_submit").hide();
         $("#sidekey_submit_trunk").hide();
         $("#sidekey_submit_branch").hide();
@@ -4437,7 +4652,6 @@ var MappingView = Backbone.View.extend({
         // var data_mode = self.model.get("view_mode");
         
     },
-
 
     restructure: function(){
         var self = this;
