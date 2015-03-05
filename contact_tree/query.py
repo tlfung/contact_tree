@@ -1410,16 +1410,35 @@ def update_layer(request):
         # print new_column
         # print val_map
 
-        typecur = db.query('SELECT `attr_range`, `type` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + ori_column + '";')
-        myinfo = typecur.fetchone()
-        mytype = myinfo["type"]
-        myrange = myinfo["attr_range"]
-
         if len(select_ego) == 0:
             # update_layer_val += ");"
             return_json = simplejson.dumps("no update", indent=4, use_decimal=True)
             print return_json
             return HttpResponse(return_json)
+        if ori_column == "none":
+            if new_column == 'ctree_fruit_size':
+               update_none = 'UPDATE ' + table + ' SET ' + new_column + '=0 WHERE ('
+            else:
+                update_none = 'UPDATE ' + table + ' SET ' + new_column + '=3 WHERE ('
+
+            for update_ego in select_ego[:-1]:
+                update_none += "egoid='" + update_ego + "' OR "
+
+            update_none += "egoid='" + select_ego[-1] + "');"   
+            # else:
+            #     update_layer_val += ");"
+                
+            # print update_layer_val
+            print update_none
+            clause.execute(update_none)            
+            return_json = simplejson.dumps("none updated", indent=4, use_decimal=True)
+            return HttpResponse(return_json)
+
+        typecur = db.query('SELECT `attr_range`, `type` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + ori_column + '";')
+        myinfo = typecur.fetchone()
+        mytype = myinfo["type"]
+        myrange = myinfo["attr_range"]
+
         if mytype == "categorical" or mytype == "boolean":
             for ori_val in val_map:
                 update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(val_map[ori_val]) + " WHERE (`" + ori_column + "`='" + str(ori_val) + "'"

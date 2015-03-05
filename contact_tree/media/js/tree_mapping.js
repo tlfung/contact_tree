@@ -190,10 +190,12 @@ var MappingView = Backbone.View.extend({
         var container = document.getElementById("sidekeyselect");
         // container.setAttribute("class", "sidekey_selection");
         for(s in component_attribute[data_mode]){
-            if(s == "none"){}
+            if(s == "none"){
+                continue;
+            }
             else{
                 if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["trunk"]))
-                    continue
+                    continue;
             }
 
             var selection_opt = document.createElement('option');
@@ -420,7 +422,7 @@ var MappingView = Backbone.View.extend({
                 // attribute_mapping[$("#sidekeyselect").val()] = {"0": [], "1": []};
             }
 
-            if( $("#sidekeyselect").val() == "none"){}
+            if($("#sidekeyselect").val() == "none"){}
             
             else{
                 var update_info = data_mode + ":-ctree_trunk:-" + $("#sidekeyselect").val();
@@ -512,10 +514,12 @@ var MappingView = Backbone.View.extend({
         var container = document.getElementById("sidekeyselect");
         // container.setAttribute("class", "sidekey_selection");
         for(s in component_attribute[data_mode]){
-            if(s == "none"){}
+            if(s == "none"){
+                continue;
+            }
             else{
                 if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["branch"]))
-                    continue
+                    continue;
             }
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
@@ -1321,10 +1325,12 @@ var MappingView = Backbone.View.extend({
         var container = document.getElementById("sidekeyselect");
         // container.setAttribute("class", "sidekey_selection");
         for(s in component_attribute[data_mode]){
-            if(s == "none"){}
+            if(s == "none"){
+                continue;
+            }
             else{
                 if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["bside"]))
-                    continue
+                    continue;
             }
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
@@ -1536,7 +1542,7 @@ var MappingView = Backbone.View.extend({
                 // attribute_mapping[$("#sidekeyselect").val()] = {"0": [], "1": []};
             }
 
-            if( $("#sidekeyselect").val() == "none"){}
+            if($("#sidekeyselect").val() == "none"){}
 
             else{
                 var update_info = data_mode + ":-ctree_bside:-" + $("#sidekeyselect").val();
@@ -1629,7 +1635,7 @@ var MappingView = Backbone.View.extend({
             if(s == "none"){}
             else{
                 if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["root"]))
-                    continue
+                    continue;
             }
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
@@ -2135,6 +2141,11 @@ var MappingView = Backbone.View.extend({
                     this.style.background = mapping_color.roots_color[this.value];
                 });
             }
+            else{
+                $("#sidekey_operation").show();
+                $("#mark_group").html("<b>NOTE:</b> Map <b>nothing</b> to root");
+                $("#mark_group").show();
+            }
 
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").hide();
@@ -2161,7 +2172,33 @@ var MappingView = Backbone.View.extend({
                 delete attribute_mapping[attr_map["root"]];
             }
 
-            if($("#sidekeyselect").val() == "none"){}
+            if($("#sidekeyselect").val() == "none"){
+                var update_info = data_mode + ":-ctree_root:-" + $("#sidekeyselect").val() + ":-" + JSON.stringify(["none"]);
+
+                for(ego in ego_selections){
+                    update_info += ":=" + ego;
+                }
+                var request_url = "update_layer/?update="+update_info;
+                console.log(request_url);
+                d3.json(request_url, function(result){
+                    console.log("finish update");
+                    var set_update_info = function(data){
+                        var attr_map = self.model.get("attribute");
+                        var attr_opt = self.model.get("attr_option");
+                        // console.log(data)
+                        $("#block_layer").hide();
+                        $("#sidekey_submit_root").text("Done");
+                        $("#sidekey_submit_root").removeAttr("disabled");
+
+                        attr_opt[attr_opt.indexOf(attr_map["root"])] = $("#sidekeyselect").val();
+                        attr_map["root"] = $("#sidekeyselect").val()
+                        self.model.set({"attribute": attr_map});
+                        self.model.set({"attr_option": attr_opt});
+                        self.model.trigger('change:attribute');
+                    };
+                    set_update_info(result);
+                });
+            }
 
             else{
                 mapping_color.render_roots_color = [];
@@ -2197,9 +2234,33 @@ var MappingView = Backbone.View.extend({
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
                 }
+
+                var request_url = "update_layer/?update="+update_info;
+                console.log(request_url);
+                d3.json(request_url, function(result){
+                    console.log("finish update");
+                    var set_update_info = function(data){
+                        var attr_map = self.model.get("attribute");
+                        var attr_opt = self.model.get("attr_option");
+                        // console.log(data)
+                        $("#block_layer").hide();
+                        $("#sidekey_submit_root").text("Done");
+                        $("#sidekey_submit_root").removeAttr("disabled");
+
+                        attr_opt[attr_opt.indexOf(attr_map["root"])] = $("#sidekeyselect").val();
+                        attr_map["root"] = $("#sidekeyselect").val()
+                        self.model.set({"attribute": attr_map});
+                        self.model.set({"attr_option": attr_opt});
+                        self.model.trigger('change:attribute');
+                        // console.log(self.model.get("attribute"));
+                        // console.log(self.model.get("attr_option"));
+                    };
+                    set_update_info(result);
+                });
+
             }
 
-
+            /*
             var request_url = "update_layer/?update="+update_info;
             console.log(request_url);
             d3.json(request_url, function(result){
@@ -2222,6 +2283,7 @@ var MappingView = Backbone.View.extend({
                 };
                 set_update_info(result);
             });
+            */
 
         });
     },
@@ -2244,7 +2306,7 @@ var MappingView = Backbone.View.extend({
             if(s == "none"){}
             else{
                 if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["leaf_size"]))
-                    continue
+                    continue;
             }
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
@@ -3048,7 +3110,33 @@ var MappingView = Backbone.View.extend({
                 // attribute_mapping[$("#sidekeyselect").val()] = {"0": [], "1": []};
             }
 
-            if($("#sidekeyselect").val() == "none"){}
+            if($("#sidekeyselect").val() == "none"){
+                var update_info = data_mode + ":-ctree_leaf_size:-" + $("#sidekeyselect").val() + ":-" + JSON.stringify(["none"]);
+
+                for(ego in ego_selections){
+                    update_info += ":=" + ego;
+                }
+                var request_url = "update_layer/?update="+update_info;
+                console.log(request_url);
+                d3.json(request_url, function(result){
+                    console.log("finish update");
+                    var set_update_info = function(data){
+                        var attr_map = self.model.get("attribute");
+                        var attr_opt = self.model.get("attr_option");
+                        // console.log(data)
+                        $("#block_layer").hide();
+                        $("#sidekey_submit_leaf_size").text("Done");
+                        $("#sidekey_submit_leaf_size").removeAttr("disabled");
+
+                        attr_opt[attr_opt.indexOf(attr_map["leaf_size"])] = $("#sidekeyselect").val();
+                        attr_map["leaf_size"] = $("#sidekeyselect").val()
+                        self.model.set({"attribute": attr_map});
+                        self.model.set({"attr_option": attr_opt});
+                        self.model.trigger('change:attribute');
+                    };
+                    set_update_info(result);
+                });
+            }
             else{   
                 var update_info = data_mode + ":-ctree_leaf_size:-" + $("#sidekeyselect").val();             
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
@@ -3127,7 +3215,7 @@ var MappingView = Backbone.View.extend({
             if(s == "none"){}
             else{
                 if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["leaf_color"]))
-                    continue
+                    continue;
             }
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
@@ -3656,7 +3744,33 @@ var MappingView = Backbone.View.extend({
                 delete attribute_mapping[attr_map["leaf_color"]];
             }
 
-            if($("#sidekeyselect").val() == "none"){}
+            if($("#sidekeyselect").val() == "none"){
+                var update_info = data_mode + ":-ctree_leaf_color:-" + $("#sidekeyselect").val() + ":-" + JSON.stringify(["none"]);
+
+                for(ego in ego_selections){
+                    update_info += ":=" + ego;
+                }
+                var request_url = "update_layer/?update="+update_info;
+                console.log(request_url);
+                d3.json(request_url, function(result){
+                    console.log("finish update");
+                    var set_update_info = function(data){
+                        var attr_map = self.model.get("attribute");
+                        var attr_opt = self.model.get("attr_option");
+                        // console.log(data)
+                        $("#block_layer").hide();
+                        $("#sidekey_submit_leaf_color").text("Done");
+                        $("#sidekey_submit_leaf_color").removeAttr("disabled");
+
+                        attr_opt[attr_opt.indexOf(attr_map["leaf_color"])] = $("#sidekeyselect").val();
+                        attr_map["leaf_color"] = $("#sidekeyselect").val()
+                        self.model.set({"attribute": attr_map});
+                        self.model.set({"attr_option": attr_opt});
+                        self.model.trigger('change:attribute');
+                    };
+                    set_update_info(result);
+                });
+            }
 
             else{
                 mapping_color.render_leaf_color = [];
@@ -3692,31 +3806,30 @@ var MappingView = Backbone.View.extend({
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
                 }
+                var request_url = "update_layer/?update="+update_info;
+                console.log(request_url);
+                d3.json(request_url, function(result){
+                    console.log("finish update");
+                    var set_update_info = function(data){
+                        var attr_map = self.model.get("attribute");
+                        var attr_opt = self.model.get("attr_option");
+                        // console.log(data)
+                        $("#block_layer").hide();
+                        $("#sidekey_submit_leaf_color").text("Done");
+                        $("#sidekey_submit_leaf_color").removeAttr("disabled");
+
+                        attr_opt[attr_opt.indexOf(attr_map["leaf_color"])] = $("#sidekeyselect").val();
+                        attr_map["leaf_color"] = $("#sidekeyselect").val()
+                        self.model.set({"attribute": attr_map});
+                        self.model.set({"attr_option": attr_opt});
+                        self.model.trigger('change:attribute');
+                        // console.log(self.model.get("attribute"));
+                        // console.log(self.model.get("attr_option"));
+                    };
+                    set_update_info(result);
+                });
             }
-
-
-            var request_url = "update_layer/?update="+update_info;
-            console.log(request_url);
-            d3.json(request_url, function(result){
-                console.log("finish update");
-                var set_update_info = function(data){
-                    var attr_map = self.model.get("attribute");
-                    var attr_opt = self.model.get("attr_option");
-                    // console.log(data)
-                    $("#block_layer").hide();
-                    $("#sidekey_submit_leaf_color").text("Done");
-                    $("#sidekey_submit_leaf_color").removeAttr("disabled");
-
-                    attr_opt[attr_opt.indexOf(attr_map["leaf_color"])] = $("#sidekeyselect").val();
-                    attr_map["leaf_color"] = $("#sidekeyselect").val()
-                    self.model.set({"attribute": attr_map});
-                    self.model.set({"attr_option": attr_opt});
-                    self.model.trigger('change:attribute');
-                    // console.log(self.model.get("attribute"));
-                    // console.log(self.model.get("attr_option"));
-                };
-                set_update_info(result);
-            });
+            
 
         });
     },
@@ -3739,7 +3852,7 @@ var MappingView = Backbone.View.extend({
             if(s == "none"){}
             else{
                 if(attr_opt.indexOf(s) != -1 && s != attr_map["leaf_id"])
-                    continue
+                    continue;
             }
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
@@ -3811,7 +3924,7 @@ var MappingView = Backbone.View.extend({
             if(s == "none"){}
             else{
                 if(component_attribute[data_mode][s][0].length == 0 || component_attribute[data_mode][s][4] != "1" || (attr_opt.indexOf(s) != -1 && s != attr_map["fruit_size"]))
-                    continue
+                    continue;
             }
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
@@ -4584,7 +4697,33 @@ var MappingView = Backbone.View.extend({
                 // attribute_mapping[$("#sidekeyselect").val()] = {"0": [], "1": []};
             }
 
-            if($("#sidekeyselect").val() == "none"){}
+            if($("#sidekeyselect").val() == "none"){
+                var update_info = data_mode + ":-ctree_fruit_size:-" + $("#sidekeyselect").val() + ":-" + JSON.stringify(["none"]);
+
+                for(ego in ego_selections){
+                    update_info += ":=" + ego;
+                }
+                var request_url = "update_layer/?update="+update_info;
+                console.log(request_url);
+                d3.json(request_url, function(result){
+                    console.log("finish update");
+                    var set_update_info = function(data){
+                        var attr_map = self.model.get("attribute");
+                        var attr_opt = self.model.get("attr_option");
+                        // console.log(data)
+                        $("#block_layer").hide();
+                        $("#sidekey_submit_fruit_size").text("Done");
+                        $("#sidekey_submit_fruit_size").removeAttr("disabled");
+
+                        attr_opt[attr_opt.indexOf(attr_map["fruit_size"])] = $("#sidekeyselect").val();
+                        attr_map["fruit_size"] = $("#sidekeyselect").val()
+                        self.model.set({"attribute": attr_map});
+                        self.model.set({"attr_option": attr_opt});
+                        self.model.trigger('change:attribute');
+                    };
+                    set_update_info(result);
+                });
+            }
             else{   
                 var update_info = data_mode + ":-ctree_fruit_size:-" + $("#sidekeyselect").val();             
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
