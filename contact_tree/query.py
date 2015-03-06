@@ -262,7 +262,8 @@ def update_collection_data(table, attr_json):
     database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
     clause = database.cursor()
     db = DB()
-    db.query('SET SQL_SAFE_UPDATES = 0;')
+    clause.execute('SET SQL_SAFE_UPDATES = 0;')
+    database.commit()
     # print attr_json
     clause.execute('DELETE FROM dataset_collection WHERE dataset = "' + table + '";')
     for a in attr_json:
@@ -289,8 +290,9 @@ def update_collection_data(table, attr_json):
                 # print 'UPDATE dataset_collection SET `alter` = 1 WHERE attr="' + a + '" and dataset="' + table + '";'
                 clause.execute('UPDATE dataset_collection SET `alter_info` = 1 WHERE attr="' + a + '" and dataset="' + table + '";')
 
+    clause.execute('SET SQL_SAFE_UPDATES = 1;')
     database.commit()
-    db.query('SET SQL_SAFE_UPDATES = 1;')
+    
 
 
 def get_dataset(request):
@@ -1089,6 +1091,7 @@ def set_default_mapping(all_data, table, attr, mapping):
     branch_index = []
     binary_index = dict()
     db.query('SET SQL_SAFE_UPDATES = 0;')
+    db.conn.commit()
     # print mapping
     for d in all_data:
         for compt in attr: 
@@ -1218,8 +1221,9 @@ def set_default_mapping(all_data, table, attr, mapping):
                                     branch_index.append(d["DISTINCT(' + attr[compt] + ')"])
                             db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(branch_index.index(d[attr[compt]])) + ' WHERE e_id=' + str(d['e_id']) + ';')                   
 
-    db.conn.commit()
     db.query('SET SQL_SAFE_UPDATES = 1;')
+    db.conn.commit()
+    
 
 
 def one_contact(request):
@@ -1316,7 +1320,8 @@ def update_binary(request):
     database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
     clause = database.cursor()
     db = DB()
-    db.query('SET SQL_SAFE_UPDATES = 0;')
+    clause.execute('SET SQL_SAFE_UPDATES = 0;')
+    database.commit()
     # table = request.GET.get('contact')
     # print request.GET['contact']
     if request.GET.get('update'):
@@ -1378,8 +1383,8 @@ def update_binary(request):
         # print update_query_one
         clause.execute(update_query_zero)
         clause.execute(update_query_one)
-        database.commit()
-        db.query('SET SQL_SAFE_UPDATES = 1;')
+        clause.execute('SET SQL_SAFE_UPDATES = 1;')
+        database.commit()        
 
     else:
         raise Http404
@@ -1395,7 +1400,6 @@ def update_layer(request):
     # table = request.GET.get('contact')
     # print request.GET['contact']
     db = DB()
-    db.query('SET SQL_SAFE_UPDATES = 0;')
     if request.GET.get('update'):
         list_request = request.GET['update'].split(":=")[0].split(":-")
         select_ego = request.GET['update'].split(":=")[1:]
@@ -1409,12 +1413,15 @@ def update_layer(request):
         # print ori_column
         # print new_column
         # print val_map
+        clause.execute('SET SQL_SAFE_UPDATES = 0;')
+        database.commit()
 
         if len(select_ego) == 0:
             # update_layer_val += ");"
             return_json = simplejson.dumps("no update", indent=4, use_decimal=True)
             print return_json
             return HttpResponse(return_json)
+
         if ori_column == "none":
             if new_column == 'ctree_fruit_size':
                update_none = 'UPDATE ' + table + ' SET ' + new_column + '=0 WHERE ('
@@ -1430,7 +1437,9 @@ def update_layer(request):
                 
             # print update_layer_val
             print update_none
-            clause.execute(update_none)            
+            clause.execute(update_none)     
+            clause.execute('SET SQL_SAFE_UPDATES = 1;')
+            database.commit()       
             return_json = simplejson.dumps("none updated", indent=4, use_decimal=True)
             return HttpResponse(return_json)
 
@@ -1454,42 +1463,81 @@ def update_layer(request):
                 # print update_layer_val
                 clause.execute(update_layer_val)
         else:
-            for layer_order in range(len(val_map)):
-                if layer_order == 0:
-                    update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order) + " WHERE (`" + ori_column + "`<=" + str(val_map[layer_order])
-                    # if len(select_ego) > 0:
-                    update_layer_val += ") AND ("
-                    for update_ego in select_ego[:-1]:
-                        update_layer_val += "egoid='" + update_ego + "' OR "
-
-                    update_layer_val += "egoid='" + select_ego[-1] + "');"  
-                else:
-                    update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order) + " WHERE (" + str(val_map[layer_order-1]) + "<`" + ori_column + "` AND `" + ori_column + "`<=" + str(val_map[layer_order])
-                    # if len(select_ego) > 0:
-                    update_layer_val += ") AND ("
-                    for update_ego in select_ego[:-1]:
-                        update_layer_val += "egoid='" + update_ego + "' OR "
-
-                    update_layer_val += "egoid='" + select_ego[-1] + "');"
-                    
+            if new_column == 'ctree_branch' and val_map[1] < val_map[0]:
+                # print "in revert"
+                # print val_map
+                for layer_order in range(len(val_map)-1, -1, -1):
+                    print layer_order
                     if layer_order == len(val_map)-1:
-                        print update_layer_val
-                        clause.execute(update_layer_val)
-                        update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order+1) + " WHERE (`" + ori_column + "`>=" + str(val_map[layer_order])
+                        update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order+1) + " WHERE (`" + ori_column + "`<=" + str(val_map[layer_order])
                         # if len(select_ego) > 0:
                         update_layer_val += ") AND ("
                         for update_ego in select_ego[:-1]:
                             update_layer_val += "egoid='" + update_ego + "' OR "
 
                         update_layer_val += "egoid='" + select_ego[-1] + "');"  
-                # else:
-                #     update_layer_val += ");"
-                    
-                print update_layer_val
-                clause.execute(update_layer_val)
+                    else:
+                        update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order+1) + " WHERE (" + str(val_map[layer_order+1]) + "<`" + ori_column + "` AND `" + ori_column + "`<=" + str(val_map[layer_order])
+                        # if len(select_ego) > 0:
+                        update_layer_val += ") AND ("
+                        for update_ego in select_ego[:-1]:
+                            update_layer_val += "egoid='" + update_ego + "' OR "
 
+                        update_layer_val += "egoid='" + select_ego[-1] + "');"
+                        
+                        if layer_order == 0:
+                            print update_layer_val
+                            clause.execute(update_layer_val)
+                            update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(0) + " WHERE (`" + ori_column + "`>=" + str(val_map[layer_order])
+                            # if len(select_ego) > 0:
+                            update_layer_val += ") AND ("
+                            for update_ego in select_ego[:-1]:
+                                update_layer_val += "egoid='" + update_ego + "' OR "
+
+                            update_layer_val += "egoid='" + select_ego[-1] + "');"  
+                    # else:
+                    #     update_layer_val += ");"
+                    
+                    print update_layer_val
+                    clause.execute(update_layer_val)
+            else:
+                for layer_order in range(len(val_map)):
+                    if layer_order == 0:
+                        update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order) + " WHERE (`" + ori_column + "`<=" + str(val_map[layer_order])
+                        # if len(select_ego) > 0:
+                        update_layer_val += ") AND ("
+                        for update_ego in select_ego[:-1]:
+                            update_layer_val += "egoid='" + update_ego + "' OR "
+
+                        update_layer_val += "egoid='" + select_ego[-1] + "');"  
+                    else:
+                        update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order) + " WHERE (" + str(val_map[layer_order-1]) + "<`" + ori_column + "` AND `" + ori_column + "`<=" + str(val_map[layer_order])
+                        # if len(select_ego) > 0:
+                        update_layer_val += ") AND ("
+                        for update_ego in select_ego[:-1]:
+                            update_layer_val += "egoid='" + update_ego + "' OR "
+
+                        update_layer_val += "egoid='" + select_ego[-1] + "');"
+                        
+                        if layer_order == len(val_map)-1:
+                            print update_layer_val
+                            clause.execute(update_layer_val)
+                            update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order+1) + " WHERE (`" + ori_column + "`>=" + str(val_map[layer_order])
+                            # if len(select_ego) > 0:
+                            update_layer_val += ") AND ("
+                            for update_ego in select_ego[:-1]:
+                                update_layer_val += "egoid='" + update_ego + "' OR "
+
+                            update_layer_val += "egoid='" + select_ego[-1] + "');"  
+                    # else:
+                    #     update_layer_val += ");"
+                        
+                    print update_layer_val
+                    clause.execute(update_layer_val)
+
+        clause.execute('SET SQL_SAFE_UPDATES = 1;')
         database.commit()
-        db.query('SET SQL_SAFE_UPDATES = 1;')
+        
 
     else:
         raise Http404

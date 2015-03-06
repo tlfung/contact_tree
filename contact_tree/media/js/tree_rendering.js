@@ -1491,12 +1491,13 @@ var RenderingView = Backbone.View.extend({
                     break;
                 }
 
+                // need more measurement 
                 this.start_x += ((stick_length)*this.sub_stick_length + this.x_dist); //_glx
                 total_distance += ((stick_length)*this.sub_stick_length + this.x_dist);
                 var ori_dr = right_side;
                 var ori_dl = left_side;
-                var t_scale = (right_side + left_side)/150;
-                if(right_side+left_side < 80){
+                var t_scale = (right_side + left_side)/130;
+                if(right_side+left_side < 100){
                     t_scale = 0.5;
                 }
                 else{

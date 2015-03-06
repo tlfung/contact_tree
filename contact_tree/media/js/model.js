@@ -150,7 +150,9 @@ var Tree_Model = Backbone.Model.extend({
 	update_data: function(request){
 	    var self = this;
 	    var mode = self.get("view_mode");
-	    
+	    $("#block_page").show();
+        $("#loading_process").html("<b>Loading...</b>");
+
 	    $("#submit_ego").attr("disabled", true);
       	$("#submit_ego").text("Loading");
       	$('.ego_checkbox').attr("disabled", true);
@@ -162,6 +164,7 @@ var Tree_Model = Backbone.Model.extend({
 	      	$("#submit_ego").removeAttr("disabled");
 	      	$("#submit_ego").text("Done");
 	      	$('.ego_checkbox').removeAttr("disabled");
+	      	$("#block_page").hide();
 	      	// self.trigger('change:tree_structure');
 
 	    });
@@ -206,6 +209,7 @@ var Tree_Model = Backbone.Model.extend({
 	      		
 	      	self.trigger('change:tree_structure');
 	      	$("#submit_ego").removeAttr("disabled");
+	      	$("#block_page").hide();
 	      	$( "#menu_dialog" ).dialog( "close" );
 	      	self.trigger('change:selected_egos');
 	      	self.trigger('change:display_egos');            

@@ -119,7 +119,7 @@ var UploadView = Backbone.View.extend({
 
             var request = fn + ":-" + self.dataset;
             console.log(request);
-
+            $("#loading_process").html("<b>Analyzing...</b>");
             d3.json("collecting_data/?collection=" + request, function(result) {
                 // alert('success');
                 // console.log("wtf");
@@ -135,7 +135,7 @@ var UploadView = Backbone.View.extend({
 
                     container.appendChild(selection_opt);
                     dataset_mode.push(result);
-                    
+                    $("#block_page").hide();
                     $("#import_dialog").dialog( "close" );
                     
                 }
@@ -144,16 +144,21 @@ var UploadView = Backbone.View.extend({
                     var report_text = set_error(result);
                     // console.log(report_text);
                     $('#err_report').html(report_text);
+                    $('#err_report').show();
+                    $("#block_page").hide();
                 }
                 $("#filename").removeAttr("disabled");
+
             });
+            
         };
 
         $('#import_submit').click(function(){
             $("#import_button").hide();
-            $('#err_report').text("Loading...");
-            $('#err_report').show();
-            
+            // $('#err_report').text("Loading...");
+            // $('#err_report').show();
+            $("#block_page").show();
+            $("#loading_process").html("<b>Loading...</b>");
             self.raw_csvfile = new FormData($('#upload_form').get(0));
             $.ajax({
                 url: "upload_csv/",

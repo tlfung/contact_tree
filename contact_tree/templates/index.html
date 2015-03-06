@@ -46,7 +46,7 @@
 
 
 <body>	
-	<div class="container-fluid" style="margin: 0 10px 0 10px; overflow-x:auto; min-width: 1200px; position: relative;">
+	<div id="display_container" class="container-fluid" style="margin: 0 10px 0 10px; overflow-x:auto; min-width: 1200px; position: relative;">
         <!-- header -->
         <div id="header" class="relative header" style="margin:10px 0px; overflow-x:auto; min-width: 1100px;">
             <div class="left header" style="margin-right:25px;">
@@ -227,6 +227,10 @@
         </div>
     </div>
 
+    <div id="block_page" style="position:absolute; left:0px; top:0px; z-index:125; background:rgba(128, 128, 128, 0.1); display:none;">
+        <img src="media/img/loader.gif" style="height:50; margin-left:50%; margin-top:50%;"></img><br>
+        <font id="loading_process" style="margin-left:50%; margin-top:50%;" color="whitesmoke"><b>Loading...</b></font>
+    </div>
 
     <!-- popup window -->
     <div id="sidekey_dialog" title="Customize Your Tree" class="popup_window_title">

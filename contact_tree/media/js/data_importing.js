@@ -1,3 +1,4 @@
+// not use
 var ImportView = Backbone.View.extend({
     
     initialize: function(args) {
@@ -300,6 +301,7 @@ var ImportView = Backbone.View.extend({
                 $("#database_table").attr("disabled", true);
                 $('#import_submit').attr("disabled", true);
                 $('#import_submit').text("loading");
+
                 self.raw_csvfile = new FormData($('#upload_form').get(0));
                 $.ajax({
                     url: "upload_csv/",

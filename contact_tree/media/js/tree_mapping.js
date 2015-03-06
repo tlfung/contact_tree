@@ -404,6 +404,8 @@ var MappingView = Backbone.View.extend({
         });
 
         $("#sidekey_submit_trunk").click(function(){
+            $("#block_page").show();
+            $("#loading_process").html("<b>Mapping...</b>");
             var data_mode = self.model.get("view_mode");
             var attr_map = self.model.get("attribute");
             var attr_opt = self.model.get("attr_option");
@@ -1197,6 +1199,8 @@ var MappingView = Backbone.View.extend({
         $("#sidekey_submit_branch").click(function(){
             var data_mode = self.model.get("view_mode");
             var ego_selections = self.model.get("selected_egos");
+            $("#block_page").show();
+            $("#loading_process").html("<b>Mapping...</b>");
             $("#sidekey_submit_branch").text("Update");
             $("#sidekey_submit_branch").attr("disabled", true);
             // $("#sidekey_img").attr("disabled", true);
@@ -1528,6 +1532,8 @@ var MappingView = Backbone.View.extend({
             var attr_map = self.model.get("attribute");
             var attr_opt = self.model.get("attr_option");
             var ego_selections = self.model.get("selected_egos");
+            $("#block_page").show();
+            $("#loading_process").html("<b>Mapping...</b>");
 
             console.log(self.model.get("attribute"));
             console.log(self.model.get("attr_option"));
@@ -2161,6 +2167,8 @@ var MappingView = Backbone.View.extend({
         });
 
         $("#sidekey_submit_root").click(function(){
+            $("#block_page").show();
+            $("#loading_process").html("<b>Mapping...</b>");
             var data_mode = self.model.get("view_mode");
             var ego_selections = self.model.get("selected_egos");
             $("#sidekey_submit_root").text("Update");
@@ -3083,6 +3091,11 @@ var MappingView = Backbone.View.extend({
 
                 }
             }
+            else{
+                $("#sidekey_operation").show();
+                $("#mark_group").html("<b>NOTE:</b> Map <b>nothing</b> to leaf size");
+                $("#mark_group").show();
+            }
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").hide();
             $("#sidekey_submit_bside").hide();
@@ -3097,6 +3110,8 @@ var MappingView = Backbone.View.extend({
         });
 
         $("#sidekey_submit_leaf_size").click(function(){
+            $("#block_page").show();
+            $("#loading_process").html("<b>Mapping...</b>");
             var data_mode = self.model.get("view_mode");
             var ego_selections = self.model.get("selected_egos");
             $("#sidekey_submit_leaf_size").text("Update");
@@ -3718,6 +3733,11 @@ var MappingView = Backbone.View.extend({
                     this.style.background = mapping_color.leaf_color[this.value];
                 });
             }
+            else{
+                $("#sidekey_operation").show();
+                $("#mark_group").html("<b>NOTE:</b> Map <b>nothing</b> to leaf color");
+                $("#mark_group").show();
+            }
 
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").hide();
@@ -3737,6 +3757,8 @@ var MappingView = Backbone.View.extend({
             var ego_selections = self.model.get("selected_egos");
             $("#sidekey_submit_leaf_color").text("Update");
             $("#sidekey_submit_leaf_color").attr("disabled", true);
+            $("#block_page").show();
+            $("#loading_process").html("<b>Mapping...</b>");
             // $("#sidekey_img").attr("disabled", true);
             $("#block_layer").show();
             if(attr_map["leaf_color"] in attribute_mapping){
@@ -3875,6 +3897,11 @@ var MappingView = Backbone.View.extend({
                 $("#mark_group").show();
                 // $("#mark_group").text("Highlight Leaf of Infomation: " + $("#sidekeyselect").val());                
             }
+            else{
+                $("#sidekey_operation").show();
+                $("#mark_group").html("<b>NOTE:</b> Map <b>nothing</b> to leaf highlight");
+                $("#mark_group").show();
+            }
 
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").hide();
@@ -3891,6 +3918,8 @@ var MappingView = Backbone.View.extend({
         $("#sidekey_submit_leaf_highlight").click(function(){
             var attr_map = self.model.get("attribute");
             var attr_opt = self.model.get("attr_option");
+            $("#block_page").show();
+            $("#loading_process").html("<b>Mapping...</b>");
             // console.log(component_attribute);
             // console.log(component_attribute[data_mode]);
             // console.log(data_mode);
@@ -4670,6 +4699,12 @@ var MappingView = Backbone.View.extend({
 
                 }
             }
+            else{
+                $("#sidekey_operation").show();
+                $("#mark_group").html("<b>NOTE:</b> Map <b>nothing</b> to fruit size");
+                $("#mark_group").show();
+            }
+
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").hide();
             $("#sidekey_submit_bside").hide();
@@ -4684,6 +4719,8 @@ var MappingView = Backbone.View.extend({
         });
 
         $("#sidekey_submit_fruit_size").click(function(){
+            $("#block_page").show();
+            $("#loading_process").html("<b>Mapping...</b>");
             var data_mode = self.model.get("view_mode");
             var ego_selections = self.model.get("selected_egos");
             $("#sidekey_submit_fruit_size").text("Update");
@@ -4826,9 +4863,13 @@ var MappingView = Backbone.View.extend({
 
     restructure: function(){
         var self = this;
+        $("#loading_process").html("<b>Rendering...</b>");
         var ego_selections = self.model.get("selected_egos");
-        if(jQuery.isEmptyObject(ego_selections))
+        if(jQuery.isEmptyObject(ego_selections)){
+            $("#block_page").hide();
             return
+        }
+            
         var now_attr = JSON.stringify(self.model.get("attribute"));
         var data_mode = self.model.get("view_mode");
         var data_group = self.model.get("dataset_group");
@@ -4846,7 +4887,7 @@ var MappingView = Backbone.View.extend({
             update_info += ":=" + ego;
             all_ego.push(ego);
         }
-
+        
         var request_url = "update_structure/?restructure="+update_info;        
         d3.json(request_url, function(result) {
             console.log("in model.restructure");
@@ -4867,7 +4908,8 @@ var MappingView = Backbone.View.extend({
                 }                
             };
             set_restructure(result, all_ego);
-            self.model.trigger('change:tree_structure');            
+            self.model.trigger('change:tree_structure');  
+            $("#block_page").hide();          
         });
     }
 

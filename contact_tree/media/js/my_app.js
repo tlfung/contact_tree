@@ -53,7 +53,10 @@ function resize_dialog(h, w){
     var sidekey_container = (w*0.7*0.7) - 150 - $("#sidekey_title").height() - $("#attribute_candidate").height() - $("#sidekey_submit_trunk").height() - $("#mark_group").height();
     // var sidekey_container = (w*0.7*0.7) - 200
     // $("#sidekey_operation").css({'max-height': sidekey_container});   
-    $("#mark_group_select").css({'max-height': sidekey_container}); 
+    $("#mark_group_select").css({'max-height': sidekey_container});
+
+    $("#block_page").css({'height': h});
+    $("#block_page").css({'width': w});    
     
 };
 
@@ -69,6 +72,8 @@ var MyApp = function MyApp(){
     var myCanvas = drawing_canvas.main_canvas;
     myCanvas.height = $(window).height()-$("#header").height()-$("#top_list").height()-$("#footer").height()-$("#history").height()-45;
     myCanvas.width = $("#canvas_container").width();
+    $("#block_page").css({'height': $(window).height()});
+    $("#block_page").css({'width': $(window).width()});    
 
     window.onresize = function(event) {
         // var myCanvas = drawing_canvas.main_canvas;
