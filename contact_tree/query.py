@@ -1189,15 +1189,27 @@ def set_default_mapping(all_data, table, attr, mapping):
                                     db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(mapping[attr[compt]][cat]) + ' WHERE e_id=' + str(d['e_id']) + ';')
                                     break
                         else:
-                            if int(d[attr[compt]]) <= int(mapping[attr[compt]][0]):
-                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
-                            elif int(d[attr[compt]]) >= int(mapping[attr[compt]][-1]):
-                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(mapping)) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                            if compt == 'branch' and mapping[attr[compt]][1] < mapping[attr[compt]][0]:
+                                if int(d[attr[compt]]) >= int(mapping[attr[compt]][0]):
+                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')                                                                        
+                                elif int(d[attr[compt]]) <= int(mapping[attr[compt]][-1]):
+                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(mapping)) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                else:
+                                    for order in range(len(mapping[attr[compt]])-2, -1, -1):
+                                        if int(d[attr[compt]]) <= int(mapping[attr[compt]][order]) and int(d[attr[compt]]) > int(mapping[attr[compt]][order+1]):
+                                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order+1) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                            break
+
                             else:
-                                for order in range(1, len(mapping[attr[compt]])):
-                                    if int(d[attr[compt]]) > int(mapping[attr[compt]][order-1]) and int(d[attr[compt]]) <= int(mapping[attr[compt]][order]):
-                                        db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                        break
+                                if int(d[attr[compt]]) <= int(mapping[attr[compt]][0]):
+                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                                elif int(d[attr[compt]]) >= int(mapping[attr[compt]][-1]):
+                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(mapping)) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                else:
+                                    for order in range(1, len(mapping[attr[compt]])):
+                                        if int(d[attr[compt]]) > int(mapping[attr[compt]][order-1]) and int(d[attr[compt]]) <= int(mapping[attr[compt]][order]):
+                                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                            break
                                     
                     else:
                         if str(collecting_data['min']).isdigit():
@@ -1467,7 +1479,7 @@ def update_layer(request):
                 # print "in revert"
                 # print val_map
                 for layer_order in range(len(val_map)-1, -1, -1):
-                    print layer_order
+                    # print layer_order
                     if layer_order == len(val_map)-1:
                         update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order+1) + " WHERE (`" + ori_column + "`<=" + str(val_map[layer_order])
                         # if len(select_ego) > 0:
