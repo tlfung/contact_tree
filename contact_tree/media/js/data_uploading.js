@@ -63,6 +63,8 @@ var UploadView = Backbone.View.extend({
 
         });
 
+        this.submit_event();
+
     },
 
     create_table:function(){
@@ -72,7 +74,8 @@ var UploadView = Backbone.View.extend({
         $("#import_button").show();
         $('#err_report').hide();
         $('#err_report').text("")
-        this.submit_event();
+
+        // this.submit_event();
     },
 
 

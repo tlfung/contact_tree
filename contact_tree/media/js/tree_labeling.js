@@ -26,12 +26,16 @@ var LabelView = Backbone.View.extend({
         // var all_tree = my_mode.toUpperCase().replace("_", " ") + ":";
         var all_tree_len = my_mode.toUpperCase().split("_");
         var all_tree = my_mode.toUpperCase();
-        if(all_tree_len > 2)
+        if(all_tree_len.length > 2){
             all_tree = my_mode.toUpperCase().split("_")[2];
-        // replace(/_/g, " ") + ":";
-        for( var a = 3; a < all_tree_len.length; a++){
-            all_tree += " " + all_tree_len[a];
-        }
+            // replace(/_/g, " ") + ":";
+            for( var a = 3; a < all_tree_len.length; a++){
+                all_tree += " " + all_tree_len[a];
+            }
+        }            
+        else{
+                all_tree = all_tree.replace(/_/g, " ")
+            }
         
         $("#selecting_ego").empty();
 

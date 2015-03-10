@@ -68,7 +68,8 @@
             </div>
             <div class="right">
                 <!-- <p><a href="media/Contact_Tree_Demo.pdf">Help</a></p> -->
-                <p><a href="media/implementation.pdf">Help</a></p>
+                <!-- <p><a href="media/implementation.pdf">Help</a></p> -->
+                <p><a id="help_link" href="#">Help</a></p>
             </div>
             
             <!-- <div class="right">
@@ -230,6 +231,14 @@
     <div id="block_page" style="position:absolute; left:0px; top:0px; z-index:125; background:rgba(128, 128, 128, 0.1); display:none;">
         <img src="media/img/loader.gif" style="height:50; margin-left:50%; margin-top:50%;"></img><br>
         <font id="loading_process" style="margin-left:50%; margin-top:50%;" color="whitesmoke"><b>Loading...</b></font>
+    </div>
+
+    <div id="help_page" style="position:absolute; left:0px; top:0px; z-index:125; background:rgba(128, 128, 128, 0.3); display:none; ">
+        <img id="help_slide" src="media/img/help/slide1.jpg" value="1" class="instruction" width="80%" style="z-index:150;"></img>
+        <img id="slide_previous" src="media/img/previous.png" style="z-index:130; top:43%; position:absolute; left:10; cursor:pointer;"></img>
+        <img id="slide_next" src="media/img/next.png" style="position:absolute; z-index:130; top:43%; right:10; cursor:pointer;"></img>
+        <!-- <span id="slide_previous" class="left glyphicon glyphicon-chevron-left" aria-hidden="true" style="z-index:150; top:50%; position:absolute; left:10;"></span>
+        <span id="slide_next" class="right glyphicon glyphicon-chevron-right" aria-hidden="true" style="position:absolute; z-index:150; top:50%; right:10;"></span> -->
     </div>
 
     <!-- popup window -->

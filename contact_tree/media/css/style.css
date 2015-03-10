@@ -51,6 +51,11 @@ a:focus{ outline: none; }
   margin-right:auto;
 }
 
+.instruction {
+  border: 1px solid gray;
+  border-radius:5;
+}
+
 .absolute{
   position: absolute;
 }
@@ -71,6 +76,7 @@ a:focus{ outline: none; }
   border-radius:5;
   background: gray;*/
 }
+
 
 .sidekey_cmpt{
   cursor:pointer; 
@@ -114,6 +120,7 @@ a:focus{ outline: none; }
 	width:100%
 }
 
+
 .popup_window_title{
 	font-family: 'Roboto Condensed', sans-serif;
 	display: none;
@@ -146,6 +153,8 @@ a:focus{ outline: none; }
   text-align: center;
 }
 
+
+.mapping_selection:
 
 ::-webkit-scrollbar {
     width: 12px;

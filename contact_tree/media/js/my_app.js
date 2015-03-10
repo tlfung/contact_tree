@@ -56,12 +56,15 @@ function resize_dialog(h, w){
     $("#mark_group_select").css({'max-height': sidekey_container});
 
     $("#block_page").css({'height': h});
-    $("#block_page").css({'width': w});    
+    $("#block_page").css({'width': w});  
+    $("#help_page").css({'height': h});
+    $("#help_page").css({'width': w});    
     
 };
 
 var MyApp = function MyApp(){
     var self = this;
+
     if ( arguments.callee._singletonInstance )
         return arguments.callee._singletonInstance;
     arguments.callee._singletonInstance = this;
@@ -70,10 +73,15 @@ var MyApp = function MyApp(){
     this.model = new Tree_Model();
     
     var myCanvas = drawing_canvas.main_canvas;
-    myCanvas.height = $(window).height()-$("#header").height()-$("#top_list").height()-$("#footer").height()-$("#history").height()-45;
+    myCanvas.height = $(window).height()-$("#header").height()-$("#top_list").height()-$("#footer").height()-$("#history").height()-60;
     myCanvas.width = $("#canvas_container").width();
     $("#block_page").css({'height': $(window).height()});
     $("#block_page").css({'width': $(window).width()});    
+    $("#help_page").css({'height': $(window).height()});
+    $("#help_page").css({'width': $(window).width()});  
+
+
+    // $("#help_slide").center();
 
     window.onresize = function(event) {
         // var myCanvas = drawing_canvas.main_canvas;
@@ -100,6 +108,43 @@ var MyApp = function MyApp(){
             initial_grid[x][y] = -1;
         }
     }
+
+    
+    $("#help_link").click(function(){
+        $("#help_page").show();
+        $("#help_slide").center();      
+    });
+
+    $("#slide_next").click(function(){
+        var num_slide =  parseInt($('#help_slide').attr('value'));
+        if(num_slide < 8){
+            $('#help_slide').attr('src', 'media/img/help/slide' + (num_slide+1) +'.jpg');
+            $("#help_slide").attr('value', (num_slide+1)); 
+        }
+        return false;
+    });
+
+    $("#slide_previous").click(function(){
+        var num_slide =  parseInt($('#help_slide').attr('value'));
+        if(num_slide > 1){
+            $('#help_slide').attr('src', 'media/img/help/slide' + (num_slide-1) +'.jpg');
+            $("#help_slide").attr('value', (num_slide-1)); 
+        }
+        return false;
+    });
+
+    $("#help_page").click(function(){
+        $("#help_page").hide();
+
+        // $("#help_link").css({'z-index': 0});     
+    }); 
+    $("#help_slide").click(function(){
+        return false;
+        // $("#help_link").css({'z-index': 0});     
+    });  
+
+
+
     self.model.set({"canvas_height": myCanvas.height});
     self.model.set({"canvas_width": myCanvas.width});
 

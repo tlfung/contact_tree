@@ -268,9 +268,11 @@ def update_collection_data(table, attr_json):
     clause.execute('DELETE FROM dataset_collection WHERE dataset = "' + table + '";')
     for a in attr_json:
         print a, attr_json[a]
+        # my_attr = '"' + table + '", "' + a + '", "' + str(attr_json[a]["MIN"]) + '", "' + str(attr_json[a]["MAX"]) + '", "' + str(attr_json[a]["RANGE"]) + '", "' + str(attr_json[a]["TYPE"]) + '", "' + str(attr_json[a]["RANGE"]) + '"'
         my_attr = '"' + table + '", "' + a + '", "' + str(attr_json[a]["MIN"]) + '", "' + str(attr_json[a]["MAX"]) + '", "' + str(attr_json[a]["RANGE"]) + '", "' + str(attr_json[a]["TYPE"]) + '"'
+        
         # print my_attr
-        # print 'INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, relation, `type`, ego_mark) VALUES (' + my_attr + ');'
+        # clause.execute('INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, type, branch_range) VALUES (%s);' %my_attr)
         clause.execute('INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, type) VALUES (%s);' %my_attr)
     
     database.commit()
@@ -1259,8 +1261,10 @@ def one_contact(request):
                 all_data = precur.fetchall()
                 cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
                 stick_unique = cur.fetchone()["alter_info"]
-                cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
-                branch_layer = int(cur.fetchone()["attr_range"])
+                # cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
+                # branch_layer = int(cur.fetchone()["attr_range"])
+                cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ' + table + ' WHERE ctree_branch != "" and ctree_branch != -100;')
+                branch_layer = int(cur.fetchone()["MAX(cast(`ctree_branch` as unsigned))"]) + 1
 
                 if stick_unique == '1':
                     # print "in_unique"
@@ -1280,8 +1284,10 @@ def one_contact(request):
                     all_data = precur.fetchall()
                     cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
                     stick_unique = cur.fetchone()["alter_info"]
-                    cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
-                    branch_layer = int(cur.fetchone()["attr_range"])
+                    # cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
+                    # branch_layer = int(cur.fetchone()["attr_range"])
+                    cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ' + table + ' WHERE ctree_branch != "" and ctree_branch != -100;')
+                    branch_layer = int(cur.fetchone()["MAX(cast(`ctree_branch` as unsigned))"]) + 1
 
                     if stick_unique == '1':
                         # print "in_unique"
@@ -1582,8 +1588,10 @@ def restructure(request):
                 all_data = precur.fetchall()
                 cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
                 stick_unique = cur.fetchone()["alter_info"]
-                cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
-                branch_layer = int(cur.fetchone()["attr_range"])
+                # cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
+                # branch_layer = int(cur.fetchone()["attr_range"])
+                cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ' + table + ' WHERE ctree_branch != "" and ctree_branch != -100;')
+                branch_layer = int(cur.fetchone()["MAX(cast(`ctree_branch` as unsigned))"]) + 1
 
                 if stick_unique == '1':
                     # print "in_unique"
@@ -1609,8 +1617,10 @@ def restructure(request):
                     all_data = precur.fetchall()
                     cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
                     stick_unique = cur.fetchone()["alter_info"]
-                    cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
-                    branch_layer = int(cur.fetchone()["attr_range"])
+                    # cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
+                    # branch_layer = int(cur.fetchone()["attr_range"])
+                    cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ' + table + ' WHERE ctree_branch != "" and ctree_branch != -100;')
+                    branch_layer = int(cur.fetchone()["MAX(cast(`ctree_branch` as unsigned))"]) + 1
 
                     if stick_unique == '1':
                         # print "in_unique"
@@ -1633,6 +1643,7 @@ def restructure(request):
     
     return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
     # print return_json
+    
     return HttpResponse(return_json)
        
 

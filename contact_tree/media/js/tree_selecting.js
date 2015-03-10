@@ -137,15 +137,19 @@ var SelectingView = Backbone.View.extend({
             // self.model.set({"tree_structure":{}});
             $('#egogroup').attr("disabled", true);
             $("#block_page").show();
-            $("#loading_process").html("<b>Fitching...</b>");
+            $("#loading_process").html("<b>Fetching...</b>");
             var label = document.getElementById("selecting_label");
             var all_tree_len = data_selected.toUpperCase().split("_");
             var all_tree = data_selected.toUpperCase();
-            if(all_tree_len > 2)
+            if(all_tree_len.length > 2){
                 all_tree = data_selected.toUpperCase().split("_")[2];
-            // replace(/_/g, " ") + ":";
-            for( var a = 3; a < all_tree_len.length; a++){
-                all_tree += " " + all_tree_len[a];
+                // replace(/_/g, " ") + ":";
+                for( var a = 3; a < all_tree_len.length; a++){
+                    all_tree += " " + all_tree_len[a];
+                }
+            }
+            else{
+                all_tree = all_tree.replace(/_/g, " ")
             }
             label.innerHTML = all_tree + ":";
             // label.innerHTML = "<b>" + all_tree + ":</b>";
