@@ -8,12 +8,12 @@ var RenderingView = Backbone.View.extend({
         console.log("in rendering initialize");
         _.bindAll(this, 'redraw');
         _.bindAll(this, 'update_fruit_size');
+        _.bindAll(this, 'snapshot');
 
         this.model.bind('change:display_egos', this.redraw);
         this.model.bind('change:canvas_scale', this.redraw);
         this.model.bind('change:tree_structure', this.redraw);
         this.model.bind('change:tree_style', this.redraw);
-
 
         this.model.bind('change:canvas_height', this.redraw);
         this.model.bind('change:canvas_width', this.redraw);
@@ -28,13 +28,19 @@ var RenderingView = Backbone.View.extend({
         this.model.bind('change:fruit_switch', this.redraw);
 
 
+        this.model.bind('change:snapshot', this.snapshot);
+
         this.model.bind('change:leaf_scale', this.update_fruit_size);
+
 
         this.view = self.model.get("view_mode");
         this.group = self.model.get("dataset_group");
 
         this.myCanvas = drawing_canvas.main_canvas;
-        this.context =  this.myCanvas.getContext('2d');
+        // this.context =  this.myCanvas.getContext('2d');
+
+        this.snapCanvas = drawing_canvas.snap_canvas;
+        // this.snap_context =  this.snapCanvas.getContext('2d');
 
         this.scale = self.model.get("canvas_scale");
         this.translate_point = self.model.get("canvas_translate");
@@ -79,10 +85,14 @@ var RenderingView = Backbone.View.extend({
         this.leaf_hovor = self.model.get("clicking_leaf");
         this.c_detail = 10*this.scale;
         this.on_moving = 0;
+        this.ego_label = "";
+        this.snap = 0;
     },
 
     redraw: function(){
         var self = this;
+        this.context =  this.myCanvas.getContext('2d');
+        this.snap = 0;
         // console.log("in redraw", self.model.get("moving"));
         this.on_moving = self.model.get("moving");
         this.scale = self.model.get("canvas_scale");
@@ -1417,6 +1427,7 @@ var RenderingView = Backbone.View.extend({
         var canvas_x_boundary = [-this.translate_point[0]/this.scale, (self.myCanvas.width - this.translate_point[0]) / this.scale ];
         var canvas_y_boundary = [-this.translate_point[1]/this.scale, (self.myCanvas.height - this.translate_point[1]) / self.scale ];
 
+        tree_size = {};
         // for each ego tree
         var total_distance = 0;
         for(var e in display_ego){
@@ -1454,12 +1465,16 @@ var RenderingView = Backbone.View.extend({
                     continue;
                     // alart and delete this ego
                 }
+                
                 var msg = "";
+                var click_info = "";
                 if(self.group != "all"){
                     msg = "EGO_" + e.toUpperCase() + "|" + sub;
+                    click_info = e + ":-" + sub;
                 }
                 else{
                     msg = "EGO_" + e.toUpperCase();
+                    click_info = e + ":-" + "all";
                 }
                 // info_box = info_box = ["", ""];
                 var pos = [];
@@ -1505,6 +1520,7 @@ var RenderingView = Backbone.View.extend({
                         t_scale = 1;
                     }
                 }
+
                 /*
                 if(this.view == "diary" || this.view == "inter"){
                     // console.log("scale", ((right_side + left_side)/150));
@@ -1553,6 +1569,12 @@ var RenderingView = Backbone.View.extend({
                     this.start_x += ((stick_length)*this.sub_stick_length + this.x_dist);
                     continue;
                 }
+
+                if(self.snap == 0){
+                    self.ego_label = e + "_" + sub;
+                    tree_size[self.ego_label] = [canvas_x_boundary[1], canvas_x_boundary[0], canvas_y_boundary[1], (this.myCanvas.height/0.15)];
+                }
+                
                 var start_h = 0;
                 var add_h = 1;
                 var max_h = self.total_layer;
@@ -1641,7 +1663,7 @@ var RenderingView = Backbone.View.extend({
                 }
                 // this.x_dist*this.scale
 
-                this.set_tree_label(this.context, msg, pos);
+                this.set_tree_label(this.context, msg, pos, click_info);
                 this.set_tree_info(this.context, info_box, info_pos);
                 
                 this.start_x += ((stick_length)*this.sub_stick_length + this.x_dist); //_glx
@@ -1927,15 +1949,18 @@ var RenderingView = Backbone.View.extend({
                 }                
             }
             */
-            if(!jQuery.isEmptyObject(alters[long_stick][n])){
-                for(var i = 0; i < Math.round(stick_len*this.scale); i++){
-                    var p_index = [Math.round((point_in_canvas[0]+stick_vector[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+stick_vector[1]*i)/self.c_detail)];
-                    if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
-                        // console.log(p_index[0], p_index[1])
-                        this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
+            if(this.snap == 0){
+                if(!jQuery.isEmptyObject(alters[long_stick][n])){
+                    for(var i = 0; i < Math.round(stick_len*this.scale); i++){
+                        var p_index = [Math.round((point_in_canvas[0]+stick_vector[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+stick_vector[1]*i)/self.c_detail)];
+                        if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
+                            // console.log(p_index[0], p_index[1])
+                            this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
+                        }
                     }
                 }
             }
+            
             
 
             // change to vector later
@@ -2032,15 +2057,17 @@ var RenderingView = Backbone.View.extend({
                 }
                 */
                 
-                
-                if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                    for(var i = 0; i < Math.round(stick_len*this.scale); i++){
-                        var p_index = [Math.round((point_in_canvas[0]+stick_vector[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+stick_vector[1]*i)/self.c_detail)];
-                        if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
-                            this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
-                        }
-                    } 
+                if(this.snap == 0){
+                    if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
+                        for(var i = 0; i < Math.round(stick_len*this.scale); i++){
+                            var p_index = [Math.round((point_in_canvas[0]+stick_vector[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+stick_vector[1]*i)/self.c_detail)];
+                            if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
+                                this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
+                            }
+                        } 
+                    }
                 }
+                
                  
 
                 start_point = [ tree_rstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_rstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1] ];
@@ -2177,6 +2204,13 @@ var RenderingView = Backbone.View.extend({
                     this.context.lineWidth = 5;
                     tree_rstpoint[2] = tree_rstpoint[0];
                     tree_rstpoint[3] = tree_rstpoint[1];
+                    if(self.snap == 0){
+                        if(tree_rstpoint[0] > tree_size[self.ego_label][1])
+                            tree_size[self.ego_label][1] = tree_rstpoint[0];
+                        if(tree_rstpoint[1] < tree_size[self.ego_label][2])
+                            tree_size[self.ego_label][2] = tree_rstpoint[1];
+                    }
+                    
                 }                 
                                 
             }
@@ -2388,16 +2422,18 @@ var RenderingView = Backbone.View.extend({
             else
                 var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"];
             */
-
-            if(!jQuery.isEmptyObject(alters[long_stick][n])){
-                for(var i = 0; i < Math.round(stick_len*this.scale); i++){
-                    var p_index = [Math.round((point_in_canvas[0]+stick_vector[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+stick_vector[1]*i)/self.c_detail)];
-                    if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
-                        this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
+            if(this.snap == 0){
+                if(!jQuery.isEmptyObject(alters[long_stick][n])){
+                    for(var i = 0; i < Math.round(stick_len*this.scale); i++){
+                        var p_index = [Math.round((point_in_canvas[0]+stick_vector[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+stick_vector[1]*i)/self.c_detail)];
+                        if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
+                            this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
+                        }
+                        
                     }
-                    
                 }
             }
+            
             
 
             var up_line = this.find_line(tree_lstpoint[begin_index["up"][0]]+extra_slope["up"][0], tree_lstpoint[begin_index["up"][1]]+extra_slope["up"][1], stick_m["up"]);
@@ -2506,15 +2542,17 @@ var RenderingView = Backbone.View.extend({
                 else
                     var set_alter_id = this.subyear + "_" + alters[short_stick][count_short_stick]["id"];
                 */
-
-                if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                    for(var i = 0; i < Math.round(stick_len*this.scale); i++){
-                        var p_index = [Math.round((point_in_canvas[0]+stick_vector[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+stick_vector[1]*i)/self.c_detail)];
-                        if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
-                            this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
+                if(this.snap == 0){
+                    if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
+                        for(var i = 0; i < Math.round(stick_len*this.scale); i++){
+                            var p_index = [Math.round((point_in_canvas[0]+stick_vector[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+stick_vector[1]*i)/self.c_detail)];
+                            if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
+                                this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
+                            }
                         }
                     }
                 }
+                
                 
 
                 start_point = [ tree_lstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_lstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1] ];
@@ -2647,6 +2685,13 @@ var RenderingView = Backbone.View.extend({
                     this.context.lineWidth = 5;
                     tree_lstpoint[2] = tree_lstpoint[0];
                     tree_lstpoint[3] = tree_lstpoint[1];
+                    if(self.snap == 0){
+                        if(tree_lstpoint[0] < tree_size[self.ego_label][0])
+                            tree_size[self.ego_label][0] = tree_lstpoint[0];
+                        if(tree_lstpoint[1] < tree_size[self.ego_label][2])
+                            tree_size[self.ego_label][2] = tree_lstpoint[1];
+                    }
+                    
                 }
                
             }
@@ -2785,49 +2830,54 @@ var RenderingView = Backbone.View.extend({
                         // var clicking_point;
                         // var point_in_canvas = [ (p[0]*this.scale) + this.translate_point[0], (p[1]*this.scale) + this.translate_point[1]];
                         // console.log("point: ", point_x, point_y);
-                        for(var leaf_x = 0; leaf_x < 2.5*radius*this.scale; leaf_x++){
-                            for(var leaf_y = -radius*this.scale*0.25; leaf_y < radius*this.scale*0.25; leaf_y++){
-                                // x = xcos - ysin, y = ycos + xsin
-                                var real_x = (point_x*this.scale + this.translate_point[0]) + (leaf_x*Math.cos(angle) - leaf_y*Math.sin(angle));
-                                var real_y = (point_y*this.scale + this.translate_point[1]) + (leaf_y*Math.cos(angle) + leaf_x*Math.sin(angle));
-                                // var real_x = (point_x*this.scale + leaf_x)*Math.cos(angle) - (point_y*this.scale  + leaf_y)*Math.sin(angle);
-                                // var real_y = (point_y*this.scale + leaf_y)*Math.cos(angle) + (point_x*this.scale  + leaf_x)*Math.sin(angle);
-                                
-                                // var clicking_point = [Math.round((real_x + this.translate_point[0])/self.c_detail), Math.round((real_y + this.translate_point[1]*this.scale)/self.c_detail)];
-                                var clicking_point = [Math.round(real_x/self.c_detail), Math.round(real_y/self.c_detail)];
-                                if(clicking_point[0] >= 0 && clicking_point[0] <= this.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= this.myCanvas.height/self.c_detail){
-                                    if(leaf_id != "none")
-                                        this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+" +  leaf_id;
-                                    else
-                                        this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+ ";
+                        if(this.snap == 0){
+                            for(var leaf_x = 0; leaf_x < 2.5*radius*this.scale; leaf_x++){
+                                for(var leaf_y = -radius*this.scale*0.25; leaf_y < radius*this.scale*0.25; leaf_y++){
+                                    // x = xcos - ysin, y = ycos + xsin
+                                    var real_x = (point_x*this.scale + this.translate_point[0]) + (leaf_x*Math.cos(angle) - leaf_y*Math.sin(angle));
+                                    var real_y = (point_y*this.scale + this.translate_point[1]) + (leaf_y*Math.cos(angle) + leaf_x*Math.sin(angle));
+                                    // var real_x = (point_x*this.scale + leaf_x)*Math.cos(angle) - (point_y*this.scale  + leaf_y)*Math.sin(angle);
+                                    // var real_y = (point_y*this.scale + leaf_y)*Math.cos(angle) + (point_x*this.scale  + leaf_x)*Math.sin(angle);
+                                    
+                                    // var clicking_point = [Math.round((real_x + this.translate_point[0])/self.c_detail), Math.round((real_y + this.translate_point[1]*this.scale)/self.c_detail)];
+                                    var clicking_point = [Math.round(real_x/self.c_detail), Math.round(real_y/self.c_detail)];
+                                    if(clicking_point[0] >= 0 && clicking_point[0] <= this.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= this.myCanvas.height/self.c_detail){
+                                        if(leaf_id != "none")
+                                            this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+" +  leaf_id;
+                                        else
+                                            this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+ ";
+                                    }
                                 }
+                                
                             }
-                            
-                        }
+                        }                        
                         this.leaf_style_1(this.context, point_x, point_y, radius, color, angle, leaf_id);
                                                 
                     }
                     else{
                         angle = angle - (Math.PI/4);
-                        for(var leaf_x = 0; leaf_x < 2.5*radius*this.scale; leaf_x++){
-                            for(var leaf_y = -radius*this.scale*0.5; leaf_y < radius*this.scale*0.5; leaf_y++){
-                                // x = xcos - ysin, y = ycos + xsin
-                                var real_x = (point_x*this.scale + this.translate_point[0]) + (leaf_x*Math.cos(angle) - leaf_y*Math.sin(angle));
-                                var real_y = (point_y*this.scale + this.translate_point[1]) + (leaf_y*Math.cos(angle) + leaf_x*Math.sin(angle));
-                                // var real_x = (point_x*this.scale + leaf_x)*Math.cos(angle) - (point_y*this.scale  + leaf_y)*Math.sin(angle);
-                                // var real_y = (point_y*this.scale + leaf_y)*Math.cos(angle) + (point_x*this.scale  + leaf_x)*Math.sin(angle);
-                                
-                                // var clicking_point = [Math.round((real_x + this.translate_point[0])/self.c_detail), Math.round((real_y + this.translate_point[1]*this.scale)/self.c_detail)];
-                                var clicking_point = [Math.round(real_x/self.c_detail), Math.round(real_y/self.c_detail)];
-                                if(clicking_point[0] >= 0 && clicking_point[0] <= this.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= this.myCanvas.height/self.c_detail){
-                                    if(leaf_id != "none")
-                                        this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+" +  leaf_id;
-                                    else
-                                        this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+ ";
+                        if(this.snap == 0){
+                            for(var leaf_x = 0; leaf_x < 2.5*radius*this.scale; leaf_x++){
+                                for(var leaf_y = -radius*this.scale*0.5; leaf_y < radius*this.scale*0.5; leaf_y++){
+                                    // x = xcos - ysin, y = ycos + xsin
+                                    var real_x = (point_x*this.scale + this.translate_point[0]) + (leaf_x*Math.cos(angle) - leaf_y*Math.sin(angle));
+                                    var real_y = (point_y*this.scale + this.translate_point[1]) + (leaf_y*Math.cos(angle) + leaf_x*Math.sin(angle));
+                                    // var real_x = (point_x*this.scale + leaf_x)*Math.cos(angle) - (point_y*this.scale  + leaf_y)*Math.sin(angle);
+                                    // var real_y = (point_y*this.scale + leaf_y)*Math.cos(angle) + (point_x*this.scale  + leaf_x)*Math.sin(angle);
+                                    
+                                    // var clicking_point = [Math.round((real_x + this.translate_point[0])/self.c_detail), Math.round((real_y + this.translate_point[1]*this.scale)/self.c_detail)];
+                                    var clicking_point = [Math.round(real_x/self.c_detail), Math.round(real_y/self.c_detail)];
+                                    if(clicking_point[0] >= 0 && clicking_point[0] <= this.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= this.myCanvas.height/self.c_detail){
+                                        if(leaf_id != "none")
+                                            this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+" +  leaf_id;
+                                        else
+                                            this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+ ";
+                                    }
                                 }
+                                
                             }
-                            
                         }
+                        
                         this.leaf_style_1(this.context, point_x, point_y, radius, color, angle, leaf_id);
                         
                     }
@@ -2876,13 +2926,15 @@ var RenderingView = Backbone.View.extend({
                     // var set_alter_id = this.subyear + "_" + alter["id"];
                     // if(self.view == "inter")
                     //     set_alter_id = this.subyear + "_" + alter["id"] + "#" + side;
-                    
-                    for(var i = 0; i < Math.round(20*len_scale*this.scale); i++){
-                        var p_index = [Math.round((point_in_canvas[0]+ori_v[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+ori_v[1]*i)/self.c_detail)];
-                        if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
-                            this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
+                    if(this.snap == 0){
+                        for(var i = 0; i < Math.round(20*len_scale*this.scale); i++){
+                            var p_index = [Math.round((point_in_canvas[0]+ori_v[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+ori_v[1]*i)/self.c_detail)];
+                            if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
+                                this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
+                            }
                         }
                     }
+                    
                 }
                 else if(sub%3==1){
                     dir_v = this.find_dir(ori_v, Math.PI/4);
@@ -2897,13 +2949,15 @@ var RenderingView = Backbone.View.extend({
                     // var set_alter_id = this.subyear + "_" + alter["id"];
                     // if(self.view == "inter")
                     //     set_alter_id = this.subyear + "_" + alter["id"] + "#" + side;
+                    if(this.snap == 0){
+                        for(var i = 0; i < Math.round(13*len_scale*this.scale); i++){
+                            var p_index = [Math.round((point_in_canvas[0]+ori_v[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+ori_v[1]*i)/self.c_detail)];
+                            if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
+                                this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
+                            }
+                        } 
+                    }
                     
-                    for(var i = 0; i < Math.round(13*len_scale*this.scale); i++){
-                        var p_index = [Math.round((point_in_canvas[0]+ori_v[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+ori_v[1]*i)/self.c_detail)];
-                        if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
-                            this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
-                        }
-                    } 
                     this.context.lineWidth = 1;
                     this.context.beginPath();
                     this.context.arc(point_x, point_y, 2, 0, 2*Math.PI, true);
@@ -3082,20 +3136,21 @@ var RenderingView = Backbone.View.extend({
                 ctx.lineTo(stick_left_side[0] + main_step[0], stick_left_side[1] + main_step[1]);
                 ctx.bezierCurveTo(left_m[0], left_m[1], left_m[0] - curve, left_m[1], stick_left_side[0], stick_left_side[1]);
                 // ctx.lineTo(stick_left_side[0], stick_left_side[1]);
-
-                for(var root_x = (stick_right_side[0]*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + self.translate_point[0]) ; root_x--){
-                    for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + main_step[1])*this.scale + self.translate_point[1]); root_y++){
-                        var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
-                        if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
-                            self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[author_area]["root_cat"];
+                if(this.snap == 0){
+                    for(var root_x = (stick_right_side[0]*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + self.translate_point[0]) ; root_x--){
+                        for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + main_step[1])*this.scale + self.translate_point[1]); root_y++){
+                            var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
+                            if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
+                                self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[author_area]["root_cat"];
+                            }
                         }
                     }
                 }
+                
 
                 stick_right_side = [stick_right_side[0] - main_step[0], stick_right_side[1] + main_step[1]];
                 stick_left_side = [stick_left_side[0] + main_step[0], stick_left_side[1] + main_step[1]];
                 
-                 
                 ctx.stroke();
                 ctx.fill();
                 continue;
@@ -3134,16 +3189,17 @@ var RenderingView = Backbone.View.extend({
                 ctx.lineTo(stick_left_side[0] + main_step[0]  + curve*2, stick_left_side[1] + main_step[1]);
                 ctx.bezierCurveTo(left_m[0]  + curve*2, left_m[1], left_m[0] + curve*0.5, left_m[1], stick_left_side[0], stick_left_side[1]);
                 // ctx.lineTo(stick_left_side[0], stick_left_side[1]);
-
-                for(var root_x = (stick_right_side[0]*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + self.translate_point[0]) ; root_x--){
-                    for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + main_step[1])*this.scale + self.translate_point[1]); root_y++){
-                        var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
-                        if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
-                            self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[author_area]["root_cat"];
+                if(this.snap == 0){
+                    for(var root_x = (stick_right_side[0]*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + self.translate_point[0]) ; root_x--){
+                        for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + main_step[1])*this.scale + self.translate_point[1]); root_y++){
+                            var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
+                            if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
+                                self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[author_area]["root_cat"];
+                            }
                         }
                     }
                 }
-
+                
                 stick_right_side = [stick_right_side[0] - main_step[0]  + curve*2, stick_right_side[1] + main_step[1]];
                 stick_left_side = [stick_left_side[0] + main_step[0] + curve*2, stick_left_side[1] + main_step[1]];
                 
@@ -3162,17 +3218,22 @@ var RenderingView = Backbone.View.extend({
             ctx.lineTo(stick_left_side[0] + main_step[0], stick_left_side[1] + main_step[1]);
             ctx.quadraticCurveTo(left_m[0], left_m[1], stick_left_side[0], stick_left_side[1]);
             // ctx.lineTo(stick_left_side[0], stick_left_side[1]);
-            for(var root_x = (stick_right_side[0]*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + self.translate_point[0]) ; root_x--){
-                for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + main_step[1])*this.scale + self.translate_point[1]); root_y++){
-                    var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
-                    if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
-                        self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[author_area]["root_cat"];
+            if(this.snap == 0){
+                for(var root_x = (stick_right_side[0]*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + self.translate_point[0]) ; root_x--){
+                    for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + main_step[1])*this.scale + self.translate_point[1]); root_y++){
+                        var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
+                        if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
+                            self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[author_area]["root_cat"];
+                        }
                     }
                 }
             }
+            
             stick_right_side = [stick_right_side[0] - main_step[0], stick_right_side[1] + main_step[1]];
             stick_left_side = [stick_left_side[0] + main_step[0], stick_left_side[1] + main_step[1]];
              
+            tree_size[self.ego_label][3] = stick_left_side[1];
+
             ctx.stroke();
             ctx.fill();
             
@@ -3294,14 +3355,17 @@ var RenderingView = Backbone.View.extend({
                         ctx.lineTo(stick_left_side[0] + unit_point[0] + unit_weigth - root_scale*(i-1), stick_left_side[1] + unit_point[1]);
                         ctx.bezierCurveTo(left_m[0], left_m[1], left_m[0] - curve, left_m[1], stick_left_side[0], stick_left_side[1]);
                         // ctx.lineTo(stick_left_side[0], stick_left_side[1]);
-                        for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + unit_point[1])*this.scale + self.translate_point[1]); root_y++){
-                            for(var root_x = ((stick_right_side[0] + unit_point[0] - root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + this.translate_point[0]); root_x--){                            
-                                var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
-                                if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
-                                    self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["root_cat"];
+                        if(this.snap == 0){
+                            for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + unit_point[1])*this.scale + self.translate_point[1]); root_y++){
+                                for(var root_x = ((stick_right_side[0] + unit_point[0] - root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + this.translate_point[0]); root_x--){                            
+                                    var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
+                                    if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
+                                        self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["root_cat"];
+                                    }
                                 }
                             }
                         }
+                        
                         stick_right_side = [stick_right_side[0] + unit_point[0] - root_scale*(i-1), stick_right_side[1] + unit_point[1]];
                         stick_left_side = [stick_left_side[0] + unit_point[0] + unit_weigth - root_scale*(i-1), stick_left_side[1] + unit_point[1]];
                          
@@ -3318,14 +3382,17 @@ var RenderingView = Backbone.View.extend({
                         ctx.lineTo(stick_left_side[0] + unit_point[0] + unit_weigth - root_scale*(i-1) + curve*2, stick_left_side[1] + unit_point[1]);
                         ctx.bezierCurveTo(left_m[0] + curve*2, left_m[1], left_m[0] + curve*0.5, left_m[1], stick_left_side[0], stick_left_side[1]);
                         // ctx.lineTo(stick_left_side[0], stick_left_side[1]);
-                        for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + unit_point[1])*this.scale + self.translate_point[1]); root_y++){
-                            for(var root_x = ((stick_right_side[0] + unit_point[0] - root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + this.translate_point[0]); root_x--){                            
-                                var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
-                                if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
-                                    self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["root_cat"];
+                        if(this.snap == 0){
+                            for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + unit_point[1])*this.scale + self.translate_point[1]); root_y++){
+                                for(var root_x = ((stick_right_side[0] + unit_point[0] - root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + this.translate_point[0]); root_x--){                            
+                                    var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
+                                    if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
+                                        self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["root_cat"];
+                                    }
                                 }
                             }
                         }
+                        
                         stick_right_side = [stick_right_side[0] + unit_point[0] - root_scale*(i-1) + curve*2, stick_right_side[1] + unit_point[1]];
                         stick_left_side = [stick_left_side[0] + unit_point[0] + unit_weigth - root_scale*(i-1) + curve*2, stick_left_side[1] + unit_point[1]];
                          
@@ -3341,15 +3408,17 @@ var RenderingView = Backbone.View.extend({
                     ctx.quadraticCurveTo(right_m[0], right_m[1], stick_right_side[0] + unit_point[0] - root_scale*(i-1), stick_right_side[1] + unit_point[1]);
                     ctx.lineTo(stick_left_side[0] + unit_point[0] + unit_weigth - root_scale*(i-1), stick_left_side[1] + unit_point[1]);
                     ctx.quadraticCurveTo(left_m[0], left_m[1], stick_left_side[0], stick_left_side[1]);
-
-                    for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + unit_point[1])*this.scale + self.translate_point[1]); root_y++){
-                        for(var root_x = ((stick_right_side[0] + unit_point[0] - root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + this.translate_point[0]); root_x--){                            
-                            var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
-                            if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
-                                self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["root_cat"];
+                    if(this.snap == 0){
+                        for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + unit_point[1])*this.scale + self.translate_point[1]); root_y++){
+                            for(var root_x = ((stick_right_side[0] + unit_point[0] - root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + this.translate_point[0]); root_x--){                            
+                                var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
+                                if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
+                                    self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["root_cat"];
+                                }
                             }
                         }
                     }
+                    
                     stick_right_side = [stick_right_side[0] + unit_point[0] - root_scale*(i-1), stick_right_side[1] + unit_point[1]];
                     stick_left_side = [stick_left_side[0] + unit_point[0] + unit_weigth - root_scale*(i-1), stick_left_side[1] + unit_point[1]];
                                 
@@ -3453,14 +3522,17 @@ var RenderingView = Backbone.View.extend({
                         ctx.lineTo(stick_left_side[0] - unit_point[0] - unit_weigth + root_scale*(i-1), stick_left_side[1] + unit_point[1]);
                         ctx.bezierCurveTo(left_m[0], left_m[1], left_m[0] - curve, left_m[1], stick_left_side[0], stick_left_side[1]);
                         // ctx.lineTo(stick_left_side[0], stick_left_side[1]);
-                        for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + unit_point[1])*this.scale + self.translate_point[1]); root_y++){
-                            for(var root_x = ((stick_right_side[0] - unit_point[0] + root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x < (stick_left_side[0]*self.scale + this.translate_point[0]); root_x++){                            
-                                var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
-                                if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
-                                    self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["root_cat"];
+                        if(this.snap == 0){
+                            for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + unit_point[1])*this.scale + self.translate_point[1]); root_y++){
+                                for(var root_x = ((stick_right_side[0] - unit_point[0] + root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x < (stick_left_side[0]*self.scale + this.translate_point[0]); root_x++){                            
+                                    var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
+                                    if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
+                                        self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["root_cat"];
+                                    }
                                 }
                             }
                         }
+                        
                         stick_right_side = [stick_right_side[0] - unit_point[0] + root_scale*(i-1), stick_right_side[1] + unit_point[1]];
                         stick_left_side = [stick_left_side[0] - unit_point[0] - unit_weigth + root_scale*(i-1), stick_left_side[1] + unit_point[1]];    
                          
@@ -3498,14 +3570,17 @@ var RenderingView = Backbone.View.extend({
                         ctx.lineTo(stick_left_side[0] - unit_point[0] - unit_weigth + root_scale*(i-1) + curve*2, stick_left_side[1] + unit_point[1]);
                         ctx.bezierCurveTo(left_m[0] + curve*2, left_m[1], left_m[0] + curve*0.5, left_m[1], stick_left_side[0], stick_left_side[1]);
                         // ctx.lineTo(stick_left_side[0], stick_left_side[1]);
-                        for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + unit_point[1])*this.scale + self.translate_point[1]); root_y++){
-                            for(var root_x = ((stick_right_side[0] - unit_point[0] + root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x < (stick_left_side[0]*self.scale + this.translate_point[0]); root_x++){                            
-                                var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
-                                if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
-                                    self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["root_cat"];
+                        if(this.snap == 0){
+                            for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + unit_point[1])*this.scale + self.translate_point[1]); root_y++){
+                                for(var root_x = ((stick_right_side[0] - unit_point[0] + root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x < (stick_left_side[0]*self.scale + this.translate_point[0]); root_x++){                            
+                                    var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
+                                    if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
+                                        self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["root_cat"];
+                                    }
                                 }
                             }
                         }
+                        
                         stick_right_side = [stick_right_side[0] - unit_point[0] + root_scale*(i-1) + curve*2, stick_right_side[1] + unit_point[1]];
                         stick_left_side = [stick_left_side[0] - unit_point[0] - unit_weigth + root_scale*(i-1) + curve*2, stick_left_side[1] + unit_point[1]];    
                          
@@ -3520,15 +3595,17 @@ var RenderingView = Backbone.View.extend({
                     ctx.quadraticCurveTo(right_m[0], right_m[1], stick_right_side[0] - unit_point[0] + root_scale*(i-1), stick_right_side[1] + unit_point[1]);
                     ctx.lineTo(stick_left_side[0] - unit_point[0] - unit_weigth + root_scale*(i-1), stick_left_side[1] + unit_point[1]);
                     ctx.quadraticCurveTo(left_m[0], left_m[1], stick_left_side[0], stick_left_side[1]);
-                    
-                    for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + unit_point[1])*this.scale + self.translate_point[1]); root_y++){
-                        for(var root_x = ((stick_right_side[0] - unit_point[0] + root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x < (stick_left_side[0]*self.scale + this.translate_point[0]); root_x++){                            
-                            var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
-                            if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
-                                self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["root_cat"];
+                    if(this.snap == 0){
+                        for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + unit_point[1])*this.scale + self.translate_point[1]); root_y++){
+                            for(var root_x = ((stick_right_side[0] - unit_point[0] + root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x < (stick_left_side[0]*self.scale + this.translate_point[0]); root_x++){                            
+                                var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
+                                if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
+                                    self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["root_cat"];
+                                }
                             }
                         }
                     }
+                    
                     stick_right_side = [stick_right_side[0] - unit_point[0] + root_scale*(i-1), stick_right_side[1] + unit_point[1]];
                     stick_left_side = [stick_left_side[0] - unit_point[0] - unit_weigth + root_scale*(i-1), stick_left_side[1] + unit_point[1]];               
                     ctx.stroke();
@@ -3681,12 +3758,42 @@ var RenderingView = Backbone.View.extend({
         ctx.arc(cx, cy, radius, 0, 2*Math.PI, true);
     },
 
-    set_tree_label: function (context, message, pos){
+    set_tree_label: function (context, message, pos, click_info){
+        var self = this;
         // var context = canvas.getContext('2d');
         // context.clearRect(0, 0, canvas.width, canvas.height);
         context.font = '78pt Calibri';
         context.fillStyle = 'black';
         context.fillText(message, pos[0], pos[1]); //pos
+
+        // create info button
+        if(this.snap == 0){
+            context.fillStyle = 'rgba(204,0,0, 0.5)';
+            context.fillRect(pos[0]+message.length*60+10, pos[1]-75, 90, 90);
+            context.fillStyle = 'black';
+            context.font = 'bold 64pt Courier';
+            context.fillText("i", pos[0]+message.length*60+30, pos[1]-5);
+
+            // for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + unit_point[1])*this.scale + self.translate_point[1]); root_y++){
+            //                 for(var root_x = ((stick_right_side[0] - unit_point[0] + root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x < (stick_left_side[0]*self.scale + this.translate_point[0]); root_x++){                            
+            //                     var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
+            //                     if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
+            //                         self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["root_cat"];
+            //                     }
+            //                 }
+            //             }
+            var box = [pos[0]+message.length*60+10, pos[1]-75];
+
+            for(var tx=(box[0]*self.scale + self.translate_point[0]); tx < ((box[0]+90)*self.scale + self.translate_point[0]); tx++){
+                for(var ty=(box[1]*self.scale + self.translate_point[1]); ty < ((box[1]+90)*self.scale + self.translate_point[1]); ty++){
+                    var clicking_point = [Math.round(tx/self.c_detail), Math.round(ty/self.c_detail)];
+                    self.clicking_grid[clicking_point[0]][clicking_point[1]] = "popup*+" + click_info;
+                }
+            }   
+        }
+             
+        // var image = document.getElementById('tree_search');
+        // context.drawImage(image, pos[0]+message.length*60+10, pos[1]-75, 100, 100);
     },
 
     set_tree_info: function(context, info, pos){
@@ -3745,6 +3852,163 @@ var RenderingView = Backbone.View.extend({
         $("#dtl_fruit_size").ionRangeSlider("update", {
             from: fruit_scale
         });
+
+    },
+
+    snapshot:function(){
+        var self = this;
+        this.context =  this.snapCanvas.getContext('2d');
+        this.snapCanvas.height = $("#snap_container").height();
+        this.snapCanvas.width = $("#snap_container").width();
+        this.snap = 1;
+        console.log("in snapshot");
+        this.stick_dx = 50;
+        this.stick_dy = 50;
+        this.sub_stick_length = 55;
+        this.sub_slop = 0;
+        console.log(tree_size);
+
+        var structure = self.model.get("tree_structure");
+        var snap_tree = self.model.get("snapshot");
+        var snap_label = snap_tree[0] + "_" + snap_tree[1];
+        var snap_width = tree_size[snap_label][1] - tree_size[snap_label][0] + 500;
+        var snap_height = tree_size[snap_label][3] - tree_size[snap_label][2] + 500;
+        
+        this.context.lineWidth = 5; // set the style
+
+        this.context.setTransform(1, 0, 0, 1, 0, 0);
+        this.context.clearRect(0, 0, this.snapCanvas.width, this.snapCanvas.height);
+        this.context.save();
+
+        var snap_scale = 1;
+        while(snap_width*snap_scale > self.snapCanvas.width || snap_height*snap_scale > self.snapCanvas.height){
+            snap_scale = Math.round((snap_scale-0.01)*100)/100;
+        }
+        // console.log("ori_boundary:", snap_width, snap_height);
+        // console.log("canvas boundary:", self.snapCanvas.width, self.snapCanvas.height);
+        // console.log("display_boundary:", snap_width*snap_scale, snap_height*snap_scale);
+        // console.log("scale:", snap_scale);
+
+        // this.snapCanvas.height = snap_height*snap_scale + 10;
+        $("#one_tree").css({'width': '100%'});
+        if(snap_width*snap_scale + 10 < this.snapCanvas.width){
+            this.snapCanvas.width = snap_width*snap_scale + 10;
+            $("#one_tree").css({'width': snap_width*snap_scale + 10});
+        }        
+
+        $("#one_tree").addClass("auto_center");
+        // $("#one_tree").css({'height': snap_height*snap_scale + 10});
+        
+        this.context.translate(0.5, 0.5);
+        this.context.scale(snap_scale, snap_scale);
+
+        var ego = structure[self.view][snap_tree[1]][snap_tree[0]];
+        // console.log(structure);
+        // console.log(snap_tree);
+        // console.log(ego);
+        var left_side = 0;
+        var right_side = 0;
+        self.total_layer = ego["left"].length;
+        self.stick_length = self.tree_tall/self.total_layer; //_dist
+        var layer_total_alter = {"right": [], "left": []};
+
+        this.start_y = this.snapCanvas.height/snap_scale - (tree_size[snap_label][3]-((this.myCanvas.height/0.15)-this.stick_length-380)) - 100; //_gly
+        // this.start_y = 2*((self.snapCanvas.height/snap_scale)-this.stick_length) - snap_height;
+
+        for(var s = 0; s < self.total_layer; s++){
+            var l = ego["left"][s]["level"]["down"].length + ego["left"][s]["level"]["up"].length;
+            var r = ego["right"][s]["level"]["down"].length + ego["right"][s]["level"]["up"].length;
+
+            layer_total_alter["right"].push(r);
+            layer_total_alter["left"].push(l);
+            left_side += l;
+            right_side += r;
+        }
+        var total_contact = left_side + right_side;
+        var stick_length = 0;
+        for(var l = 0; l < layer_total_alter["left"].length; l++){
+            var down = ego["left"][l]["level"]["down"].length + l;
+            var up = ego["left"][l]["level"]["up"].length + l;
+            if(stick_length < down && down >= up){
+                stick_length = down;
+            }
+            else if(stick_length < up && down < up){
+                stick_length = up;
+            }
+        }
+        this.start_x = ((stick_length)*this.sub_stick_length + this.x_dist); //_glx
+        // this.start_x = self.snapCanvas.width/2;
+        // this.start_y = self.snapCanvas.height;
+        console.log(this.start_x, this.start_y);
+        // total_distance += ((stick_length)*this.sub_stick_length + this.x_dist);
+        var ori_dr = right_side;
+        var ori_dl = left_side;
+        var t_scale = (right_side + left_side)/150;
+        if(right_side+left_side < 80){
+            t_scale = 0.5;
+        }
+        else{
+            if(t_scale < 1){
+                t_scale = 1;
+            }
+        }
+
+        var start_h = 0;
+        var add_h = 1;
+        var max_h = self.total_layer;
+        var mod_layer = Math.floor(8/self.total_layer);
+        var layer_slop = Math.round(100/self.total_layer)/10;
+        
+        // root
+        var root_drawing = self.model.get("leaf_switch");
+        if("root" in ego){
+            total_root = ego["root"][0];
+            if(root_drawing == 1)
+                self.draw_root(total_root, this.start_y + this.stick_length + 260, this.start_x + (ori_dr/t_scale)*1.5, this.start_x - (ori_dl/t_scale)*1.5, this.context);
+        }
+        
+        this.context.lineWidth = 5; // set the style
+        var real_height = 0;
+        // for(var height = start_h; height < max_h; height+=add_h){
+        for(var height = 0; height < self.total_layer; height++){
+            this.context.fillStyle = mapping_color.trunk;
+            this.context.strokeStyle = mapping_color.trunk;
+            this.context.beginPath();
+            
+            this.dr = (ori_dr/t_scale)*1.5;//1.5;
+            this.dl = (ori_dl/t_scale)*1.5;
+            
+            this.temp_height = 30*height; //_d
+            if(real_height == 0){
+                this.temp_height = 60;
+            }
+
+            this.extra_y = height*8*layer_slop; //control point weight for its torson
+            this.extra_x = height*8*layer_slop; //control point (constant)
+            this.sub_slop = height*10*layer_slop;
+            
+            if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || ori_dr == 0){}
+
+            else
+                this.draw_right_branch(height, layer_total_alter["right"][real_height], ego["right"][real_height]["level"]);
+
+            // draw left tree
+            this.context.fillStyle = mapping_color.trunk;
+            this.context.strokeStyle = mapping_color.trunk;
+            this.context.beginPath();
+            if((real_height == self.total_layer-1 && layer_total_alter["left"][real_height] == 0) || ori_dl == 0){}
+
+            else
+                this.draw_left_branch(height, layer_total_alter["left"][real_height], ego["left"][real_height]["level"]);
+
+            // next layer
+            ori_dr -= layer_total_alter["right"][real_height];
+            ori_dl -= layer_total_alter["left"][real_height];
+            this.start_y = this.start_y - this.stick_length - this.temp_height;
+            // this.start_x = this.start_x + 100;
+            real_height += 1;
+        }
+        this.context.restore();
 
     }
 

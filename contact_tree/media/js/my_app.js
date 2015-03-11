@@ -58,8 +58,7 @@ function resize_dialog(h, w){
     $("#block_page").css({'height': h});
     $("#block_page").css({'width': w});  
     $("#help_page").css({'height': h});
-    $("#help_page").css({'width': w});    
-    
+    $("#help_page").css({'width': w});      
 };
 
 var MyApp = function MyApp(){
@@ -73,21 +72,27 @@ var MyApp = function MyApp(){
     this.model = new Tree_Model();
     
     var myCanvas = drawing_canvas.main_canvas;
+    // var snapCanvas = drawing_canvas.snap_canvas;
+    
     myCanvas.height = $(window).height()-$("#header").height()-$("#top_list").height()-$("#footer").height()-$("#history").height()-60;
     myCanvas.width = $("#canvas_container").width();
+
     $("#block_page").css({'height': $(window).height()});
     $("#block_page").css({'width': $(window).width()});    
     $("#help_page").css({'height': $(window).height()});
     $("#help_page").css({'width': $(window).width()});  
 
-
+    $("#information_page").css({'height': myCanvas.height+5});
+    $("#information_page").css({'width': $(window).width()});
+    $("#information_page").css({'top': $("#header").height()+$("#top_list").height()+37});
+    
     // $("#help_slide").center();
 
     window.onresize = function(event) {
         // var myCanvas = drawing_canvas.main_canvas;
         myCanvas.height = $(window).height()-$("#header").height()-$("#top_list").height()-$("#footer").height()-$("#history").height()-45;
         myCanvas.width = $("#canvas_container").width();
-
+        
         var a_grid = self.model.get("canvas_grid");
         var c_detail = self.model.get("canvas_detail");
 
@@ -95,6 +100,13 @@ var MyApp = function MyApp(){
         self.model.set({"canvas_width": myCanvas.width});
         self.model.trigger('change:canvas_width');
         self.model.set({"canvas_grid": a_grid});
+        $("#information_page").css({'height': myCanvas.height+5});
+        $("#information_page").css({'width': $(window).width()});
+        $("#information_page").css({'top': $("#header").height()+$("#top_list").height()+37});
+        
+        // drawing_canvas.snap_canvas.height = $("#snap_container").height();
+        // drawing_canvas.snap_canvas.width = $("#snap_container").width();
+
         resize_dialog($(window).height(), $(window).width());
     };
 
@@ -108,7 +120,6 @@ var MyApp = function MyApp(){
             initial_grid[x][y] = -1;
         }
     }
-
     
     $("#help_link").click(function(){
         $("#help_page").show();
@@ -141,7 +152,27 @@ var MyApp = function MyApp(){
     $("#help_slide").click(function(){
         return false;
         // $("#help_link").css({'z-index': 0});     
+    });
+
+    $("#close_info").click(function(){
+        $("#information_page").hide();
+        $("#block_page").hide();
+        return false;
+        // $("#help_link").css({'z-index': 0});     
     });  
+
+    $("#close_info").hover(function(){
+        $("#close_info").css({'color': 'rgb(75, 75, 75)'});
+        return false;
+        // $("#help_link").css({'z-index': 0});     
+    });  
+    $("#close_info").mouseout(function(){
+        $("#close_info").css({'color': 'rgb(105, 105, 105)'});
+        return false;
+        // $("#help_link").css({'z-index': 0});     
+    });
+
+    
 
 
 

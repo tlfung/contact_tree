@@ -88,11 +88,9 @@
         <!-- content -->
         <div id='canvas_container' style="margin-top:15px; width:100%; position:relative; z-index: 10;">
         	<canvas id='c' style="border:1.5px solid gray; border-radius:5px; background: white;"></canvas>
-            <!-- <svg id='click_canvas' style="position:absolute; right:0px; top:0px;"></svg> -->
-            <!--  <div id="switch" class="btn-group" style="position:absolute; left:10px; top:15px;">
-                <button type="button" id="detail_btn" class="btn btn-default" value="symmetry">Detail</button>
-                <button type="button" id="abstract_btn" class="btn btn-default" value="crooked">Abstract</button>
-            </div> -->
+            <div style="display:none;">
+                <img id="tree_search" src="media/img/information_icon.png">
+            </div>
 
             <button id="tree_drawer" type="button" class="btn btn-default" style="position:absolute; right:10px; top:15px; opacity: .7">
                 <span class="glyphicon glyphicon-wrench"></span>
@@ -228,6 +226,7 @@
         </div>
     </div>
 
+
     <div id="block_page" style="position:absolute; left:0px; top:0px; z-index:125; background:rgba(128, 128, 128, 0.1); display:none;">
         <img src="media/img/loader.gif" style="height:50; margin-left:50%; margin-top:50%;"></img><br>
         <font id="loading_process" style="margin-left:50%; margin-top:50%;" color="whitesmoke"><b>Loading...</b></font>
@@ -239,6 +238,18 @@
         <img id="slide_next" src="media/img/next.png" style="position:absolute; z-index:130; top:43%; right:10; cursor:pointer;"></img>
         <!-- <span id="slide_previous" class="left glyphicon glyphicon-chevron-left" aria-hidden="true" style="z-index:150; top:50%; position:absolute; left:10;"></span>
         <span id="slide_next" class="right glyphicon glyphicon-chevron-right" aria-hidden="true" style="position:absolute; z-index:150; top:50%; right:10;"></span> -->
+    </div>
+
+    <div id="information_page" style="position:absolute; left:0px; z-index:130; background:rgb(55, 55, 55); display:none;">
+        <span id="close_info" style="position:absolute; cursor:pointer; z-index:150; right:10; top:0; font-size:32; color:rgb(105, 105, 105);">X</span>
+        <!-- <canvas id='one_tree' class='left' style="margin:15% 10 0 30; /*border:1.5px solid gray;*/ border-radius:5px; background:white; width:57%; height:70%;"></canvas> -->
+        <div id='snap_container' class='left' style="position:relative; margin:15% 10 0 30; width:57%; height:70%;">
+            <canvas id='one_tree' style="/*border:1.5px solid gray;*/ border-radius:5px; background:white; height:100%; width:100%; display:block;"></canvas>
+        </div>
+        
+        <div id='info_table' class='left' style="z-index:150; margin:15% 0; border-left:2.5px solid; max-height:70%; overflow-y:auto; width:38%; height:70%; padding-right:10px;">
+            
+        </div>
     </div>
 
     <!-- popup window -->

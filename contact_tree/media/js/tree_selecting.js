@@ -127,6 +127,20 @@ var SelectingView = Backbone.View.extend({
         });
 
         $("#egogroup").change(function(){
+            self.model.set({"moving": 0});
+            // console.log("on menu dialog before:", self.model.get("display_egos"));
+            self.model.set({"selected_egos": {}});
+            self.model.set({"display_egos": {}});
+            self.model.set({"tree_structure":{}});
+            
+            self.my_ego_selected = {};
+            self.my_ego_display = {};
+            attribute_mapping = {};
+
+            self.model.set({"canvas_translate": [0, 0]});
+            self.model.set({"canvas_scale": 0.15});
+            self.model.trigger('change:display_egos');
+            
             var data_selected = $("#dataselect").val();
             var ego_group = $("#egogroup").val();
             
@@ -246,6 +260,8 @@ var SelectingView = Backbone.View.extend({
 
             var requst = now_attr + ":-" + self.my_ego + ":-" + now_mode + ":-" + JSON.stringify(attribute_mapping);
             self.model.update_data(requst);
+
+            
             // button click event
             $("#submit_ego").click(function(){ // store selecting data
                 this.my_ego_selected = self.model.get("selected_egos");

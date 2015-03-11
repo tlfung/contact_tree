@@ -33,6 +33,7 @@ var ZoomView = Backbone.View.extend({
 
     set_mouse_event: function(){
         var self = this;
+
         self.myCanvas.addEventListener('mousewheel', function(evt) {
             self.model.set({"moving": 1});
             self.translate = self.model.get("canvas_translate");
@@ -165,6 +166,36 @@ var ZoomView = Backbone.View.extend({
                     else if(self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[0] == "root"){
                         // console.log("-----leaf id:", self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("+").pop());
                         self.writeNote(Math.round(mousePos.x), Math.round(mousePos.y), self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1]);
+                    }
+                    else if(self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[0] == "popup"){
+                        // var table = self.model.get("view_mode");
+                        var ego = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1].split(":-")[0]
+                        var sub = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1].split(":-")[1]
+                        // var attr_map = self.model.get("attribute");
+                        $("#information_page").show();
+                        $("#block_page").show();
+                        self.model.set({"snapshot": [ego, sub]});
+                        self.model.trigger('change:snapshot');
+                        /*
+                        d3.json(request_url, function(result) {
+                            console.log("in model.query_author_list");
+                            set_list(result);
+
+                            $("#sub_selection").empty();
+                            if(total_ego["DBLP"].length == 0){
+                                alert("Do not have enough information in database of this author!");
+                            }
+                            else{
+                                for(var c = 0; c < total_ego["DBLP"].length; c++){
+                                    $("#sub_selection").append('<div><label><input class="myfont3 au_checkbox" name="author_selection" type="radio" id="' + c + '" value="' + total_ego["DBLP"][c] +'" style="margin-right:5px;">' + total_ego["DBLP"][c] + '</label></div>');
+                                }
+                            }
+                            
+                            var d = self.get("done_query_list");
+                            self.set({"done_query_list": d+1});
+
+                        });
+                        */
                     }
                     else{
                         var index = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("_");

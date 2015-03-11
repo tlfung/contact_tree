@@ -8,6 +8,7 @@ var Tree_Model = Backbone.Model.extend({
 	    canvas_scale: 0.15,
 	    canvas_translate: [0, 0],
 	    done_query: [],
+	    snapshot: [],
 	    // now_query: " ",
 	    done_query_list: 0, // use for query author
 
