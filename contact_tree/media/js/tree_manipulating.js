@@ -168,34 +168,48 @@ var ZoomView = Backbone.View.extend({
                         self.writeNote(Math.round(mousePos.x), Math.round(mousePos.y), self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1]);
                     }
                     else if(self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[0] == "popup"){
-                        // var table = self.model.get("view_mode");
+                        var table = self.model.get("view_mode");
                         var ego = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1].split(":-")[0]
                         var sub = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1].split(":-")[1]
-                        // var attr_map = self.model.get("attribute");
+                        var attr_map = self.model.get("attribute");
                         $("#information_page").show();
                         $("#block_page").show();
                         self.model.set({"snapshot": [ego, sub]});
                         self.model.trigger('change:snapshot');
-                        /*
-                        d3.json(request_url, function(result) {
-                            console.log("in model.query_author_list");
-                            set_list(result);
-
-                            $("#sub_selection").empty();
-                            if(total_ego["DBLP"].length == 0){
-                                alert("Do not have enough information in database of this author!");
-                            }
-                            else{
-                                for(var c = 0; c < total_ego["DBLP"].length; c++){
-                                    $("#sub_selection").append('<div><label><input class="myfont3 au_checkbox" name="author_selection" type="radio" id="' + c + '" value="' + total_ego["DBLP"][c] +'" style="margin-right:5px;">' + total_ego["DBLP"][c] + '</label></div>');
+                        
+                        $("#info_title").html("EGO" + ego + "(" + sub + ")");;
+                        var list_table = function(data){
+                            // console.log("table:", data);
+                            $("#raw_data_table").empty();
+                            var table_container = document.getElementById("raw_data_table");
+                            for(var r = 0; r < data.length; r++){
+                                var row = document.createElement("tr");
+                                row.id = data[r][0];
+                                if(r == 0){
+                                    row.setAttribute('style', 'background:rgb(175, 175, 175)');
                                 }
+                                if(r == 1){
+                                    row.setAttribute('style', 'background:rgb(205, 205, 205)');
+                                }
+                                for(var c = 1; c < data[r].length; c++){
+                                    var column = document.createElement("td");
+                                    if(r < 2)
+                                        column.innerHTML = "<b>" + data[r][c] + "</b>";
+                                    else
+                                        column.innerHTML = data[r][c];
+                                    row.appendChild(column);
+                                }
+                                table_container.appendChild(row);
                             }
-                            
-                            var d = self.get("done_query_list");
-                            self.set({"done_query_list": d+1});
-
+                           
+                        };
+                        
+                        var request_url = "fetch_data/?ego="+table+":-"+ego+":-"+sub+":="+JSON.stringify(attr_map);
+                        
+                        d3.json(request_url, function(result) {
+                            list_table(result);
                         });
-                        */
+                        
                     }
                     else{
                         var index = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("_");

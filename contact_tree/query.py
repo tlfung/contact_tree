@@ -3006,6 +3006,60 @@ def create_diary_structure(attr, data):
     #print structure
     return structure
 
+
+def fetch_data(request):
+    raw_data = []
+    db = DB()
+    # table = request.GET.get('contact')
+    # print request.GET['contact']
+    if request.GET.get('ego'):
+        attr = json.loads(request.GET.get('ego').split(":=")[1])
+        ego_info = request.GET.get('ego').split(":=")[0].split(":-")
+        table = ego_info[0]
+        ego = ego_info[1]
+        sub = ego_info[2]
+        column_name = ["row_id"]
+        column_map = ["row_id"]
+
+
+        query_string = 'SELECT '
+        
+        for a in attr:
+            if attr[a] != 'none':
+                column_map.append(a)
+                column_name.append(attr[a])
+                query_string += "`" + attr[a] + '`, '
+        
+        raw_data = [column_map, column_name]
+        
+        if sub == 'all':
+            query_string = query_string[:-2] + ' FROM ' + table + ' WHERE egoid="' + str(ego) + '";'
+        else:
+            query_string = query_string[:-2] + ' FROM ' + table + ' WHERE egoid="' + str(ego) + '" AND dataset="' + str(sub) + '";'
+            
+        
+        print query_string
+        cur = db.query(query_string)
+        
+        all_data = cur.fetchall()
+        
+        for data_row in all_data:
+            row = []
+            row.append(data_row['alterid'])
+            for a in attr:
+                if attr[a] != 'none':
+                    row.append(data_row[attr[a]])
+            
+            raw_data.append(row)
+            
+    else:
+        raise Http404
+    
+    return_json = simplejson.dumps(raw_data, indent=4, use_decimal=True)
+    # print return_json
+    return HttpResponse(return_json)
+
+
 ############################################################ utility function ############################################################################
 def is_empty(any_structure):
     if any_structure:

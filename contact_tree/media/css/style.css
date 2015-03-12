@@ -38,6 +38,10 @@ a:focus{ outline: none; }
     text-align: center;
 }
 
+table, th, td {
+  border: 1px solid gray;
+}
+
 .clear,.clearer {clear: both;}
 .clearer {
   display: block;
@@ -153,8 +157,6 @@ a:focus{ outline: none; }
   text-align: center;
 }
 
-
-.mapping_selection:
 
 ::-webkit-scrollbar {
     width: 12px;

@@ -241,6 +241,7 @@
     </div>
 
     <div id="information_page" style="position:absolute; left:0px; z-index:130; background:rgb(55, 55, 55); display:none;">
+        <span id="info_title" style="position:absolute; z-index:150; left:10; top:0; font-size:32; color:rgb(105, 105, 105);"></span>
         <span id="close_info" style="position:absolute; cursor:pointer; z-index:150; right:10; top:0; font-size:32; color:rgb(105, 105, 105);">X</span>
         <!-- <canvas id='one_tree' class='left' style="margin:15% 10 0 30; /*border:1.5px solid gray;*/ border-radius:5px; background:white; width:57%; height:70%;"></canvas> -->
         <div id='snap_container' class='left' style="position:relative; margin:15% 10 0 30; width:57%; height:70%;">
@@ -248,7 +249,18 @@
         </div>
         
         <div id='info_table' class='left' style="z-index:150; margin:15% 0; border-left:2.5px solid; max-height:70%; overflow-y:auto; width:38%; height:70%; padding-right:10px;">
-            
+            <div id="data_info_box" class='config' style="opacity:1; width:100%; height:initial; margin-left:10px; position:inherit; display:table;">
+                <ul>
+                    <li><a href="#data_table" style="height:24px; font-size:12;">Table</a></li>
+                    <li><a href="#data_chart" style="height:24px; font-size:12;">Chart</a></li>
+                    <!-- <li><a href="#abt_tabs-3" style="height:24px; font-size:12;">View</a></li> -->
+                </ul>
+                <div id="data_table">
+                    <table id="raw_data_table" style="width:100%"></table>
+                </div>
+                <div id="data_chart">
+                </div> 
+            </div>
         </div>
     </div>
 

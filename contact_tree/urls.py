@@ -22,7 +22,8 @@ urlpatterns = patterns('',
     (r'^collecting_data/$', query.create_csv2database),
     (r'^update_binary/$', query.update_binary),
     (r'^update_layer/$', query.update_layer),
-    (r'^update_structure/$', query.restructure)
+    (r'^update_structure/$', query.restructure),
+    (r'^fetch_data/$', query.fetch_data)
     # (r'^set_attr/$', query.change_attr)
     # (r'^testing/$', query.test)
 )

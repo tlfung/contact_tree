@@ -74,7 +74,7 @@ var MyApp = function MyApp(){
     var myCanvas = drawing_canvas.main_canvas;
     // var snapCanvas = drawing_canvas.snap_canvas;
     
-    myCanvas.height = $(window).height()-$("#header").height()-$("#top_list").height()-$("#footer").height()-$("#history").height()-60;
+    myCanvas.height = $(window).height()-$("#header").height()-$("#top_list").height()-$("#footer").height()-$("#history").height()-45;
     myCanvas.width = $("#canvas_container").width();
 
     $("#block_page").css({'height': $(window).height()});
@@ -172,7 +172,7 @@ var MyApp = function MyApp(){
         // $("#help_link").css({'z-index': 0});     
     });
 
-    
+    $("#data_info_box").tabs();
 
 
 

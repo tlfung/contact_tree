@@ -3866,7 +3866,7 @@ var RenderingView = Backbone.View.extend({
         this.stick_dy = 50;
         this.sub_stick_length = 55;
         this.sub_slop = 0;
-        console.log(tree_size);
+        // console.log(tree_size);
 
         var structure = self.model.get("tree_structure");
         var snap_tree = self.model.get("snapshot");
@@ -3937,10 +3937,7 @@ var RenderingView = Backbone.View.extend({
             }
         }
         this.start_x = ((stick_length)*this.sub_stick_length + this.x_dist); //_glx
-        // this.start_x = self.snapCanvas.width/2;
-        // this.start_y = self.snapCanvas.height;
-        console.log(this.start_x, this.start_y);
-        // total_distance += ((stick_length)*this.sub_stick_length + this.x_dist);
+        
         var ori_dr = right_side;
         var ori_dl = left_side;
         var t_scale = (right_side + left_side)/150;
