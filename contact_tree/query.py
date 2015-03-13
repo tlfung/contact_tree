@@ -3013,8 +3013,9 @@ def fetch_data(request):
     # table = request.GET.get('contact')
     # print request.GET['contact']
     if request.GET.get('ego'):
-        attr = json.loads(request.GET.get('ego').split(":=")[1])
-        ego_info = request.GET.get('ego').split(":=")[0].split(":-")
+        all_info = request.GET.get('ego').split(":=")
+        attr = json.loads(all_info[1])
+        ego_info = all_info[0].split(":-")
         table = ego_info[0]
         ego = ego_info[1]
         sub = ego_info[2]
@@ -3031,11 +3032,26 @@ def fetch_data(request):
                 query_string += "`" + attr[a] + '`, '
         
         raw_data = [column_map, column_name]
-        
-        if sub == 'all':
-            query_string = query_string[:-2] + ' FROM ' + table + ' WHERE egoid="' + str(ego) + '";'
+        if len(all_info) < 3:
+            if sub == 'all':
+                query_string = query_string[:-2] + ' FROM ' + table + ' WHERE egoid="' + str(ego) + '";'
+            else:
+                query_string = query_string[:-2] + ' FROM ' + table + ' WHERE egoid="' + str(ego) + '" AND dataset="' + str(sub) + '";'
         else:
-            query_string = query_string[:-2] + ' FROM ' + table + ' WHERE egoid="' + str(ego) + '" AND dataset="' + str(sub) + '";'
+            alter = json.loads(all_info[2])
+            # 10009#up#r#0
+            bs = 1 #up
+            ts = 0 #left
+            print ">>>>>>>>", alter
+            if alter[1] == 'down':
+                bs = 0
+            if alter[2] == 'r':
+                ts = 1
+
+            if sub == 'all':
+                query_string = query_string[:-2] + ' FROM ' + table + ' WHERE egoid="' + str(ego) + '" AND alterid="' + str(alter[0]) + '" AND ctree_trunk="' + str(ts) + '" AND ctree_branch="' + str(alter[3]) + '" AND ctree_bside="' + str(bs) + '";'
+            else:
+                query_string = query_string[:-2] + ' FROM ' + table + ' WHERE egoid="' + str(ego) + '" AND dataset="' + str(sub) + '" AND alterid="' + str(alter[0]) + '" AND ctree_trunk="' + str(ts) + '" AND ctree_branch="' + str(alter[3]) + '" AND ctree_bside="' + str(bs) + '";'
             
         
         print query_string

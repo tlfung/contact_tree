@@ -40,6 +40,7 @@ var Tree_Model = Backbone.Model.extend({
 	    // abt_branch_curve: 1,
 
 	    canvas_grid: [],
+	    snap_grid: [],
 	    info_table: {},
 	    canvas_detail: 1.5,
 

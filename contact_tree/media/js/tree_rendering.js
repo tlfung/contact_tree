@@ -43,6 +43,7 @@ var RenderingView = Backbone.View.extend({
         // this.snap_context =  this.snapCanvas.getContext('2d');
 
         this.scale = self.model.get("canvas_scale");
+        this.snap_scale = 1;
         this.translate_point = self.model.get("canvas_translate");
 
         this.start_x = (1000/this.scale)/2; //_glx
@@ -80,13 +81,15 @@ var RenderingView = Backbone.View.extend({
         this.last_dl = 0;
 
         this.clicking_grid = initial_grid;
+        this.snaping_grid = initial_grid;
         this.subyear = 2014;
         this.hash_table = self.model.get("info_table");
         this.leaf_hovor = self.model.get("clicking_leaf");
-        this.c_detail = 10*this.scale;
+        this.c_detail = 11*this.scale;
         this.on_moving = 0;
         this.ego_label = "";
         this.snap = 0;
+        this.snap_info = "";
     },
 
     redraw: function(){
@@ -101,6 +104,7 @@ var RenderingView = Backbone.View.extend({
         this.view = self.model.get("view_mode");
         this.group = self.model.get("dataset_group");
         this.clicking_grid = initial_grid;
+
         this.translate_point = self.model.get("canvas_translate");
         this.c_detail = 11*this.scale;
 
@@ -1427,7 +1431,6 @@ var RenderingView = Backbone.View.extend({
         var canvas_x_boundary = [-this.translate_point[0]/this.scale, (self.myCanvas.width - this.translate_point[0]) / this.scale ];
         var canvas_y_boundary = [-this.translate_point[1]/this.scale, (self.myCanvas.height - this.translate_point[1]) / self.scale ];
 
-        tree_size = {};
         // for each ego tree
         var total_distance = 0;
         for(var e in display_ego){
@@ -1572,7 +1575,10 @@ var RenderingView = Backbone.View.extend({
 
                 if(self.snap == 0){
                     self.ego_label = e + "_" + sub;
-                    tree_size[self.ego_label] = [canvas_x_boundary[1], canvas_x_boundary[0], canvas_y_boundary[1], (this.myCanvas.height/0.15)];
+                    if(self.ego_label in tree_size){}
+                    else{
+                        tree_size[self.ego_label] = [canvas_x_boundary[1], canvas_x_boundary[0], canvas_y_boundary[1], this.start_y + this.stick_length + 300, "none", this.start_y];
+                    }                        
                 }
                 
                 var start_h = 0;
@@ -1597,9 +1603,11 @@ var RenderingView = Backbone.View.extend({
                 
                 this.context.lineWidth = 5; // set the style
                 var real_height = 0;
+                var has_snap = 1;
                 // for(var height = start_h; height < max_h; height+=add_h){
                 for(var height = 0; height < self.total_layer; height++){
-                    if(this.start_y + this.stick_length + this.temp_height < canvas_y_boundary[0]){
+                    if(this.start_y + this.stick_length + this.temp_height < canvas_y_boundary[0] && tree_size[self.ego_label][4] != "none"){
+                        // has_snap = 0;
                         break;
                     }
                     if(this.start_y - (this.stick_length + this.temp_height)*5 > canvas_y_boundary[1]){
@@ -1662,8 +1670,9 @@ var RenderingView = Backbone.View.extend({
                     real_height += 1;
                 }
                 // this.x_dist*this.scale
+                tree_size[self.ego_label][4] = this.start_x;
 
-                this.set_tree_label(this.context, msg, pos, click_info);
+                this.set_tree_label(this.context, msg, pos, click_info, has_snap);
                 this.set_tree_info(this.context, info_box, info_pos);
                 
                 this.start_x += ((stick_length)*this.sub_stick_length + this.x_dist); //_glx
@@ -1917,7 +1926,7 @@ var RenderingView = Backbone.View.extend({
             var point_in_canvas = [ (tree_rstpoint[begin_index[long_stick][0]]*this.scale) + this.translate_point[0], (tree_rstpoint[begin_index[long_stick][1]]*this.scale) + this.translate_point[1]];
             var stick_vector = [extra_slope[long_stick][0]/stick_len, extra_slope[long_stick][1]/stick_len];
             
-            var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"] + "#" + long_stick;
+            var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"] + "#" + long_stick + "#r#" + layer;
             
             /*
             // var hash = alters[long_stick][n]["id"]
@@ -1960,9 +1969,20 @@ var RenderingView = Backbone.View.extend({
                     }
                 }
             }
+            else{
+                this.snap_info = alters[long_stick][n]["id"] + "#" + long_stick + "#r#" + layer;
+                if(!jQuery.isEmptyObject(alters[long_stick][n])){
+                    for(var i = 0; i < Math.round(stick_len*this.snap_scale); i++){
+                        var p_index = [Math.round(tree_rstpoint[begin_index[long_stick][0]]*this.snap_scale), Math.round(tree_rstpoint[begin_index[long_stick][1]]*this.snap_scale)];
+                        // if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
+                        //     // console.log(p_index[0], p_index[1])
+                        this.snaping_grid[p_index[0]][p_index[1]] = this.snap_info;
+                        // }
+                    }
+                }
+                
+            }
             
-            
-
             // change to vector later
             var up_line = this.find_line(tree_rstpoint[begin_index["up"][0]]+extra_slope["up"][0], tree_rstpoint[begin_index["up"][1]]+extra_slope["up"][1], stick_m["up"]);
             var down_line = this.find_line(tree_rstpoint[begin_index["down"][0]]+extra_slope["down"][0], tree_rstpoint[begin_index["down"][1]]+extra_slope["down"][1], stick_m["down"]);
@@ -1979,7 +1999,7 @@ var RenderingView = Backbone.View.extend({
             sub_total_leaf += stick_leaf;
 
             if(!jQuery.isEmptyObject(alters[long_stick][n])){
-                var hash_index_id = alters[long_stick][n]["id"] + "#" + long_stick;
+                var hash_index_id = alters[long_stick][n]["id"] + "#" + long_stick + "#r#" + layer;
                 if(this.subyear in this.hash_table){
                     this.hash_table[this.subyear][hash_index_id] = [alters[long_stick][n]["id"], stick_leaf, alters[long_stick][n]["fruit"], layer+1, long_stick];
                     
@@ -2046,7 +2066,7 @@ var RenderingView = Backbone.View.extend({
                 var stick_len = Math.sqrt( Math.pow(extra_slope[short_stick][0],2) + Math.pow(extra_slope[short_stick][1],2) );
                 var point_in_canvas = [ (tree_rstpoint[begin_index[short_stick][0]]*this.scale) + this.translate_point[0], (tree_rstpoint[begin_index[short_stick][1]]*this.scale) + this.translate_point[1]];
                 var stick_vector = [extra_slope[short_stick][0]/stick_len, extra_slope[short_stick][1]/stick_len];
-                var set_alter_id = this.subyear + "_" + alters[short_stick][count_short_stick]["id"] + "#" + short_stick;
+                var set_alter_id = this.subyear + "_" + alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#r#" + layer;
                 /*
                 // var hash = alters[short_stick][n]["id"]
                 if(self.view == "inter"){
@@ -2067,8 +2087,18 @@ var RenderingView = Backbone.View.extend({
                         } 
                     }
                 }
+                else{
+                    this.snap_info = alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#r#" + layer;
+                    if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
+                        for(var i = 0; i < Math.round(stick_len*this.snap_scale); i++){
+                            var p_index = [Math.round(tree_rstpoint[begin_index[short_stick][0]]*this.snap_scale), Math.round(tree_rstpoint[begin_index[short_stick][0]]*this.snap_scale)];
+                            // if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
+                            this.snaping_grid[p_index[0]][p_index[1]] = this.snap_info;
+                            // }
+                        } 
+                    }                    
+                }
                 
-                 
 
                 start_point = [ tree_rstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_rstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1] ];
                 // sub_total_leaf += this.draw_right_leaf(short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
@@ -2079,7 +2109,7 @@ var RenderingView = Backbone.View.extend({
                 sub_total_leaf += stick_leaf;
 
                 if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                    var hash_index_id = alters[short_stick][count_short_stick]["id"] + "#" + short_stick;
+                    var hash_index_id = alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#r#" + layer;
                     if(this.subyear in this.hash_table){
                         this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
                         
@@ -2204,13 +2234,14 @@ var RenderingView = Backbone.View.extend({
                     this.context.lineWidth = 5;
                     tree_rstpoint[2] = tree_rstpoint[0];
                     tree_rstpoint[3] = tree_rstpoint[1];
+                    /*
                     if(self.snap == 0){
                         if(tree_rstpoint[0] > tree_size[self.ego_label][1])
                             tree_size[self.ego_label][1] = tree_rstpoint[0];
                         if(tree_rstpoint[1] < tree_size[self.ego_label][2])
                             tree_size[self.ego_label][2] = tree_rstpoint[1];
                     }
-                    
+                    */
                 }                 
                                 
             }
@@ -2414,7 +2445,7 @@ var RenderingView = Backbone.View.extend({
             var stick_len = Math.sqrt( Math.pow(extra_slope[long_stick][0],2) + Math.pow(extra_slope[long_stick][1],2) );
             var point_in_canvas = [ (tree_lstpoint[begin_index[long_stick][0]]*this.scale) + this.translate_point[0], (tree_lstpoint[begin_index[long_stick][1]]*this.scale) + this.translate_point[1]];
             var stick_vector = [extra_slope[long_stick][0]/stick_len, extra_slope[long_stick][1]/stick_len];
-            var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"] + "#" + long_stick;
+            var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"] + "#" + long_stick + "#l#" + layer;
             /*
             // var hash = alters[long_stick][n]["id"]
             if(self.view == "inter")
@@ -2433,8 +2464,18 @@ var RenderingView = Backbone.View.extend({
                     }
                 }
             }
-            
-            
+            else{
+                this.snap_info = alters[long_stick][n]["id"] + "#" + long_stick + "#l#" + layer;
+                if(!jQuery.isEmptyObject(alters[long_stick][n])){
+                    for(var i = 0; i < Math.round(stick_len*this.snap_scale); i++){
+                        var p_index = [Math.round(tree_lstpoint[begin_index[long_stick][0]]*this.snap_scale), Math.round(tree_lstpoint[begin_index[long_stick][1]]*this.snap_scale)];
+                        // if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
+                        //     // console.log(p_index[0], p_index[1])
+                        this.snaping_grid[p_index[0]][p_index[1]] = this.snap_info;
+                        // }
+                    }
+                }                
+            }
 
             var up_line = this.find_line(tree_lstpoint[begin_index["up"][0]]+extra_slope["up"][0], tree_lstpoint[begin_index["up"][1]]+extra_slope["up"][1], stick_m["up"]);
             var down_line = this.find_line(tree_lstpoint[begin_index["down"][0]]+extra_slope["down"][0], tree_lstpoint[begin_index["down"][1]]+extra_slope["down"][1], stick_m["down"]);
@@ -2451,7 +2492,7 @@ var RenderingView = Backbone.View.extend({
             sub_total_leaf += stick_leaf;
 
             if(!jQuery.isEmptyObject(alters[long_stick][n])){
-                var hash_index_id = alters[long_stick][n]["id"] + "#" + long_stick;
+                var hash_index_id = alters[long_stick][n]["id"] + "#" + long_stick + "#l#" + layer;
                 
                 if(this.subyear in this.hash_table){
                     this.hash_table[this.subyear][hash_index_id] = [alters[long_stick][n]["id"], stick_leaf, alters[long_stick][n]["fruit"], layer+1, long_stick];
@@ -2534,7 +2575,7 @@ var RenderingView = Backbone.View.extend({
                 var stick_len = Math.sqrt( Math.pow(extra_slope[short_stick][0],2) + Math.pow(extra_slope[short_stick][1],2) );
                 var point_in_canvas = [ (tree_lstpoint[begin_index[short_stick][0]]*this.scale) + this.translate_point[0], (tree_lstpoint[begin_index[short_stick][1]]*this.scale) + this.translate_point[1]];
                 var stick_vector = [extra_slope[short_stick][0]/stick_len, extra_slope[short_stick][1]/stick_len];
-                var set_alter_id = this.subyear + "_" + alters[short_stick][count_short_stick]["id"] + "#" + short_stick;
+                var set_alter_id = this.subyear + "_" + alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#l#" + layer;
                 /*
                 // var hash = alters[short_stick][n]["id"]
                 if(self.view == "inter")
@@ -2552,7 +2593,19 @@ var RenderingView = Backbone.View.extend({
                         }
                     }
                 }
-                
+
+                else{
+                    this.snap_info = alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#l#" + layer;
+                    if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
+                        for(var i = 0; i < Math.round(stick_len*this.snap_scale); i++){
+                            var p_index = [Math.round(tree_lstpoint[begin_index[short_stick][0]]*this.snap_scale), Math.round(tree_lstpoint[begin_index[short_stick][1]]*this.snap_scale)];
+                            // if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
+                            //     // console.log(p_index[0], p_index[1])
+                            this.snaping_grid[p_index[0]][p_index[1]] = this.snap_info;
+                            // }
+                        }
+                    }                
+                }               
                 
 
                 start_point = [ tree_lstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_lstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1] ];
@@ -2565,7 +2618,7 @@ var RenderingView = Backbone.View.extend({
                 sub_total_leaf += stick_leaf;
 
                 if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                    var hash_index_id = alters[short_stick][count_short_stick]["id"] + "#" + short_stick;                    
+                    var hash_index_id = alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#l#" + layer;                    
                     if(this.subyear in this.hash_table){
                         this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
                         // if(hash_index_id in this.hash_table[this.subyear]){}
@@ -2685,12 +2738,14 @@ var RenderingView = Backbone.View.extend({
                     this.context.lineWidth = 5;
                     tree_lstpoint[2] = tree_lstpoint[0];
                     tree_lstpoint[3] = tree_lstpoint[1];
+                    /*
                     if(self.snap == 0){
                         if(tree_lstpoint[0] < tree_size[self.ego_label][0])
                             tree_size[self.ego_label][0] = tree_lstpoint[0];
                         if(tree_lstpoint[1] < tree_size[self.ego_label][2])
                             tree_size[self.ego_label][2] = tree_lstpoint[1];
                     }
+                    */
                     
                 }
                
@@ -2850,9 +2905,21 @@ var RenderingView = Backbone.View.extend({
                                 }
                                 
                             }
-                        }                        
+                        }
+                        else{
+                            for(var leaf_x = 0; leaf_x < 2.5*radius*this.snap_scale; leaf_x++){
+                                for(var leaf_y = -radius*this.snap_scale*0.25; leaf_y < radius*this.snap_scale*0.25; leaf_y++){
+                                    // x = xcos - ysin, y = ycos + xsin
+                                    var real_x = (point_x*this.snap_scale) + (leaf_x*Math.cos(angle) - leaf_y*Math.sin(angle));
+                                    var real_y = (point_y*this.snap_scale) + (leaf_y*Math.cos(angle) + leaf_x*Math.sin(angle));
+                                    this.snaping_grid[Math.round(real_x)][Math.round(real_y)] = self.snap_info;
+                                }
+                                
+                            }
+                        }
+
                         this.leaf_style_1(this.context, point_x, point_y, radius, color, angle, leaf_id);
-                                                
+
                     }
                     else{
                         angle = angle - (Math.PI/4);
@@ -2877,10 +2944,32 @@ var RenderingView = Backbone.View.extend({
                                 
                             }
                         }
+
+                        else{
+                            for(var leaf_x = 0; leaf_x < 2.5*radius*this.scale; leaf_x++){
+                                for(var leaf_y = -radius*this.scale*0.5; leaf_y < radius*this.scale*0.5; leaf_y++){
+                                    // x = xcos - ysin, y = ycos + xsin
+                                    var real_x = (point_x*this.snap_scale) + (leaf_x*Math.cos(angle) - leaf_y*Math.sin(angle));
+                                    var real_y = (point_y*this.snap_scale) + (leaf_y*Math.cos(angle) + leaf_x*Math.sin(angle));
+                                    this.snaping_grid[Math.round(real_x)][Math.round(real_y)] = self.snap_info;
+                                }
+                                
+                            }
+                        }
                         
                         this.leaf_style_1(this.context, point_x, point_y, radius, color, angle, leaf_id);
                         
                     }
+
+                    if(tree_size[self.ego_label][4] == "none"){
+                        if(point_x > tree_size[self.ego_label][1])
+                            tree_size[self.ego_label][1] = point_x;
+                        if(point_x < tree_size[self.ego_label][0])
+                            tree_size[self.ego_label][0] = point_x;
+                        if(point_y < tree_size[self.ego_label][2])
+                            tree_size[self.ego_label][2] = point_y;
+                    }
+
 
                     if(h>0){
                         if(h==1){
@@ -2934,6 +3023,14 @@ var RenderingView = Backbone.View.extend({
                             }
                         }
                     }
+                    else{
+                        for(var i = 0; i < Math.round(20*len_scale*this.snap_scale); i++){
+                            var p_index = [Math.round(p[0]*this.snap_scale), Math.round(p[1]*this.snap_scale)];
+                            // if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
+                            this.snaping_grid[p_index[0]][p_index[1]] = self.snap_info;
+                            // }
+                        }
+                    }
                     
                 }
                 else if(sub%3==1){
@@ -2955,6 +3052,12 @@ var RenderingView = Backbone.View.extend({
                             if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
                                 this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
                             }
+                        } 
+                    }
+                    else{
+                        for(var i = 0; i < Math.round(13*len_scale*this.snap_scale); i++){
+                            var p_index = [Math.round(p[0]*this.snap_scale), Math.round(p[1]*this.snap_scale)];
+                            this.snaping_grid[p_index[0]][p_index[1]] = self.snap_info;
                         } 
                     }
                     
@@ -3758,7 +3861,7 @@ var RenderingView = Backbone.View.extend({
         ctx.arc(cx, cy, radius, 0, 2*Math.PI, true);
     },
 
-    set_tree_label: function (context, message, pos, click_info){
+    set_tree_label: function (context, message, pos, click_info, has_snap){
         var self = this;
         // var context = canvas.getContext('2d');
         // context.clearRect(0, 0, canvas.width, canvas.height);
@@ -3767,7 +3870,7 @@ var RenderingView = Backbone.View.extend({
         context.fillText(message, pos[0], pos[1]); //pos
 
         // create info button
-        if(this.snap == 0){
+        if(this.snap == 0 && has_snap == 1){
             context.fillStyle = 'rgba(204,0,0, 0.5)';
             context.fillRect(pos[0]+message.length*60+10, pos[1]-75, 90, 90);
             context.fillStyle = 'black';
@@ -3787,7 +3890,8 @@ var RenderingView = Backbone.View.extend({
             for(var tx=(box[0]*self.scale + self.translate_point[0]); tx < ((box[0]+90)*self.scale + self.translate_point[0]); tx++){
                 for(var ty=(box[1]*self.scale + self.translate_point[1]); ty < ((box[1]+90)*self.scale + self.translate_point[1]); ty++){
                     var clicking_point = [Math.round(tx/self.c_detail), Math.round(ty/self.c_detail)];
-                    self.clicking_grid[clicking_point[0]][clicking_point[1]] = "popup*+" + click_info;
+                    if(clicking_point[0] >= 0 && clicking_point[0] <= this.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= this.myCanvas.height/self.c_detail)
+                        self.clicking_grid[clicking_point[0]][clicking_point[1]] = "popup*+" + click_info;
                 }
             }   
         }
@@ -3867,12 +3971,13 @@ var RenderingView = Backbone.View.extend({
         this.sub_stick_length = 55;
         this.sub_slop = 0;
         // console.log(tree_size);
+        this.snaping_grid = initial_grid;
 
         var structure = self.model.get("tree_structure");
         var snap_tree = self.model.get("snapshot");
-        var snap_label = snap_tree[0] + "_" + snap_tree[1];
-        var snap_width = tree_size[snap_label][1] - tree_size[snap_label][0] + 500;
-        var snap_height = tree_size[snap_label][3] - tree_size[snap_label][2] + 500;
+        this.ego_label = snap_tree[0] + "_" + snap_tree[1];
+        var snap_width = tree_size[this.ego_label][1] - tree_size[this.ego_label][0] + 300;
+        var snap_height = tree_size[this.ego_label][3] - tree_size[this.ego_label][2] + 300;
         
         this.context.lineWidth = 5; // set the style
 
@@ -3880,27 +3985,35 @@ var RenderingView = Backbone.View.extend({
         this.context.clearRect(0, 0, this.snapCanvas.width, this.snapCanvas.height);
         this.context.save();
 
-        var snap_scale = 1;
-        while(snap_width*snap_scale > self.snapCanvas.width || snap_height*snap_scale > self.snapCanvas.height){
-            snap_scale = Math.round((snap_scale-0.01)*100)/100;
+        this.snap_scale = 1;
+        while(snap_width*this.snap_scale > self.snapCanvas.width || snap_height*this.snap_scale > self.snapCanvas.height){
+            this.snap_scale = Math.round((this.snap_scale-0.01)*100)/100;
         }
+
         // console.log("ori_boundary:", snap_width, snap_height);
         // console.log("canvas boundary:", self.snapCanvas.width, self.snapCanvas.height);
-        // console.log("display_boundary:", snap_width*snap_scale, snap_height*snap_scale);
-        // console.log("scale:", snap_scale);
+        // console.log("display_boundary:", snap_width*this.snap_scale, snap_height*this.snap_scale);
+        // console.log("scale:", this.snap_scale);
 
-        // this.snapCanvas.height = snap_height*snap_scale + 10;
+        // this.snapCanvas.height = snap_height*this.snap_scale + 10;
         $("#one_tree").css({'width': '100%'});
-        if(snap_width*snap_scale + 10 < this.snapCanvas.width){
-            this.snapCanvas.width = snap_width*snap_scale + 10;
-            $("#one_tree").css({'width': snap_width*snap_scale + 10});
+        if(snap_width*this.snap_scale + 10 < this.snapCanvas.width){
+            this.snapCanvas.width = snap_width*this.snap_scale + 10;
+            $("#one_tree").css({'width': snap_width*this.snap_scale + 10});
         }        
 
+        for(var x = 0; x <= this.snapCanvas.width; x++){
+            this.snaping_grid[x] = [];
+            for(var y = 0; y <= this.snapCanvas.height; y++){
+                this.snaping_grid[x][y] = -1;
+            }
+        }
+
         $("#one_tree").addClass("auto_center");
-        // $("#one_tree").css({'height': snap_height*snap_scale + 10});
+        // $("#one_tree").css({'height': snap_height*this.snap_scale + 10});
         
         this.context.translate(0.5, 0.5);
-        this.context.scale(snap_scale, snap_scale);
+        this.context.scale(this.snap_scale, this.snap_scale);
 
         var ego = structure[self.view][snap_tree[1]][snap_tree[0]];
         // console.log(structure);
@@ -3912,8 +4025,9 @@ var RenderingView = Backbone.View.extend({
         self.stick_length = self.tree_tall/self.total_layer; //_dist
         var layer_total_alter = {"right": [], "left": []};
 
-        this.start_y = this.snapCanvas.height/snap_scale - (tree_size[snap_label][3]-((this.myCanvas.height/0.15)-this.stick_length-380)) - 100; //_gly
-        // this.start_y = 2*((self.snapCanvas.height/snap_scale)-this.stick_length) - snap_height;
+        // this.start_y = this.snapCanvas.height/this.snap_scale - (tree_size[this.ego_label][3]-((this.myCanvas.height/0.15)-this.stick_length-380)) - 100; //_gly
+        // this.start_y = (tree_size[this.ego_label][5] - tree_size[this.ego_label][2]) + 100; // align top
+        this.start_y = this.snapCanvas.height/this.snap_scale - (tree_size[this.ego_label][3] - tree_size[this.ego_label][5]) - 150; // align bottom
 
         for(var s = 0; s < self.total_layer; s++){
             var l = ego["left"][s]["level"]["down"].length + ego["left"][s]["level"]["up"].length;
@@ -3927,8 +4041,8 @@ var RenderingView = Backbone.View.extend({
         var total_contact = left_side + right_side;
         var stick_length = 0;
         for(var l = 0; l < layer_total_alter["left"].length; l++){
-            var down = ego["left"][l]["level"]["down"].length + l;
-            var up = ego["left"][l]["level"]["up"].length + l;
+            var down = ego["left"][l]["level"]["down"].length;
+            var up = ego["left"][l]["level"]["up"].length;
             if(stick_length < down && down >= up){
                 stick_length = down;
             }
@@ -3936,8 +4050,9 @@ var RenderingView = Backbone.View.extend({
                 stick_length = up;
             }
         }
-        this.start_x = ((stick_length)*this.sub_stick_length + this.x_dist); //_glx
-        
+        // this.start_x = ((stick_length)*this.sub_stick_length + this.x_dist) + 50; //_glx
+        this.start_x = tree_size[this.ego_label][4] - tree_size[this.ego_label][0] + 150;
+
         var ori_dr = right_side;
         var ori_dl = left_side;
         var t_scale = (right_side + left_side)/150;
@@ -4005,6 +4120,7 @@ var RenderingView = Backbone.View.extend({
             // this.start_x = this.start_x + 100;
             real_height += 1;
         }
+        self.model.set({"snap_grid":self.snaping_grid});
         this.context.restore();
 
     }

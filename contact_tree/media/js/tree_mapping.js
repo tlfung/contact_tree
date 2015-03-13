@@ -4863,6 +4863,7 @@ var MappingView = Backbone.View.extend({
 
     restructure: function(){
         var self = this;
+        tree_size = {};
         $("#loading_process").html("<b>Rendering...</b>");
         var ego_selections = self.model.get("selected_egos");
         if(jQuery.isEmptyObject(ego_selections)){

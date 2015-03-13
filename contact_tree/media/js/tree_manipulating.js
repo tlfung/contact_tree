@@ -11,6 +11,7 @@ var ZoomView = Backbone.View.extend({
         this.model.bind('change:canvas_grid', this.get_grid);
 
         this.myCanvas = drawing_canvas.main_canvas;
+        this.snapCanvas = drawing_canvas.snap_canvas;
 
         this.click = false;
         this.dragStart = null;
@@ -23,6 +24,7 @@ var ZoomView = Backbone.View.extend({
         this.grid = self.model.get("canvas_grid");
         
         this.set_mouse_event();
+        this.set_snap_event();
        
     },
 
@@ -240,7 +242,8 @@ var ZoomView = Backbone.View.extend({
     },
 
     getMousePos: function(canvas, evt) {
-        var rect = this.myCanvas.getBoundingClientRect();
+        // var rect = this.myCanvas.getBoundingClientRect();
+        var rect = canvas.getBoundingClientRect();
         // console.log("mousePos", rect)
         // console.log("mousePos: ", evt.clientX - rect.left, evt.clientY - rect.top);
         return {
@@ -325,6 +328,133 @@ var ZoomView = Backbone.View.extend({
         //     .style("stroke", "#666")
         //     .style("stroke-width", "1.5px");
 
+    },
+
+    set_snap_event: function(){
+        var self = this;
+        self.snapCanvas.addEventListener('mouseup',function(evt){
+            var mousePos = self.getMousePos(self.snapCanvas, evt);
+            var grid = self.model.get("snap_grid");
+            var attr_map = self.model.get("attribute");
+            var snap_ego = self.model.get("snapshot");
+            var table = self.model.get("view_mode");
+            var ego = snap_ego[0];
+            var sub = snap_ego[1];
+
+            // console.log("snap_grid:", grid);
+            if(grid[Math.round(mousePos.x)][Math.round(mousePos.y)] != -1){
+                // console.log(grid[Math.round(mousePos.x)][Math.round(mousePos.y)])
+                var detail = grid[Math.round(mousePos.x)][Math.round(mousePos.y)].split("#");
+                // 10009#up#r#0
+                $("#info_title").html("EGO" + ego + "(" + sub + "):" + detail[0]);
+                var list_table = function(data){
+                    // console.log("table:", data);
+                    
+                    $("#raw_data_table").empty();
+                    var table_container = document.getElementById("raw_data_table");
+                    for(var r = 0; r < data.length; r++){
+                        var row = document.createElement("tr");
+                        row.id = data[r][0];
+                        if(r == 0){
+                            row.setAttribute('style', 'background:rgb(175, 175, 175)');
+                        }
+                        if(r == 1){
+                            row.setAttribute('style', 'background:rgb(205, 205, 205)');
+                        }
+                        for(var c = 1; c < data[r].length; c++){
+                            var column = document.createElement("td");
+                            if(r < 2)
+                                column.innerHTML = "<b>" + data[r][c] + "</b>";
+                            else
+                                column.innerHTML = data[r][c];
+                            row.appendChild(column);
+                        }
+                        table_container.appendChild(row);
+                    }
+                    
+                   
+                };
+                
+                var request_url = "fetch_data/?ego="+table+":-"+ego+":-"+sub+":="+JSON.stringify(attr_map)+":="+JSON.stringify(detail);
+                
+                d3.json(request_url, function(result) {
+                    list_table(result);
+                });
+            }
+            else{
+                $("#info_title").html("EGO" + ego + "(" + sub + ")");
+                var list_table = function(data){
+                    // console.log("table:", data);
+                    
+                    $("#raw_data_table").empty();
+                    var table_container = document.getElementById("raw_data_table");
+                    for(var r = 0; r < data.length; r++){
+                        var row = document.createElement("tr");
+                        row.id = data[r][0];
+                        if(r == 0){
+                            row.setAttribute('style', 'background:rgb(175, 175, 175)');
+                        }
+                        if(r == 1){
+                            row.setAttribute('style', 'background:rgb(205, 205, 205)');
+                        }
+                        for(var c = 1; c < data[r].length; c++){
+                            var column = document.createElement("td");
+                            if(r < 2)
+                                column.innerHTML = "<b>" + data[r][c] + "</b>";
+                            else
+                                column.innerHTML = data[r][c];
+                            row.appendChild(column);
+                        }
+                        table_container.appendChild(row);
+                    }
+                    
+                   
+                };
+                
+                var request_url = "fetch_data/?ego="+table+":-"+ego+":-"+sub+":="+JSON.stringify(attr_map);
+                
+                d3.json(request_url, function(result) {
+                    list_table(result);
+                });
+
+            }
+            /*
+            $("#info_title").html("EGO" + ego + "(" + sub + "):");;
+            var list_table = function(data){
+                // console.log("table:", data);
+                $("#raw_data_table").empty();
+                var table_container = document.getElementById("raw_data_table");
+                for(var r = 0; r < data.length; r++){
+                    var row = document.createElement("tr");
+                    row.id = data[r][0];
+                    if(r == 0){
+                        row.setAttribute('style', 'background:rgb(175, 175, 175)');
+                    }
+                    if(r == 1){
+                        row.setAttribute('style', 'background:rgb(205, 205, 205)');
+                    }
+                    for(var c = 1; c < data[r].length; c++){
+                        var column = document.createElement("td");
+                        if(r < 2)
+                            column.innerHTML = "<b>" + data[r][c] + "</b>";
+                        else
+                            column.innerHTML = data[r][c];
+                        row.appendChild(column);
+                    }
+                    table_container.appendChild(row);
+                }
+               
+            };
+            
+            var request_url = "fetch_data/?ego="+table+":-"+ego+":-"+sub+":="+JSON.stringify(attr_map);
+            
+            d3.json(request_url, function(result) {
+                list_table(result);
+            });
+            */
+
+            
+        },false);
     }
 
 });
