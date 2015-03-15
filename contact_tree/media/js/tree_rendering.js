@@ -1577,7 +1577,7 @@ var RenderingView = Backbone.View.extend({
                     self.ego_label = e + "_" + sub;
                     if(self.ego_label in tree_size){}
                     else{
-                        tree_size[self.ego_label] = [canvas_x_boundary[1], canvas_x_boundary[0], canvas_y_boundary[1], this.start_y + this.stick_length + 300, "none", this.start_y];
+                        tree_size[self.ego_label] = [this.start_x, this.start_x, canvas_y_boundary[1], this.start_y + this.stick_length + 300, "none", this.start_y];
                     }                        
                 }
                 
@@ -1603,11 +1603,11 @@ var RenderingView = Backbone.View.extend({
                 
                 this.context.lineWidth = 5; // set the style
                 var real_height = 0;
-                var has_snap = 1;
+                
                 // for(var height = start_h; height < max_h; height+=add_h){
                 for(var height = 0; height < self.total_layer; height++){
                     if(this.start_y + this.stick_length + this.temp_height < canvas_y_boundary[0] && tree_size[self.ego_label][4] != "none"){
-                        // has_snap = 0;
+                        
                         break;
                     }
                     if(this.start_y - (this.stick_length + this.temp_height)*5 > canvas_y_boundary[1]){
@@ -1670,9 +1670,13 @@ var RenderingView = Backbone.View.extend({
                     real_height += 1;
                 }
                 // this.x_dist*this.scale
-                tree_size[self.ego_label][4] = this.start_x;
+                if(tree_size[self.ego_label][4] == "none" && self.snap == 0){
+                    tree_size[self.ego_label][4] = this.start_x;
+                }
 
-                this.set_tree_label(this.context, msg, pos, click_info, has_snap);
+                    
+
+                this.set_tree_label(this.context, msg, pos, click_info);
                 this.set_tree_info(this.context, info_box, info_pos);
                 
                 this.start_x += ((stick_length)*this.sub_stick_length + this.x_dist); //_glx
@@ -2946,8 +2950,8 @@ var RenderingView = Backbone.View.extend({
                         }
 
                         else{
-                            for(var leaf_x = 0; leaf_x < 2.5*radius*this.scale; leaf_x++){
-                                for(var leaf_y = -radius*this.scale*0.5; leaf_y < radius*this.scale*0.5; leaf_y++){
+                            for(var leaf_x = 0; leaf_x < 2.5*radius*this.snap_scale; leaf_x++){
+                                for(var leaf_y = -radius*this.snap_scale*0.5; leaf_y < radius*this.snap_scale*0.5; leaf_y++){
                                     // x = xcos - ysin, y = ycos + xsin
                                     var real_x = (point_x*this.snap_scale) + (leaf_x*Math.cos(angle) - leaf_y*Math.sin(angle));
                                     var real_y = (point_y*this.snap_scale) + (leaf_y*Math.cos(angle) + leaf_x*Math.sin(angle));
@@ -2961,7 +2965,7 @@ var RenderingView = Backbone.View.extend({
                         
                     }
 
-                    if(tree_size[self.ego_label][4] == "none"){
+                    if(tree_size[self.ego_label][4] == "none" && self.snap == 0){
                         if(point_x > tree_size[self.ego_label][1])
                             tree_size[self.ego_label][1] = point_x;
                         if(point_x < tree_size[self.ego_label][0])
@@ -3335,7 +3339,8 @@ var RenderingView = Backbone.View.extend({
             stick_right_side = [stick_right_side[0] - main_step[0], stick_right_side[1] + main_step[1]];
             stick_left_side = [stick_left_side[0] + main_step[0], stick_left_side[1] + main_step[1]];
              
-            tree_size[self.ego_label][3] = stick_left_side[1];
+            if(tree_size[self.ego_label][4] == "none" && self.snap == 0)
+                tree_size[self.ego_label][3] = stick_left_side[1];
 
             ctx.stroke();
             ctx.fill();
@@ -3861,7 +3866,7 @@ var RenderingView = Backbone.View.extend({
         ctx.arc(cx, cy, radius, 0, 2*Math.PI, true);
     },
 
-    set_tree_label: function (context, message, pos, click_info, has_snap){
+    set_tree_label: function (context, message, pos, click_info){
         var self = this;
         // var context = canvas.getContext('2d');
         // context.clearRect(0, 0, canvas.width, canvas.height);
@@ -3870,7 +3875,7 @@ var RenderingView = Backbone.View.extend({
         context.fillText(message, pos[0], pos[1]); //pos
 
         // create info button
-        if(this.snap == 0 && has_snap == 1){
+        if(this.snap == 0){
             context.fillStyle = 'rgba(204,0,0, 0.5)';
             context.fillRect(pos[0]+message.length*60+10, pos[1]-75, 90, 90);
             context.fillStyle = 'black';
@@ -3965,7 +3970,7 @@ var RenderingView = Backbone.View.extend({
         this.snapCanvas.height = $("#snap_container").height();
         this.snapCanvas.width = $("#snap_container").width();
         this.snap = 1;
-        console.log("in snapshot");
+        // console.log("in snapshot");
         this.stick_dx = 50;
         this.stick_dy = 50;
         this.sub_stick_length = 55;

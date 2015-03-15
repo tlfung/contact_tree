@@ -6,9 +6,9 @@ var ZoomView = Backbone.View.extend({
         this.containerID = args.containerID;
         // bind view with model
         console.log("in zooming initialize");
-        _.bindAll(this, 'get_grid');
 
-        this.model.bind('change:canvas_grid', this.get_grid);
+        // _.bindAll(this, 'get_grid');
+        // this.model.bind('change:canvas_grid', this.get_grid);
 
         this.myCanvas = drawing_canvas.main_canvas;
         this.snapCanvas = drawing_canvas.snap_canvas;
@@ -30,13 +30,14 @@ var ZoomView = Backbone.View.extend({
 
     get_grid: function(){
         var self = this;
-        this.grid = self.model.get("canvas_grid");
+        self.grid = self.model.get("canvas_grid");
     },
 
     set_mouse_event: function(){
         var self = this;
 
         self.myCanvas.addEventListener('mousewheel', function(evt) {
+            self.grid = self.model.get("canvas_grid");
             self.model.set({"moving": 1});
             self.translate = self.model.get("canvas_translate");
             self.scale = self.model.get("canvas_scale");
@@ -101,6 +102,7 @@ var ZoomView = Backbone.View.extend({
 
         self.myCanvas.addEventListener('mousemove',function(evt){
             // self.model.set({"moving": 0});
+            self.grid = self.model.get("canvas_grid");
             self.translate = self.model.get("canvas_translate");
             self.scale = self.model.get("canvas_scale");
             self.model.set({"clicking_leaf":-1});
@@ -129,8 +131,9 @@ var ZoomView = Backbone.View.extend({
                 // self.model.set({"moving": 0});
                 if(self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)] != -1){
                     // console.log("Display Info:", self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)]);
-                    if(self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[0] == "leaf"){
-                        self.model.set({"clicking_leaf":self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1]});
+                    var point_info = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)]
+                    if(point_info.split("*+")[0] == "leaf"){
+                        self.model.set({"clicking_leaf":point_info.split("*+")[1]});
                         self.writeNote(Math.round(mousePos.x), Math.round(mousePos.y), self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1]);
                     }
                 }
@@ -139,6 +142,7 @@ var ZoomView = Backbone.View.extend({
         },false);
 
         self.myCanvas.addEventListener('mouseup',function(evt){
+            self.grid = self.model.get("canvas_grid");
             self.model.set({"moving": 0});
             self.model.trigger('change:canvas_scale');
             self.translate = self.model.get("canvas_translate");
@@ -156,9 +160,9 @@ var ZoomView = Backbone.View.extend({
                 // self.model.set({"canvas_translate":[-tx*1.3+self.myCanvas.width/2, -ty*1.3+self.myCanvas.height/2]});
                 // self.model.set({"canvas_scale":1.3});
                 // self.model.trigger('change:canvas_scale');
-                
                 // console.log("##########(", mousePos.x, mousePos.y, ")############", self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)]);
                 if(self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)] != -1){
+                    var g = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)];
                     // console.log("Display Info:", self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)]);
                     
                     if(self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[0] == "leaf"){
@@ -176,13 +180,15 @@ var ZoomView = Backbone.View.extend({
                         var attr_map = self.model.get("attribute");
                         $("#information_page").show();
                         $("#block_page").show();
+                        $("#raw_data_table").empty();
+
                         self.model.set({"snapshot": [ego, sub]});
                         self.model.trigger('change:snapshot');
                         
-                        $("#info_title").html("EGO" + ego + "(" + sub + ")");;
+                        $("#info_title").html("EGO " + ego.toUpperCase() + "(" + sub.toUpperCase() + ")");
+                        $("#loading_table").show();
                         var list_table = function(data){
                             // console.log("table:", data);
-                            $("#raw_data_table").empty();
                             var table_container = document.getElementById("raw_data_table");
                             for(var r = 0; r < data.length; r++){
                                 var row = document.createElement("tr");
@@ -203,6 +209,7 @@ var ZoomView = Backbone.View.extend({
                                 }
                                 table_container.appendChild(row);
                             }
+                            $("#loading_table").hide();
                            
                         };
                         
@@ -227,6 +234,7 @@ var ZoomView = Backbone.View.extend({
         },false);
 
         self.myCanvas.addEventListener('mousedown', function(evt) {
+            self.grid = self.model.get("canvas_grid");
             self.model.set({"moving": 0});
             
             self.dragStart = self.getMousePos(self.myCanvas, evt);//mousePos.x,mousePos.y
@@ -258,10 +266,8 @@ var ZoomView = Backbone.View.extend({
         var mode = self.model.get("view_mode");
         var context = self.myCanvas.getContext('2d');
         context.fillStyle = 'rgba(225,225,225, 0.5)';
-        if(mode == "DBLP")
-            context.fillRect(px-2, py, 185, 110);
-        else
-            context.fillRect(px-2, py, 135, 110);
+        
+        context.fillRect(px-2, py, 135, 110);
         context.font = '12pt Calibri';
         context.fillStyle = 'black';
         context.fillText("Alter id: " + info[0], px, py+20); //pos
@@ -345,12 +351,13 @@ var ZoomView = Backbone.View.extend({
             if(grid[Math.round(mousePos.x)][Math.round(mousePos.y)] != -1){
                 // console.log(grid[Math.round(mousePos.x)][Math.round(mousePos.y)])
                 var detail = grid[Math.round(mousePos.x)][Math.round(mousePos.y)].split("#");
+                var g = grid[Math.round(mousePos.x)][Math.round(mousePos.y)];
                 // 10009#up#r#0
-                $("#info_title").html("EGO" + ego + "(" + sub + "):" + detail[0]);
+                $("#raw_data_table").empty();
+                $("#info_title").html("EGO " + ego.toUpperCase() + "(" + sub.toUpperCase() + "):" + detail[0].toUpperCase());
+                $("#loading_table").show();
                 var list_table = function(data){
                     // console.log("table:", data);
-                    
-                    $("#raw_data_table").empty();
                     var table_container = document.getElementById("raw_data_table");
                     for(var r = 0; r < data.length; r++){
                         var row = document.createElement("tr");
@@ -371,7 +378,7 @@ var ZoomView = Backbone.View.extend({
                         }
                         table_container.appendChild(row);
                     }
-                    
+                    $("#loading_table").hide();
                    
                 };
                 
@@ -383,10 +390,9 @@ var ZoomView = Backbone.View.extend({
             }
             else{
                 $("#info_title").html("EGO" + ego + "(" + sub + ")");
+                $("#raw_data_table").empty();
+                $("#loading_table").show();
                 var list_table = function(data){
-                    // console.log("table:", data);
-                    
-                    $("#raw_data_table").empty();
                     var table_container = document.getElementById("raw_data_table");
                     for(var r = 0; r < data.length; r++){
                         var row = document.createElement("tr");
@@ -408,7 +414,7 @@ var ZoomView = Backbone.View.extend({
                         table_container.appendChild(row);
                     }
                     
-                   
+                    $("#loading_table").hide();
                 };
                 
                 var request_url = "fetch_data/?ego="+table+":-"+ego+":-"+sub+":="+JSON.stringify(attr_map);

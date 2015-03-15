@@ -77,6 +77,8 @@ var MyApp = function MyApp(){
     myCanvas.height = $(window).height()-$("#header").height()-$("#top_list").height()-$("#footer").height()-$("#history").height()-45;
     myCanvas.width = $("#canvas_container").width();
 
+    $("#canvas_container").css({'height': myCanvas.height});
+
     $("#block_page").css({'height': $(window).height()});
     $("#block_page").css({'width': $(window).width()});    
     $("#help_page").css({'height': $(window).height()});
@@ -85,13 +87,14 @@ var MyApp = function MyApp(){
     $("#information_page").css({'height': myCanvas.height+5});
     $("#information_page").css({'width': $(window).width()});
     $("#information_page").css({'top': $("#header").height()+$("#top_list").height()+37});
-    
-    // $("#help_slide").center();
 
+    // self.model.trigger('change:snapshot');
+   
     window.onresize = function(event) {
         // var myCanvas = drawing_canvas.main_canvas;
-        myCanvas.height = $(window).height()-$("#header").height()-$("#top_list").height()-$("#footer").height()-$("#history").height()-45;
+        myCanvas.height = window.innerHeight-$("#header").height()-$("#top_list").height()-$("#footer").height()-$("#history").height()-45;
         myCanvas.width = $("#canvas_container").width();
+        $("#canvas_container").css({'height': myCanvas.height});
         
         var a_grid = self.model.get("canvas_grid");
         var c_detail = self.model.get("canvas_detail");
@@ -102,12 +105,10 @@ var MyApp = function MyApp(){
         self.model.set({"canvas_grid": a_grid});
         $("#information_page").css({'height': myCanvas.height+5});
         $("#information_page").css({'width': $(window).width()});
-        $("#information_page").css({'top': $("#header").height()+$("#top_list").height()+37});
         
-        // drawing_canvas.snap_canvas.height = $("#snap_container").height();
-        // drawing_canvas.snap_canvas.width = $("#snap_container").width();
+        resize_dialog(window.innerHeight, $(window).width());
 
-        resize_dialog($(window).height(), $(window).width());
+        self.model.trigger('change:snapshot');
     };
 
     var arr_grid = self.model.get("canvas_grid");
@@ -128,7 +129,7 @@ var MyApp = function MyApp(){
 
     $("#slide_next").click(function(){
         var num_slide =  parseInt($('#help_slide').attr('value'));
-        if(num_slide < 8){
+        if(num_slide < 10){
             $('#help_slide').attr('src', 'media/img/help/slide' + (num_slide+1) +'.jpg');
             $("#help_slide").attr('value', (num_slide+1)); 
         }
