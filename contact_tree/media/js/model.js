@@ -50,7 +50,10 @@ var Tree_Model = Backbone.Model.extend({
 	    clicking_leaf: -1,
 
 	    leaf_switch: 1,
-	    fruit_switch: 0
+	    fruit_switch: 0,
+
+	    filter_contact: 1,
+	    filter_alter: 0
 	    // stick:"coauthor"
   	},
 

@@ -79,6 +79,9 @@ var ControlView = Backbone.View.extend({
             $("#root_bend").ionRangeSlider("update", {
                 from: 0
             });
+            $("#filter_contact").ionRangeSlider("update", {
+                from: 0
+            });
         });
         
 
@@ -125,6 +128,9 @@ var ControlView = Backbone.View.extend({
                 from: 1
             });
             $("#root_bend").ionRangeSlider("update", {
+                from: 0
+            });
+            $("#filter_contact").ionRangeSlider("update", {
                 from: 0
             });
         }
@@ -278,6 +284,30 @@ var ControlView = Backbone.View.extend({
                     self.model.set({"leaf_switch":1});
                 else
                     self.model.set({"leaf_switch":0}); 
+            }
+        });
+
+        $("#filter_contact").ionRangeSlider({
+            min: 0,
+            max: 30,
+            from: 0,
+            type: 'single',
+            step: 1,
+            onChange: function(obj) {
+                var val = obj.fromNumber;
+                // self.model.set({"filter_contact":val});
+            }
+        });
+
+        $("#filter_alter").ionRangeSlider({
+            min: 0,
+            max: 100,
+            from: 0,
+            type: 'single',
+            step: 1,
+            onChange: function(obj) {
+                var val = obj.fromNumber;
+                // self.model.set({"root_curve":val});
             }
         });
 
