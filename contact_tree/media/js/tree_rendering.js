@@ -1433,6 +1433,7 @@ var RenderingView = Backbone.View.extend({
 
         // for each ego tree
         var total_distance = 0;
+        var total_tree = 0;
         for(var e in display_ego){
             for(var t = 0; t < display_ego[e].length; t++){
                 var sub = display_ego[e][t];
@@ -1522,6 +1523,10 @@ var RenderingView = Backbone.View.extend({
                     if(t_scale < 1){
                         t_scale = 1;
                     }
+                }
+
+                if(this.snap == 0 && total_tree == 0 && this.start_x > canvas_x_boundary[1]){
+                    this.start_x = (self.myCanvas.width/0.15)/2;
                 }
 
                 /*
@@ -1698,6 +1703,7 @@ var RenderingView = Backbone.View.extend({
                 //     break;
                 // }
                 this.start_y = (this.myCanvas.height/0.15)-this.stick_length-380; //_gly
+                total_tree++;
             }
             // if(total_distance*this.scale > this.myCanvas.width){
             //     break;

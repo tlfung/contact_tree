@@ -58,7 +58,12 @@ function resize_dialog(h, w){
     $("#block_page").css({'height': h});
     $("#block_page").css({'width': w});  
     $("#help_page").css({'height': h});
-    $("#help_page").css({'width': w});      
+    $("#help_page").css({'width': w});
+
+    // if($("#help_slide").height() > h){
+    //     $("#help_slide").removeAttr("width");
+    //     $("#help_slide").attr("height", "90%");
+    // }
 };
 
 var MyApp = function MyApp(){
@@ -88,6 +93,7 @@ var MyApp = function MyApp(){
     $("#information_page").css({'width': $(window).width()});
     $("#information_page").css({'top': $("#header").height()+$("#top_list").height()+37});
 
+
     // self.model.trigger('change:snapshot');
    
     window.onresize = function(event) {
@@ -105,7 +111,7 @@ var MyApp = function MyApp(){
         self.model.set({"canvas_grid": a_grid});
         $("#information_page").css({'height': myCanvas.height+5});
         $("#information_page").css({'width': $(window).width()});
-        
+
         resize_dialog(window.innerHeight, $(window).width());
 
         self.model.trigger('change:snapshot');
@@ -122,9 +128,16 @@ var MyApp = function MyApp(){
         }
     }
     
-    $("#help_link").click(function(){
+    $("#help_link").click(function(){ 
         $("#help_page").show();
-        $("#help_slide").center();      
+         
+        if($("#help_slide").height() > $(window).height()){
+            console.log("ttttt");
+            $("#help_slide").removeAttr("width");
+            $("#help_slide").attr("height", "90%");
+        }  
+        $("#help_slide").center();
+
     });
 
     $("#slide_next").click(function(){
