@@ -93,7 +93,7 @@ var MyApp = function MyApp(){
     $("#information_page").css({'width': $(window).width()});
     $("#information_page").css({'top': $("#header").height()+$("#top_list").height()+37});
 
-
+    drawing_canvas.middle = (myCanvas.width/0.15)/2;
     // self.model.trigger('change:snapshot');
    
     window.onresize = function(event) {
@@ -111,6 +111,8 @@ var MyApp = function MyApp(){
         self.model.set({"canvas_grid": a_grid});
         $("#information_page").css({'height': myCanvas.height+5});
         $("#information_page").css({'width': $(window).width()});
+        
+        drawing_canvas.middle = (myCanvas.width/0.15)/2;
 
         resize_dialog(window.innerHeight, $(window).width());
 

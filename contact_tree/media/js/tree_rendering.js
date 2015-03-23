@@ -1526,7 +1526,8 @@ var RenderingView = Backbone.View.extend({
                 }
 
                 if(this.snap == 0 && total_tree == 0 && this.start_x > canvas_x_boundary[1]){
-                    this.start_x = (self.myCanvas.width/0.15)/2;
+                    // this.start_x = (self.myCanvas.width/0.15)/2;
+                    this.start_x = drawing_canvas.middle;
                 }
 
                 /*
