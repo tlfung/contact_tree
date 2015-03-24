@@ -9,7 +9,7 @@ var RenderingView = Backbone.View.extend({
         _.bindAll(this, 'redraw');
         _.bindAll(this, 'update_fruit_size');
         _.bindAll(this, 'snapshot');
-
+        
         this.model.bind('change:display_egos', this.redraw);
         this.model.bind('change:canvas_scale', this.redraw);
         this.model.bind('change:tree_structure', this.redraw);
@@ -27,7 +27,7 @@ var RenderingView = Backbone.View.extend({
         this.model.bind('change:leaf_switch', this.redraw);
         this.model.bind('change:fruit_switch', this.redraw);
         this.model.bind('change:filter_contact', this.redraw);
-
+        
         this.model.bind('change:snapshot', this.snapshot);
 
         this.model.bind('change:leaf_scale', this.update_fruit_size);
@@ -1940,19 +1940,20 @@ var RenderingView = Backbone.View.extend({
 
         var nature_scale = self.model.get("dtl_branch_curve");
         var w = weight/total_draw_stick;
-
+        var real_drawing = 0;
         for(var n = 0, len = stick_pos[long_stick].length; n < len; n++){
-            var nature = n*(Math.abs(d-u)/stick_scale);
+            // n = real_drawing;
+            var nature = real_drawing*(Math.abs(d-u)/stick_scale);
             if(Math.abs(d-u)<len/2){
                 // nature = n*(layer+1)*2;
-                nature = n*((this.sub_slop/10)+1)*2;
+                nature = real_drawing*((this.sub_slop/10)+1)*2;
             }
             else if(len>20 && Math.abs(d-u)/stick_scale>(layer+2)*2 && layer < 6){
-                // nature = n*(layer+2)*2;
-                nature = n*((this.sub_slop/10)+2)*2;
+                // nature = real_drawing*(layer+2)*2;
+                nature = real_drawing*((this.sub_slop/10)+2)*2;
             }
             nature = nature*nature_scale;
-            // nature = n*(layer+2)*2;
+            // nature = real_drawing*(layer+2)*2;
             // console.log("layer", layer, "abs", len/3, "nature", nature);
             var sx = {"up": (layer*5), "down":(layer*11)};
             var sy = {"up": (layer*7.5), "down":(layer*12)};
@@ -1966,6 +1967,19 @@ var RenderingView = Backbone.View.extend({
             var fruit_pos = { "up": [tree_rstpoint[begin_index["up"][0]]+extra_slope["up"][0]+5, tree_rstpoint[begin_index["up"][1]]+extra_slope["up"][1]+10], 
                               "down":[tree_rstpoint[begin_index["down"][0]]+extra_slope["down"][0]-10, tree_rstpoint[begin_index["down"][1]]+extra_slope["down"][1]-3]};
 
+
+            var stick_len = Math.sqrt( Math.pow(extra_slope[long_stick][0],2) + Math.pow(extra_slope[long_stick][1],2) );
+            var point_in_canvas = [ (tree_rstpoint[begin_index[long_stick][0]]*this.scale) + this.translate_point[0], (tree_rstpoint[begin_index[long_stick][1]]*this.scale) + this.translate_point[1]];
+            var stick_vector = [extra_slope[long_stick][0]/stick_len, extra_slope[long_stick][1]/stick_len];
+            
+            var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"] + "#" + long_stick + "#r#" + layer;
+                        
+            // change to vector later
+            var up_line = this.find_line(tree_rstpoint[begin_index["up"][0]]+extra_slope["up"][0], tree_rstpoint[begin_index["up"][1]]+extra_slope["up"][1], stick_m["up"]);
+            var down_line = this.find_line(tree_rstpoint[begin_index["down"][0]]+extra_slope["down"][0], tree_rstpoint[begin_index["down"][1]]+extra_slope["down"][1], stick_m["down"]);
+            var leaf_line = {"up": up_line, "down":down_line};
+            var start_point = [ tree_rstpoint[begin_index[long_stick][0]]+extra_slope[long_stick][0], tree_rstpoint[begin_index[long_stick][1]]+extra_slope[long_stick][1] ];
+            
 
             if(alters[long_stick][n]["leaf"].length <= self.filter_cnt){
                 sub_total_leaf += alters[long_stick][n]["leaf"].length;
@@ -2121,8 +2135,9 @@ var RenderingView = Backbone.View.extend({
                             tree_rstpoint[2] = tree_rstpoint[0];
                             tree_rstpoint[3] = tree_rstpoint[1];
                         }                 
-                    total_draw_stick--;            
+                        total_draw_stick-=1;            
                     }
+                    real_drawing++;
                     
                 }                
                 continue;
@@ -2140,13 +2155,13 @@ var RenderingView = Backbone.View.extend({
                 this.context.fill();//fill color
             }
             
-
+            /*
             var stick_len = Math.sqrt( Math.pow(extra_slope[long_stick][0],2) + Math.pow(extra_slope[long_stick][1],2) );
             var point_in_canvas = [ (tree_rstpoint[begin_index[long_stick][0]]*this.scale) + this.translate_point[0], (tree_rstpoint[begin_index[long_stick][1]]*this.scale) + this.translate_point[1]];
             var stick_vector = [extra_slope[long_stick][0]/stick_len, extra_slope[long_stick][1]/stick_len];
             
             var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"] + "#" + long_stick + "#r#" + layer;
-            
+            */
             if(this.snap == 0){
                 if(!jQuery.isEmptyObject(alters[long_stick][n])){
                     for(var i = 0; i < Math.round(stick_len*this.scale); i++){
@@ -2171,13 +2186,14 @@ var RenderingView = Backbone.View.extend({
                 }
                 
             }
-            
+            /*
             // change to vector later
             var up_line = this.find_line(tree_rstpoint[begin_index["up"][0]]+extra_slope["up"][0], tree_rstpoint[begin_index["up"][1]]+extra_slope["up"][1], stick_m["up"]);
             var down_line = this.find_line(tree_rstpoint[begin_index["down"][0]]+extra_slope["down"][0], tree_rstpoint[begin_index["down"][1]]+extra_slope["down"][1], stick_m["down"]);
             var leaf_line = {"up": up_line, "down":down_line};
             var start_point = [ tree_rstpoint[begin_index[long_stick][0]]+extra_slope[long_stick][0], tree_rstpoint[begin_index[long_stick][1]]+extra_slope[long_stick][1] ];
-            
+            */
+
             // draw leaf
             // sub_total_leaf += this.draw_right_leaf(long_stick, alters[long_stick][n], leaf_line[long_stick], stick_m[long_stick], start_point, stick_v[long_stick]);
             var stick_leaf = 0;
@@ -2351,7 +2367,6 @@ var RenderingView = Backbone.View.extend({
                     */
                     
                 }   
-
                 else{
                     this.context.lineTo(ori_rstpoint[2], ori_rstpoint[3]);
                     this.context.closePath();
@@ -2368,9 +2383,10 @@ var RenderingView = Backbone.View.extend({
                     tree_rstpoint[2] = tree_rstpoint[0];
                     tree_rstpoint[3] = tree_rstpoint[1];
                 }                 
-                                
+                total_draw_stick-=1;  
+                real_drawing++;   
             }
-            total_draw_stick--;
+            
         }
         return (stick_pos[long_stick].length + stick_pos[short_stick].length);
         
@@ -2599,6 +2615,16 @@ var RenderingView = Backbone.View.extend({
                               "down":[tree_lstpoint[begin_index["down"][0]]+extra_slope["down"][0]+10, tree_lstpoint[begin_index["down"][1]]+extra_slope["down"][1]+3]};
             // this.tree_fruit(this.context, fruit_pos[long_stick][0], fruit_pos[long_stick][1], alters[long_stick][n]["fruit"]);
           
+            var stick_len = Math.sqrt( Math.pow(extra_slope[long_stick][0],2) + Math.pow(extra_slope[long_stick][1],2) );
+            var point_in_canvas = [ (tree_lstpoint[begin_index[long_stick][0]]*this.scale) + this.translate_point[0], (tree_lstpoint[begin_index[long_stick][1]]*this.scale) + this.translate_point[1]];
+            var stick_vector = [extra_slope[long_stick][0]/stick_len, extra_slope[long_stick][1]/stick_len];
+            var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"] + "#" + long_stick + "#l#" + layer;
+            
+            var up_line = this.find_line(tree_lstpoint[begin_index["up"][0]]+extra_slope["up"][0], tree_lstpoint[begin_index["up"][1]]+extra_slope["up"][1], stick_m["up"]);
+            var down_line = this.find_line(tree_lstpoint[begin_index["down"][0]]+extra_slope["down"][0], tree_lstpoint[begin_index["down"][1]]+extra_slope["down"][1], stick_m["down"]);
+            var leaf_line = {"up": up_line, "down":down_line};
+            var start_point = [ tree_lstpoint[begin_index[long_stick][0]]+extra_slope[long_stick][0], tree_lstpoint[begin_index[long_stick][1]]+extra_slope[long_stick][1] ];
+           
             var sub_total_leaf = 0;
 
             if(alters[long_stick][n]["leaf"].length <= self.filter_cnt){
@@ -2737,12 +2763,12 @@ var RenderingView = Backbone.View.extend({
                 this.context.stroke();//draw line
                 // this.context.fill();//fill color
             }            
-
+            /*
             var stick_len = Math.sqrt( Math.pow(extra_slope[long_stick][0],2) + Math.pow(extra_slope[long_stick][1],2) );
             var point_in_canvas = [ (tree_lstpoint[begin_index[long_stick][0]]*this.scale) + this.translate_point[0], (tree_lstpoint[begin_index[long_stick][1]]*this.scale) + this.translate_point[1]];
             var stick_vector = [extra_slope[long_stick][0]/stick_len, extra_slope[long_stick][1]/stick_len];
             var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"] + "#" + long_stick + "#l#" + layer;
-            
+            */
             if(this.snap == 0){
                 if(!jQuery.isEmptyObject(alters[long_stick][n])){
                     for(var i = 0; i < Math.round(stick_len*this.scale); i++){
@@ -2765,12 +2791,12 @@ var RenderingView = Backbone.View.extend({
                     }
                 }                
             }
-
+            /*
             var up_line = this.find_line(tree_lstpoint[begin_index["up"][0]]+extra_slope["up"][0], tree_lstpoint[begin_index["up"][1]]+extra_slope["up"][1], stick_m["up"]);
             var down_line = this.find_line(tree_lstpoint[begin_index["down"][0]]+extra_slope["down"][0], tree_lstpoint[begin_index["down"][1]]+extra_slope["down"][1], stick_m["down"]);
             var leaf_line = {"up": up_line, "down":down_line};
             var start_point = [ tree_lstpoint[begin_index[long_stick][0]]+extra_slope[long_stick][0], tree_lstpoint[begin_index[long_stick][1]]+extra_slope[long_stick][1] ];
-           
+            */
             // draw leaf
             // sub_total_leaf += this.draw_left_leaf(long_stick, alters[long_stick][n], leaf_line[long_stick], stick_m[long_stick], start_point, stick_v[long_stick]);
             var stick_leaf = 0;

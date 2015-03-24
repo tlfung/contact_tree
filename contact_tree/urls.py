@@ -24,8 +24,6 @@ urlpatterns = patterns('',
     (r'^update_layer/$', query.update_layer),
     (r'^update_structure/$', query.restructure),
     (r'^fetch_data/$', query.fetch_data)
-    # (r'^set_attr/$', query.change_attr)
-    # (r'^testing/$', query.test)
 )
 
 urlpatterns += staticfiles_urlpatterns()

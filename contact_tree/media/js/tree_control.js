@@ -289,13 +289,14 @@ var ControlView = Backbone.View.extend({
 
         $("#filter_contact").ionRangeSlider({
             min: 0,
-            max: 30,
+            max: 15,
             from: 0,
             type: 'single',
             step: 1,
             onChange: function(obj) {
+                tree_size = {};
                 var val = obj.fromNumber;
-                // self.model.set({"filter_contact":val});
+                self.model.set({"filter_contact":val});
             }
         });
 
