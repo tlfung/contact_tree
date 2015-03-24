@@ -27,7 +27,8 @@ var RenderingView = Backbone.View.extend({
         this.model.bind('change:leaf_switch', this.redraw);
         this.model.bind('change:fruit_switch', this.redraw);
         this.model.bind('change:filter_contact', this.redraw);
-        
+        // this.model.bind('change:tree_boundary', this.redraw);
+
         this.model.bind('change:snapshot', this.snapshot);
 
         this.model.bind('change:leaf_scale', this.update_fruit_size);
@@ -91,12 +92,15 @@ var RenderingView = Backbone.View.extend({
         this.snap = 0;
         this.snap_info = "";
         this.filter_cnt = 0;
+        this.tree_size = {};
+        this.approx_size = 0;
     },
 
     redraw: function(){
         var self = this;
         this.context =  this.myCanvas.getContext('2d');
         this.snap = 0;
+        this.approx_size = 0;
         // console.log("in redraw", self.model.get("moving"));
         this.on_moving = self.model.get("moving");
         this.scale = self.model.get("canvas_scale");
@@ -105,8 +109,9 @@ var RenderingView = Backbone.View.extend({
         this.view = self.model.get("view_mode");
         this.group = self.model.get("dataset_group");
         this.clicking_grid = initial_grid;
-        this.filter_cnt = self.model.get("filter_contact");        
 
+        this.filter_cnt = self.model.get("filter_contact");        
+        self.tree_size = self.model.get("tree_boundary");
         this.translate_point = self.model.get("canvas_translate");
         this.c_detail = 11*this.scale;
 
@@ -116,7 +121,7 @@ var RenderingView = Backbone.View.extend({
         if(jQuery.isEmptyObject(self.model.get("tree_structure"))){
             return 0;
         }
-        // console.log("grid", this.clicking_grid);
+        
         for(var x = 0; x <= this.myCanvas.width/this.c_detail; x++){
             this.clicking_grid[x] = [];
             // initial_grid[x] = [];
@@ -135,16 +140,17 @@ var RenderingView = Backbone.View.extend({
             case 'crooked':
                 self.redraw_crooked();
         }// end switch
-        // console.log(self.clicking_grid[0].length);
-        // console.log(self.clicking_grid.length);
         
+        self.model.set({"tree_boundary":self.tree_size});
+        if(this.approx_size == 1){
+            this.redraw();
+        }
         self.model.set({"canvas_grid":self.clicking_grid});    
         self.model.set({"info_table":self.hash_table});
         self.model.set({"canvas_detail":self.c_detail});
+        
         self.model.set({"moving": 0});
         self.model.trigger('change:canvas_grid');
-
-        // console.log("!!!!!!!!", self.hash_table);
     },
 
     redraw_crooked: function(){
@@ -1408,7 +1414,6 @@ var RenderingView = Backbone.View.extend({
 
     redraw_symmetry: function(){
         var self = this;
-
         this.stick_dx = 50;
         this.stick_dy = 50;
         this.sub_stick_length = 55;
@@ -1513,8 +1518,9 @@ var RenderingView = Backbone.View.extend({
                 }
 
                 // need more measurement 
-                this.start_x += ((stick_length)*this.sub_stick_length + this.x_dist); //_glx
+                
                 total_distance += ((stick_length)*this.sub_stick_length + this.x_dist);
+                
                 var ori_dr = right_side;
                 var ori_dl = left_side;
                 var t_scale = (right_side + left_side)/150;
@@ -1527,10 +1533,32 @@ var RenderingView = Backbone.View.extend({
                     }
                 }
 
-                if(this.snap == 0 && total_tree == 0 && this.start_x > canvas_x_boundary[1]){
-                    // this.start_x = (self.myCanvas.width/0.15)/2;
-                    this.start_x = drawing_canvas.middle;
+                self.ego_label = e + "_" + sub;
+                if(self.ego_label in self.tree_size){
+                    this.start_x += (self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0]) + 150;
+                    if(total_tree == 0 && this.start_x > canvas_x_boundary[1])
+                        this.start_x = drawing_canvas.middle;
+
+                    if(this.start_x + (self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0]) + 150 < canvas_x_boundary[0]){
+                        // console.log("less left", msg);
+                        this.start_x += (self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0]) + 150;
+                        continue;
+                    }
                 }
+                else{
+                    self.approx_size = 1;
+                    this.start_x += ((stick_length)*this.sub_stick_length + this.x_dist); //_glx
+                    if(total_tree == 0 && this.start_x > canvas_x_boundary[1]){
+                        // this.start_x = (self.myCanvas.width/0.15)/2;
+                        this.start_x = drawing_canvas.middle;
+                    }
+                    if(this.start_x + ((stick_length)*this.sub_stick_length + this.x_dist) < canvas_x_boundary[0]){
+                        // console.log("less left", msg);
+                        this.start_x += ((stick_length)*this.sub_stick_length + this.x_dist);
+                        continue;
+                    }
+                    self.tree_size[self.ego_label] = [this.start_x, this.start_x, canvas_y_boundary[1], this.start_y + this.stick_length + 300, "none", this.start_y];
+                }  
 
                 /*
                 if(this.view == "diary" || this.view == "inter"){
@@ -1556,6 +1584,7 @@ var RenderingView = Backbone.View.extend({
                     // this.dl = ori_dl/t_scale;
                 }
                 */
+
                 // pos = [this.start_x - 270, this.start_y + this.stick_length + 350];
                 pos = [((this.start_x - ori_dl/t_scale)+(this.start_x + ori_dr/t_scale))/2-270, this.start_y + this.stick_length + 350];
                 info_pos = [this.start_x + ori_dr/t_scale + 50, this.start_y + this.stick_length + 50];
@@ -1575,20 +1604,21 @@ var RenderingView = Backbone.View.extend({
                     }
                 }
                 
-                if(this.start_x + ((stick_length)*this.sub_stick_length + this.x_dist) < canvas_x_boundary[0]){
-                    // console.log("less left", msg);
-                    this.start_x += ((stick_length)*this.sub_stick_length + this.x_dist);
-                    continue;
-                }
-
-                if(self.snap == 0){
-                    self.ego_label = e + "_" + sub;
-                    if(self.ego_label in tree_size){}
-                    else{
-                        tree_size[self.ego_label] = [this.start_x, this.start_x, canvas_y_boundary[1], this.start_y + this.stick_length + 300, "none", this.start_y];
-                    }                        
-                }
                 
+
+                // if(self.snap == 0){
+                /*
+                self.ego_label = e + "_" + sub;
+                if(self.ego_label in self.tree_size){
+                    this.start_x = self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0] + 150;
+                }
+                else{
+                    self.tree_size[self.ego_label] = [this.start_x, this.start_x, canvas_y_boundary[1], this.start_y + this.stick_length + 300, "none", this.start_y];
+                }  
+                // }
+                // this.start_x = self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0] + 150;
+                */
+
                 var start_h = 0;
                 var add_h = 1;
                 var max_h = self.total_layer;
@@ -1614,7 +1644,7 @@ var RenderingView = Backbone.View.extend({
                 
                 // for(var height = start_h; height < max_h; height+=add_h){
                 for(var height = 0; height < self.total_layer; height++){
-                    if(this.start_y + this.stick_length + this.temp_height < canvas_y_boundary[0] && tree_size[self.ego_label][4] != "none"){ 
+                    if(this.start_y + this.stick_length + this.temp_height < canvas_y_boundary[0] && self.tree_size[self.ego_label][4] != "none"){ 
                         break;
                     }
                     if(this.start_y - (this.stick_length + this.temp_height)*5 > canvas_y_boundary[1]){
@@ -1683,8 +1713,8 @@ var RenderingView = Backbone.View.extend({
                     real_height += 1;
                 }
                 // this.x_dist*this.scale
-                if(tree_size[self.ego_label][4] == "none" && self.snap == 0){
-                    tree_size[self.ego_label][4] = this.start_x;
+                if(self.tree_size[self.ego_label][4] == "none"){
+                    self.tree_size[self.ego_label][4] = this.start_x;
                 }
 
                     
@@ -1692,7 +1722,9 @@ var RenderingView = Backbone.View.extend({
                 this.set_tree_label(this.context, msg, pos, click_info);
                 this.set_tree_info(this.context, info_box, info_pos);
                 
-                this.start_x += ((stick_length)*this.sub_stick_length + this.x_dist); //_glx
+
+                // this.start_x += ((stick_length)*this.sub_stick_length + this.x_dist); //_glx
+                this.start_x += (self.tree_size[this.ego_label][1] - self.tree_size[this.ego_label][4]) + 100
                 // total_distance += ((stick_length + 2)*this.sub_stick_length + this.x_dist);
                 
                 // var branch_index = layer_total_alter["right"].indexOf(Math.max.apply(Math,layer_total_alter["right"]));
@@ -1771,6 +1803,8 @@ var RenderingView = Backbone.View.extend({
             
         }
         */
+
+        /*
         var stick_width = num_alter/stick_scale;
         // end point
         var tree_rstpoint = [0, 0, 0, 0];
@@ -1792,7 +1826,7 @@ var RenderingView = Backbone.View.extend({
         
         var cp3 = [this.start_x, c2];
         var cp4 = [this.start_x, this.start_y-100];
-
+        */
         /*
         // draw branch
         this.context.moveTo(this.start_x + this.dr, this.start_y + this.temp_height);
@@ -1830,7 +1864,7 @@ var RenderingView = Backbone.View.extend({
         }
         */
 
-        var weight = Math.abs(tree_rstpoint[3] - tree_rstpoint[1]);
+        // var weight = Math.abs(tree_rstpoint[3] - tree_rstpoint[1]);
         var stick_pos = {"up": [], "down": []};
         var long_stick, short_stick;
         // alters["up"], alters["down"]
@@ -1887,20 +1921,48 @@ var RenderingView = Backbone.View.extend({
         var d = alters["down"].length;
         
         var total_draw_stick = 0;
+        var cnt_short = 0;
         for(var n = 0, len = stick_pos[long_stick].length; n < len; n++){
-            if(alters[long_stick][n]["leaf"].length > self.filter_cnt)
+            if(alters[long_stick][n]["leaf"].length > self.filter_cnt){
                 total_draw_stick++;
+                if(stick_pos[short_stick][cnt_short] == n){
+                    cnt_short++;
+                }
+            }
+            else{
+                if(stick_pos[short_stick][cnt_short] == n){
+                    if(alters[short_stick][cnt_short]["leaf"].length > self.filter_cnt){
+                        total_draw_stick++;
+                    }
+                    cnt_short++;
+                }
+            }
         }
+        
+        // var stick_width = num_alter/stick_scale;
+        var stick_width = total_draw_stick/stick_scale;
+        // end point
+        var tree_rstpoint = [0, 0, 0, 0];
+        tree_rstpoint[0] = this.start_x + this.x_dist - this.extra_x; // down point
+        tree_rstpoint[1] = this.start_y - this.y_dist - this.stick_length - this.extra_y;
 
-        var total_draw_stick_short = 0;
-        for(var n = 0, len = stick_pos[short_stick].length; n < len; n++){
-            if(alters[short_stick][n]["leaf"].length > self.filter_cnt)
-                total_draw_stick_short++;
-        }
+        tree_rstpoint[2] = this.start_x + this.x_dist - this.extra_x; // up point
+        tree_rstpoint[3] = this.start_y - this.y_dist - this.stick_length - this.extra_y - stick_width;
 
-        if(total_draw_stick_short > total_draw_stick)
-            total_draw_stick = total_draw_stick_short;
+        // find control point
+        // var m = (layer*10)/55;
+        var m = this.sub_slop/55;
+        // y = m(x-x1)+y1
+        var c1 = m*(tree_rstpoint[0] - (this.start_x + this.dr)) + tree_rstpoint[1];
+        var c2 = m*(tree_rstpoint[2] - this.start_x) + tree_rstpoint[3];
 
+        var cp1 = [this.start_x + this.dr, this.start_y-100];
+        var cp2 = [this.start_x + this.dr, c1];
+        
+        var cp3 = [this.start_x, c2];
+        var cp4 = [this.start_x, this.start_y-100];
+
+        var weight = Math.abs(tree_rstpoint[3] - tree_rstpoint[1]);
 
         // draw branch
         this.context.moveTo(this.start_x + this.dr, this.start_y + this.temp_height);
@@ -1918,6 +1980,14 @@ var RenderingView = Backbone.View.extend({
 
             this.context.stroke();//draw line
             this.context.fill();//fill color
+
+            this.context.beginPath();
+            this.context.lineWidth = 1;
+            this.context.arc(tree_rstpoint[0], (tree_rstpoint[1]+tree_rstpoint[3])/2, stick_width/2, 0, 2*Math.PI, true);
+            this.context.closePath();
+            this.context.stroke();
+            this.context.fill();
+            this.context.lineWidth = 5;
         }
         else{ // no branch
             this.context.lineTo(this.start_x + this.dr, this.start_y - this.stick_length);
@@ -1994,7 +2064,8 @@ var RenderingView = Backbone.View.extend({
                         if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
                             this.context.fillStyle = mapping_color.trunk;
                             this.context.strokeStyle = mapping_color.trunk;
-                            // this.context.lineWidth = 3;
+                            // this.context.lineWidth = 15;
+                            this.context.lineCap = 'round';
                             this.context.beginPath();
                             this.context.moveTo(tree_rstpoint[begin_index[short_stick][0]], tree_rstpoint[begin_index[short_stick][1]]);
                             this.context.lineTo(tree_rstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_rstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1]);
@@ -2055,6 +2126,57 @@ var RenderingView = Backbone.View.extend({
                         }
                         
                         count_short_stick++;
+
+                        if(total_draw_stick > 1){
+                            this.context.fillStyle = mapping_color.trunk;
+                            this.context.strokeStyle = mapping_color.trunk;
+                            this.context.lineCap = 'round';
+                            this.context.beginPath();
+
+                            var ori_rstpoint = [0, 0, 0, 0];
+                            ori_rstpoint[0] = tree_rstpoint[0];
+                            ori_rstpoint[1] = tree_rstpoint[1];
+                            ori_rstpoint[2] = tree_rstpoint[2];
+                            ori_rstpoint[3] = tree_rstpoint[3];
+                            tree_rstpoint[0] = tree_rstpoint[0]+this.sub_stick_length-nature/(len/2);
+                            tree_rstpoint[1] = tree_rstpoint[1]-w/2-this.sub_slop-nature/(len/2);
+                            tree_rstpoint[2] = tree_rstpoint[2]+this.sub_stick_length-nature/(len/2);
+                            tree_rstpoint[3] = tree_rstpoint[3]+w/2-this.sub_slop-nature/(len/2);
+
+                            this.context.moveTo(ori_rstpoint[0],ori_rstpoint[1]);
+                            // this.context.lineTo(tree_rstpoint[0]+this.sub_stick_length/2-nature/2, tree_rstpoint[1]-w/2-this.sub_slop/2-nature);
+                            // this.context.lineTo(tree_rstpoint[2]+this.sub_stick_length/2-nature/2, tree_rstpoint[3]+w/2-this.sub_slop/2-nature);
+                            this.context.lineTo(tree_rstpoint[0], tree_rstpoint[1]);
+
+                            // if(n < stick_pos[long_stick].length-2){
+                            if(total_draw_stick > 2){
+                                this.context.lineTo(tree_rstpoint[2], tree_rstpoint[3]);
+                                this.context.lineTo(ori_rstpoint[2], ori_rstpoint[3]);
+                                this.context.closePath();
+                                this.context.stroke();//draw line
+                                this.context.fill();//fill color
+                            }   
+
+                            else{
+                                this.context.lineTo(ori_rstpoint[2], ori_rstpoint[3]);
+                                this.context.closePath();
+                                this.context.stroke();//draw line
+                                this.context.fill();//fill color
+
+                                // this.context.beginPath();
+                                // this.context.lineWidth = 1;
+                                // this.context.arc(tree_rstpoint[0], tree_rstpoint[1], 2, 0, 2*Math.PI, true);
+                                // this.context.closePath();
+                                // this.context.stroke();
+                                // this.context.fill();
+                                // this.context.lineWidth = 5;
+                                tree_rstpoint[2] = tree_rstpoint[0];
+                                tree_rstpoint[3] = tree_rstpoint[1];
+                            }                 
+                            total_draw_stick-=1;            
+                        }
+                        real_drawing++;
+
                     }
                     // var w = weight/len;
                     
@@ -2089,55 +2211,6 @@ var RenderingView = Backbone.View.extend({
                     else
                     */ 
                     // if(n < stick_pos[long_stick].length-1){
-                    if(total_draw_stick > 1){
-                        this.context.fillStyle = mapping_color.trunk;
-                        this.context.strokeStyle = mapping_color.trunk;
-                        this.context.lineCap = 'round';
-                        this.context.beginPath();
-
-                        var ori_rstpoint = [0, 0, 0, 0];
-                        ori_rstpoint[0] = tree_rstpoint[0];
-                        ori_rstpoint[1] = tree_rstpoint[1];
-                        ori_rstpoint[2] = tree_rstpoint[2];
-                        ori_rstpoint[3] = tree_rstpoint[3];
-                        tree_rstpoint[0] = tree_rstpoint[0]+this.sub_stick_length-nature/(len/2);
-                        tree_rstpoint[1] = tree_rstpoint[1]-w/2-this.sub_slop-nature/(len/2);
-                        tree_rstpoint[2] = tree_rstpoint[2]+this.sub_stick_length-nature/(len/2);
-                        tree_rstpoint[3] = tree_rstpoint[3]+w/2-this.sub_slop-nature/(len/2);
-
-                        this.context.moveTo(ori_rstpoint[0],ori_rstpoint[1]);
-                        // this.context.lineTo(tree_rstpoint[0]+this.sub_stick_length/2-nature/2, tree_rstpoint[1]-w/2-this.sub_slop/2-nature);
-                        // this.context.lineTo(tree_rstpoint[2]+this.sub_stick_length/2-nature/2, tree_rstpoint[3]+w/2-this.sub_slop/2-nature);
-                        this.context.lineTo(tree_rstpoint[0], tree_rstpoint[1]);
-
-                        // if(n < stick_pos[long_stick].length-2){
-                        if(total_draw_stick > 2){
-                            this.context.lineTo(tree_rstpoint[2], tree_rstpoint[3]);
-                            this.context.lineTo(ori_rstpoint[2], ori_rstpoint[3]);
-                            this.context.closePath();
-                            this.context.stroke();//draw line
-                            this.context.fill();//fill color
-                        }   
-
-                        else{
-                            this.context.lineTo(ori_rstpoint[2], ori_rstpoint[3]);
-                            this.context.closePath();
-                            this.context.stroke();//draw line
-                            this.context.fill();//fill color
-
-                            this.context.beginPath();
-                            this.context.lineWidth = 1;
-                            this.context.arc(tree_rstpoint[0], tree_rstpoint[1], 2, 0, 2*Math.PI, true);
-                            this.context.closePath();
-                            this.context.stroke();
-                            this.context.fill();
-                            this.context.lineWidth = 5;
-                            tree_rstpoint[2] = tree_rstpoint[0];
-                            tree_rstpoint[3] = tree_rstpoint[1];
-                        }                 
-                        total_draw_stick-=1;            
-                    }
-                    real_drawing++;
                     
                 }                
                 continue;
@@ -2147,6 +2220,7 @@ var RenderingView = Backbone.View.extend({
             if(!jQuery.isEmptyObject(alters[long_stick][n])){
                 this.context.fillStyle = mapping_color.trunk;
                 this.context.strokeStyle = mapping_color.trunk;
+                this.context.lineCap = 'round';
                 this.context.beginPath();
                 this.context.moveTo(tree_rstpoint[begin_index[long_stick][0]], tree_rstpoint[begin_index[long_stick][1]]);
                 this.context.lineTo(tree_rstpoint[begin_index[long_stick][0]]+extra_slope[long_stick][0], tree_rstpoint[begin_index[long_stick][1]]+extra_slope[long_stick][1]);
@@ -2230,7 +2304,8 @@ var RenderingView = Backbone.View.extend({
                     if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
                         this.context.fillStyle = mapping_color.trunk;
                         this.context.strokeStyle = mapping_color.trunk;
-                        // this.context.lineWidth = 3;
+                        // this.context.lineWidth = 15;
+                        this.context.lineCap = 'round';
                         this.context.beginPath();
                         this.context.moveTo(tree_rstpoint[begin_index[short_stick][0]], tree_rstpoint[begin_index[short_stick][1]]);
                         this.context.lineTo(tree_rstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_rstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1]);
@@ -2356,16 +2431,6 @@ var RenderingView = Backbone.View.extend({
                     this.context.closePath();
                     this.context.stroke();//draw line
                     this.context.fill();//fill color
-                    /*
-                    this.context.beginPath();
-                    this.context.lineWidth = 1;
-                    this.context.arc((tree_rstpoint[2]+ tree_rstpoint[0])/2, (tree_rstpoint[3]+ tree_rstpoint[1])/2, Math.abs(tree_rstpoint[1]-tree_rstpoint[3]), 0, 2*Math.PI, true);
-                    this.context.closePath();
-                    this.context.stroke();
-                    this.context.fill();
-                    this.context.lineWidth = 5;
-                    */
-                    
                 }   
                 else{
                     this.context.lineTo(ori_rstpoint[2], ori_rstpoint[3]);
@@ -2373,13 +2438,13 @@ var RenderingView = Backbone.View.extend({
                     this.context.stroke();//draw line
                     this.context.fill();//fill color
 
-                    this.context.beginPath();
-                    this.context.lineWidth = 1;
-                    this.context.arc(tree_rstpoint[0], tree_rstpoint[1], 2, 0, 2*Math.PI, true);
-                    this.context.closePath();
-                    this.context.stroke();
-                    this.context.fill();
-                    this.context.lineWidth = 5;
+                    // this.context.beginPath();
+                    // this.context.lineWidth = 1;
+                    // this.context.arc(tree_rstpoint[0], tree_rstpoint[1], 2, 0, 2*Math.PI, true);
+                    // this.context.closePath();
+                    // this.context.stroke();
+                    // this.context.fill();
+                    // this.context.lineWidth = 5;
                     tree_rstpoint[2] = tree_rstpoint[0];
                     tree_rstpoint[3] = tree_rstpoint[1];
                 }                 
@@ -2425,27 +2490,7 @@ var RenderingView = Backbone.View.extend({
             
         }
         */
-        var stick_width = num_alter/stick_scale;
-        // end point
-        var tree_lstpoint = [0, 0, 0, 0];
-        tree_lstpoint[0] = this.start_x - this.x_dist + this.extra_x; // down point
-        tree_lstpoint[1] = this.start_y - this.y_dist - this.stick_length - this.extra_y;
-
-        tree_lstpoint[2] = this.start_x - this.x_dist + this.extra_x; // up point
-        tree_lstpoint[3] = this.start_y - this.y_dist - this.stick_length - this.extra_y - stick_width;
-
-        // find control point
-        // var m = -(layer*10)/55;
-        var m = -this.sub_slop/55;
-        // y = m(x-x1)+y1
-        var c1 = m*(tree_lstpoint[0] - (this.start_x - this.dl)) + tree_lstpoint[1];
-        var c2 = m*(tree_lstpoint[2] - this.start_x) + tree_lstpoint[3];
-
-        var cp1 = [this.start_x - this.dl, this.start_y-100];
-        var cp2 = [this.start_x - this.dl, c1];
         
-        var cp3 = [this.start_x, c2];
-        var cp4 = [this.start_x, this.start_y-100];
 
         /*
         // draw branch
@@ -2484,7 +2529,7 @@ var RenderingView = Backbone.View.extend({
         }
         */
 
-        var weight = Math.abs(tree_lstpoint[3] - tree_lstpoint[1]);
+        
         var stick_pos = {"up": [], "down": []};
         var long_stick, short_stick;
         // alters["up"], alters["down"]
@@ -2539,21 +2584,50 @@ var RenderingView = Backbone.View.extend({
         var u = alters["up"].length;
         var d = alters["down"].length;
         
+
         var total_draw_stick = 0;
+        var cnt_short = 0;
         for(var n = 0, len = stick_pos[long_stick].length; n < len; n++){
-            if(alters[long_stick][n]["leaf"].length > self.filter_cnt)
+            if(alters[long_stick][n]["leaf"].length > self.filter_cnt){
                 total_draw_stick++;
+                if(stick_pos[short_stick][cnt_short] == n){
+                    cnt_short++;
+                }
+            }
+            else{
+                if(stick_pos[short_stick][cnt_short] == n){
+                    if(alters[short_stick][cnt_short]["leaf"].length > self.filter_cnt){
+                        total_draw_stick++;
+                    }
+                    cnt_short++;
+                }
+            }
         }
 
-        var total_draw_stick_short = 0;
-        for(var n = 0, len = stick_pos[short_stick].length; n < len; n++){
-            if(alters[short_stick][n]["leaf"].length > self.filter_cnt)
-                total_draw_stick_short++;
-        }
 
-        if(total_draw_stick_short > total_draw_stick)
-            total_draw_stick = total_draw_stick_short;
+        var stick_width = total_draw_stick/stick_scale;
+        // end point
+        var tree_lstpoint = [0, 0, 0, 0];
+        tree_lstpoint[0] = this.start_x - this.x_dist + this.extra_x; // down point
+        tree_lstpoint[1] = this.start_y - this.y_dist - this.stick_length - this.extra_y;
 
+        tree_lstpoint[2] = this.start_x - this.x_dist + this.extra_x; // up point
+        tree_lstpoint[3] = this.start_y - this.y_dist - this.stick_length - this.extra_y - stick_width;
+
+        // find control point
+        // var m = -(layer*10)/55;
+        var m = -this.sub_slop/55;
+        // y = m(x-x1)+y1
+        var c1 = m*(tree_lstpoint[0] - (this.start_x - this.dl)) + tree_lstpoint[1];
+        var c2 = m*(tree_lstpoint[2] - this.start_x) + tree_lstpoint[3];
+
+        var cp1 = [this.start_x - this.dl, this.start_y-100];
+        var cp2 = [this.start_x - this.dl, c1];
+        
+        var cp3 = [this.start_x, c2];
+        var cp4 = [this.start_x, this.start_y-100];
+
+        var weight = Math.abs(tree_lstpoint[3] - tree_lstpoint[1]);
         // draw branch
         this.context.moveTo(this.start_x - this.dl, this.start_y + this.temp_height);
         if(total_draw_stick > 0){
@@ -2570,6 +2644,15 @@ var RenderingView = Backbone.View.extend({
 
             this.context.stroke();//draw line
             this.context.fill();//fill color
+
+            this.context.beginPath();
+            this.context.lineWidth = 1;
+            this.context.arc(tree_lstpoint[0], (tree_lstpoint[1]+tree_lstpoint[3])/2, stick_width/2, 0, 2*Math.PI, true);
+            this.context.closePath();
+            this.context.stroke();
+            this.context.fill();
+            this.context.lineWidth = 5;
+
         }
         else{ // no branch
             this.context.lineTo(this.start_x - this.dl, this.start_y - this.stick_length);
@@ -2641,6 +2724,7 @@ var RenderingView = Backbone.View.extend({
                             this.context.fillStyle = mapping_color.trunk;
                             this.context.strokeStyle = mapping_color.trunk;
                             this.context.lineCap = 'round';
+                            // this.context.lineWidth = 15;
                             this.context.beginPath();
                             this.context.moveTo(tree_lstpoint[begin_index[short_stick][0]], tree_lstpoint[begin_index[short_stick][1]]);
                             this.context.lineTo(tree_lstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_lstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1]);
@@ -2716,6 +2800,7 @@ var RenderingView = Backbone.View.extend({
                         tree_lstpoint[2] = tree_lstpoint[2]-this.sub_stick_length+nature/(len/2);
                         tree_lstpoint[3] = tree_lstpoint[3]+w/2-this.sub_slop-nature/(len/2);
 
+                        this.context.lineCap = 'round';
                         this.context.fillStyle = mapping_color.trunk;
                         this.context.strokeStyle = mapping_color.trunk;
                         this.context.beginPath();
@@ -2736,13 +2821,13 @@ var RenderingView = Backbone.View.extend({
                             this.context.stroke();//draw line
                             this.context.fill();//fill color
 
-                            this.context.beginPath();
-                            this.context.lineWidth = 1;
-                            this.context.arc(tree_lstpoint[0], tree_lstpoint[1], 2, 0, 2*Math.PI, true);
-                            this.context.closePath();
-                            this.context.stroke();
-                            this.context.fill();
-                            this.context.lineWidth = 5;
+                            // this.context.beginPath();
+                            // this.context.lineWidth = 1;
+                            // this.context.arc(tree_lstpoint[0], tree_lstpoint[1], 2, 0, 2*Math.PI, true);
+                            // this.context.closePath();
+                            // this.context.stroke();
+                            // this.context.fill();
+                            // this.context.lineWidth = 5;
                             tree_lstpoint[2] = tree_lstpoint[0];
                             tree_lstpoint[3] = tree_lstpoint[1];                    
                         }
@@ -2756,6 +2841,7 @@ var RenderingView = Backbone.View.extend({
             if(!jQuery.isEmptyObject(alters[long_stick][n])){
                 this.context.fillStyle = mapping_color.trunk;
                 this.context.strokeStyle = mapping_color.trunk;
+                this.context.lineCap = 'round';
                 this.context.beginPath();
                 this.context.moveTo(tree_lstpoint[begin_index[long_stick][0]], tree_lstpoint[begin_index[long_stick][1]]);
                 this.context.lineTo(tree_lstpoint[begin_index[long_stick][0]]+extra_slope[long_stick][0], tree_lstpoint[begin_index[long_stick][1]]+extra_slope[long_stick][1]);
@@ -2834,6 +2920,8 @@ var RenderingView = Backbone.View.extend({
                     if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
                         this.context.fillStyle = mapping_color.trunk;
                         this.context.strokeStyle = mapping_color.trunk;
+                        // this.context.lineWidth = 15;
+                        this.context.lineCap = 'round';
                         this.context.beginPath();
                         this.context.moveTo(tree_lstpoint[begin_index[short_stick][0]], tree_lstpoint[begin_index[short_stick][1]]);
                         this.context.lineTo(tree_lstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_lstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1]);
@@ -2944,6 +3032,7 @@ var RenderingView = Backbone.View.extend({
                 tree_lstpoint[2] = tree_lstpoint[2]-this.sub_stick_length+nature/(len/2);
                 tree_lstpoint[3] = tree_lstpoint[3]+w/2-this.sub_slop-nature/(len/2);
 
+                this.context.lineCap = 'round';
                 this.context.fillStyle = mapping_color.trunk;
                 this.context.strokeStyle = mapping_color.trunk;
                 this.context.beginPath();
@@ -2964,13 +3053,13 @@ var RenderingView = Backbone.View.extend({
                     this.context.stroke();//draw line
                     this.context.fill();//fill color
 
-                    this.context.beginPath();
-                    this.context.lineWidth = 1;
-                    this.context.arc(tree_lstpoint[0], tree_lstpoint[1], 2, 0, 2*Math.PI, true);
-                    this.context.closePath();
-                    this.context.stroke();
-                    this.context.fill();
-                    this.context.lineWidth = 5;
+                    // this.context.beginPath();
+                    // this.context.lineWidth = 1;
+                    // this.context.arc(tree_lstpoint[0], tree_lstpoint[1], 2, 0, 2*Math.PI, true);
+                    // this.context.closePath();
+                    // this.context.stroke();
+                    // this.context.fill();
+                    // this.context.lineWidth = 5;
                     tree_lstpoint[2] = tree_lstpoint[0];
                     tree_lstpoint[3] = tree_lstpoint[1];                    
                 }
@@ -3026,13 +3115,14 @@ var RenderingView = Backbone.View.extend({
 
         this.context.fillStyle = mapping_color.trunk;
         this.context.strokeStyle = mapping_color.trunk;
-        this.context.closePath();
-        this.context.beginPath();
-        this.context.lineWidth = 1;
-        this.context.arc(p[0], p[1], 2, 0, 2*Math.PI, true);
-        this.context.closePath();
-        this.context.stroke();
-        this.context.fill();
+        // this.context.closePath();
+        // this.context.beginPath();
+        // this.context.lineWidth = 1;
+        this.context.lineCap = 'round';
+        // this.context.arc(p[0], p[1], 2, 0, 2*Math.PI, true);
+        // this.context.closePath();
+        // this.context.stroke();
+        // this.context.fill();
         this.context.lineWidth = 5;
         while(g<len){
             // if(self.on_moving == 1){
@@ -3189,13 +3279,13 @@ var RenderingView = Backbone.View.extend({
                         
                     }
 
-                    if(tree_size[self.ego_label][4] == "none" && self.snap == 0){
-                        if(point_x > tree_size[self.ego_label][1])
-                            tree_size[self.ego_label][1] = point_x;
-                        if(point_x < tree_size[self.ego_label][0])
-                            tree_size[self.ego_label][0] = point_x;
-                        if(point_y < tree_size[self.ego_label][2])
-                            tree_size[self.ego_label][2] = point_y;
+                    if(self.tree_size[self.ego_label][4] == "none" && self.snap == 0){
+                        if(point_x > self.tree_size[self.ego_label][1])
+                            self.tree_size[self.ego_label][1] = point_x;
+                        if(point_x < self.tree_size[self.ego_label][0])
+                            self.tree_size[self.ego_label][0] = point_x;
+                        if(point_y < self.tree_size[self.ego_label][2])
+                            self.tree_size[self.ego_label][2] = point_y;
                     }
 
 
@@ -3289,17 +3379,18 @@ var RenderingView = Backbone.View.extend({
                         } 
                     }
                     
-                    this.context.lineWidth = 1;
-                    this.context.beginPath();
-                    this.context.arc(point_x, point_y, 2, 0, 2*Math.PI, true);
-                    this.context.closePath();
-                    this.context.stroke();
-                    this.context.fill();
+                    // this.context.lineWidth = 1;
+                    // this.context.beginPath();
+                    // this.context.arc(point_x, point_y, 2, 0, 2*Math.PI, true);
+                    // this.context.closePath();
+                    // this.context.stroke();
+                    // this.context.fill();
                     this.context.beginPath();
                     this.context.lineWidth = 5;
+                    this.context.lineCap = 'round';
                     this.context.moveTo(p[0], p[1]);
                     this.context.lineTo(point_x, point_y);
-                    this.context.closePath();
+                    // this.context.closePath();
                     this.context.stroke();//draw line
                     p[0] = point_x;
                     p[1] = point_y;
@@ -3312,17 +3403,18 @@ var RenderingView = Backbone.View.extend({
                 if(sub%3 > 0 || (sub%3 == 0 && sub>0 && len-g>0)){
                     this.context.fillStyle = mapping_color.trunk;
                     this.context.strokeStyle = mapping_color.trunk;
-                    this.context.beginPath();
-                    this.context.lineWidth = 1;
-                    this.context.arc(point_x, point_y, 2, 0, 2*Math.PI, true);
-                    this.context.closePath();
-                    this.context.stroke();
-                    this.context.fill();
+                    // this.context.beginPath();
+                    // this.context.lineWidth = 1;
+                    // this.context.arc(point_x, point_y, 2, 0, 2*Math.PI, true);
+                    // this.context.closePath();
+                    // this.context.stroke();
+                    // this.context.fill();
                     this.context.beginPath();
                     this.context.lineWidth = 5;
+                    this.context.lineCap = 'round';
                     this.context.moveTo(p[0], p[1]);
                     this.context.lineTo(point_x, point_y);
-                    this.context.closePath();
+                    // this.context.closePath();
                     this.context.stroke();//draw line
                     // this.context.fill();//fill color
                 }
@@ -3563,8 +3655,8 @@ var RenderingView = Backbone.View.extend({
             stick_right_side = [stick_right_side[0] - main_step[0], stick_right_side[1] + main_step[1]];
             stick_left_side = [stick_left_side[0] + main_step[0], stick_left_side[1] + main_step[1]];
              
-            if(tree_size[self.ego_label][4] == "none" && self.snap == 0)
-                tree_size[self.ego_label][3] = stick_left_side[1];
+            if(self.tree_size[self.ego_label][4] == "none" && self.snap == 0)
+                self.tree_size[self.ego_label][3] = stick_left_side[1];
 
             ctx.stroke();
             ctx.fill();
@@ -4039,6 +4131,7 @@ var RenderingView = Backbone.View.extend({
         this.context.fill();
         // ctx.restore();
         this.context.lineWidth = 5;
+        this.context.lineCap = 'round';
     },
     
     leaf_style_1: function(ctx, cx, cy, radius, color, angle, l_id) {
@@ -4064,7 +4157,8 @@ var RenderingView = Backbone.View.extend({
         ctx.stroke();
         this.context.fill();
         ctx.restore();
-        // this.context.lineWidth = 5;
+        this.context.lineWidth = 5;
+        this.context.lineCap = 'round';
     },
 
     tree_fruit: function(context, posx, posy, r){
@@ -4199,14 +4293,14 @@ var RenderingView = Backbone.View.extend({
         this.stick_dy = 50;
         this.sub_stick_length = 55;
         this.sub_slop = 0;
-        // console.log(tree_size);
+        // console.log(self.tree_size);
         this.snaping_grid = initial_grid;
 
         var structure = self.model.get("tree_structure");
         var snap_tree = self.model.get("snapshot");
         this.ego_label = snap_tree[0] + "_" + snap_tree[1];
-        var snap_width = tree_size[this.ego_label][1] - tree_size[this.ego_label][0] + 300;
-        var snap_height = tree_size[this.ego_label][3] - tree_size[this.ego_label][2] + 300;
+        var snap_width = self.tree_size[this.ego_label][1] - self.tree_size[this.ego_label][0] + 300;
+        var snap_height = self.tree_size[this.ego_label][3] - self.tree_size[this.ego_label][2] + 300;
         
         this.context.lineWidth = 5; // set the style
 
@@ -4254,9 +4348,9 @@ var RenderingView = Backbone.View.extend({
         self.stick_length = self.tree_tall/self.total_layer; //_dist
         var layer_total_alter = {"right": [], "left": []};
 
-        // this.start_y = this.snapCanvas.height/this.snap_scale - (tree_size[this.ego_label][3]-((this.myCanvas.height/0.15)-this.stick_length-380)) - 100; //_gly
-        // this.start_y = (tree_size[this.ego_label][5] - tree_size[this.ego_label][2]) + 100; // align top
-        this.start_y = this.snapCanvas.height/this.snap_scale - (tree_size[this.ego_label][3] - tree_size[this.ego_label][5]) - 150; // align bottom
+        // this.start_y = this.snapCanvas.height/this.snap_scale - (self.tree_size[this.ego_label][3]-((this.myCanvas.height/0.15)-this.stick_length-380)) - 100; //_gly
+        // this.start_y = (self.tree_size[this.ego_label][5] - self.tree_size[this.ego_label][2]) + 100; // align top
+        this.start_y = this.snapCanvas.height/this.snap_scale - (self.tree_size[this.ego_label][3] - self.tree_size[this.ego_label][5]) - 150; // align bottom
 
         for(var s = 0; s < self.total_layer; s++){
             var l = ego["left"][s]["level"]["down"].length + ego["left"][s]["level"]["up"].length;
@@ -4280,7 +4374,7 @@ var RenderingView = Backbone.View.extend({
             }
         }
         // this.start_x = ((stick_length)*this.sub_stick_length + this.x_dist) + 50; //_glx
-        this.start_x = tree_size[this.ego_label][4] - tree_size[this.ego_label][0] + 150;
+        this.start_x = self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0] + 150;
 
         var ori_dr = right_side;
         var ori_dl = left_side;
