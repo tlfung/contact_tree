@@ -1148,7 +1148,7 @@ def set_default_mapping(all_data, table, attr, mapping):
                             real_data = precur.fetchall()
                             for dist_d in real_data:
                                 binary_index[compt].append(dist_d[attr[compt]])
-                            
+
                             if binary_index[compt].index(d[attr[compt]]) < (len(binary_index[compt])*0.5):
                                 # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
                                 db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
@@ -1206,8 +1206,7 @@ def set_default_mapping(all_data, table, attr, mapping):
                                         if int(d[attr[compt]]) <= int(mapping[attr[compt]][order]) and int(d[attr[compt]]) > int(mapping[attr[compt]][order+1]):
                                             db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order+1) + ' WHERE e_id=' + str(d['e_id']) + ';')
                                             break
-
-                            else:
+                            elif compt == 'branch' or compt == 'leaf_color' or compt == 'root':
                                 if int(d[attr[compt]]) <= int(mapping[attr[compt]][0]):
                                     db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
                                 elif int(d[attr[compt]]) >= int(mapping[attr[compt]][-1]):
@@ -1217,6 +1216,20 @@ def set_default_mapping(all_data, table, attr, mapping):
                                         if int(d[attr[compt]]) > int(mapping[attr[compt]][order-1]) and int(d[attr[compt]]) <= int(mapping[attr[compt]][order]):
                                             db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
                                             break
+                            else:
+                                size_map = mapping[attr[compt]][1]
+                                val_map = mapping[attr[compt]][0]
+                                
+                                if int(d[attr[compt]]) <= int(val_map[0]):
+                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(size_map[0]) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                elif int(d[attr[compt]]) >= int(val_map[-1]):
+                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(size_map[len(val_map)]) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                else:
+                                    for order in range(1, len(val_map)):
+                                        if int(d[attr[compt]]) > int(val_map[order-1]) and int(d[attr[compt]]) <= int(val_map[order]):
+                                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(size_map[order]) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                            break
+
                                     
                     else:
                         # if str(collecting_data['min']).isdigit():
@@ -1455,12 +1468,14 @@ def update_layer(request):
         # print ori_column
         # print new_column
         # print val_map
+        
         clause.execute('SET SQL_SAFE_UPDATES = 0;')
         database.commit()
 
         if len(select_ego) == 0:
             # update_layer_val += ");"
             return_json = simplejson.dumps("no update", indent=4, use_decimal=True)
+            clause.execute('SET SQL_SAFE_UPDATES = 1;')
             print return_json
             return HttpResponse(return_json)
 
@@ -1542,7 +1557,7 @@ def update_layer(request):
                     
                     print update_layer_val
                     clause.execute(update_layer_val)
-            else:
+            elif new_column == 'ctree_branch' or new_column == 'ctree_leaf_color' or new_column == 'ctree_root':
                 for layer_order in range(len(val_map)):
                     if layer_order == 0:
                         update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order) + " WHERE (`" + ori_column + "`<=" + str(val_map[layer_order])
@@ -1565,6 +1580,42 @@ def update_layer(request):
                             print update_layer_val
                             clause.execute(update_layer_val)
                             update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order+1) + " WHERE (`" + ori_column + "`>=" + str(val_map[layer_order])
+                            # if len(select_ego) > 0:
+                            update_layer_val += ") AND ("
+                            for update_ego in select_ego[:-1]:
+                                update_layer_val += "egoid='" + update_ego + "' OR "
+
+                            update_layer_val += "egoid='" + select_ego[-1] + "');"  
+                    # else:
+                    #     update_layer_val += ");"
+                        
+                    print update_layer_val
+                    clause.execute(update_layer_val)
+
+            else: # for size mapping
+                size_map = json.loads(list_request[4])
+                for layer_order in range(len(val_map)):
+                    if layer_order == 0:
+                        update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(size_map[layer_order]) + " WHERE (`" + ori_column + "`<=" + str(val_map[layer_order])
+                        # if len(select_ego) > 0:
+                        update_layer_val += ") AND ("
+                        for update_ego in select_ego[:-1]:
+                            update_layer_val += "egoid='" + update_ego + "' OR "
+
+                        update_layer_val += "egoid='" + select_ego[-1] + "');"  
+                    else:
+                        update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(size_map[layer_order]) + " WHERE (" + str(val_map[layer_order-1]) + "<`" + ori_column + "` AND `" + ori_column + "`<=" + str(val_map[layer_order])
+                        # if len(select_ego) > 0:
+                        update_layer_val += ") AND ("
+                        for update_ego in select_ego[:-1]:
+                            update_layer_val += "egoid='" + update_ego + "' OR "
+
+                        update_layer_val += "egoid='" + select_ego[-1] + "');"
+                        
+                        if layer_order == len(val_map)-1:
+                            print update_layer_val
+                            clause.execute(update_layer_val)
+                            update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(size_map[layer_order+1]) + " WHERE (`" + ori_column + "`>=" + str(val_map[layer_order])
                             # if len(select_ego) > 0:
                             update_layer_val += ") AND ("
                             for update_ego in select_ego[:-1]:
