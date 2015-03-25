@@ -296,8 +296,8 @@ var ControlView = Backbone.View.extend({
             onChange: function(obj) {
                 // tree_size = {};
                 var val = obj.fromNumber;
-                self.model.set({"filter_contact":val});
                 self.model.set({"tree_boundary":{}});
+                self.model.set({"filter_contact":val});
             }
         });
 

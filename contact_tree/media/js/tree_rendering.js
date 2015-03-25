@@ -3140,7 +3140,8 @@ var RenderingView = Backbone.View.extend({
                     for(var t = 0; t < len; t++){
                         tip += (leaf_table[sum_leaf[t].size]/2);
                     }
-                    this.tree_fruit(this.context, p[0]+(dir_v[0]*tip), p[1]+(dir_v[1]*tip), fruit_size);
+                    if(fruit_size != 0)
+                        this.tree_fruit(this.context, p[0]+(dir_v[0]*tip), p[1]+(dir_v[1]*tip), fruit_size);
                 }
                 
             }
@@ -3152,7 +3153,8 @@ var RenderingView = Backbone.View.extend({
                     for(var t = g; t < len; t++){
                         tip += leaf_table[sum_leaf[t].size]/2;
                     }
-                    this.tree_fruit(this.context, p[0]+(dir_v[0]*(15+tip)), p[1]+(dir_v[1]*(15+tip)), fruit_size);
+                    if(fruit_size != 0)
+                        this.tree_fruit(this.context, p[0]+(dir_v[0]*(15+tip)), p[1]+(dir_v[1]*(15+tip)), fruit_size);
                 }
 
                 for(var h = 0; h < cluster; h++){ 
