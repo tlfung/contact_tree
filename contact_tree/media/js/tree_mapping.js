@@ -1640,7 +1640,7 @@ var MappingView = Backbone.View.extend({
         for(s in component_attribute[data_mode]){
             if(s == "none"){}
             else{
-                if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["root"]))
+                if(component_attribute[data_mode][s][0].length == 0)
                     continue;
             }
             var selection_opt = document.createElement('option');

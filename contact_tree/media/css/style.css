@@ -2,7 +2,7 @@ a:focus{ outline: none; }
 
 .myfont1{
     font-family: 'Alegreya', serif;
-    font-size: 42;
+    font-size: 42px;
 }
 .myfont2{
     font-family: 'Roboto Condensed', sans-serif;
@@ -12,14 +12,14 @@ a:focus{ outline: none; }
 	font-family: 'Roboto Condensed', sans-serif;
 	font-weight: normal;
 	/*font-family: "Calibri"; */
-	font-size: 18;
+	font-size: 18px;
 }
 
 .myfont4{
   font-family: 'Roboto Condensed', sans-serif;
   font-weight: normal;
   /*font-family: "Calibri"; */
-  font-size: 16;
+  font-size: 16px;
 }
 
 .relative{
@@ -84,39 +84,39 @@ table, th, td {
 
 .sidekey_cmpt{
   cursor:pointer; 
-  font-size:18;
-  border:solid 1;
-  border-radius:5;
+  font-size:18px;
+  border:1px solid;
+  border-radius:5px;
   background: white;
   padding: 0 3 0 3;
 }
 
 .sidekey_map{
-  font-size:18;
-  border:solid 1;
-  border-radius:5;
+  font-size:18px;
+  border:1px solid;
+  border-radius:5px;
   visibility:hidden;
   background: rgb(245, 244, 174);
   /*background: rgb(252, 180, 183);*/
-  padding: 0 3 0 3;
+  padding: 0 3px;
 }
 
 .layer_label{
-  border:solid 1; 
-  border-radius:3; 
+  border:1px solid; 
+  border-radius:3px; 
   position:absolute; 
   background:whitesmoke;
 }
 
 .description_box{
-  border:solid 1;
-  border-radius:5;
+  border:1px solid;
+  border-radius:5px;
   width:100%;
 }
 
 .mark_box{
-  border: solid 1 gray;
-  border-radius: 5;
+  border:1px solid gray;
+  border-radius: 5px;
   background: rgb(252, 243, 226);
 }
 
@@ -146,6 +146,7 @@ table, th, td {
   min-height: 30px;
   padding: 10px;
 }
+
 .sortable-item {
   background-color: #FFF;
   border: 1px solid #000;
@@ -193,7 +194,7 @@ table, th, td {
   padding: 0px 8px;
   border-radius: 3px;
   border: 3px;
-  font-size: 16;
+  font-size: 16px;
 }
 
 .component_selector{
