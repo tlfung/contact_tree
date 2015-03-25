@@ -1095,15 +1095,18 @@ def set_default_mapping(all_data, table, attr, mapping):
     db.query('SET SQL_SAFE_UPDATES = 0;')
     db.conn.commit()
     # print mapping
-    for d in all_data:
-        for compt in attr: 
+    for d in all_data:        
+        for compt in attr:
             if attr[compt] != 'none' and d[attr[compt]] is None:
-                print 'UPDATE ' + table + ' SET ctree_' + compt + '=-100 WHERE e_id=' + str(d['e_id']) + ';'
+                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=-100 WHERE e_id=' + str(d['e_id']) + ';'
                 db.query('UPDATE ' + table + ' SET ctree_' + compt + '=-100 WHERE e_id=' + str(d['e_id']) + ';')
-                continue               
+                continue         
+            cur = db.query('SELECT * FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
+            collecting_data = cur.fetchone()   
+            
             if compt == 'trunk' or compt == 'bside':
                 if attr[compt] in mapping:
-                    if str(collecting_data['min']).isdigit():
+                    if collecting_data["type"] == "numerical":
                         if int(d[attr[compt]]) <= int(mapping[attr[compt]]["0"][0]):
                             db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
                         else:
@@ -1118,10 +1121,11 @@ def set_default_mapping(all_data, table, attr, mapping):
                             db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')                        
 
                 else:
-                    cur = db.query('SELECT min, max, attr_range, type FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
-                    collecting_data = cur.fetchone()
-                    if str(collecting_data['min']).isdigit():
-                        mid = math.floor((int(collecting_data['max']) + int(collecting_data['min']))/2)
+                    # cur = db.query('SELECT min, max, attr_range, type FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
+                    # collecting_data = cur.fetchone()
+                    # if str(collecting_data['min']).isdigit():
+                    if str(collecting_data["type"]) == "numerical":
+                        mid = math.floor((int(collecting_data['max']) + int(collecting_data['min']))*0.5)
                         if int(d[attr[compt]]) <= int(mid):
                             # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
                             db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
@@ -1130,7 +1134,7 @@ def set_default_mapping(all_data, table, attr, mapping):
                             db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
                     else:
                         if compt in binary_index:
-                            if binary_index[compt].index(d[attr[compt]]) < len(binary_index[compt])/2:
+                            if binary_index[compt].index(d[attr[compt]]) < (len(binary_index[compt])*0.5):
                                 # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
                                 db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
                             else:
@@ -1138,13 +1142,14 @@ def set_default_mapping(all_data, table, attr, mapping):
                                 db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
 
                         else:
+                            # print 'SELECT DISTINCT(' + attr[compt] + ') FROM ' + table + ' ORDER BY(' + attr[compt] + ');'
                             binary_index[compt] = []
-                            precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + table + ';')
+                            precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + table + ' ORDER BY(' + attr[compt] + ');')
                             real_data = precur.fetchall()
-                            for d in real_data:
-                                binary_index[compt].append(d["DISTINCT(' + attr[compt] + ')"])
-
-                            if binary_index[compt].index(d[attr[compt]]) < len(binary_index[compt])/2:
+                            for dist_d in real_data:
+                                binary_index[compt].append(dist_d[attr[compt]])
+                            
+                            if binary_index[compt].index(d[attr[compt]]) < (len(binary_index[compt])*0.5):
                                 # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
                                 db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
                             else:
@@ -1153,8 +1158,8 @@ def set_default_mapping(all_data, table, attr, mapping):
 
 
             if compt == 'fruit_size' or compt == 'leaf_size' or compt == 'leaf_color' or compt == 'branch' or compt == 'root':
-                cur1 = db.query('SELECT * FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
-                collecting_data = cur1.fetchone()
+                # cur1 = db.query('SELECT * FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
+                # collecting_data = cur1.fetchone()
                 if attr[compt] == "none":
                     if compt == 'fruit_size':
                         db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
@@ -1214,25 +1219,45 @@ def set_default_mapping(all_data, table, attr, mapping):
                                             break
                                     
                     else:
-                        if str(collecting_data['min']).isdigit():
-                            if collecting_data['attr_range'] < 20:
-                                reorder = int(d[attr[compt]]) - int(collecting_data['min'])
-                                if reorder > 15:
-                                    reorder = 15 # set restrictions
+                        # if str(collecting_data['min']).isdigit():
+                        if collecting_data["type"] == "numerical":
+                            gap = collecting_data['attr_range']/9.0
+                            reorder = []
+                            for g in range(collecting_data["min"], collecting_data["max"]+1, gap):
+                                reorder.append(math.round(g*100)/100.0)
+                            
+                            if len(reorder) < 9:
+                                reorder.appenf(collecting_data["max"])
+
+                            if int(d[attr[compt]]) <= reorder[0]:
+                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                            elif int(d[attr[compt]]) >= reorder[-1]:
+                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(reorder)) + ' WHERE e_id=' + str(d['e_id']) + ';')
                             else:
-                                if len(branch_index) == 0:
-                                    for r in range(int(collecting_data['min']) + (collecting_data['attr_range']/10), int(collecting_data['max'])- (collecting_data['attr_range']/10), collecting_data['attr_range']/10):
-                                        branch_index.append(r)
-                                    print branch_index
-                                reorder = takeClosest(int(d[attr[compt]]), branch_index)
+                                for order in range(1, len(reorder)):
+                                    if int(d[attr[compt]]) > reorder[order-1] and int(d[attr[compt]]) <= reorder[order]:
+                                        db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                        break
+                            # if collecting_data['attr_range'] < 20:
+                            #     reorder = int(d[attr[compt]]) - int(collecting_data['min'])
+                            #     if reorder > 15:
+                            #         reorder = 15 # set restrictions
+                            # else:
+                            #     if len(branch_index) == 0:
+                            #         for r in range(int(collecting_data['min']) + (collecting_data['attr_range']/10), int(collecting_data['max'])- (collecting_data['attr_range']/10), collecting_data['attr_range']/10):
+                            #             branch_index.append(r)
+                            #         print branch_index
+                            #     reorder = takeClosest(int(d[attr[compt]]), branch_index)
+
                             # print 'UPDATE ' + table + ' SET ctree_' + compt + '=' + str(reorder) + ' WHERE e_id=' + str(d['e_id']) + ';'
-                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(reorder) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(reorder) + ' WHERE e_id=' + str(d['e_id']) + ';')
                         else:
                             if len(branch_index) == 0:
-                                precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + table + ';')
+                                precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + table + ' ORDER BY(' + attr[compt] + ');')
                                 real_data = precur.fetchall()
-                                for d in real_data:
-                                    branch_index.append(d["DISTINCT(' + attr[compt] + ')"])
+                                for dist_d in real_data:
+                                    branch_index.append(dist_d[attr[compt]])
+                                
                             db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(branch_index.index(d[attr[compt]])) + ' WHERE e_id=' + str(d['e_id']) + ';')                   
 
     db.query('SET SQL_SAFE_UPDATES = 1;')
@@ -1314,13 +1339,12 @@ def one_contact_update(request):
     # print request.GET['contact']
     if request.GET.get('contact'):
         list_request = request.GET['contact'].split(":-")
-        
         attr = json.loads(list_request[0])
         ego = list_request[1]
         table = list_request[2]
         mapping = json.loads(list_request[3])
         # print list_request
-        print mapping
+        # print mapping
         # attr['branch'] = 'age'
         precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + ego + '";')
         all_data = precur.fetchall()

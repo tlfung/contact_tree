@@ -210,6 +210,247 @@ var MappingView = Backbone.View.extend({
             container.appendChild(selection_opt);
         }
 
+        // set user's map
+        if(attr_map["trunk"] != "none"){
+            if(attr_map["trunk"] in attribute_mapping){
+                $("#mark_group_select").empty();
+                $("#sidekey_operation").show();
+                var attr_container = document.getElementById("mark_group_select");
+                // $("#mark_group").text("✔ as Left Side of Trunk: 【NOTE】");
+                $("#mark_group").html("<b>NOTE: Blue</b> as left trunk | <b>Red</b> as right trunk");
+                $("#mark_group").show();
+                var attr_container = document.getElementById("mark_group_select");
+                if(component_attribute[data_mode][attr_map["trunk"]][5] == "categorical" || component_attribute[data_mode][attr_map["trunk"]][5] == "boolean"){
+                    var group1 = document.createElement("div");
+                    var group2 = document.createElement("div");
+                    var list1 = document.createElement("ul");
+                    var list2 = document.createElement("ul");
+                    group1.setAttribute("class", "column left first");
+                    group2.setAttribute("class", "column left");
+
+                    list1.id = "mapping_group1";
+                    list2.id = "mapping_group2";
+                    list1.setAttribute("class", "sortable-list");
+                    list2.setAttribute("class", "sortable-list");
+
+                    // list1.setAttribute("style", "background-color:#21b2ef;");rgba(33, 178, 239, 0.5)
+                    // list2.setAttribute("style", "background-color:#ec5b5e;");rgba(236, 91, 94, 0.5)
+
+                    list1.setAttribute("style", "background-color:rgba(33, 178, 239, 0.5);");
+                    list2.setAttribute("style", "background-color:rgba(236, 91, 94, 0.5);");
+                    
+
+                    for(var c0 = 0; c0 < attribute_mapping[attr_map["trunk"]][0].length; c0++){
+                        var item = document.createElement("li");
+                        item.setAttribute("class", "sortable-item");
+                        item.innerHTML = attribute_mapping[attr_map["trunk"]][0][c0];
+                        // item.value = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
+                        item.value = attribute_mapping[attr_map["trunk"]][0][c0];
+                        list1.appendChild(item);
+                    }
+                    for(var c1 = 0; c1 < attribute_mapping[attr_map["trunk"]][1].length; c1++){
+                        var item = document.createElement("li");
+                        item.setAttribute("class", "sortable-item");
+                        item.innerHTML = attribute_mapping[attr_map["trunk"]][1][c1];
+                        // item.value = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
+                        item.value = attribute_mapping[attr_map["trunk"]][1][c1];;
+                        list2.appendChild(item);
+                    }
+                    
+                    group1.appendChild(list1);
+                    group2.appendChild(list2);
+                    attr_container.appendChild(group1);
+                    attr_container.appendChild(group2);
+
+                    $('#mark_group_select .sortable-list').sortable({
+                        connectWith: '#mark_group_select .sortable-list'
+                    });
+                }
+                else{
+                    var attr_min = parseInt(component_attribute[data_mode][attr_map["trunk"]][1]);
+                    var attr_max = parseInt(component_attribute[data_mode][attr_map["trunk"]][2]);
+                    // attr_container.setAttribute("style", "position:relative; width:100%;");
+
+                    var sep = document.createElement("div");
+                    var sep_title = document.createElement("span");
+                    // var sep_input = document.createElement("input");
+                    var group_slider = document.createElement("div");
+                    var range = document.createElement("div");
+                    var range_min = document.createElement("span");
+                    var range_max = document.createElement("span");
+                    
+                    sep_title.id = "sep_group";
+                    sep_title.innerHTML = parseInt(attribute_mapping[attr_map["trunk"]][0]);
+                    sep_title.value = parseInt(attribute_mapping[attr_map["trunk"]][0]);
+                    group_slider.id = "binary_slider";
+                    sep_title.setAttribute("style", "position:absolute;");
+                    sep.setAttribute("style", "margin-top:10px; position:relative; width:100%; margin-left:5px; height:30px;");
+                    // group_slider.setAttribute("style", "background:rgba(236, 91, 94, 0.5); margin-top:30px; margin-left:5px; width:100%;");
+                    group_slider.setAttribute("style", "background:rgba(236, 91, 94, 0.5); position:absolute; top:25px; width:100%;");
+
+                    range.setAttribute("style", " width:100%; margin-top:10px;");
+                    range_min.innerHTML = attr_min;
+                    range_max.innerHTML = attr_max;
+                    range_min.setAttribute("class", "left");
+                    range_max.setAttribute("class", "right");
+
+                    // group_slider.appendChild(group_handle);
+                    sep.appendChild(sep_title);
+                    sep.appendChild(group_slider);
+                    // sep.appendChild(sep_input);
+                    range.appendChild(range_min);
+                    range.appendChild(range_max);
+                    attr_container.appendChild(sep);
+                    // attr_container.appendChild(sep_title);
+                    // attr_container.appendChild(group_slider);
+                    attr_container.appendChild(range);
+
+                    $("#sep_group").css({"left": 100*(parseInt(attribute_mapping[attr_map["trunk"]][0])-attr_min)/((attr_max-attr_min)+1) + "%"})
+                    
+                    $("#binary_slider").slider({
+                        orientation: "horizontal",
+                        range: "min",
+                        min: attr_min,
+                        max: attr_max,
+                        value: parseInt(attribute_mapping[attr_map["trunk"]][0]),
+                        slide: function( event, ui ) {
+                            // console.log("====", event);
+                            // console.log("====", ui);
+                            $("#sep_group").text(ui.value);
+                            $("#sep_group").val(ui.value);
+                            // $("#sep_group").css({"left": $(this).find('.ui-slider-handle').position().left});
+                            // $("#sep_group").css({"left": $(ui.handle).position().left});
+                            $("#sep_group").css({"left": 100*(ui.value-attr_min)/((attr_max-attr_min)+1) + "%"});
+                        }
+                    });
+                    
+                    $('#binary_slider .ui-slider-range').css({'background':'rgba(33, 178, 239, 0.5)'});
+                }
+            }
+            
+            else{
+                $("#mark_group_select").empty();
+                $("#sidekey_operation").show();
+                var attr_container = document.getElementById("mark_group_select");
+                // $("#mark_group").text("✔ as Left Side of Trunk: 【NOTE】");
+                $("#mark_group").html("<b>NOTE: Blue</b> as left trunk | <b>Red</b> as right trunk");
+                $("#mark_group").show();
+                var attr_container = document.getElementById("mark_group_select");
+                if(component_attribute[data_mode][attr_map["trunk"]][5] == "categorical" || component_attribute[data_mode][attr_map["trunk"]][5] == "boolean"){
+                    var group1 = document.createElement("div");
+                    var group2 = document.createElement("div");
+                    var list1 = document.createElement("ul");
+                    var list2 = document.createElement("ul");
+                    group1.setAttribute("class", "column left first");
+                    group2.setAttribute("class", "column left");
+
+                    list1.id = "mapping_group1";
+                    list2.id = "mapping_group2";
+                    list1.setAttribute("class", "sortable-list");
+                    list2.setAttribute("class", "sortable-list");
+
+                    // list1.setAttribute("style", "background-color:#21b2ef;");rgba(33, 178, 239, 0.5)
+                    // list2.setAttribute("style", "background-color:#ec5b5e;");rgba(236, 91, 94, 0.5)
+
+                    list1.setAttribute("style", "background-color:rgba(33, 178, 239, 0.5);");
+                    list2.setAttribute("style", "background-color:rgba(236, 91, 94, 0.5);");
+                    
+                    var total_items = component_attribute[data_mode][attr_map["trunk"]][0].length
+                    for(var c = 0; c < total_items; c ++){
+                        var item = document.createElement("li");
+                        item.setAttribute("class", "sortable-item");
+                        item.innerHTML = component_attribute[data_mode][attr_map["trunk"]][0][c];
+                        // item.value = component_attribute[data_mode][attr_map["trunk"]][0][c];
+                        item.value = c;
+                        if(c < total_items/2)
+                            list1.appendChild(item);
+                        else
+                            list2.appendChild(item);
+                    }
+                    group1.appendChild(list1);
+                    group2.appendChild(list2);
+                    attr_container.appendChild(group1);
+                    attr_container.appendChild(group2);
+
+                    $('#mark_group_select .sortable-list').sortable({
+                        connectWith: '#mark_group_select .sortable-list'
+                    });
+                }
+                else{
+                    var attr_min = parseInt(component_attribute[data_mode][attr_map["trunk"]][1]);
+                    var attr_max = parseInt(component_attribute[data_mode][attr_map["trunk"]][2]);
+                    // attr_container.setAttribute("style", "position:relative; width:100%;");
+
+                    var sep = document.createElement("div");
+                    var sep_title = document.createElement("span");
+                    // var sep_input = document.createElement("input");
+                    var group_slider = document.createElement("div");
+                    var range = document.createElement("div");
+                    var range_min = document.createElement("span");
+                    var range_max = document.createElement("span");
+                    
+                    sep_title.id = "sep_group";
+                    sep_title.innerHTML = Math.floor((attr_min + attr_max)/2);
+                    sep_title.value = Math.floor((attr_min + attr_max)/2);
+                    group_slider.id = "binary_slider";
+                    sep_title.setAttribute("style", "position:absolute;");
+                    sep.setAttribute("style", "margin-top:10px; position:relative; width:100%; margin-left:5px; height:30px;");
+                    // group_slider.setAttribute("style", "background:rgba(236, 91, 94, 0.5); margin-top:30px; margin-left:5px; width:100%;");
+                    group_slider.setAttribute("style", "background:rgba(236, 91, 94, 0.5); position:absolute; top:25px; width:100%;");
+
+                    range.setAttribute("style", " width:100%; margin-top:10px;");
+                    range_min.innerHTML = attr_min;
+                    range_max.innerHTML = attr_max;
+                    range_min.setAttribute("class", "left");
+                    range_max.setAttribute("class", "right");
+
+
+                    // group_slider.appendChild(group_handle);
+                    sep.appendChild(sep_title);
+                    sep.appendChild(group_slider);
+                    // sep.appendChild(sep_input);
+                    range.appendChild(range_min);
+                    range.appendChild(range_max);
+                    attr_container.appendChild(sep);
+                    // attr_container.appendChild(sep_title);
+                    // attr_container.appendChild(group_slider);
+                    attr_container.appendChild(range);
+
+                    $("#sep_group").css({"left": 100*(Math.floor((attr_min + attr_max)/2)-attr_min)/((attr_max-attr_min)+1) + "%"})
+                    
+                    $("#binary_slider").slider({
+                        orientation: "horizontal",
+                        range: "min",
+                        min: attr_min,
+                        max: attr_max,
+                        value: Math.floor((attr_min + attr_max)/2),
+                        slide: function( event, ui ) {
+                            // console.log("====", event);
+                            // console.log("====", ui);
+                            $("#sep_group").text(ui.value);
+                            $("#sep_group").val(ui.value);
+                            // $("#sep_group").css({"left": $(this).find('.ui-slider-handle').position().left});
+                            // $("#sep_group").css({"left": $(ui.handle).position().left});
+                            $("#sep_group").css({"left": 100*(ui.value-attr_min)/((attr_max-attr_min)+1) + "%"});
+                        }
+                    });                    
+
+                    $('#binary_slider .ui-slider-range').css({'background':'rgba(33, 178, 239, 0.5)'});
+                                    
+                }
+            }
+
+            $("#sidekey_submit_branch").hide();
+            $("#sidekey_submit_bside").hide();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_color").hide();
+            $("#sidekey_submit_leaf_highlight").hide();
+            $("#sidekey_submit_fruit_size").hide();
+            $("#sidekey_submit_trunk").show();
+            $("#sidekey_submit_trunk").text("Done");
+        }
+
         $("#sidekeyselect").unbind();
         $("#sidekeyselect").change(function(){
             $("#mark_group_select").empty();
@@ -250,7 +491,7 @@ var MappingView = Backbone.View.extend({
                         item.setAttribute("class", "sortable-item");
                         item.innerHTML = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
                         // item.value = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
-                        item.value = c;
+                        item.value = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
                         if(c < total_items/2)
                             list1.appendChild(item);
                         else
@@ -534,6 +775,1101 @@ var MappingView = Backbone.View.extend({
                 selection_opt.setAttribute("selected", true);
             container.appendChild(selection_opt);
         }
+        $("#mark_group_select").empty();
+
+        if(attr_map["branch"] != "none"){
+            if(attr_map["branch"] in attribute_mapping){
+                var user_map = attribute_mapping[attr_map["branch"]];
+                $("#sidekey_operation").show();
+                var attr_container = document.getElementById("mark_group_select");
+                $("#mark_group").html("<b>NOTE: Order</b> the attributes as the branch order</b>");
+                $("#mark_group").show();
+                if(component_attribute[data_mode][attr_map["branch"]][5] == "categorical" || component_attribute[data_mode][attr_map["branch"]][5] == "boolean"){
+                // if(component_attribute[data_mode][attr_map["branch"]][5] == "categorical" || component_attribute[data_mode][attr_map["branch"]][5] == "boolean" || component_attribute[data_mode][attr_map["branch"]][0].length < 20){
+                    var group = document.createElement("div");
+                    var list = document.createElement("ul");
+                    group.setAttribute("class", "column left first");
+
+                    list.id = "mapping_group";
+                    list.setAttribute("class", "sortable-list");
+
+                    list.setAttribute("style", "background-color:rgba(125, 96, 66, 0.7);");
+
+                    var total_items = component_attribute[data_mode][attr_map["branch"]][0].map(function(d){return 0});
+                    
+                    for(var real in user_map){
+                        total_items[user_map[real]] = real;
+                    }
+                    
+                    for(var c = total_items.length-1; c >= 0 ; c--){
+                        var item = document.createElement("li");
+                        item.setAttribute("class", "sortable-item");
+                        item.innerHTML = total_items[c];
+                        item.value = total_items[c];
+                        list.appendChild(item);
+                    }
+                    group.appendChild(list);
+                    attr_container.appendChild(group);
+
+                    $('#mark_group_select .sortable-list').sortable({
+                        connectWith: '#mark_group_select .sortable-list'
+                    });
+                }
+                else{
+                    var revert = "d";
+                    var attr_min = parseInt(component_attribute[data_mode][attr_map["branch"]][1]);
+                    var attr_max = parseInt(component_attribute[data_mode][attr_map["branch"]][2]);
+                    var attr_range = component_attribute[data_mode][attr_map["branch"]][3];
+
+                    var sep = document.createElement("div");
+                    var gap = document.createElement("div");
+                    var gap_title = document.createElement("span");
+                    var gap_input = document.createElement("select");
+                    var revert_button = document.createElement("button");
+                    var group_slider = document.createElement("div");
+                    var range = document.createElement("div");
+                    
+                    gap_input.id = "sep_gap";
+                    revert_button.id = "revert_button";
+                    revert_button.innerHTML = "Revert";
+                    revert_button.setAttribute("class", "right");
+                    gap_input.setAttribute("style", "width:100px");
+                    group_slider.id = "layer_slider";
+                    gap.setAttribute("style", "margin-top:5px;");
+
+                    range.id = "sep_range";
+                    range.setAttribute("style", "margin:15 0 0 0; position:relative; width:65px;");
+                    range.setAttribute("class", "left");
+
+                    gap_title.innerHTML = "Total Layer: ";
+                    gap_title.setAttribute("class", "myfont3");
+                    sep.id = "sep_group";
+                    sep.setAttribute("style", "margin:15 0 0 10; position:relative;");
+                    sep.setAttribute("class", "left");
+                    group_slider.setAttribute("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (50*(user_map.length+1)) + ";");
+                    group_slider.setAttribute("class", "left");
+
+                    var total_gap = 20;
+                    if(attr_range < 10)
+                        total_gap = attr_range*2;
+                    for(var s=4; s < total_gap; s++){
+                        var opt = document.createElement("option");
+                        opt.value = s;
+                        opt.innerHTML = s;
+                        opt.setAttribute("class", "myfont3");
+                        if(s == user_map.length+1)
+                            opt.setAttribute("selected", true);
+                        gap_input.appendChild(opt);
+                    }
+
+                    gap.appendChild(gap_title);
+                    gap.appendChild(gap_input);
+                    gap.appendChild(revert_button);
+                    
+                    attr_container.appendChild(gap);
+                    attr_container.appendChild(range);
+                    attr_container.appendChild(group_slider);
+                    attr_container.appendChild(sep);
+
+                    var gap = attr_range/user_map.length;
+                    if(parseFloat(user_map[1],10) < parseFloat(user_map[0],10))
+                        revert = "a";
+
+                    var slider_val = [];
+                    var last = user_map.length-1;
+                    for(var i = 0; i < user_map.length; i++){
+                        if(revert == "a")
+                            slider_val.push(0-parseFloat(user_map[last-i],10));
+                        else
+                            slider_val.push(parseFloat(user_map[i],10));
+                    }
+
+                    if(revert == "a")
+                        slider_val = slider_val.reverse();
+                    
+                    if(revert == "a"){
+                        $("#layer_slider").slider({
+                            orientation: "vertical",
+                            // range: "min",
+                            min: 0-attr_max,
+                            max: 0-attr_min,
+                            values: slider_val,
+                            step: 0.1,
+                            slide: function( event, ui ) {
+                                var v = parseInt(ui.handle.id.split("_").pop());
+                                var display = "#layer_" + v;
+                                var label2 = "#title_" + (v+1);
+                                var label1 = "#title_" + v;                            
+                                var on_handle = "#layer_handle_"+ v;
+                                if(v < slider_val.length-1 && ui.values[v] > Math.round((ui.values[v+1]-0.5)*100)/100){
+                                    $("#layer_slider").slider('values', v, Math.round((ui.values[v+1]-0.5)*100)/100); 
+                                    $(display).val(Math.round((0-(ui.values[v+1]-0.5))*100)/100);
+                                    $(display).css({"top": $(on_handle).position().top});
+                                    // $(label).css({"top": $(on_handle).position().top});
+                                    return false;
+                                }
+                                if(v > 0 && ui.values[v] < Math.round((ui.values[v-1]+0.5)*100)/100){
+                                    $("#layer_slider").slider('values', v, Math.round((ui.values[v-1]+0.5)*100)/100); 
+                                    $(display).val(Math.round((0-(ui.values[v-1]+0.5))*100)/100);
+                                    $(display).css({"top": $(on_handle).position().top});
+                                    // $(label).css({"top": $(on_handle).position().top});
+                                    return false;
+                                }
+                                $(display).css({"top": $(on_handle).position().top});
+                                // $(label).css({"top": $(on_handle).position().top});
+                                if(v == 0){
+                                    var up_handle = "#layer_handle_"+ (v+1);
+                                    $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                                else if(v == slider_val.length-1){
+                                    var down_handle = "#layer_handle_"+ (v-1);
+                                    $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                                else{
+                                    var down_handle = "#layer_handle_"+ (v-1);
+                                    var up_handle = "#layer_handle_"+ (v+1);
+                                    $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                    $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                                $(display).val(Math.round((0-ui.values[v])*100)/100);
+                            }
+                        });
+
+                    }
+                    else{
+                        $("#layer_slider").slider({
+                            orientation: "vertical",
+                            // range: "min",
+                            min: attr_min,
+                            max: attr_max,
+                            values: slider_val,
+                            step: 0.1,
+                            slide: function( event, ui ) {
+                                var v = parseInt(ui.handle.id.split("_").pop());
+                                var display = "#layer_" + v;
+                                var label2 = "#title_" + (v+1);
+                                var label1 = "#title_" + v;
+                                var on_handle = "#layer_handle_"+ v;
+                                if(v < slider_val.length-1 && ui.values[v] > Math.round((ui.values[v+1]-0.5)*100)/100){
+                                    $("#layer_slider").slider('values', v, Math.round((ui.values[v+1]-0.5)*100)/100); 
+                                    $(display).val(Math.round((ui.values[v+1]-0.5)*100)/100);
+                                    $(display).css({"top": $(on_handle).position().top});
+                                    // $(label).css({"top": $(on_handle).position().top});
+                                    return false;
+                                }
+                                if(v > 0 && ui.values[v] < Math.round((ui.values[v-1]+0.5)*100)/100){
+                                    $("#layer_slider").slider('values', v, Math.round((ui.values[v-1]+0.5)*100)/100); 
+                                    $(display).val(Math.round((ui.values[v-1]+0.5)*100)/100);
+                                    $(display).css({"top": $(on_handle).position().top});
+                                    // $(label).css({"top": $(on_handle).position().top});
+                                    return false;
+                                }
+                                $(display).css({"top": $(on_handle).position().top});
+                                // $(label).css({"top": $(on_handle).position().top});
+                                if(v == 0){
+                                    var up_handle = "#layer_handle_"+ (v+1);
+                                    $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                                else if(v == slider_val.length-1){
+                                    var down_handle = "#layer_handle_"+ (v-1);
+                                    $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                                else{
+                                    var down_handle = "#layer_handle_"+ (v-1);
+                                    var up_handle = "#layer_handle_"+ (v+1);
+                                    $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                    $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                                $(display).val(Math.round((ui.values[v])*100)/100);
+                            }
+                        });
+                    }
+
+                    $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
+                    $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
+
+                    $("#sep_group").empty();
+                    $("#sep_range").empty();
+                    
+                    var sep_container = document.getElementById("sep_group");
+                    var handle = $('#layer_slider A.ui-slider-handle');   
+                    var range_container = document.getElementById("sep_range");
+                    
+                    for(var v = slider_val.length-1; v >= 0; v--){
+                        // console.log("OFFSET:", handle.eq(v).offset());
+                        // console.log("POSITION:", handle.eq(v).position());
+                        handle.eq(v).attr('id', "layer_handle_" + v);
+
+                        if(v == 0){
+                            var sep_layer_title = document.createElement("span");
+                            sep_layer_title.setAttribute("class", "layer_label");
+                            // sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()+handle.eq(v).position().top)/2 + "; position:absolute;");
+                            sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()-3) + ";");
+                            sep_layer_title.innerHTML = "Layer " + (v+1);
+                            sep_layer_title.id = "title_" + v;
+                            range_container.appendChild(sep_layer_title);
+                        }   
+                        else{
+                            var sep_layer_title = document.createElement("span");
+                            sep_layer_title.setAttribute("class", "layer_label");
+                            sep_layer_title.setAttribute("style", "top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + ";");
+                            sep_layer_title.innerHTML = "Layer " + (v+1);
+                            sep_layer_title.id = "title_" + v;
+                            range_container.appendChild(sep_layer_title);
+                            if(v == slider_val.length-1){
+                                var sep_layer_title = document.createElement("span");
+                                sep_layer_title.setAttribute("class", "layer_label");
+                                sep_layer_title.setAttribute("style", "top:-15;");
+                                sep_layer_title.innerHTML = "Layer " + (v+2);
+                                sep_layer_title.id = "title_" + v;
+                                range_container.appendChild(sep_layer_title);
+                            }
+                        }
+                        var sep_layer_input = document.createElement("input");
+                        sep_layer_input.setAttribute("class", "layer_order");
+                        sep_layer_input.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; width:100px; position:absolute; background:none; border:0;");
+                        sep_layer_input.setAttribute("readonly", "readonly");
+                        if(revert == "a")
+                            sep_layer_input.value = 0-slider_val[v];
+                        else
+                            sep_layer_input.value = slider_val[v];
+                        sep_layer_input.id = "layer_" + v;
+
+                        sep_container.appendChild(sep_layer_input);
+                    }
+
+                    
+                    $("#revert_button").click(function(){
+                        var my_revert = "a";
+                        if(revert == "a")
+                            my_revert = "d";
+                        
+                        var attr_min = parseInt(component_attribute[data_mode][attr_map["branch"]][1]);
+                        var attr_max = parseInt(component_attribute[data_mode][attr_map["branch"]][2]);
+                        var attr_range = component_attribute[data_mode][attr_map["branch"]][3];
+                        var gap = attr_range/($("#sep_gap").val()-1);
+                        var new_slider_val = [];
+                        var real_slider_val = [];
+                        for(var g = attr_min; g <= attr_max; g+=gap){
+                            if(my_revert == "a")
+                                new_slider_val.push(0-Math.round(g*100)/100);
+                            else
+                                new_slider_val.push(Math.round(g*100)/100);
+                        }
+
+                        if(new_slider_val.length < $("#sep_gap").val()-1){
+                            if(my_revert == "a")
+                                new_slider_val.push(0-attr_max);
+                            else
+                                new_slider_val.push(attr_max);
+                            
+                        }
+
+                        if(my_revert == "a")
+                            new_slider_val = new_slider_val.reverse();
+                        
+                        // $("#layer_slider").empty();
+                        $("#layer_slider").slider( "destroy" );
+                        $("#layer_slider").attr("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (50*$("#sep_gap").val()) + ";");
+                        if(my_revert == "a"){
+                            $("#layer_slider").slider({
+                                orientation: "vertical",
+                                // range: "min",
+                                min: 0-attr_max,
+                                max: 0-attr_min,
+                                values: new_slider_val,
+                                step: 0.1,
+                                slide: function( event, ui ) {
+                                    var v = parseInt(ui.handle.id.split("_").pop());
+                                    // console.log("handle_id:", v, "handle_value:", ui.values[v]);
+                                    var display = "#layer_" + v;
+                                    var label2 = "#title_" + (v+1);
+                                    var label1 = "#title_" + v;                            
+                                    var on_handle = "#layer_handle_"+ v;
+                                    if(v < new_slider_val.length-1 && ui.values[v] > Math.round((ui.values[v+1]-0.5)*100)/100){
+                                        $("#layer_slider").slider('values', v, Math.round((ui.values[v+1]-0.5)*100)/100); 
+                                        $(display).val(Math.round((0-(ui.values[v+1]-0.5))*100)/100);
+                                        $(display).css({"top": $(on_handle).position().top});
+                                        // $(label).css({"top": $(on_handle).position().top});
+                                        return false;
+                                    }
+                                    if(v > 0 && ui.values[v] < Math.round((ui.values[v-1]+0.5)*100)/100){
+                                        $("#layer_slider").slider('values', v, Math.round((ui.values[v-1]+0.5)*100)/100); 
+                                        $(display).val(Math.round((0-(ui.values[v-1]+0.5))*100)/100);
+                                        $(display).css({"top": $(on_handle).position().top});
+                                        // $(label).css({"top": $(on_handle).position().top});
+                                        return false;
+                                    }
+                                    $(display).css({"top": $(on_handle).position().top});
+                                    // $(label).css({"top": $(on_handle).position().top});
+                                    if(v == 0){
+                                        var up_handle = "#layer_handle_"+ (v+1);
+                                        $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    else if(v == new_slider_val.length-1){
+                                        var down_handle = "#layer_handle_"+ (v-1);
+                                        $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    else{
+                                        var down_handle = "#layer_handle_"+ (v-1);
+                                        var up_handle = "#layer_handle_"+ (v+1);
+                                        $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                        $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    $(display).val(Math.round((0-ui.values[v])*100)/100);
+                                }
+                            });
+
+                        }
+                        else{
+                            $("#layer_slider").slider({
+                                orientation: "vertical",
+                                // range: "min",
+                                min: attr_min,
+                                max: attr_max,
+                                values: new_slider_val,
+                                step: 0.1,
+                                slide: function( event, ui ) {
+                                    // console.log("handle_id:", ui.handle.id.split("_").pop());
+                                    var v = parseInt(ui.handle.id.split("_").pop());
+                                    var display = "#layer_" + v;
+                                    var label2 = "#title_" + (v+1);
+                                    var label1 = "#title_" + v;
+                                    var on_handle = "#layer_handle_"+ v;
+                                    if(v < new_slider_val.length-1 && ui.values[v] > Math.round((ui.values[v+1]-0.5)*100)/100){
+                                        $("#layer_slider").slider('values', v, Math.round((ui.values[v+1]-0.5)*100)/100); 
+                                        $(display).val(Math.round((ui.values[v+1]-0.5)*100)/100);
+                                        $(display).css({"top": $(on_handle).position().top});
+                                        // $(label).css({"top": $(on_handle).position().top});
+                                        return false;
+                                    }
+                                    if(v > 0 && ui.values[v] < Math.round((ui.values[v-1]+0.5)*100)/100){
+                                        $("#layer_slider").slider('values', v, Math.round((ui.values[v-1]+0.5)*100)/100); 
+                                        $(display).val(Math.round((ui.values[v-1]+0.5)*100)/100);
+                                        $(display).css({"top": $(on_handle).position().top});
+                                        // $(label).css({"top": $(on_handle).position().top});
+                                        return false;
+                                    }
+                                    $(display).css({"top": $(on_handle).position().top});
+                                    // $(label).css({"top": $(on_handle).position().top});
+                                    if(v == 0){
+                                        var up_handle = "#layer_handle_"+ (v+1);
+                                        $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    else if(v == new_slider_val.length-1){
+                                        var down_handle = "#layer_handle_"+ (v-1);
+                                        $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    else{
+                                        var down_handle = "#layer_handle_"+ (v-1);
+                                        var up_handle = "#layer_handle_"+ (v+1);
+                                        $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                        $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    $(display).val(Math.round((ui.values[v])*100)/100);
+                                }
+                            });
+                        }
+                        
+                        $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
+                        $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
+
+                        $("#sep_group").empty();
+                        $("#sep_range").empty();
+                        var sep_container = document.getElementById("sep_group");
+                        var handle = $('#layer_slider A.ui-slider-handle');   
+                        var range_container = document.getElementById("sep_range");
+
+                        for(var v = new_slider_val.length-1; v >= 0; v--){
+                            handle.eq(v).attr('id', "layer_handle_" + v);
+
+                            if(v == 0){
+                                var sep_layer_title = document.createElement("span");
+                                sep_layer_title.setAttribute("class", "layer_label");
+                                // sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()+handle.eq(v).position().top)/2 + "; position:absolute;");
+                                sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()-3) + ";");
+                                sep_layer_title.innerHTML = "Layer " + (v+1);
+                                sep_layer_title.id = "title_" + v;
+                                range_container.appendChild(sep_layer_title);
+                            }   
+                            else{
+                                var sep_layer_title = document.createElement("span");
+                                sep_layer_title.setAttribute("class", "layer_label");
+                                sep_layer_title.setAttribute("style", "top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + ";");
+                                sep_layer_title.innerHTML = "Layer " + (v+1);
+                                sep_layer_title.id = "title_" + v;
+                                range_container.appendChild(sep_layer_title);
+                                if(v == new_slider_val.length-1){
+                                    var sep_layer_title = document.createElement("span");
+                                    sep_layer_title.setAttribute("class", "layer_label");
+                                    sep_layer_title.setAttribute("style", "top:-15;");
+                                    sep_layer_title.innerHTML = "Layer " + (v+2);
+                                    sep_layer_title.id = "title_" + v;
+                                    range_container.appendChild(sep_layer_title);
+                                }
+                            }
+                            var sep_layer_input = document.createElement("input");
+                            sep_layer_input.setAttribute("class", "layer_order");
+                            // sep_layer_input.setAttribute("style", "width:80px; position:absolute; border:solid 1; border-radius:3; background:none;");
+                            sep_layer_input.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; width:100px; position:absolute; background:none; border:0;");
+                            sep_layer_input.setAttribute("readonly", "readonly");
+                            if(my_revert == "a")
+                                sep_layer_input.value = 0-new_slider_val[v];
+                            else
+                                sep_layer_input.value = new_slider_val[v];
+                            sep_layer_input.id = "layer_" + v;
+
+                            sep_container.appendChild(sep_layer_input);
+                        }
+
+                        revert = my_revert;
+                        
+                    });
+
+                    $("#sep_gap").change(function(){
+                        revert = "d";
+                        var attr_min = parseInt(component_attribute[data_mode][attr_map["branch"]][1]);
+                        var attr_max = parseInt(component_attribute[data_mode][attr_map["branch"]][2]);
+                        var attr_range = component_attribute[data_mode][attr_map["branch"]][3];
+                        var gap = attr_range/($("#sep_gap").val()-1);
+                        var new_slider_val = [];
+                        
+                        for(var g = attr_min; g <= attr_max; g+=gap){
+                            new_slider_val.push(Math.round(g*100)/100);
+                        }
+
+                        if(new_slider_val.length < $("#sep_gap").val()-1){
+                            new_slider_val.push(attr_max);
+                        }
+                        
+                        // $("#layer_slider").empty();
+                        $("#layer_slider").slider( "destroy" );
+                        $("#layer_slider").attr("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (50*$("#sep_gap").val()) + ";");
+                    
+                        $("#layer_slider").slider({
+                            orientation: "vertical",
+                            // range: "min",
+                            min: attr_min,
+                            max: attr_max,
+                            values: new_slider_val,
+                            step: 0.1,
+                            slide: function( event, ui ) {
+                                // console.log("handle_id:", ui.handle.id.split("_").pop());
+                                var v = parseInt(ui.handle.id.split("_").pop());
+                                var display = "#layer_" + v;
+                                var label2 = "#title_" + (v+1);
+                                var label1 = "#title_" + v;
+                                var on_handle = "#layer_handle_"+ v;
+                                if(v < new_slider_val.length-1 && ui.values[v] > Math.round((ui.values[v+1]-0.5)*100)/100){
+                                    $("#layer_slider").slider('values', v, Math.round((ui.values[v+1]-0.5)*100)/100); 
+                                    $(display).val(Math.round((ui.values[v+1]-0.5)*100)/100);
+                                    $(display).css({"top": $(on_handle).position().top});
+                                    // $(label).css({"top": $(on_handle).position().top});
+                                    return false;
+                                }
+                                if(v > 0 && ui.values[v] < Math.round((ui.values[v-1]+0.5)*100)/100){
+                                    $("#layer_slider").slider('values', v, Math.round((ui.values[v-1]+0.5)*100)/100); 
+                                    $(display).val(Math.round((ui.values[v-1]+0.5)*100)/100);
+                                    $(display).css({"top": $(on_handle).position().top});
+                                    // $(label).css({"top": $(on_handle).position().top});
+                                    return false;
+                                }
+                                $(display).css({"top": $(on_handle).position().top});
+                                // $(label).css({"top": $(on_handle).position().top});
+                                if(v == 0){
+                                    var up_handle = "#layer_handle_"+ (v+1);
+                                    $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                                else if(v == new_slider_val.length-1){
+                                    var down_handle = "#layer_handle_"+ (v-1);
+                                    $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                                else{
+                                    var down_handle = "#layer_handle_"+ (v-1);
+                                    var up_handle = "#layer_handle_"+ (v+1);
+                                    $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                    $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                                $(display).val(Math.round((ui.values[v])*100)/100);
+                            }
+                           
+                        });
+                        $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
+                        $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
+
+                        $("#sep_group").empty();
+                        $("#sep_range").empty();
+                        var sep_container = document.getElementById("sep_group");
+                        var handle = $('#layer_slider A.ui-slider-handle');   
+                        var range_container = document.getElementById("sep_range");
+
+                        for(var v = new_slider_val.length-1; v >= 0; v--){
+                            // console.log("OFFSET:", handle.eq(v).offset());
+                            // console.log("POSITION:", handle.eq(v).position());
+                            handle.eq(v).attr('id', "layer_handle_" + v);
+
+                            if(v == 0){
+                                var sep_layer_title = document.createElement("span");
+                                // sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()+handle.eq(v).position().top)/2 + "; position:absolute;");
+                                sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()-3) + ";");
+                                sep_layer_title.setAttribute("class", "layer_label");
+                                sep_layer_title.innerHTML = "Layer " + (v+1);
+                                sep_layer_title.id = "title_" + v;
+                                range_container.appendChild(sep_layer_title);
+                            }   
+                            else{
+                                var sep_layer_title = document.createElement("span");
+                                sep_layer_title.setAttribute("style", "top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + ";");
+                                sep_layer_title.setAttribute("class", "layer_label");
+                                sep_layer_title.innerHTML = "Layer " + (v+1);
+                                sep_layer_title.id = "title_" + v;
+                                range_container.appendChild(sep_layer_title);
+                                if(v == new_slider_val.length-1){
+                                    var sep_layer_title = document.createElement("span");
+                                    sep_layer_title.setAttribute("class", "layer_label");
+                                    sep_layer_title.setAttribute("style", "top:-15;");
+                                    sep_layer_title.innerHTML = "Layer " + (v+2);
+                                    sep_layer_title.id = "title_" + v;
+                                    range_container.appendChild(sep_layer_title);
+                                }
+                            }
+                            // var sep_layer = document.createElement("div");
+                            var sep_layer_input = document.createElement("input");
+                            // sep_layer.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; position:absolute;");
+                            sep_layer_input.setAttribute("class", "layer_order");
+                            // sep_layer_input.setAttribute("style", "width:80px; position:absolute; border:solid 1; border-radius:3; background:none;");
+                            sep_layer_input.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; width:100px; position:absolute; background:none; border:0;");
+                            sep_layer_input.setAttribute("readonly", "readonly");
+                            
+                            sep_layer_input.value = new_slider_val[v];
+                            sep_layer_input.id = "layer_" + v;
+
+                            sep_container.appendChild(sep_layer_input);
+                        }
+                        
+                    });                    
+                }
+
+            }
+            else{
+                $("#sidekey_operation").show();
+                var revert = "d";
+                var attr_container = document.getElementById("mark_group_select");
+                $("#mark_group").html("<b>NOTE: Order</b> the attributes as the branch order</b>");
+                $("#mark_group").show();
+                if(component_attribute[data_mode][attr_map["branch"]][5] == "categorical" || component_attribute[data_mode][attr_map["branch"]][5] == "boolean"){
+                    var group = document.createElement("div");
+                    var list = document.createElement("ul");
+                    group.setAttribute("class", "column left first");
+
+                    list.id = "mapping_group";
+                    list.setAttribute("class", "sortable-list");
+
+                    list.setAttribute("style", "background-color:rgba(125, 96, 66, 0.7);");
+
+                    
+                    var total_items = component_attribute[data_mode][attr_map["branch"]][0].length;
+                    for(var c = total_items-1; c >= 0; c--){
+                        var item = document.createElement("li");
+                        item.setAttribute("class", "sortable-item");
+                        item.innerHTML = component_attribute[data_mode][attr_map["branch"]][0][c];
+                        item.value = component_attribute[data_mode][attr_map["branch"]][0][c];
+                        list.appendChild(item);
+                    }
+                    group.appendChild(list);
+                    attr_container.appendChild(group);
+
+                    $('#mark_group_select .sortable-list').sortable({
+                        connectWith: '#mark_group_select .sortable-list'
+                    });
+                }
+                else{
+                    var attr_min = parseInt(component_attribute[data_mode][attr_map["branch"]][1]);
+                    var attr_max = parseInt(component_attribute[data_mode][attr_map["branch"]][2]);
+                    var attr_range = component_attribute[data_mode][attr_map["branch"]][3];
+
+                    var sep = document.createElement("div");
+                    var gap = document.createElement("div");
+                    var gap_title = document.createElement("span");
+                    var gap_input = document.createElement("select");
+                    var revert_button = document.createElement("button");
+                    var group_slider = document.createElement("div");
+                    var range = document.createElement("div");
+                    
+                    gap_input.id = "sep_gap";
+                    revert_button.id = "revert_button";
+                    revert_button.innerHTML = "Revert";
+                    revert_button.setAttribute("class", "right");
+                    gap_input.setAttribute("style", "width:100px");
+                    group_slider.id = "layer_slider";
+                    gap.setAttribute("style", "margin-top:5px;");
+
+                    range.id = "sep_range";
+                    range.setAttribute("style", "margin:15 0 0 0; position:relative; width:65px;");
+                    range.setAttribute("class", "left");
+
+                    gap_title.innerHTML = "Total Layer: ";
+                    gap_title.setAttribute("class", "myfont3");
+                    sep.id = "sep_group";
+                    sep.setAttribute("style", "margin:15 0 0 10; position:relative;");
+                    sep.setAttribute("class", "left");
+                    group_slider.setAttribute("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + 500 + ";");
+                    group_slider.setAttribute("class", "left");
+
+                    var total_gap = 20;
+                    if(attr_range < 10)
+                        total_gap = attr_range*2;
+                    for(var s=4; s < total_gap; s++){
+                        var opt = document.createElement("option");
+                        opt.value = s;
+                        opt.innerHTML = s;
+                        opt.setAttribute("class", "myfont3");
+                        if(s == 10)
+                            opt.setAttribute("selected", true);
+                        gap_input.appendChild(opt);
+                    }
+
+                    // group_slider.appendChild(group_handle);
+                    gap.appendChild(gap_title);
+                    gap.appendChild(gap_input);
+                    gap.appendChild(revert_button);
+                    // range.appendChild(range_min);
+                    // range.appendChild(range_max);
+                    attr_container.appendChild(gap);
+                    attr_container.appendChild(range);
+                    attr_container.appendChild(group_slider);
+                    attr_container.appendChild(sep);
+
+                    var gap = attr_range/9;
+                    var slider_val = [];
+                    
+                    for(var g = attr_min; g <= attr_max; g+=gap){
+                        slider_val.push(Math.round(g*100)/100);
+                    }
+                    if(slider_val.length < 9){
+                        slider_val.push(attr_max);
+                    }
+                    
+                    $("#layer_slider").slider({
+                        orientation: "vertical",
+                        // range: "min",
+                        min: attr_min,
+                        max: attr_max,
+                        values: slider_val,
+                        step: 0.1,
+                        
+                        slide: function( event, ui ) {
+                            // console.log("handle_id:", ui.handle.id.split("_").pop());
+                            var v = parseInt(ui.handle.id.split("_").pop());
+                            var display = "#layer_" + v;
+                            var label2 = "#title_" + (v+1);
+                            var label1 = "#title_" + v;                            
+                            var on_handle = "#layer_handle_"+ v;
+                            if(v < slider_val.length-1 && ui.values[v] > Math.round((ui.values[v+1]-0.5)*100)/100){
+                                $("#layer_slider").slider('values', v, Math.round((ui.values[v+1]-0.5)*100)/100); 
+                                $(display).val(Math.round((ui.values[v+1]-0.5)*100)/100);
+                                $(display).css({"top": $(on_handle).position().top});
+                                // $(label).css({"top": $(on_handle).position().top});
+                                return false;
+                            }
+                            if(v > 0 && ui.values[v] < Math.round((ui.values[v-1]+0.5)*100)/100){
+                                $("#layer_slider").slider('values', v, Math.round((ui.values[v-1]+0.5)*100)/100); 
+                                $(display).val(Math.round((ui.values[v-1]+0.5)*100)/100);
+                                $(display).css({"top": $(on_handle).position().top});
+                                // $(label).css({"top": $(on_handle).position().top});
+                                return false;
+                            }
+                            $(display).css({"top": $(on_handle).position().top});
+                            if(v == 0){
+                                var up_handle = "#layer_handle_"+ (v+1);
+                                $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                               
+                                // console.log("overlap:", isOverlap(up_handle,"#layer_handle_0"));
+                            }
+                            else if(v == slider_val.length-1){
+                                var down_handle = "#layer_handle_"+ (v-1);
+                                $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                // console.log("overlap:", isOverlap(down_handle, on_handle));
+                            }
+                            else{
+                                var down_handle = "#layer_handle_"+ (v-1);
+                                var up_handle = "#layer_handle_"+ (v+1);
+                                $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                            }
+                            
+                            $(display).val(Math.round((ui.values[v])*100)/100);
+                           
+                        }
+                    });
+                    $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
+                    $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
+
+                    $("#sep_group").empty();
+                    $("#sep_range").empty();
+                    
+                    var sep_container = document.getElementById("sep_group");
+                    var handle = $('#layer_slider A.ui-slider-handle');   
+                    var range_container = document.getElementById("sep_range");
+                   
+                    for(var v = slider_val.length-1; v >= 0; v--){
+                        handle.eq(v).attr('id', "layer_handle_" + v);
+                                          
+                        if(v == 0){
+                            var sep_layer_title = document.createElement("span");
+                            // sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()+handle.eq(v).position().top)/2 + "; position:absolute;");
+                            sep_layer_title.setAttribute("class", "layer_label");
+                            sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()+3) + ";");
+                            sep_layer_title.innerHTML = "Layer " + (v+1);
+                            sep_layer_title.id = "title_" + v;
+                            range_container.appendChild(sep_layer_title);
+                        }   
+                        else{
+                            var sep_layer_title = document.createElement("span");
+                            sep_layer_title.setAttribute("class", "layer_label");
+                            sep_layer_title.setAttribute("style", "top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + ";");
+                            sep_layer_title.innerHTML = "Layer " + (v+1);
+                            sep_layer_title.id = "title_" + v;
+                            range_container.appendChild(sep_layer_title);
+                            if(v == slider_val.length-1){
+                                var sep_layer_title = document.createElement("span");
+                                sep_layer_title.setAttribute("class", "layer_label");
+                                sep_layer_title.setAttribute("style", "top:-15;");
+                                sep_layer_title.innerHTML = "Layer " + (v+2);
+                                sep_layer_title.id = "title_" + v;
+                                range_container.appendChild(sep_layer_title);
+                            }
+                        }                 
+                        var sep_layer_input = document.createElement("input");
+
+                        sep_layer_input.setAttribute("class", "layer_order");
+                        // sep_layer_input.setAttribute("style", "width:80px; position:absolute; border:solid 1; border-radius:3; background:none;");
+                        sep_layer_input.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; width:100px; position:absolute; background:none; border:0;");
+                        sep_layer_input.setAttribute("readonly", "readonly");
+                        sep_layer_input.value = slider_val[v];
+                        sep_layer_input.id = "layer_" + v;
+
+                        sep_container.appendChild(sep_layer_input);
+                        
+                    }
+                    
+                    $("#revert_button").click(function(){
+                        var my_revert = "a";
+                        if(revert == "a")
+                            my_revert = "d";
+                        
+                        var attr_min = parseInt(component_attribute[data_mode][attr_map["branch"]][1]);
+                        var attr_max = parseInt(component_attribute[data_mode][attr_map["branch"]][2]);
+                        var attr_range = component_attribute[data_mode][attr_map["branch"]][3];
+                        var gap = attr_range/($("#sep_gap").val()-1);
+                        var new_slider_val = [];
+                        var real_slider_val = [];
+                        for(var g = attr_min; g <= attr_max; g+=gap){
+                            if(my_revert == "a")
+                                new_slider_val.push(0-Math.round(g*100)/100);
+                            else
+                                new_slider_val.push(Math.round(g*100)/100);
+                        }
+
+                        if(new_slider_val.length < $("#sep_gap").val()-1){
+                            if(my_revert == "a")
+                                new_slider_val.push(0-attr_max);
+                            else
+                                new_slider_val.push(attr_max);
+                            
+                        }
+
+                        if(my_revert == "a")
+                            new_slider_val = new_slider_val.reverse();
+                        
+                        $("#layer_slider").slider( "destroy" );
+                        $("#layer_slider").attr("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (50*$("#sep_gap").val()) + ";");
+                        if(my_revert == "a"){
+                            $("#layer_slider").slider({
+                                orientation: "vertical",
+                                // range: "min",
+                                min: 0-attr_max,
+                                max: 0-attr_min,
+                                values: new_slider_val,
+                                step: 0.1,
+                                slide: function( event, ui ) {
+                                    var v = parseInt(ui.handle.id.split("_").pop());
+                                    // console.log("handle_id:", v, "handle_value:", ui.values[v]);
+                                    var display = "#layer_" + v;
+                                    var label2 = "#title_" + (v+1);
+                                    var label1 = "#title_" + v;                            
+                                    var on_handle = "#layer_handle_"+ v;
+                                    if(v < new_slider_val.length-1 && ui.values[v] > Math.round((ui.values[v+1]-0.5)*100)/100){
+                                        $("#layer_slider").slider('values', v, Math.round((ui.values[v+1]-0.5)*100)/100); 
+                                        $(display).val(Math.round((0-(ui.values[v+1]-0.5))*100)/100);
+                                        $(display).css({"top": $(on_handle).position().top});
+                                        // $(label).css({"top": $(on_handle).position().top});
+                                        return false;
+                                    }
+                                    if(v > 0 && ui.values[v] < Math.round((ui.values[v-1]+0.5)*100)/100){
+                                        $("#layer_slider").slider('values', v, Math.round((ui.values[v-1]+0.5)*100)/100); 
+                                        $(display).val(Math.round((0-(ui.values[v-1]+0.5))*100)/100);
+                                        $(display).css({"top": $(on_handle).position().top});
+                                        // $(label).css({"top": $(on_handle).position().top});
+                                        return false;
+                                    }
+                                    $(display).css({"top": $(on_handle).position().top});
+                                    // $(label).css({"top": $(on_handle).position().top});
+                                    if(v == 0){
+                                        var up_handle = "#layer_handle_"+ (v+1);
+                                        $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    else if(v == new_slider_val.length-1){
+                                        var down_handle = "#layer_handle_"+ (v-1);
+                                        $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    else{
+                                        var down_handle = "#layer_handle_"+ (v-1);
+                                        var up_handle = "#layer_handle_"+ (v+1);
+                                        $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                        $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    $(display).val(Math.round((0-ui.values[v])*100)/100);
+                                }
+                            });
+
+                        }
+                        else{
+                            $("#layer_slider").slider({
+                                orientation: "vertical",
+                                // range: "min",
+                                min: attr_min,
+                                max: attr_max,
+                                values: new_slider_val,
+                                step: 0.1,
+                                slide: function( event, ui ) {
+                                    // console.log("handle_id:", ui.handle.id.split("_").pop());
+                                    var v = parseInt(ui.handle.id.split("_").pop());
+                                    var display = "#layer_" + v;
+                                    var label2 = "#title_" + (v+1);
+                                    var label1 = "#title_" + v;
+                                    var on_handle = "#layer_handle_"+ v;
+                                    if(v < new_slider_val.length-1 && ui.values[v] > Math.round((ui.values[v+1]-0.5)*100)/100){
+                                        $("#layer_slider").slider('values', v, Math.round((ui.values[v+1]-0.5)*100)/100); 
+                                        $(display).val(Math.round((ui.values[v+1]-0.5)*100)/100);
+                                        $(display).css({"top": $(on_handle).position().top});
+                                        // $(label).css({"top": $(on_handle).position().top});
+                                        return false;
+                                    }
+                                    if(v > 0 && ui.values[v] < Math.round((ui.values[v-1]+0.5)*100)/100){
+                                        $("#layer_slider").slider('values', v, Math.round((ui.values[v-1]+0.5)*100)/100); 
+                                        $(display).val(Math.round((ui.values[v-1]+0.5)*100)/100);
+                                        $(display).css({"top": $(on_handle).position().top});
+                                        // $(label).css({"top": $(on_handle).position().top});
+                                        return false;
+                                    }
+                                    $(display).css({"top": $(on_handle).position().top});
+                                    // $(label).css({"top": $(on_handle).position().top});
+                                    if(v == 0){
+                                        var up_handle = "#layer_handle_"+ (v+1);
+                                        $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    else if(v == new_slider_val.length-1){
+                                        var down_handle = "#layer_handle_"+ (v-1);
+                                        $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    else{
+                                        var down_handle = "#layer_handle_"+ (v-1);
+                                        var up_handle = "#layer_handle_"+ (v+1);
+                                        $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                        $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    $(display).val(Math.round((ui.values[v])*100)/100);
+                                }
+                            });
+                        }
+                        
+                        $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
+                        $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
+
+                        $("#sep_group").empty();
+                        $("#sep_range").empty();
+                        var sep_container = document.getElementById("sep_group");
+                        var handle = $('#layer_slider A.ui-slider-handle');   
+                        var range_container = document.getElementById("sep_range");
+
+                        for(var v = new_slider_val.length-1; v >= 0; v--){
+                            handle.eq(v).attr('id', "layer_handle_" + v);
+                            
+                            if(v == 0){
+                                var sep_layer_title = document.createElement("span");
+                                sep_layer_title.setAttribute("class", "layer_label");
+                                // sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()+handle.eq(v).position().top)/2 + "; position:absolute;");
+                                sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()-3) + ";");
+                                sep_layer_title.innerHTML = "Layer " + (v+1);
+                                sep_layer_title.id = "title_" + v;
+                                range_container.appendChild(sep_layer_title);
+                            }   
+                            else{
+                                var sep_layer_title = document.createElement("span");
+                                sep_layer_title.setAttribute("class", "layer_label");
+                                sep_layer_title.setAttribute("style", "top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + ";");
+                                sep_layer_title.innerHTML = "Layer " + (v+1);
+                                sep_layer_title.id = "title_" + v;
+                                range_container.appendChild(sep_layer_title);
+                                if(v == new_slider_val.length-1){
+                                    var sep_layer_title = document.createElement("span");
+                                    sep_layer_title.setAttribute("class", "layer_label");
+                                    sep_layer_title.setAttribute("style", "top:-15;");
+                                    sep_layer_title.innerHTML = "Layer " + (v+2);
+                                    sep_layer_title.id = "title_" + v;
+                                    range_container.appendChild(sep_layer_title);
+                                }
+                            }
+                            var sep_layer_input = document.createElement("input");
+                            sep_layer_input.setAttribute("class", "layer_order");
+                            sep_layer_input.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; width:100px; position:absolute; background:none; border:0;");
+                            sep_layer_input.setAttribute("readonly", "readonly");
+                            if(my_revert == "a")
+                                sep_layer_input.value = 0-new_slider_val[v];
+                            else
+                                sep_layer_input.value = new_slider_val[v];
+                            sep_layer_input.id = "layer_" + v;
+
+                            sep_container.appendChild(sep_layer_input);
+                        }
+
+                        revert = my_revert;
+                        
+                    });
+
+                    $("#sep_gap").change(function(){
+                        revert = "d";
+                        var attr_min = parseInt(component_attribute[data_mode][attr_map["branch"]][1]);
+                        var attr_max = parseInt(component_attribute[data_mode][attr_map["branch"]][2]);
+                        var attr_range = component_attribute[data_mode][attr_map["branch"]][3];
+                        var gap = attr_range/($("#sep_gap").val()-1);
+                        var new_slider_val = [];
+                        
+                        for(var g = attr_min; g <= attr_max; g+=gap){
+                            new_slider_val.push(Math.round(g*100)/100);
+                        }
+
+                        if(new_slider_val.length < $("#sep_gap").val()-1){
+                            new_slider_val.push(attr_max);
+                        }
+                        
+                        $("#layer_slider").slider( "destroy" );
+                        $("#layer_slider").attr("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (50*$("#sep_gap").val()) + ";");
+                    
+                        $("#layer_slider").slider({
+                            orientation: "vertical",
+                            // range: "min",
+                            min: attr_min,
+                            max: attr_max,
+                            values: new_slider_val,
+                            step: 0.1,
+                            slide: function( event, ui ) {
+                                // console.log("handle_id:", ui.handle.id.split("_").pop());
+                                var v = parseInt(ui.handle.id.split("_").pop());
+                                var display = "#layer_" + v;
+                                var label2 = "#title_" + (v+1);
+                                var label1 = "#title_" + v;
+                                var on_handle = "#layer_handle_"+ v;
+                                if(v < new_slider_val.length-1 && ui.values[v] > Math.round((ui.values[v+1]-0.5)*100)/100){
+                                    $("#layer_slider").slider('values', v, Math.round((ui.values[v+1]-0.5)*100)/100); 
+                                    $(display).val(Math.round((ui.values[v+1]-0.5)*100)/100);
+                                    $(display).css({"top": $(on_handle).position().top});
+                                    // $(label).css({"top": $(on_handle).position().top});
+                                    return false;
+                                }
+                                if(v > 0 && ui.values[v] < Math.round((ui.values[v-1]+0.5)*100)/100){
+                                    $("#layer_slider").slider('values', v, Math.round((ui.values[v-1]+0.5)*100)/100); 
+                                    $(display).val(Math.round((ui.values[v-1]+0.5)*100)/100);
+                                    $(display).css({"top": $(on_handle).position().top});
+                                    // $(label).css({"top": $(on_handle).position().top});
+                                    return false;
+                                }
+                                $(display).css({"top": $(on_handle).position().top});
+                                // $(label).css({"top": $(on_handle).position().top});
+                                if(v == 0){
+                                    var up_handle = "#layer_handle_"+ (v+1);
+                                    $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                                else if(v == new_slider_val.length-1){
+                                    var down_handle = "#layer_handle_"+ (v-1);
+                                    $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                                else{
+                                    var down_handle = "#layer_handle_"+ (v-1);
+                                    var up_handle = "#layer_handle_"+ (v+1);
+                                    $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                    $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                                $(display).val(Math.round((ui.values[v])*100)/100);
+                            }
+                            
+                        });
+                        $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
+                        $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
+
+                        $("#sep_group").empty();
+                        $("#sep_range").empty();
+                        var sep_container = document.getElementById("sep_group");
+                        var handle = $('#layer_slider A.ui-slider-handle');   
+                        var range_container = document.getElementById("sep_range");
+
+                        for(var v = new_slider_val.length-1; v >= 0; v--){
+                            handle.eq(v).attr('id', "layer_handle_" + v);
+
+                            if(v == 0){
+                                var sep_layer_title = document.createElement("span");
+                                // sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()+handle.eq(v).position().top)/2 + "; position:absolute;");
+                                sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()-3) + ";");
+                                sep_layer_title.setAttribute("class", "layer_label");
+                                sep_layer_title.innerHTML = "Layer " + (v+1);
+                                sep_layer_title.id = "title_" + v;
+                                range_container.appendChild(sep_layer_title);
+                            }   
+                            else{
+                                var sep_layer_title = document.createElement("span");
+                                sep_layer_title.setAttribute("style", "top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + ";");
+                                sep_layer_title.setAttribute("class", "layer_label");
+                                sep_layer_title.innerHTML = "Layer " + (v+1);
+                                sep_layer_title.id = "title_" + v;
+                                range_container.appendChild(sep_layer_title);
+                                if(v == new_slider_val.length-1){
+                                    var sep_layer_title = document.createElement("span");
+                                    sep_layer_title.setAttribute("class", "layer_label");
+                                    sep_layer_title.setAttribute("style", "top:-15;");
+                                    sep_layer_title.innerHTML = "Layer " + (v+2);
+                                    sep_layer_title.id = "title_" + v;
+                                    range_container.appendChild(sep_layer_title);
+                                }
+                            }
+                            // var sep_layer = document.createElement("div");
+                            var sep_layer_input = document.createElement("input");
+                            // sep_layer.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; position:absolute;");
+                            sep_layer_input.setAttribute("class", "layer_order");
+                            // sep_layer_input.setAttribute("style", "width:80px; position:absolute; border:solid 1; border-radius:3; background:none;");
+                            sep_layer_input.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; width:100px; position:absolute; background:none; border:0;");
+                            sep_layer_input.setAttribute("readonly", "readonly");
+                            
+                            sep_layer_input.value = new_slider_val[v];
+                            sep_layer_input.id = "layer_" + v;
+
+                            sep_container.appendChild(sep_layer_input);
+                        }
+                    });                    
+                }
+            }
+            $("#sidekey_submit_trunk").hide();
+            $("#sidekey_submit_bside").hide();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_color").hide();
+            $("#sidekey_submit_leaf_highlight").hide();
+            $("#sidekey_submit_fruit_size").hide();
+            
+            $("#sidekey_submit_branch").show();
+            $("#sidekey_submit_branch").text("Done");
+            
+        }
 
         $("#sidekeyselect").unbind();
         $("#sidekeyselect").change(function(){
@@ -564,6 +1900,9 @@ var MappingView = Backbone.View.extend({
                     
                     var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0].length;
                     for(var c = total_items-1; c >= 0; c--){
+                        // var el = $("<li class='sortable-item'></li>");
+                        // el.attr('class', "sortable-item").val("value").style("color", "red");
+                        // list.append(el);
                         var item = document.createElement("li");
                         item.setAttribute("class", "sortable-item");
                         item.innerHTML = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
@@ -653,24 +1992,7 @@ var MappingView = Backbone.View.extend({
                         max: attr_max,
                         values: slider_val,
                         step: 0.1,
-                        /*
-                        slide: function( event, ui ) {
-                            // console.log("handle_id:", ui.handle.id.split("_").pop());
-                            var v = parseInt(ui.handle.id.split("_").pop());
-                            var display = "#layer_" + v;
-                            if(v < slider_val.length-1 && ui.values[v] > ui.values[v+1]-0.5){
-                                $("#layer_slider").slider('values', v, ui.values[v+1]-0.5); 
-                                $(display).val(ui.values[v+1]-0.5);
-                                return false;
-                            }
-                            if(v > 0 && ui.values[v] < ui.values[v-1]+0.5){
-                                $("#layer_slider").slider('values', v, ui.values[v-1]+0.5); 
-                                $(display).val(ui.values[v-1]+0.5);
-                                return false;
-                            }
-                            $(display).val(ui.values[v]);
-                        }
-                        */
+
                         slide: function( event, ui ) {
                             // console.log("handle_id:", ui.handle.id.split("_").pop());
                             var v = parseInt(ui.handle.id.split("_").pop());
@@ -709,16 +2031,6 @@ var MappingView = Backbone.View.extend({
                                 var up_handle = "#layer_handle_"+ (v+1);
                                 $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
                                 $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
-                                /*
-                                var label_dn = "#title_" + (v-1);
-                                var label_up = "#title_" + (v+2);
-                                if($(label1).position().top >= $(label_dn).position().top-10) ){
-                                    $(label1).css({"top": $(label_dn).position().top-10)});
-                                }
-                                if($(label2).position().top <= $(label_up).position().top+10) ){
-                                    $(label2).css({"top": $(label_up).position().top+10)});
-                                }
-                                */
                             }
                             
                             $(display).val(Math.round((ui.values[v])*100)/100);
@@ -734,9 +2046,7 @@ var MappingView = Backbone.View.extend({
                     var sep_container = document.getElementById("sep_group");
                     var handle = $('#layer_slider A.ui-slider-handle');   
                     var range_container = document.getElementById("sep_range");
-                    // var my_offset = handle.eq(slider_val.length-1).offset().top;
-                    // console.log("++++", handle.eq(1).parent().offset());
-                    // console.log("++++", handle.eq(1).parent());
+                   
                     for(var v = slider_val.length-1; v >= 0; v--){
                         // console.log("OFFSET:", handle.eq(v).offset());
                         // console.log("POSITION:", handle.eq(v).position());
@@ -780,7 +2090,6 @@ var MappingView = Backbone.View.extend({
                         sep_container.appendChild(sep_layer_input);
                         
                     }
-
                     
                     $("#revert_button").click(function(){
                         var my_revert = "a";
@@ -1346,6 +2655,246 @@ var MappingView = Backbone.View.extend({
             if(s == attr_map["bside"])
                 selection_opt.setAttribute("selected", true);
             container.appendChild(selection_opt);
+        }
+
+        if(attr_map["bside"] != "none"){
+            if(attr_map["bside"] in attribute_mapping){
+                $("#mark_group_select").empty();
+                $("#sidekey_operation").show();
+                var attr_container = document.getElementById("mark_group_select");
+                // $("#mark_group").text("✔ as Left Side of bside: 【NOTE】");
+                $("#mark_group").html("<b>NOTE: Blue</b> as upper side | <b>Red</b> as lower side");
+                $("#mark_group").show();
+                var attr_container = document.getElementById("mark_group_select");
+                if(component_attribute[data_mode][attr_map["bside"]][5] == "categorical" || component_attribute[data_mode][attr_map["bside"]][5] == "boolean"){
+                    var group1 = document.createElement("div");
+                    var group2 = document.createElement("div");
+                    var list1 = document.createElement("ul");
+                    var list2 = document.createElement("ul");
+                    group1.setAttribute("class", "column left first");
+                    group2.setAttribute("class", "column left");
+
+                    list1.id = "mapping_group1";
+                    list2.id = "mapping_group2";
+                    list1.setAttribute("class", "sortable-list");
+                    list2.setAttribute("class", "sortable-list");
+
+                    // list1.setAttribute("style", "background-color:#21b2ef;");rgba(33, 178, 239, 0.5)
+                    // list2.setAttribute("style", "background-color:#ec5b5e;");rgba(236, 91, 94, 0.5)
+
+                    list1.setAttribute("style", "background-color:rgba(33, 178, 239, 0.5);");
+                    list2.setAttribute("style", "background-color:rgba(236, 91, 94, 0.5);");
+                    
+
+                    for(var c0 = 0; c0 < attribute_mapping[attr_map["bside"]][0].length; c0++){
+                        var item = document.createElement("li");
+                        item.setAttribute("class", "sortable-item");
+                        item.innerHTML = attribute_mapping[attr_map["bside"]][0][c0];
+                        // item.value = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
+                        item.value = attribute_mapping[attr_map["bside"]][0][c0];
+                        list1.appendChild(item);
+                    }
+                    for(var c1 = 0; c1 < attribute_mapping[attr_map["bside"]][1].length; c1++){
+                        var item = document.createElement("li");
+                        item.setAttribute("class", "sortable-item");
+                        item.innerHTML = attribute_mapping[attr_map["bside"]][1][c1];
+                        // item.value = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
+                        item.value = attribute_mapping[attr_map["bside"]][1][c1];;
+                        list2.appendChild(item);
+                    }
+                    
+                    group1.appendChild(list1);
+                    group2.appendChild(list2);
+                    attr_container.appendChild(group1);
+                    attr_container.appendChild(group2);
+
+                    $('#mark_group_select .sortable-list').sortable({
+                        connectWith: '#mark_group_select .sortable-list'
+                    });
+                }
+                else{
+                    var attr_min = parseInt(component_attribute[data_mode][attr_map["bside"]][1]);
+                    var attr_max = parseInt(component_attribute[data_mode][attr_map["bside"]][2]);
+                    // attr_container.setAttribute("style", "position:relative; width:100%;");
+
+                    var sep = document.createElement("div");
+                    var sep_title = document.createElement("span");
+                    // var sep_input = document.createElement("input");
+                    var group_slider = document.createElement("div");
+                    var range = document.createElement("div");
+                    var range_min = document.createElement("span");
+                    var range_max = document.createElement("span");
+                    
+                    sep_title.id = "sep_group";
+                    sep_title.innerHTML = parseInt(attribute_mapping[attr_map["bside"]][0]);
+                    sep_title.value = parseInt(attribute_mapping[attr_map["bside"]][0]);
+                    group_slider.id = "binary_slider";
+                    sep_title.setAttribute("style", "position:absolute;");
+                    sep.setAttribute("style", "margin-top:10px; position:relative; width:100%; margin-left:5px; height:30px;");
+                    // group_slider.setAttribute("style", "background:rgba(236, 91, 94, 0.5); margin-top:30px; margin-left:5px; width:100%;");
+                    group_slider.setAttribute("style", "background:rgba(236, 91, 94, 0.5); position:absolute; top:25px; width:100%;");
+
+                    range.setAttribute("style", " width:100%; margin-top:10px;");
+                    range_min.innerHTML = attr_min;
+                    range_max.innerHTML = attr_max;
+                    range_min.setAttribute("class", "left");
+                    range_max.setAttribute("class", "right");
+
+                    // group_slider.appendChild(group_handle);
+                    sep.appendChild(sep_title);
+                    sep.appendChild(group_slider);
+                    // sep.appendChild(sep_input);
+                    range.appendChild(range_min);
+                    range.appendChild(range_max);
+                    attr_container.appendChild(sep);
+                    // attr_container.appendChild(sep_title);
+                    // attr_container.appendChild(group_slider);
+                    attr_container.appendChild(range);
+
+                    $("#sep_group").css({"left": 100*(parseInt(attribute_mapping[attr_map["bside"]][0])-attr_min)/((attr_max-attr_min)+1) + "%"})
+                    
+                    $("#binary_slider").slider({
+                        orientation: "horizontal",
+                        range: "min",
+                        min: attr_min,
+                        max: attr_max,
+                        value: parseInt(attribute_mapping[attr_map["bside"]][0]),
+                        slide: function( event, ui ) {
+                            // console.log("====", event);
+                            // console.log("====", ui);
+                            $("#sep_group").text(ui.value);
+                            $("#sep_group").val(ui.value);
+                            // $("#sep_group").css({"left": $(this).find('.ui-slider-handle').position().left});
+                            // $("#sep_group").css({"left": $(ui.handle).position().left});
+                            $("#sep_group").css({"left": 100*(ui.value-attr_min)/((attr_max-attr_min)+1) + "%"});
+                        }
+                    });
+                    
+                    $('#binary_slider .ui-slider-range').css({'background':'rgba(33, 178, 239, 0.5)'});
+                }
+            }
+            
+            else{
+                $("#mark_group_select").empty();
+                $("#sidekey_operation").show();
+                var attr_container = document.getElementById("mark_group_select");
+                // $("#mark_group").text("✔ as Left Side of bside: 【NOTE】");
+                $("#mark_group").html("<b>NOTE: Blue</b> as upper side | <b>Red</b> as lower side");
+                $("#mark_group").show();
+                var attr_container = document.getElementById("mark_group_select");
+                if(component_attribute[data_mode][attr_map["bside"]][5] == "categorical" || component_attribute[data_mode][attr_map["bside"]][5] == "boolean"){
+                    var group1 = document.createElement("div");
+                    var group2 = document.createElement("div");
+                    var list1 = document.createElement("ul");
+                    var list2 = document.createElement("ul");
+                    group1.setAttribute("class", "column left first");
+                    group2.setAttribute("class", "column left");
+
+                    list1.id = "mapping_group1";
+                    list2.id = "mapping_group2";
+                    list1.setAttribute("class", "sortable-list");
+                    list2.setAttribute("class", "sortable-list");
+
+                    // list1.setAttribute("style", "background-color:#21b2ef;");rgba(33, 178, 239, 0.5)
+                    // list2.setAttribute("style", "background-color:#ec5b5e;");rgba(236, 91, 94, 0.5)
+
+                    list1.setAttribute("style", "background-color:rgba(33, 178, 239, 0.5);");
+                    list2.setAttribute("style", "background-color:rgba(236, 91, 94, 0.5);");
+                    
+                    var total_items = component_attribute[data_mode][attr_map["bside"]][0].length
+                    for(var c = 0; c < total_items; c ++){
+                        var item = document.createElement("li");
+                        item.setAttribute("class", "sortable-item");
+                        item.innerHTML = component_attribute[data_mode][attr_map["bside"]][0][c];
+                        // item.value = component_attribute[data_mode][attr_map["bside"]][0][c];
+                        item.value = c;
+                        if(c < total_items/2)
+                            list1.appendChild(item);
+                        else
+                            list2.appendChild(item);
+                    }
+                    group1.appendChild(list1);
+                    group2.appendChild(list2);
+                    attr_container.appendChild(group1);
+                    attr_container.appendChild(group2);
+
+                    $('#mark_group_select .sortable-list').sortable({
+                        connectWith: '#mark_group_select .sortable-list'
+                    });
+                }
+                else{
+                    var attr_min = parseInt(component_attribute[data_mode][attr_map["bside"]][1]);
+                    var attr_max = parseInt(component_attribute[data_mode][attr_map["bside"]][2]);
+                    // attr_container.setAttribute("style", "position:relative; width:100%;");
+
+                    var sep = document.createElement("div");
+                    var sep_title = document.createElement("span");
+                    // var sep_input = document.createElement("input");
+                    var group_slider = document.createElement("div");
+                    var range = document.createElement("div");
+                    var range_min = document.createElement("span");
+                    var range_max = document.createElement("span");
+                    
+                    sep_title.id = "sep_group";
+                    sep_title.innerHTML = Math.floor((attr_min + attr_max)/2);
+                    sep_title.value = Math.floor((attr_min + attr_max)/2);
+                    group_slider.id = "binary_slider";
+                    sep_title.setAttribute("style", "position:absolute;");
+                    sep.setAttribute("style", "margin-top:10px; position:relative; width:100%; margin-left:5px; height:30px;");
+                    // group_slider.setAttribute("style", "background:rgba(236, 91, 94, 0.5); margin-top:30px; margin-left:5px; width:100%;");
+                    group_slider.setAttribute("style", "background:rgba(236, 91, 94, 0.5); position:absolute; top:25px; width:100%;");
+
+                    range.setAttribute("style", " width:100%; margin-top:10px;");
+                    range_min.innerHTML = attr_min;
+                    range_max.innerHTML = attr_max;
+                    range_min.setAttribute("class", "left");
+                    range_max.setAttribute("class", "right");
+
+
+                    // group_slider.appendChild(group_handle);
+                    sep.appendChild(sep_title);
+                    sep.appendChild(group_slider);
+                    // sep.appendChild(sep_input);
+                    range.appendChild(range_min);
+                    range.appendChild(range_max);
+                    attr_container.appendChild(sep);
+                    // attr_container.appendChild(sep_title);
+                    // attr_container.appendChild(group_slider);
+                    attr_container.appendChild(range);
+
+                    $("#sep_group").css({"left": 100*(Math.floor((attr_min + attr_max)/2)-attr_min)/((attr_max-attr_min)+1) + "%"})
+                    
+                    $("#binary_slider").slider({
+                        orientation: "horizontal",
+                        range: "min",
+                        min: attr_min,
+                        max: attr_max,
+                        value: Math.floor((attr_min + attr_max)/2),
+                        slide: function( event, ui ) {
+                            // console.log("====", event);
+                            // console.log("====", ui);
+                            $("#sep_group").text(ui.value);
+                            $("#sep_group").val(ui.value);
+                            // $("#sep_group").css({"left": $(this).find('.ui-slider-handle').position().left});
+                            // $("#sep_group").css({"left": $(ui.handle).position().left});
+                            $("#sep_group").css({"left": 100*(ui.value-attr_min)/((attr_max-attr_min)+1) + "%"});
+                        }
+                    });                    
+
+                    $('#binary_slider .ui-slider-range').css({'background':'rgba(33, 178, 239, 0.5)'});
+                                    
+                }
+            }
+
+            $("#sidekey_submit_branch").hide();
+            $("#sidekey_submit_trunk").hide();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_color").hide();
+            $("#sidekey_submit_leaf_highlight").hide();
+            $("#sidekey_submit_fruit_size").hide();
+            $("#sidekey_submit_bside").show();
+            $("#sidekey_submit_bside").text("Done");
         }
 
         $("#sidekeyselect").unbind();
