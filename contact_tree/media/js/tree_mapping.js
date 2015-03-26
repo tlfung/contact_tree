@@ -6181,6 +6181,535 @@ var MappingView = Backbone.View.extend({
             container.appendChild(selection_opt);
         }
 
+        if(attr_map["leaf_color"] != "none"){
+            $("#mark_group_select").empty();
+            $("#sidekey_operation").show();
+            $("#mark_group").html("<b>NOTE: Color</b> as different categories");
+            $("#mark_group").show();
+            var attr_container = document.getElementById("mark_group_select");
+            var user_map = attribute_mapping[attr_map["leaf_color"]];
+            if(component_attribute[data_mode][attr_map["leaf_color"]][5] == "categorical" || component_attribute[data_mode][attr_map["leaf_color"]][5] == "boolean"){
+                var total_items = component_attribute[data_mode][attr_map["leaf_color"]][0]
+                // if(total_items.length > 0){
+                for(var c = 0; c < total_items.length; c ++){
+                    if(c == 0){
+                        var br1 = document.createElement("br");
+                        var p1 = document.createElement("p");
+                        var c1 = document.createElement("span");
+                        var c2 = document.createElement("span");
+                        c1.innerHTML = "Color Map";
+                        c2.innerHTML = "Attribute Data";
+                        c1.setAttribute("class", "myfont3");
+                        c2.setAttribute("class", "myfont3");
+                        c2.setAttribute("style", "position:absolute; left:125px;");
+                        attr_container.appendChild(c1);
+                        attr_container.appendChild(c2);
+                        
+                        attr_container.appendChild(br1);
+                        attr_container.appendChild(p1);
+                    }
+                    var br = document.createElement("br");
+                    var p = document.createElement("p");
+                    var select_container = document.createElement("select");
+                    var label_container = document.createElement("span");
+                    select_container.value = c;
+                    select_container.setAttribute("class", "mapping_selection");
+                    // select_container.setAttribute("style", "width:100px; position:absolute; left:30px;");
+                    select_container.id = "ori_attr_val_" + c;
+                    label_container.innerHTML = total_items[c];
+                    label_container.setAttribute("style", "position:absolute; left:125px;");
+
+                    for(var l_color = 0; l_color < mapping_color.leaf_color.length; l_color++){
+                        var selection_opt = document.createElement('option');
+                        selection_opt.value = l_color;
+                        // selection_opt.innerHTML = mapping_color.leaf_color[l_color];
+                        selection_opt.setAttribute("class", "myfont3");
+                        selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
+                        
+                        if(mapping_color.leaf_color[l_color] == mapping_color.render_leaf_color[c]){
+                            selection_opt.setAttribute("selected", true);
+                            select_container.setAttribute("style", "width:100px; position:absolute; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                        }
+                                                        
+                        select_container.appendChild(selection_opt);
+                        
+                    }
+                    attr_container.appendChild(select_container);
+                    attr_container.appendChild(label_container);
+                    
+                    attr_container.appendChild(br);
+                    attr_container.appendChild(p);
+                }
+            }
+            else{
+                var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
+                var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
+                var attr_range = component_attribute[data_mode][$("#sidekeyselect").val()][3];
+
+                var sep = document.createElement("div");
+                var gap = document.createElement("div");
+                var gap_title = document.createElement("span");
+                var gap_input = document.createElement("select");
+                var group_slider = document.createElement("div");
+                var range = document.createElement("div");
+                
+                gap_input.id = "sep_gap";
+                gap_input.setAttribute("style", "width:100px");
+
+                group_slider.id = "layer_slider";
+                gap.setAttribute("style", "margin-top:10px;");
+
+                range.id = "sep_range";
+                range.setAttribute("style", "margin:15 0 0 0; position:relative; width:125px;");
+                range.setAttribute("class", "left");
+
+                gap_title.innerHTML = "Total Layer: ";
+                gap_title.setAttribute("class", "myfont3");
+                sep.id = "sep_group";
+                sep.setAttribute("style", "margin:15 0 0 10; position:relative;");
+                sep.setAttribute("class", "left");
+                group_slider.setAttribute("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:" + (50*(user_map.length+1)) + ";");
+                group_slider.setAttribute("class", "left");
+
+                var total_gap = mapping_color.leaf_color.length;
+                if(attr_range < mapping_color.leaf_color.length/2)
+                    total_gap = attr_range*2-1;
+                for(var s=2; s <= total_gap; s++){
+                    var opt = document.createElement("option");
+                    opt.value = s;
+                    opt.innerHTML = s;
+                    opt.setAttribute("class", "myfont3");
+                    if(s == (user_map.length+1))
+                        opt.setAttribute("selected", true);
+                    gap_input.appendChild(opt);
+                }
+
+                gap.appendChild(gap_title);
+                gap.appendChild(gap_input);
+                attr_container.appendChild(gap);
+
+                var br1 = document.createElement("br");
+                var p1 = document.createElement("p");
+                var c1 = document.createElement("span");
+                var c2 = document.createElement("span");
+
+                c1.innerHTML = "Color Map";
+                c2.innerHTML = "Attribute Data";
+                c1.setAttribute("class", "myfont3");
+                c2.setAttribute("class", "myfont3");
+                c2.setAttribute("style", "margin-left:50px;");
+                attr_container.appendChild(c1);
+                attr_container.appendChild(c2);
+                
+                attr_container.appendChild(br1);
+                attr_container.appendChild(p1);
+
+                attr_container.appendChild(range);
+                attr_container.appendChild(group_slider);
+                attr_container.appendChild(sep);
+
+                var slider_val = [];
+                for(var real = 0; real < user_map.length; real++){
+                     slider_val.push(parseFloat(user_map[real],10));
+                }
+                
+                $("#layer_slider").slider({
+                    orientation: "vertical",
+                    // range: "min",
+                    min: attr_min,
+                    max: attr_max,
+                    values: slider_val,
+                    step: 0.1,
+                    
+                    slide: function( event, ui ) {
+                        // console.log("handle_id:", ui.handle.id.split("_").pop());
+                        var v = parseInt(ui.handle.id.split("_").pop());
+                        var display = "#layer_" + v;
+                        var label2 = "#ori_attr_val_" + (v+1);
+                        var label1 = "#ori_attr_val_" + v;                            
+                        var on_handle = "#layer_handle_"+ v;
+                        if(v < slider_val.length-1 && ui.values[v] > Math.round((ui.values[v+1]-0.5)*100)/100){
+                            $("#layer_slider").slider('values', v, Math.round((ui.values[v+1]-0.5)*100)/100); 
+                            $(display).val(Math.round((ui.values[v+1]-0.5)*100)/100);
+                            $(display).css({"top": $(on_handle).position().top});
+                            // $(label).css({"top": $(on_handle).position().top});
+                            return false;
+                        }
+                        if(v > 0 && ui.values[v] < Math.round((ui.values[v-1]+0.5)*100)/100){
+                            $("#layer_slider").slider('values', v, Math.round((ui.values[v-1]+0.5)*100)/100); 
+                            $(display).val(Math.round((ui.values[v-1]+0.5)*100)/100);
+                            $(display).css({"top": $(on_handle).position().top});
+                            // $(label).css({"top": $(on_handle).position().top});
+                            return false;
+                        }
+                        $(display).css({"top": $(on_handle).position().top});
+                        if(slider_val.length > 1){
+                            if(v == 0){
+                                var up_handle = "#layer_handle_"+ (v+1);
+                                $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                            }
+                            else if(v == slider_val.length-1){
+                                var down_handle = "#layer_handle_"+ (v-1);
+                                $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                            }
+                            else{
+                                var down_handle = "#layer_handle_"+ (v-1);
+                                var up_handle = "#layer_handle_"+ (v+1);
+                                $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                            }
+                        }                            
+                        
+                        $(display).val(Math.round((ui.values[v])*100)/100);
+                    }
+                });
+
+                $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
+                $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
+
+                $("#sep_group").empty();
+                $("#sep_range").empty();
+
+                var sep_container = document.getElementById("sep_group");
+                var handle = $('#layer_slider A.ui-slider-handle');   
+                var range_container = document.getElementById("sep_range");
+
+                for(var v = slider_val.length-1; v >= 0; v--){
+                    // console.log("OFFSET:", handle.eq(v).offset());
+                    // console.log("POSITION:", handle.eq(v).position());
+                    handle.eq(v).attr('id', "layer_handle_" + v); 
+
+                    if(v == 0){
+                        var color_container = document.createElement("select");
+                        color_container.value = v;
+                        color_container.setAttribute("class", "mapping_selection");
+                        color_container.id = "ori_attr_val_" + v;
+
+                        for(var l_color = 0; l_color < mapping_color.leaf_color.length; l_color++){
+                            var selection_opt = document.createElement('option');
+                            selection_opt.value = l_color;
+                            // selection_opt.innerHTML = mapping_color.leaf_color[l_color];
+                            selection_opt.setAttribute("class", "myfont3");
+                            selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
+                            if(mapping_color.leaf_color[l_color] == mapping_color.render_leaf_color[v]){
+                                selection_opt.setAttribute("selected", true);
+                                color_container.setAttribute("style", "width:100px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                            }
+                                                                
+                            color_container.appendChild(selection_opt);
+                            
+                        }
+                        range_container.appendChild(color_container);
+                        if(slider_val.length == 1){
+                            var color_container = document.createElement("select");
+                            color_container.value = v;
+                            color_container.setAttribute("class", "mapping_selection");
+                            color_container.id = "ori_attr_val_" + (v+1);
+                            for(var l_color = 0; l_color < mapping_color.leaf_color.length; l_color++){
+                                var selection_opt = document.createElement('option');
+                                selection_opt.value = l_color;
+                                // selection_opt.innerHTML = mapping_color.leaf_color[l_color];
+                                selection_opt.setAttribute("class", "myfont3");
+                                selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                if(mapping_color.leaf_color[l_color] == mapping_color.render_leaf_color[(v+1)]){
+                                    selection_opt.setAttribute("selected", true);
+                                    color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                }
+                                                                        
+                                color_container.appendChild(selection_opt);
+                                
+                            }
+                            
+                            range_container.appendChild(color_container);
+                        }
+                    }   
+                    else{
+                        var color_container = document.createElement("select");
+                        color_container.value = v;
+                        color_container.setAttribute("class", "mapping_selection");
+                        color_container.id = "ori_attr_val_" + v;
+
+                        for(var l_color = 0; l_color < mapping_color.leaf_color.length; l_color++){
+                            var selection_opt = document.createElement('option');
+                            selection_opt.value = l_color;
+                            // selection_opt.innerHTML = mapping_color.leaf_color[l_color];
+                            selection_opt.setAttribute("class", "myfont3");
+                            selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
+                            if(mapping_color.leaf_color[l_color] == mapping_color.render_leaf_color[v]){
+                                selection_opt.setAttribute("selected", true);
+                                color_container.setAttribute("style", "width:100px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                            }
+                                
+                            color_container.appendChild(selection_opt);
+                            
+                        }
+
+                        range_container.appendChild(color_container);
+
+                        if(v == slider_val.length-1){
+                            var color_container = document.createElement("select");
+                            color_container.value = v;
+                            color_container.setAttribute("class", "mapping_selection");
+                            color_container.id = "ori_attr_val_" + (v+1);
+                            for(var l_color = 0; l_color < mapping_color.leaf_color.length; l_color++){
+                                var selection_opt = document.createElement('option');
+                                selection_opt.value = l_color;
+                                // selection_opt.innerHTML = mapping_color.leaf_color[l_color];
+                                selection_opt.setAttribute("class", "myfont3");
+                                selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                if(mapping_color.leaf_color[l_color] == mapping_color.render_leaf_color[(v+1)]){
+                                    selection_opt.setAttribute("selected", true);
+                                    color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                }
+                                 
+                                color_container.appendChild(selection_opt);
+                                
+                            }
+                            
+                            range_container.appendChild(color_container);
+                        }
+                    }                 
+                    var sep_layer_input = document.createElement("input");
+
+                    sep_layer_input.setAttribute("class", "layer_order");
+                    sep_layer_input.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; width:100px; position:absolute; background:none; border:0;");
+                    sep_layer_input.setAttribute("readonly", "readonly");
+                    sep_layer_input.value = slider_val[v];
+                    sep_layer_input.id = "layer_" + v;
+
+                    sep_container.appendChild(sep_layer_input);
+                    
+                }
+
+                
+                $("#sep_gap").change(function(){
+                    var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
+                    var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
+                    var attr_range = component_attribute[data_mode][$("#sidekeyselect").val()][3];
+                    var gap = attr_range/($("#sep_gap").val()-1);
+                    var new_slider_val = [];
+                
+                    for(var g = attr_min; g <= attr_max; g+=gap){
+                        new_slider_val.push(Math.round(g*100)/100);
+                    }
+
+                    if(new_slider_val.length < $("#sep_gap").val()-1){
+                        new_slider_val.push(attr_max);
+                    }
+                    
+                    // $("#layer_slider").empty();
+                    $("#layer_slider").slider( "destroy" );
+                    $("#layer_slider").attr("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:" + (40*$("#sep_gap").val()) + ";");
+                
+                    $("#layer_slider").slider({
+                        orientation: "vertical",
+                        // range: "min",
+                        min: attr_min,
+                        max: attr_max,
+                        values: new_slider_val,
+                        step: 0.1,
+                        
+                        slide: function( event, ui ) {
+                            // console.log("handle_id:", ui.handle.id.split("_").pop());
+                            var v = parseInt(ui.handle.id.split("_").pop());
+                            var display = "#layer_" + v;
+                            var label2 = "#ori_attr_val_" + (v+1);
+                            var label1 = "#ori_attr_val_" + v;                            
+                            var on_handle = "#layer_handle_"+ v;
+                            if(v < new_slider_val.length-1 && ui.values[v] > Math.round((ui.values[v+1]-0.5)*100)/100){
+                                $("#layer_slider").slider('values', v, Math.round((ui.values[v+1]-0.5)*100)/100); 
+                                $(display).val(Math.round((ui.values[v+1]-0.5)*100)/100);
+                                $(display).css({"top": $(on_handle).position().top});
+                                // $(label).css({"top": $(on_handle).position().top});
+                                return false;
+                            }
+                            if(v > 0 && ui.values[v] < Math.round((ui.values[v-1]+0.5)*100)/100){
+                                $("#layer_slider").slider('values', v, Math.round((ui.values[v-1]+0.5)*100)/100); 
+                                $(display).val(Math.round((ui.values[v-1]+0.5)*100)/100);
+                                $(display).css({"top": $(on_handle).position().top});
+                                // $(label).css({"top": $(on_handle).position().top});
+                                return false;
+                            }
+                            $(display).css({"top": $(on_handle).position().top});
+                            if(new_slider_val.length > 1){
+                                if(v == 0){
+                                    var up_handle = "#layer_handle_"+ (v+1);
+                                    $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                                else if(v == new_slider_val.length-1){
+                                    var down_handle = "#layer_handle_"+ (v-1);
+                                    $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                                else{
+                                    var down_handle = "#layer_handle_"+ (v-1);
+                                    var up_handle = "#layer_handle_"+ (v+1);
+                                    $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                    $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                            }                                
+                            
+                            $(display).val(Math.round((ui.values[v])*100)/100);
+                        }
+                    });
+                    $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
+                    $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
+
+                    $("#sep_group").empty();
+                    $("#sep_range").empty();
+                    var sep_container = document.getElementById("sep_group");
+                    var handle = $('#layer_slider A.ui-slider-handle');   
+                    var range_container = document.getElementById("sep_range");
+
+                    for(var v = new_slider_val.length-1; v >= 0; v--){
+                        // console.log("OFFSET:", handle.eq(v).offset());
+                        // console.log("POSITION:", handle.eq(v).position());
+                        handle.eq(v).attr('id', "layer_handle_" + v); 
+
+                        if(v == 0){
+                            var color_container = document.createElement("select");
+                            color_container.value = v;
+                            color_container.setAttribute("class", "mapping_selection");
+                            color_container.id = "ori_attr_val_" + v;
+
+                            for(var l_color = 0; l_color < mapping_color.leaf_color.length; l_color++){
+                                var selection_opt = document.createElement('option');
+                                selection_opt.value = l_color;
+                                // selection_opt.innerHTML = mapping_color.leaf_color[l_color];
+                                selection_opt.setAttribute("class", "myfont3");
+                                selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                if(l_color == v){
+                                    selection_opt.setAttribute("selected", true);
+                                    color_container.setAttribute("style", "width:100px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                }
+                                    
+                                else if(mapping_color.leaf_color.length < v && l_color == mapping_color.leaf_color.length-1){
+                                    selection_opt.setAttribute("selected", true);
+                                    color_container.setAttribute("style", "width:100px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
+                                }
+                                    
+                                color_container.appendChild(selection_opt);
+                                
+                            }
+                            range_container.appendChild(color_container);
+                            if(new_slider_val.length == 1){
+                                var color_container = document.createElement("select");
+                                color_container.value = v;
+                                color_container.setAttribute("class", "mapping_selection");
+                                color_container.id = "ori_attr_val_" + (v+1);
+                                for(var l_color = 0; l_color < mapping_color.leaf_color.length; l_color++){
+                                    var selection_opt = document.createElement('option');
+                                    selection_opt.value = l_color;
+                                    // selection_opt.innerHTML = mapping_color.leaf_color[l_color];
+                                    selection_opt.setAttribute("class", "myfont3");
+                                    selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                    if(l_color == (v+1)){
+                                        selection_opt.setAttribute("selected", true);
+                                        color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                    }
+                                        
+                                    else if(mapping_color.leaf_color.length < v && l_color == mapping_color.leaf_color.length-1){
+                                        selection_opt.setAttribute("selected", true);
+                                        color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
+                                    }
+                                        
+                                    color_container.appendChild(selection_opt);
+                                    
+                                }
+                                
+                                range_container.appendChild(color_container);
+                            }
+                        }   
+                        else{
+                            var color_container = document.createElement("select");
+                            color_container.value = v;
+                            color_container.setAttribute("class", "mapping_selection");
+                            color_container.id = "ori_attr_val_" + v;
+
+                            for(var l_color = 0; l_color < mapping_color.leaf_color.length; l_color++){
+                                var selection_opt = document.createElement('option');
+                                selection_opt.value = l_color;
+                                // selection_opt.innerHTML = mapping_color.leaf_color[l_color];
+                                selection_opt.setAttribute("class", "myfont3");
+                                selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                if(l_color == v){
+                                    selection_opt.setAttribute("selected", true);
+                                    color_container.setAttribute("style", "width:100px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                }
+                                    
+                                else if(mapping_color.leaf_color.length < v && l_color == mapping_color.leaf_color.length-1){
+                                    selection_opt.setAttribute("selected", true);
+                                    color_container.setAttribute("style", "width:100px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
+                                }
+                                    
+                                color_container.appendChild(selection_opt);
+                                
+                            }
+
+                            range_container.appendChild(color_container);
+
+                            if(v == new_slider_val.length-1){
+                                var color_container = document.createElement("select");
+                                color_container.value = v;
+                                color_container.setAttribute("class", "mapping_selection");
+                                color_container.id = "ori_attr_val_" + (v+1);
+                                for(var l_color = 0; l_color < mapping_color.leaf_color.length; l_color++){
+                                    var selection_opt = document.createElement('option');
+                                    selection_opt.value = l_color;
+                                    // selection_opt.innerHTML = mapping_color.leaf_color[l_color];
+                                    selection_opt.setAttribute("class", "myfont3");
+                                    selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                    if(l_color == (v+1)){
+                                        selection_opt.setAttribute("selected", true);
+                                        color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                    }
+                                        
+                                    else if(mapping_color.leaf_color.length < v && l_color == mapping_color.leaf_color.length-1){
+                                        selection_opt.setAttribute("selected", true);
+                                        color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
+                                    }
+                                        
+                                    color_container.appendChild(selection_opt);
+                                    
+                                }
+                                
+                                range_container.appendChild(color_container);
+                            }
+                        }                 
+                        var sep_layer_input = document.createElement("input");
+
+                        sep_layer_input.setAttribute("class", "layer_order");
+                        sep_layer_input.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; width:100px; position:absolute; background:none; border:0;");
+                        sep_layer_input.setAttribute("readonly", "readonly");
+                        sep_layer_input.value = new_slider_val[v];
+                        sep_layer_input.id = "layer_" + v;
+
+                        sep_container.appendChild(sep_layer_input);
+                        
+                    }
+                    $(".mapping_selection").change(function(){
+                        this.style.background = mapping_color.leaf_color[this.value];
+                    });
+
+                });
+
+            }
+            
+            $(".mapping_selection").change(function(){
+                this.style.background = mapping_color.leaf_color[this.value];
+            });
+
+            $("#sidekey_submit_trunk").hide();
+            $("#sidekey_submit_branch").hide();
+            $("#sidekey_submit_bside").hide();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_highlight").hide();
+            $("#sidekey_submit_fruit_size").hide();
+
+            $("#sidekey_submit_leaf_color").show();
+            $("#sidekey_submit_leaf_color").text("Done");
+        }
+
         $("#sidekeyselect").unbind();
         $("#sidekeyselect").change(function(){
             $("#mark_group_select").empty();
@@ -6353,20 +6882,22 @@ var MappingView = Backbone.View.extend({
                                 return false;
                             }
                             $(display).css({"top": $(on_handle).position().top});
-                            if(v == 0){
-                                var up_handle = "#layer_handle_"+ (v+1);
-                                $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
-                            }
-                            else if(v == slider_val.length-1){
-                                var down_handle = "#layer_handle_"+ (v-1);
-                                $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
-                            }
-                            else{
-                                var down_handle = "#layer_handle_"+ (v-1);
-                                var up_handle = "#layer_handle_"+ (v+1);
-                                $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
-                                $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
-                            }
+                            if(slider_val.length > 1){
+                                if(v == 0){
+                                    var up_handle = "#layer_handle_"+ (v+1);
+                                    $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                                else if(v == slider_val.length-1){
+                                    var down_handle = "#layer_handle_"+ (v-1);
+                                    $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                                else{
+                                    var down_handle = "#layer_handle_"+ (v-1);
+                                    var up_handle = "#layer_handle_"+ (v+1);
+                                    $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                    $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                }
+                            }                            
                             
                             $(display).val(Math.round((ui.values[v])*100)/100);
                         }
@@ -6413,6 +6944,33 @@ var MappingView = Backbone.View.extend({
                                 
                             }
                             range_container.appendChild(color_container);
+                            if(slider_val.length == 1){
+                                var color_container = document.createElement("select");
+                                color_container.value = v;
+                                color_container.setAttribute("class", "mapping_selection");
+                                color_container.id = "ori_attr_val_" + (v+1);
+                                for(var l_color = 0; l_color < mapping_color.leaf_color.length; l_color++){
+                                    var selection_opt = document.createElement('option');
+                                    selection_opt.value = l_color;
+                                    // selection_opt.innerHTML = mapping_color.leaf_color[l_color];
+                                    selection_opt.setAttribute("class", "myfont3");
+                                    selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                    if(l_color == (v+1)){
+                                        selection_opt.setAttribute("selected", true);
+                                        color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                    }
+                                        
+                                    else if(mapping_color.leaf_color.length < v && l_color == mapping_color.leaf_color.length-1){
+                                        selection_opt.setAttribute("selected", true);
+                                        color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
+                                    }
+                                        
+                                    color_container.appendChild(selection_opt);
+                                    
+                                }
+                                
+                                range_container.appendChild(color_container);
+                            }
                         }   
                         else{
                             var color_container = document.createElement("select");
@@ -6532,20 +7090,22 @@ var MappingView = Backbone.View.extend({
                                     return false;
                                 }
                                 $(display).css({"top": $(on_handle).position().top});
-                                if(v == 0){
-                                    var up_handle = "#layer_handle_"+ (v+1);
-                                    $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
-                                }
-                                else if(v == new_slider_val.length-1){
-                                    var down_handle = "#layer_handle_"+ (v-1);
-                                    $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
-                                }
-                                else{
-                                    var down_handle = "#layer_handle_"+ (v-1);
-                                    var up_handle = "#layer_handle_"+ (v+1);
-                                    $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
-                                    $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
-                                }
+                                if(new_slider_val.length > 1){
+                                    if(v == 0){
+                                        var up_handle = "#layer_handle_"+ (v+1);
+                                        $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    else if(v == new_slider_val.length-1){
+                                        var down_handle = "#layer_handle_"+ (v-1);
+                                        $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                    else{
+                                        var down_handle = "#layer_handle_"+ (v-1);
+                                        var up_handle = "#layer_handle_"+ (v+1);
+                                        $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                        $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                                    }
+                                }                                
                                 
                                 $(display).val(Math.round((ui.values[v])*100)/100);
                             }
@@ -6590,6 +7150,33 @@ var MappingView = Backbone.View.extend({
                                     
                                 }
                                 range_container.appendChild(color_container);
+                                if(new_slider_val.length == 1){
+                                    var color_container = document.createElement("select");
+                                    color_container.value = v;
+                                    color_container.setAttribute("class", "mapping_selection");
+                                    color_container.id = "ori_attr_val_" + (v+1);
+                                    for(var l_color = 0; l_color < mapping_color.leaf_color.length; l_color++){
+                                        var selection_opt = document.createElement('option');
+                                        selection_opt.value = l_color;
+                                        // selection_opt.innerHTML = mapping_color.leaf_color[l_color];
+                                        selection_opt.setAttribute("class", "myfont3");
+                                        selection_opt.setAttribute("style", "background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                        if(l_color == (v+1)){
+                                            selection_opt.setAttribute("selected", true);
+                                            color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.leaf_color[l_color] + ";");
+                                        }
+                                            
+                                        else if(mapping_color.leaf_color.length < v && l_color == mapping_color.leaf_color.length-1){
+                                            selection_opt.setAttribute("selected", true);
+                                            color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.leaf_color[mapping_color.leaf_color.length-1] + ";");
+                                        }
+                                            
+                                        color_container.appendChild(selection_opt);
+                                        
+                                    }
+                                    
+                                    range_container.appendChild(color_container);
+                                }
                             }   
                             else{
                                 var color_container = document.createElement("select");
@@ -6753,9 +7340,13 @@ var MappingView = Backbone.View.extend({
                 else{
                     var layer_map = [];
                     attribute_mapping[$("#sidekeyselect").val()] = []
-                    for(var v = 0; v < $("#sep_gap").val()-1; v++){
+                    for(var v = 0; v < $("#sep_gap").val(); v++){
                         var layer_id = "#layer_" + v;
                         var selector_id = "#ori_attr_val_" + v;
+                        if(v == $("#sep_gap").val()-1){
+                            mapping_color.render_leaf_color.push(mapping_color.leaf_color[$(selector_id).val()]);
+                            break;
+                        }
                         layer_map.push($(layer_id).val());
                         attribute_mapping[$("#sidekeyselect").val()].push($(layer_id).val());
                         mapping_color.render_leaf_color.push(mapping_color.leaf_color[$(selector_id).val()]);
@@ -6904,6 +7495,746 @@ var MappingView = Backbone.View.extend({
             container.appendChild(selection_opt);
         }
 
+        if(attr_map["fruit_size"] != "none"){
+            $("#mark_group_select").empty();
+            $("#sidekey_operation").show();
+            $("#mark_group").html("<b>NOTE: Fruit size scale</b> of the attributes mapping");
+            $("#mark_group").show();
+            var attr_container = document.getElementById("mark_group_select");
+            var user_map = attribute_mapping[attr_map["fruit_size"]];
+            if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
+                // var br = document.createElement("br");
+                var instruction_container = document.createElement("span");
+                instruction_container.innerHTML = "Select Fruit Size Range:";
+                instruction_container.setAttribute("class", "left myfont3");
+                var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
+                // if(total_items.length > 0){
+                attr_container.appendChild(instruction_container);
+                
+                var br = document.createElement("br");
+                var p = document.createElement("p");
+                attr_container.appendChild(br);
+                attr_container.appendChild(p);
+                
+                for(var c = 0; c < total_items.length; c ++){  
+                    var size_val = user_map[total_items[c]];      
+                    if(c == 0){
+                        var br1 = document.createElement("br");
+                        var p1 = document.createElement("p");
+                        var c1 = document.createElement("span");
+                        var c2 = document.createElement("span");
+                        c1.innerHTML = "Size Scale";
+                        c2.innerHTML = "Attribute Data";
+                        c1.setAttribute("class", "myfont3");
+                        c2.setAttribute("class", "myfont3");
+                        c2.setAttribute("style", "margin-left: 60px;");
+                        attr_container.appendChild(c1);
+                        attr_container.appendChild(c2);
+                        
+                        attr_container.appendChild(br1);
+                        attr_container.appendChild(p1);
+                    }                  
+                    var select_container = document.createElement("div");
+                    var oneitem = document.createElement("img");
+                    var leafslider = document.createElement("div");
+                    var label_container = document.createElement("span");
+                    var slider_label = document.createElement("span");
+                    // var value_container = document.createElement("span");
+                    // select_container.setAttribute("style", "margin-bottom:20px; padding-bottom:20px; margin-top:15px; width:100px; position:relative; height:" + (20 + (10*(c+1)*0.5)) + "px;");
+                    select_container.setAttribute("style", "margin:15 0 20 10; padding-bottom:20px; width:100px; position:relative; height:" + (15 + (10+(parseInt(size_val)*3))) + "px;");
+                    
+                    select_container.id = "size_selector_" + c;
+                    oneitem.id = "oneitem_" + c;
+                    oneitem.setAttribute("style", "position:absolute; width:"+ (10 + (parseInt(size_val)*3)) +"%;");
+                    oneitem.src = "media/img/one_fruit.png"
+
+                    leafslider.id = "ori_attr_val_" + c;
+                    // leafslider.setAttribute("style", "width:100%; position:absolute; top:" + (10 + 10*(c+1)) + "px;");
+                    leafslider.setAttribute("style", "width:100%; position:absolute; bottom:0px;");
+
+                    slider_label.id = "slider_label_" + c;
+                    slider_label.setAttribute("style", "position:absolute; bottom:-20px;");
+
+                    label_container.innerHTML = total_items[c];
+                    label_container.setAttribute("style", "position:absolute; left:125px; bottom:0px;");
+                    // value_container.innerHTML = c;
+                    // value_container.setAttribute("style", "position:absolute; left:125px; bottom:0px;");
+
+                    select_container.appendChild(oneitem);
+                    select_container.appendChild(leafslider);
+                    select_container.appendChild(slider_label);
+                    select_container.appendChild(label_container);
+                    // br.innerHTML = "<p></p>";
+                    
+                    attr_container.appendChild(select_container);
+                    // attr_container.appendChild(label_container);
+
+                    var slider_id = "#ori_attr_val_" + c;
+                    var leaf_img_id = "#oneitem_" + c;
+                    var handle = "#ori_attr_val_" + c + " .ui-slider-handle";
+                    var s_label = "#slider_label_" + c;
+                    $(slider_id).slider({
+                        orientation: "horizontal",
+                        min: 0,
+                        max: 10,
+                        value: parseInt(size_val),
+                        slide: function( event, ui) {
+                            // console.log("=========", ui);
+                            // console.log(this.id);
+                            var myid = this.id;
+                            // console.log("leaf slider val: ", ui.value);
+                            var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop();
+                            var container_id = "#size_selector_" + myid.split("attr_val_").pop();
+                            var s_label = "#slider_label_" + myid.split("attr_val_").pop();
+                            // var onhandle = "#ori_attr_val_" + (this.id).split("attr_val_").pop() + " .ui-slider-handle";
+                            // console.log("leaf img id: ", oneitem_id);
+
+                            $(s_label).css({"left": (ui.value*10-5)+"%"});
+                            $(s_label).text(ui.value);
+                            $(s_label).val(ui.value);
+                            $(oneitem_id).css({"width": 10+(ui.value*3)});
+                            $(container_id).css({"height": 15+(10+(ui.value*3))});
+                        }
+                    });
+
+                    $(handle).css({'width':'0.7em'});
+                    $(handle).css({'height':'1em'});
+                    $(slider_id).css({'height':'8px'});
+                    // $(s_label).css({"left": $(handle).position.left});
+                    $(s_label).text(parseInt(size_val));
+                    $(s_label).val(parseInt(size_val));
+                    $(s_label).css({"left": (parseInt(size_val)*10-5)+"%"});
+                                     
+                }
+                
+            }
+            else{
+                var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
+                var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
+                var attr_range = component_attribute[data_mode][$("#sidekeyselect").val()][3];
+                var size_map = user_map[1];
+                var val_map = user_map[0];
+
+                var sep = document.createElement("div");
+                var gap = document.createElement("div");
+                var gap_title = document.createElement("span");
+                var gap_input = document.createElement("select");
+                // var revert_button = document.createElement("button");
+                var group_slider = document.createElement("div");
+                var range = document.createElement("div");
+                // var range_min = document.createElement("span");
+                // var range_max = document.createElement("span");
+                
+                gap_input.id = "sep_gap";
+                gap_input.setAttribute("style", "width:100px");
+
+                group_slider.id = "layer_slider";
+                gap.setAttribute("style", "margin-top:10px;");
+
+                range.id = "sep_range";
+                range.setAttribute("style", "margin:15 0 0 0; position:relative; width:155px;");
+                range.setAttribute("class", "left");
+
+                gap_title.innerHTML = "Number of Difference: ";
+                gap_title.setAttribute("class", "myfont3");
+                sep.id = "sep_group";
+                sep.setAttribute("style", "margin:15 0 0 180; position:relative;");
+                
+                group_slider.setAttribute("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:" + 50*size_map.length + ";");
+                group_slider.setAttribute("class", "left");
+
+                var total_gap = 10;
+                if(attr_range < 5)
+                    total_gap = attr_range*2-1;
+                for(var s=3; s <= total_gap; s++){
+                    var opt = document.createElement("option");
+                    opt.value = s;
+                    opt.innerHTML = s;
+                    opt.setAttribute("class", "myfont3");
+                    if(s == size_map.length)
+                        opt.setAttribute("selected", true);
+                    gap_input.appendChild(opt);
+                }
+
+                // group_slider.appendChild(group_handle);
+                gap.appendChild(gap_title);
+                gap.appendChild(gap_input);
+                attr_container.appendChild(gap);
+
+                var br1 = document.createElement("br");
+                var p1 = document.createElement("p");
+                var c1 = document.createElement("span");
+                var c2 = document.createElement("span");
+
+                c1.innerHTML = "Size Scale";
+                c2.innerHTML = "Attribute Data";
+                c1.setAttribute("class", "myfont3");
+                c2.setAttribute("class", "myfont3");
+                c2.setAttribute("style", "margin-left:90px;");
+                attr_container.appendChild(c1);
+                attr_container.appendChild(c2);
+                
+                attr_container.appendChild(br1);
+                attr_container.appendChild(p1);
+
+                attr_container.appendChild(range);
+                attr_container.appendChild(group_slider);                    
+                attr_container.appendChild(sep);
+
+                var slider_val = [];
+
+                for(var g = 0; g < val_map.length; g++){
+                    slider_val.push(parseFloat(val_map[g],10));
+                }
+                
+               $("#layer_slider").slider({
+                    orientation: "vertical",
+                    // range: "min",
+                    min: attr_min,
+                    max: attr_max,
+                    values: slider_val,
+                    step: 0.1,
+                    
+                    slide: function( event, ui ) {
+                        var v = parseInt(ui.handle.id.split("_").pop());
+                        var display = "#layer_" + v;
+                        var label2 = "#size_selector_" + (v+1);
+                        var label1 = "#size_selector_" + v;                            
+                        var on_handle = "#layer_handle_"+ v;
+                        if(v < slider_val.length-1 && ui.values[v] > Math.round((ui.values[v+1]-0.5)*100)/100){
+                            $("#layer_slider").slider('values', v, Math.round((ui.values[v+1]-0.5)*100)/100); 
+                            $(display).val(Math.round((ui.values[v+1]-0.5)*100)/100);
+                            $(display).css({"top": $(on_handle).position().top});
+                            // $(label).css({"top": $(on_handle).position().top});
+                            return false;
+                        }
+                        if(v > 0 && ui.values[v] < Math.round((ui.values[v-1]+0.5)*100)/100){
+                            $("#layer_slider").slider('values', v, Math.round((ui.values[v-1]+0.5)*100)/100); 
+                            $(display).val(Math.round((ui.values[v-1]+0.5)*100)/100);
+                            $(display).css({"top": $(on_handle).position().top});
+                            // $(label).css({"top": $(on_handle).position().top});
+                            return false;
+                        }
+                        $(display).css({"top": $(on_handle).position().top});
+                        if(v == 0){
+                            var up_handle = "#layer_handle_"+ (v+1);
+                            $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                        }
+                        else if(v == slider_val.length-1){
+                            var down_handle = "#layer_handle_"+ (v-1);
+                            $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                        }
+                        else{
+                            var down_handle = "#layer_handle_"+ (v-1);
+                            var up_handle = "#layer_handle_"+ (v+1);
+                            $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                            $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                        }
+                        
+                        $(display).val(Math.round((ui.values[v])*100)/100);
+                    }
+                });
+
+                $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
+                $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
+                // $('#layer_slider .ui-slider-handle').css({'background':'green'});
+
+                $("#sep_group").empty();
+                $("#sep_range").empty();
+                var sep_container = document.getElementById("sep_group");
+                var handle = $('#layer_slider A.ui-slider-handle');   
+                var range_container = document.getElementById("sep_range");
+
+                /******************** set label***********************/
+                for(var v = slider_val.length-1; v >= 0; v--){
+                    handle.eq(v).attr('id', "layer_handle_" + v); 
+
+                    if(v == 0){
+                        var select_container = document.createElement("div");
+                        var oneitem = document.createElement("img");
+                        var leafslider = document.createElement("div");
+                        var slider_label = document.createElement("span");
+                        // select_container.setAttribute("style", "margin:15 0 20 10; padding-bottom:20px; width:140px; position:relative; height:35px;");
+                        select_container.setAttribute("style", "width:140px; position:relative; height:35px;");
+                        
+                        select_container.id = "size_selector_" + v;
+                        oneitem.id = "oneitem_" + v;
+                        oneitem.setAttribute("style", "position:absolute; width:"+ (5+30*(parseInt(size_map[v])*0.1)) +"%;");
+                        oneitem.src = "media/img/one_fruit.png"
+
+                        leafslider.id = "ori_attr_val_" + v;
+                        leafslider.setAttribute("style", "position:absolute; left:40px; width:100px; top:10px;");
+
+                        slider_label.id = "slider_label_" + v;
+                        slider_label.setAttribute("style", "position:absolute; bottom:0px;");
+
+                        select_container.appendChild(oneitem);
+                        select_container.appendChild(leafslider);
+                        select_container.appendChild(slider_label);
+                                
+                        range_container.appendChild(select_container);
+
+                        var slider_id = "#ori_attr_val_" + v;
+                        var leaf_img_id = "#oneitem_" + v;
+                        var size_handle = "#ori_attr_val_" + v + " .ui-slider-handle";
+                        var s_label = "#slider_label_" + v;
+                        var s_container = "#size_selector_" + v;
+                        $(slider_id).slider({
+                            orientation: "horizontal",
+                            min: 0,
+                            max: 10,
+                            value: parseInt(size_map[v]),
+                            slide: function( event, ui) {
+                                var myid = this.id;
+                                var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop();
+                                var container_id = "#size_selector_" + myid.split("attr_val_").pop();
+                                var s_label = "#slider_label_" + myid.split("attr_val_").pop();
+                                
+                                $(s_label).css({"left": 35+100*(0.1*ui.value)});
+                                $(s_label).text(ui.value);
+                                $(s_label).val(ui.value);
+                                $(oneitem_id).css({"width": 5+30*(0.1*ui.value)});
+                            }
+                        });
+
+                        $(s_container).css({"position": "absolute"});
+                        $(s_container).css({"top": $("#layer_slider").height()-5});
+                        
+                        $(slider_id).css({'top':'8px'});
+                        $(size_handle).css({'width':'0.7em'});
+                        $(size_handle).css({'height':'1em'});
+                        $(slider_id).css({'height':'8px'});
+                        $(s_label).text(parseInt(size_map[v]));
+                        $(s_label).val(parseInt(size_map[v]));
+                        $(s_label).css({"left": 35+100*(0.1*parseInt(size_map[v]))});
+
+                    }   
+                    else{
+                        var select_container = document.createElement("div");
+                        var oneitem = document.createElement("img");
+                        var leafslider = document.createElement("div");
+                        var slider_label = document.createElement("span");
+                        // select_container.setAttribute("style", "margin-bottom:20px; padding-bottom:20px; margin-top:15px; width:100px; position:relative; height:" + (20 + (10*(c+1)*0.5)) + "px;");
+                        select_container.setAttribute("style", "width:140px; position:relative; height:35px;");
+                        
+                        select_container.id = "size_selector_" + v;
+                        oneitem.id = "oneitem_" + v;
+                        oneitem.setAttribute("style", "position:absolute; width:"+ (5+30*(parseInt(size_map[v])*0.1)) +"%;");
+                        oneitem.src = "media/img/one_fruit.png"
+
+                        leafslider.id = "ori_attr_val_" + v;
+                        leafslider.setAttribute("style", "position:absolute; left:40px; width:100px; top:10px;");
+
+                        slider_label.id = "slider_label_" + v;
+                        slider_label.setAttribute("style", "position:absolute; bottom:0px;");
+
+                        select_container.appendChild(oneitem);
+                        select_container.appendChild(leafslider);
+                        select_container.appendChild(slider_label);
+                                
+                        range_container.appendChild(select_container);
+
+                        var slider_id = "#ori_attr_val_" + v;
+                        var leaf_img_id = "#oneitem_" + v;
+                        var size_handle = "#ori_attr_val_" + v + " .ui-slider-handle";
+                        var s_label = "#slider_label_" + v;
+                        var s_container = "#size_selector_" + v;
+                        $(slider_id).slider({
+                            orientation: "horizontal",
+                            min: 0,
+                            max: 10,
+                            value: parseInt(size_map[v]),
+                            slide: function( event, ui) {
+                                var myid = this.id;
+                                var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop();
+                                var container_id = "#size_selector_" + myid.split("attr_val_").pop();
+                                var s_label = "#slider_label_" + myid.split("attr_val_").pop();
+
+                                $(s_label).css({"left": 35+100*(0.1*ui.value)});
+                                $(s_label).text(ui.value);
+                                $(s_label).val(ui.value);
+                                $(oneitem_id).css({"width": 5+30*(0.1*ui.value)});
+                                // $(container_id).css({"height": 15+(10+(ui.value*3))});
+                            }
+                        });
+
+                        $(s_container).css({"position": "absolute"});
+                        $(s_container).css({"top": (handle.eq(v-1).position().top+handle.eq(v).position().top)/2});
+                        
+                        $(slider_id).css({'top':'8px'});
+                        $(size_handle).css({'width':'0.7em'});
+                        $(size_handle).css({'height':'1em'});
+                        $(slider_id).css({'height':'8px'});
+                        
+                        $(s_label).text(parseInt(size_map[v]));
+                        $(s_label).val(parseInt(size_map[v]));
+                        $(s_label).css({"left": 35+100*(0.1*parseInt(size_map[v]))});
+
+                        if(v == slider_val.length-1){
+                            var select_container = document.createElement("div");
+                            var oneitem = document.createElement("img");
+                            var leafslider = document.createElement("div");
+                            var slider_label = document.createElement("span");
+                            // select_container.setAttribute("style", "margin-bottom:20px; padding-bottom:20px; margin-top:15px; width:100px; position:relative; height:" + (20 + (10*(c+1)*0.5)) + "px;");
+                            select_container.setAttribute("style", "width:140px; position:relative; height:35px;");
+                            
+                            select_container.id = "size_selector_" + (v+1);
+                            oneitem.id = "oneitem_" + (v+1);
+                            oneitem.setAttribute("style", "position:absolute; width:"+ (5+30*(parseInt(size_map[(v+1)])*0.1)) +"%;");
+                            oneitem.src = "media/img/one_fruit.png"
+
+                            leafslider.id = "ori_attr_val_" + (v+1);
+                            leafslider.setAttribute("style", "position:absolute; left:40px; width:100px; top:10px;");
+
+                            slider_label.id = "slider_label_" + (v+1);
+                            slider_label.setAttribute("style", "position:absolute; bottom:0px;");
+
+                            select_container.appendChild(oneitem);
+                            select_container.appendChild(leafslider);
+                            select_container.appendChild(slider_label);
+                                    
+                            range_container.appendChild(select_container);
+
+                            var slider_id = "#ori_attr_val_" + (v+1);
+                            var leaf_img_id = "#oneitem_" + (v+1);
+                            var size_handle = "#ori_attr_val_" + (v+1) + " .ui-slider-handle";
+                            var s_label = "#slider_label_" + (v+1);
+                            var s_container = "#size_selector_" + (v+1);
+                            $(slider_id).slider({
+                                orientation: "horizontal",
+                                min: 0,
+                                max: 10,
+                                value: parseInt(size_map[(v+1)]),
+                                slide: function( event, ui) {
+                                    var myid = this.id;
+                                    var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop();
+                                    var container_id = "#size_selector_" + myid.split("attr_val_").pop();
+                                    var s_label = "#slider_label_" + myid.split("attr_val_").pop();
+
+                                    $(s_label).css({"left": 35+100*(0.1*ui.value)});
+                                    $(s_label).text(ui.value);
+                                    $(s_label).val(ui.value);
+                                    $(oneitem_id).css({"width": 5+30*(0.1*ui.value)});
+                                }
+                            });
+
+                            $(s_container).css({"position": "absolute"});
+                            $(s_container).css({"top": -15});
+                            
+                            $(slider_id).css({'top':'8px'});
+                            $(size_handle).css({'width':'0.7em'});
+                            $(size_handle).css({'height':'1em'});
+                            $(slider_id).css({'height':'8px'});
+                           
+                            $(s_label).text(parseInt(size_map[(v+1)]));
+                            $(s_label).val(parseInt(size_map[(v+1)]));
+                            $(s_label).css({"left": 35+100*0.1*parseInt(size_map[(v+1)])});
+                            
+                        }
+                    }                 
+                    var sep_layer_input = document.createElement("input");
+
+                    sep_layer_input.setAttribute("class", "layer_order");
+                    sep_layer_input.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; width:100px; position:absolute; background:none; border:0;");
+                    sep_layer_input.setAttribute("readonly", "readonly");
+                    sep_layer_input.value = slider_val[v];
+                    sep_layer_input.id = "layer_" + v;
+
+                    sep_container.appendChild(sep_layer_input);
+                    
+                }
+               
+                $("#sep_gap").change(function(){
+                    // revert = "d";
+                    var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
+                    var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
+                    var attr_range = component_attribute[data_mode][$("#sidekeyselect").val()][3];
+                    var gap = attr_range/($("#sep_gap").val()-1);
+                    var new_slider_val = [];
+                
+                    for(var g = attr_min; g <= attr_max; g+=gap){
+                        new_slider_val.push(Math.round(g*100)/100);
+                    }
+
+                    if(new_slider_val.length < $("#sep_gap").val()-1){
+                        new_slider_val.push(attr_max);
+                    }
+
+                    // $("#layer_slider").empty();
+                    $("#layer_slider").slider( "destroy" );
+                    $("#layer_slider").attr("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:" + (50*$("#sep_gap").val()) + ";");
+                
+                    $("#layer_slider").slider({
+                        orientation: "vertical",
+                        // range: "min",
+                        min: attr_min,
+                        max: attr_max,
+                        values: new_slider_val,
+                        step: 0.1,
+                        slide: function( event, ui ) {
+                            var v = parseInt(ui.handle.id.split("_").pop());
+                            var display = "#layer_" + v;
+                            var label2 = "#size_selector_" + (v+1);
+                            var label1 = "#size_selector_" + v;                            
+                            var on_handle = "#layer_handle_"+ v;
+                            if(v < new_slider_val.length-1 && ui.values[v] > Math.round((ui.values[v+1]-0.5)*100)/100){
+                                $("#layer_slider").slider('values', v, Math.round((ui.values[v+1]-0.5)*100)/100); 
+                                $(display).val(Math.round((ui.values[v+1]-0.5)*100)/100);
+                                $(display).css({"top": $(on_handle).position().top});
+                                // $(label).css({"top": $(on_handle).position().top});
+                                return false;
+                            }
+                            if(v > 0 && ui.values[v] < Math.round((ui.values[v-1]+0.5)*100)/100){
+                                $("#layer_slider").slider('values', v, Math.round((ui.values[v-1]+0.5)*100)/100); 
+                                $(display).val(Math.round((ui.values[v-1]+0.5)*100)/100);
+                                $(display).css({"top": $(on_handle).position().top});
+                                // $(label).css({"top": $(on_handle).position().top});
+                                return false;
+                            }
+                            $(display).css({"top": $(on_handle).position().top});
+                            if(v == 0){
+                                var up_handle = "#layer_handle_"+ (v+1);
+                                $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                            }
+                            else if(v == new_slider_val.length-1){
+                                var down_handle = "#layer_handle_"+ (v-1);
+                                $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                            }
+                            else{
+                                var down_handle = "#layer_handle_"+ (v-1);
+                                var up_handle = "#layer_handle_"+ (v+1);
+                                $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
+                                $(label1).css({"top": ($(down_handle).position().top+$(on_handle).position().top)/2});
+                            }
+                            
+                            $(display).val(Math.round((ui.values[v])*100)/100);
+                        }
+                        
+                    });
+                    $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
+                    $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
+                    // $('#layer_slider .ui-slider-handle').css({'background':'green'});
+
+                    $("#sep_group").empty();
+                    $("#sep_range").empty();
+                    var sep_container = document.getElementById("sep_group");
+                    var handle = $('#layer_slider A.ui-slider-handle');   
+                    var range_container = document.getElementById("sep_range");
+
+                    /******************** set label***********************/
+                    for(var v = new_slider_val.length-1; v >= 0; v--){
+                        handle.eq(v).attr('id', "layer_handle_" + v); 
+
+                        if(v == 0){
+                            var select_container = document.createElement("div");
+                            var oneitem = document.createElement("img");
+                            var leafslider = document.createElement("div");
+                            var slider_label = document.createElement("span");
+                            // select_container.setAttribute("style", "margin:15 0 20 10; padding-bottom:20px; width:140px; position:relative; height:35px;");
+                            select_container.setAttribute("style", "width:140px; position:relative; height:35px;");
+                            
+                            select_container.id = "size_selector_" + v;
+                            oneitem.id = "oneitem_" + v;
+                            oneitem.setAttribute("style", "position:absolute; width:"+ (5+30*(v*0.1)) +"%;");
+                            oneitem.src = "media/img/one_fruit.png"
+
+                            leafslider.id = "ori_attr_val_" + v;
+                            leafslider.setAttribute("style", "position:absolute; left:40px; width:100px; top:10px;");
+
+                            slider_label.id = "slider_label_" + v;
+                            slider_label.setAttribute("style", "position:absolute; bottom:0px;");
+
+                            select_container.appendChild(oneitem);
+                            select_container.appendChild(leafslider);
+                            select_container.appendChild(slider_label);
+                                    
+                            range_container.appendChild(select_container);
+
+                            var slider_id = "#ori_attr_val_" + v;
+                            var leaf_img_id = "#oneitem_" + v;
+                            var size_handle = "#ori_attr_val_" + v + " .ui-slider-handle";
+                            var s_label = "#slider_label_" + v;
+                            var s_container = "#size_selector_" + v;
+                            $(slider_id).slider({
+                                orientation: "horizontal",
+                                min: 0,
+                                max: 10,
+                                value: v,
+                                slide: function( event, ui) {
+                                    var myid = this.id;
+                                    var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop();
+                                    var container_id = "#size_selector_" + myid.split("attr_val_").pop();
+                                    var s_label = "#slider_label_" + myid.split("attr_val_").pop();
+                                    
+                                    $(s_label).css({"left": 35+100*(0.1*ui.value)});
+                                    $(s_label).text(ui.value);
+                                    $(s_label).val(ui.value);
+                                    $(oneitem_id).css({"width": 5+30*(0.1*ui.value)});
+                                }
+                            });
+
+                            $(s_container).css({"position": "absolute"});
+                            $(s_container).css({"top": $("#layer_slider").height()-5});
+                            
+                            $(slider_id).css({'top':'8px'});
+                            $(size_handle).css({'width':'0.7em'});
+                            $(size_handle).css({'height':'1em'});
+                            $(slider_id).css({'height':'8px'});
+                            $(s_label).text(v);
+                            $(s_label).val(v);
+                            $(s_label).css({"left": 35+100*(0.1*v)});
+
+                        }   
+                        else{
+                            var select_container = document.createElement("div");
+                            var oneitem = document.createElement("img");
+                            var leafslider = document.createElement("div");
+                            var slider_label = document.createElement("span");
+                            // select_container.setAttribute("style", "margin-bottom:20px; padding-bottom:20px; margin-top:15px; width:100px; position:relative; height:" + (20 + (10*(c+1)*0.5)) + "px;");
+                            select_container.setAttribute("style", "width:140px; position:relative; height:35px;");
+                            
+                            select_container.id = "size_selector_" + v;
+                            oneitem.id = "oneitem_" + v;
+                            oneitem.setAttribute("style", "position:absolute; width:"+ (5+30*(v*0.1)) +"%;");
+                            oneitem.src = "media/img/one_fruit.png"
+
+                            leafslider.id = "ori_attr_val_" + v;
+                            leafslider.setAttribute("style", "position:absolute; left:40px; width:100px; top:10px;");
+
+                            slider_label.id = "slider_label_" + v;
+                            slider_label.setAttribute("style", "position:absolute; bottom:0px;");
+
+                            select_container.appendChild(oneitem);
+                            select_container.appendChild(leafslider);
+                            select_container.appendChild(slider_label);
+                                    
+                            range_container.appendChild(select_container);
+
+                            var slider_id = "#ori_attr_val_" + v;
+                            var leaf_img_id = "#oneitem_" + v;
+                            var size_handle = "#ori_attr_val_" + v + " .ui-slider-handle";
+                            var s_label = "#slider_label_" + v;
+                            var s_container = "#size_selector_" + v;
+                            $(slider_id).slider({
+                                orientation: "horizontal",
+                                min: 0,
+                                max: 10,
+                                value: v,
+                                slide: function( event, ui) {
+                                    var myid = this.id;
+                                    var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop();
+                                    var container_id = "#size_selector_" + myid.split("attr_val_").pop();
+                                    var s_label = "#slider_label_" + myid.split("attr_val_").pop();
+
+                                    $(s_label).css({"left": 35+100*(0.1*ui.value)});
+                                    $(s_label).text(ui.value);
+                                    $(s_label).val(ui.value);
+                                    $(oneitem_id).css({"width": 5+30*(0.1*ui.value)});
+                                    // $(container_id).css({"height": 15+(10+(ui.value*3))});
+                                }
+                            });
+
+                            $(s_container).css({"position": "absolute"});
+                            $(s_container).css({"top": (handle.eq(v-1).position().top+handle.eq(v).position().top)/2});
+                            
+                            $(slider_id).css({'top':'8px'});
+                            $(size_handle).css({'width':'0.7em'});
+                            $(size_handle).css({'height':'1em'});
+                            $(slider_id).css({'height':'8px'});
+                            
+                            $(s_label).text(v);
+                            $(s_label).val(v);
+                            $(s_label).css({"left": 35+100*(0.1*v)});
+
+                            if(v == new_slider_val.length-1){
+                                var select_container = document.createElement("div");
+                                var oneitem = document.createElement("img");
+                                var leafslider = document.createElement("div");
+                                var slider_label = document.createElement("span");
+                                // select_container.setAttribute("style", "margin-bottom:20px; padding-bottom:20px; margin-top:15px; width:100px; position:relative; height:" + (20 + (10*(c+1)*0.5)) + "px;");
+                                select_container.setAttribute("style", "width:140px; position:relative; height:35px;");
+                                
+                                select_container.id = "size_selector_" + (v+1);
+                                oneitem.id = "oneitem_" + (v+1);
+                                oneitem.setAttribute("style", "position:absolute; width:"+ (5+30*((v+1)*0.1)) +"%;");
+                                oneitem.src = "media/img/one_fruit.png"
+
+                                leafslider.id = "ori_attr_val_" + (v+1);
+                                leafslider.setAttribute("style", "position:absolute; left:40px; width:100px; top:10px;");
+
+                                slider_label.id = "slider_label_" + (v+1);
+                                slider_label.setAttribute("style", "position:absolute; bottom:0px;");
+
+                                select_container.appendChild(oneitem);
+                                select_container.appendChild(leafslider);
+                                select_container.appendChild(slider_label);
+                                        
+                                range_container.appendChild(select_container);
+
+                                var slider_id = "#ori_attr_val_" + (v+1);
+                                var leaf_img_id = "#oneitem_" + (v+1);
+                                var size_handle = "#ori_attr_val_" + (v+1) + " .ui-slider-handle";
+                                var s_label = "#slider_label_" + (v+1);
+                                var s_container = "#size_selector_" + (v+1);
+                                $(slider_id).slider({
+                                    orientation: "horizontal",
+                                    min: 0,
+                                    max: 10,
+                                    value: (v+1),
+                                    slide: function( event, ui) {
+                                        var myid = this.id;
+                                        var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop();
+                                        var container_id = "#size_selector_" + myid.split("attr_val_").pop();
+                                        var s_label = "#slider_label_" + myid.split("attr_val_").pop();
+
+                                        $(s_label).css({"left": 35+100*(0.1*ui.value)});
+                                        $(s_label).text(ui.value);
+                                        $(s_label).val(ui.value);
+                                        $(oneitem_id).css({"width": 5+30*(0.1*ui.value)});
+                                    }
+                                });
+
+                                $(s_container).css({"position": "absolute"});
+                                $(s_container).css({"top": -15});
+                                
+                                $(slider_id).css({'top':'8px'});
+                                $(size_handle).css({'width':'0.7em'});
+                                $(size_handle).css({'height':'1em'});
+                                $(slider_id).css({'height':'8px'});
+                               
+                                $(s_label).text((v+1));
+                                $(s_label).val((v+1));
+                                $(s_label).css({"left": 35+100*0.1*(v+1)});
+                                
+                            }
+                        }                 
+                        var sep_layer_input = document.createElement("input");
+
+                        sep_layer_input.setAttribute("class", "layer_order");
+                        sep_layer_input.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; width:100px; position:absolute; background:none; border:0;");
+                        sep_layer_input.setAttribute("readonly", "readonly");
+                        sep_layer_input.value = new_slider_val[v];
+                        sep_layer_input.id = "layer_" + v;
+
+                        sep_container.appendChild(sep_layer_input);
+                        
+                    }
+                });
+
+            }
+            
+            $("#sidekey_submit_trunk").hide();
+            $("#sidekey_submit_branch").hide();
+            $("#sidekey_submit_bside").hide();
+            $("#sidekey_submit_root").hide();
+            $("#sidekey_submit_leaf_size").hide();
+            $("#sidekey_submit_leaf_color").hide();
+            $("#sidekey_submit_leaf_highlight").hide();
+
+            $("#sidekey_submit_fruit_size").show();
+            $("#sidekey_submit_fruit_size").text("Done");
+        }
+
         $("#sidekeyselect").unbind();
         $("#sidekeyselect").change(function(){
             $("#mark_group_select").empty();
@@ -6917,7 +8248,7 @@ var MappingView = Backbone.View.extend({
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
                     // var br = document.createElement("br");
                     var instruction_container = document.createElement("span");
-                    instruction_container.innerHTML = "Select Leaf Size Range:";
+                    instruction_container.innerHTML = "Select Fruit Size Range:";
                     instruction_container.setAttribute("class", "left myfont3");
                     var total_items = component_attribute[data_mode][$("#sidekeyselect").val()][0]
                     // if(total_items.length > 0){
@@ -7716,13 +9047,22 @@ var MappingView = Backbone.View.extend({
                 }
                 else{
                     var layer_map = [];
+                    var size_map = [];
                     attribute_mapping[$("#sidekeyselect").val()] = []
-                    for(var v = 0; v < $("#sep_gap").val()-1; v++){
-                        var layer_id = "#slider_label_" + v;
+                    for(var v = 0; v < $("#sep_gap").val(); v++){
+                        var item_id = "#slider_label_" + v;
+                        var layer_id = "#layer_" + v;
+                        if(v == $("#sep_gap").val()-1){
+                            size_map.push($(item_id).val());
+                            break;
+                        }
+                        size_map.push($(item_id).val());
                         layer_map.push($(layer_id).val());
-                        attribute_mapping[$("#sidekeyselect").val()].push($(layer_id).val());
+                        // attribute_mapping[$("#sidekeyselect").val()].push($(layer_id).val());
                     }
-                    update_info += ":-" + JSON.stringify(layer_map);
+                    attribute_mapping[$("#sidekeyselect").val()].push(layer_map);
+                    attribute_mapping[$("#sidekeyselect").val()].push(size_map);
+                    update_info += ":-" + JSON.stringify(layer_map) + ":-" + JSON.stringify(size_map);
                 }
 
                 for(ego in ego_selections){
