@@ -54,7 +54,8 @@ var Tree_Model = Backbone.Model.extend({
 
 	    filter_contact: 0,
 	    filter_alter: 0,
-	    tree_boundary: {}
+	    tree_boundary: {},
+	    save_tree: []
 	    // stick:"coauthor"
   	},
 

@@ -87,7 +87,7 @@
 
         <!-- content -->
         <div id='canvas_container' style="margin-top:15px; width:100%; position:relative; z-index: 10;">
-        	<canvas id='c' style="border:1.5px solid gray; border-radius:5px; background: white;"></canvas>
+        	<canvas id='c' style="border:1.5px solid gray; border-radius:5px; background:white;"></canvas>
             <div style="display:none;">
                 <img id="tree_search" src="media/img/information_icon.png">
             </div>
@@ -284,6 +284,11 @@
         </div>
     </div>
 
+    <div id='save_container' class='left' style="position:absolute; overflow:hidden; height:50px; width:50px; left:50px; top:150px; display:none; z-index:-10;">
+        <canvas id='save_tree' style="background:white;"></canvas>
+        <a id="custom_download_link" download="mytree.png" href=""></a>
+    </div>
+
     <!-- popup window -->
     <div id="sidekey_dialog" title="Customize Your Tree" class="popup_window_title">
         <div id="sidekey_img" class="row text-center" style="float:left;  min-width:400px; width:55%; position: relative; border-right:1px solid gray; overflow-x:auto;">
@@ -324,6 +329,12 @@
                 <span id="fruit_size_map" class="sidekey_map">None</span>
             </div>
 
+            <div class="sidekey_label" style="left:3%; bottom:0;">
+                <button id="save_label" class="btn btn-default myfont3 left" style="padding:0 10px; height:30px;" disabled>Save</button>
+                <span class="myfont3 left" style="margin-top:1px; margin-left:5px;"><b>:</b></span>            
+                <div id="save_mapping_container" class="left"></div>
+            </div>
+
             <div id="block_layer" class="sidekey_label" style="left:0%; top:0%; width:100%; height:100%; opacity:0; display:none;">
             </div>
         </div>
@@ -356,6 +367,50 @@
             <!-- <div id="repeat_submit" style="width:100%; margin-bottom:5px; display:none;"> -->
                 <!-- <button class="btn btn-default right" id="sidekey_submit" style="width:100%; margin-bottom:5px; display:none;">Done</button> -->
             <!-- </div> -->
+        </div>
+
+
+        <div id="sidekey_save_img" class="row text-center" style="float:left;  min-width:400px; width:15%; position: relative; margin-left:10px; overflow-x:auto; display:none;">
+            <img id="mapping_img" src="media/img/real_mix_tree.png" align="left" style="margin-left:20px; height:100%; padding-top:5px;"></img>
+            <!-- <div id="stick_label" class="sidekey_label" style="left:3%; top:20%;">
+                <span class="sidekey_cmpt">Stick</span>
+            </div> -->
+            <div id="trunk_save_label" class="sidekey_label" style="left:48%; top:70%;">
+                <span class="sidekey_cmpt">Trunk Side</span>
+                <span id="trunk_save_map" class="sidekey_map">None</span>
+            </div>
+            <div id="branch_save_label" class="sidekey_label" style="left:5%; top:57%;">
+                <span class="sidekey_cmpt">Branch</span>
+                <span id="branch_save_map" class="sidekey_map">None</span>
+            </div>
+            <div id="bside_save_label" class="sidekey_label" style="left:3%; top:37%;">
+                <span class="sidekey_cmpt">Branch Side</span>
+                <span id="bside_save_map" class="sidekey_map">None</span>
+            </div>
+            <div id="root_save_label" class="sidekey_label" style="left:13%; top:80%;">
+                <span class="sidekey_cmpt">Root</span>
+                <span id="root_save_map" class="sidekey_map">None</span>
+            </div>
+            <div id="leaf_size_save_label" class="sidekey_label" style="left:57%; top:9%;">
+                <span class="sidekey_cmpt">Leaf Size</span>
+                <span id="leaf_size_save_map" class="sidekey_map">None</span>
+            </div>
+            <div id="leaf_color_save_label" class="sidekey_label" style="left:57%; top:14%;">
+                <span class="sidekey_cmpt">Leaf Color</span>
+                <span id="leaf_color_save_map" class="sidekey_map">None</span>
+            </div>
+            <div id="leaf_highlight_save_label" class="sidekey_label" style="left:57%; top:19%;">
+                <span class="sidekey_cmpt">Leaf Highlight</span>
+                <span id="leaf_id_save_map" class="sidekey_map">None</span>
+            </div>
+            <div id="fruit_size_save_label" class="sidekey_label" style="left:57%; top:38%;">
+                <span class="sidekey_cmpt">Fruit Size</span>
+                <span id="fruit_size_save_map" class="sidekey_map">None</span>
+            </div>
+
+            <div id="block_layer" class="sidekey_label" style="left:0%; bottom:0%; width:100%; height:95%; opacity:0;">
+            </div>
+            <button id="use_label" class="btn btn-default myfont3 left">Used</button>
         </div>
         <!-- <div id="warnig_div" class="row" style="margin:0 5px 5px 5px">
             <span id="warnig" class="right myfont2" style="width: 270px; font-size:14; color:red; visibility:hidden;">Warning: You have duplicated mapping attribute!</span>
@@ -474,6 +529,15 @@
         
     </div>
 
+    <div id="resolution_dialog" title="Choose Resolution of Saving" class="popup_window_title">
+        <div id="res_option" class="row" style="margin:10px 20px;">
+            <label style="margin-left:10px;" class="myfont3"><input type="radio" name="res_item" class="res_checkbox" value="low">Low</label>
+            <label style="margin-left:10px;" class="myfont3"><input type="radio" name="res_item" class="res_checkbox" value="normal">Normal</label>
+            <label style="margin-left:10px;" class="myfont3"><input type="radio" name="res_item" class="res_checkbox" value="high" checked>High</label>
+        </div>
+        <button style="width:80px; position:absolute; left:35%" class="btn btn-default" id="res_submit">OK</button>
+    </div>
+
 <!--     <div id="component_dialog" title="Choose Tree Component" class="popup_window_title">
         <div id="component_top" class="row">
             <div id="component_img" class="row left">
@@ -504,8 +568,10 @@
         <div><button class="btn btn-default right" id="style_submit" style="display:none; margin-right:10px;">Done</button></div>
     </div>
 
+    
 
-    <!-- my custom js -->.
+
+    <!-- my custom js -->
     <script type="text/javascript" src="media/js/settings.js"></script>
     <script type="text/javascript" src="media/js/labels.js"></script>
     <script type="text/javascript" src="media/js/utility.js"></script>

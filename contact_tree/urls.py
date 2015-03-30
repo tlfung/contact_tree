@@ -23,7 +23,8 @@ urlpatterns = patterns('',
     (r'^update_binary/$', query.update_binary),
     (r'^update_layer/$', query.update_layer),
     (r'^update_structure/$', query.restructure),
-    (r'^fetch_data/$', query.fetch_data)
+    (r'^fetch_data/$', query.fetch_data),
+    (r'^restore_data/$', query.restore_mapping_update)
 )
 
 urlpatterns += staticfiles_urlpatterns()

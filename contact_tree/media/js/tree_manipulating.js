@@ -7,6 +7,13 @@ var ZoomView = Backbone.View.extend({
         // bind view with model
         console.log("in zooming initialize");
 
+        $("#resolution_dialog").dialog({
+            autoOpen: false,
+            height: 150,
+            modal: true,
+            resizable: false
+        });
+
         // _.bindAll(this, 'get_grid');
         // this.model.bind('change:canvas_grid', this.get_grid);
 
@@ -25,6 +32,15 @@ var ZoomView = Backbone.View.extend({
         
         this.set_mouse_event();
         this.set_snap_event();
+        this.saving_info = [];
+
+        $("#res_submit").click(function(){
+            self.saving_info.push($('.res_checkbox:checked').val());
+            // console.log(self.saving_info);
+            $( "#resolution_dialog" ).dialog( "close" );
+            self.model.set({"save_tree": self.saving_info});
+            // self.model.trigger('change:save_tree');                        
+        });
        
     },
 
@@ -220,8 +236,19 @@ var ZoomView = Backbone.View.extend({
                         });
                         
                     }
+                    else if(self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[0] == "saveIMG"){
+                        var table = self.model.get("view_mode");
+                        var ego = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1].split(":-")[0]
+                        var sub = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1].split(":-")[1]
+                        
+                        $( "#resolution_dialog" ).dialog( "open" );
+                        self.saving_info = [ego, sub];
+                        // self.model.set({"save_tree": [ego, sub]});
+                        // self.model.trigger('change:save_tree');
+                        
+                    }
                     else{
-                        var index = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("_");
+                        var index = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("_"); // some problem
                         self.writeMessage(Math.round(mousePos.x), Math.round(mousePos.y), alter_info[index[0]][index[1]]);
                         self.draw_textbox(mousePos.x, mousePos.y, alter_info[index[0]][index[1]]);
                         // console.log("-----alter id:", alter_info[index[0]][index[1]][0], "--------total contact:", alter_info[index[0]][index[1]][1]);

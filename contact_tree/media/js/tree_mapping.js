@@ -25,11 +25,115 @@ var MappingView = Backbone.View.extend({
 
         $( "#map" ).click(function() {
             $('#mapping_img').attr('src', 'media/img/real_mix_tree.png');
-            $( "#sidekey_dialog" ).dialog( "open" );
+            $("#sidekey_dialog").dialog( "open" );
+            $("#sidekey_save_img").hide();
             // self.myattribute = JSON.parse(JSON.stringify(self.model.get("attribute")));
             self.set_component();
 
         });
+
+        $("#save_label").click(function() {
+            console.log(save_user_mapping);
+            if(save_user_mapping.length >= 5){
+                alert("Can only save 5 mapping at most!");
+                return 0;
+            }
+            var user_map = {};
+            var data_mode = self.model.get("view_mode");
+            var attr_map = self.model.get("attribute");
+            user_map["mode"] = data_mode;
+            user_map["attr"] = JSON.parse(JSON.stringify(attr_map));
+            user_map["map_info"] = JSON.parse(JSON.stringify(attribute_mapping));
+            user_map["render_leaf_color"] = JSON.parse(JSON.stringify(mapping_color.render_leaf_color));
+            user_map["render_roots_color"] = JSON.parse(JSON.stringify(mapping_color.render_roots_color));
+
+            var count_item = save_user_mapping.length + 1;
+
+            var save_item_container = $("<div class='left' style='margin-left:10px; position:relative'></div>");
+            save_item_container.attr('id', "mapping_container_" + count_item.toString());
+            var save_item_dlt = $('<span style="position:absolute; top:-4px; right:-4px; display:none;" class="glyphicon glyphicon-remove-circle"></span>');
+            save_item_dlt.attr('id', "dlt_mapping_" + count_item.toString()).val(count_item.toString());
+            var save_item = $('<button class="btn save_mapping_item"></button>');
+            save_item.val(count_item.toString()).attr('id', "save_mapping_" + count_item.toString()).text("Map" + count_item.toString());
+            save_item_container.append(save_item);
+            save_item_container.append(save_item_dlt);
+            $("#save_mapping_container").append(save_item_container);
+            
+            save_user_mapping.push(user_map);
+
+            save_item.hover(function(){
+                var delete_id = "#dlt_mapping_" + this.value;
+                // $(delete_id).css('visibility', 'visible');
+                $(delete_id).show();
+            });
+            save_item.mouseout(function(){
+                var delete_id = "#dlt_mapping_" + this.value;
+                // $(delete_id).css('visibility', 'hidden');
+                $(delete_id).hide();
+            });
+
+            save_item.click(function(){
+                $("#sidekey_selection").hide();
+                $("#sidekey_save_img").show();
+                self.set_save_component(save_user_mapping[this.value-1]["attr"]);
+                $("#use_label").val(this.value-1);
+            });    
+
+            save_item_dlt.hover(function(){
+                // var delete_id = "#dlt_mapping_" + this.value;
+                // $("#"+this.id).css('visibility', 'visible');
+                $("#"+this.id).show();
+            });   
+
+            save_item_dlt.mouseout(function(){
+                $("#"+this.id).hide();
+            });     
+
+            save_item_dlt.click(function(){
+                console.log("*****", "del:", this.id, this.value);
+                console.log(save_user_mapping);
+                save_user_mapping.splice(this.value-1, 1);
+                var del_container_id = "#mapping_container_" + this.value;
+                $(del_container_id).remove();
+                for(var s = (parseInt(this.value)+1); s <= save_user_mapping.length+1; s++){
+                    var mapping_id = "#save_mapping_" + s;
+                    var dlt_mapping_id = "#dlt_mapping_" + s;
+                    var container_id = "#mapping_container_" + s;
+                    $(mapping_id).val((s-1).toString()).attr('id', "save_mapping_" + (s-1).toString()).text("Map"+(s-1));
+                    $(dlt_mapping_id).val((s-1).toString()).attr('id', "dlt_mapping_" + (s-1).toString());
+                    $(container_id).attr('id', "mapping_container_" + (s-1).toString());
+                }
+                return false;
+            });
+        });
+
+        $("#use_label").click(function() {
+            // console.log(save_user_mapping);
+            var now_attr = JSON.parse(JSON.stringify(save_user_mapping[this.value]["attr"]));
+            var now_mode = save_user_mapping[this.value]["mode"];
+            var now_attr_map = JSON.parse(JSON.stringify(save_user_mapping[this.value]["map_info"]));
+            var all_ego = self.model.get("selected_egos");
+            var ego_list = [];
+            mapping_color.render_leaf_color = JSON.parse(JSON.stringify(save_user_mapping[this.value]["render_leaf_color"]));
+            mapping_color.render_roots_color = JSON.parse(JSON.stringify(save_user_mapping[this.value]["render_roots_color"]));
+            // self.model.trigger('change:attribute');
+            $("#sidekey_save_img").hide();
+            for(var ego in all_ego){
+                ego_list.push(ego);
+            }
+            var request = JSON.stringify(now_attr) + ":-" + JSON.stringify(ego_list) + ":-" + now_mode + ":-" + JSON.stringify(now_attr_map);
+            var request_url = "restore_data/?restore="+request;
+            
+            $("#block_page").show();
+            d3.json(request_url, function(result) {
+                $("#block_page").hide();
+                attribute_mapping = now_attr_map;
+                self.model.set({"attribute": now_attr});
+                self.model.trigger('change:attribute');
+                $("#sidekey_save_img").hide();
+            });            
+            
+        });       
 
         // this.model.bind('change:view_mode', this.set_option);
         // this.model.bind('change:attribute', this.set_option);
@@ -53,6 +157,7 @@ var MappingView = Backbone.View.extend({
         });
         */
         $("#trunk_label").click(function() {
+            $("#sidekey_save_img").hide();
             $("#sidekey_operation").hide();
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").hide();
@@ -67,6 +172,7 @@ var MappingView = Backbone.View.extend({
         });
 
         $("#branch_label").click(function() {
+            $("#sidekey_save_img").hide();
             $("#sidekey_operation").hide();
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").hide();
@@ -80,6 +186,7 @@ var MappingView = Backbone.View.extend({
         });
 
         $("#bside_label").click(function() {
+            $("#sidekey_save_img").hide();
             $("#sidekey_operation").hide();
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").hide();
@@ -93,6 +200,7 @@ var MappingView = Backbone.View.extend({
         });
 
         $("#root_label").click(function() {
+            $("#sidekey_save_img").hide();
             $("#sidekey_operation").hide();
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").hide();
@@ -106,6 +214,7 @@ var MappingView = Backbone.View.extend({
         });
 
         $("#leaf_size_label").click(function() {
+            $("#sidekey_save_img").hide();
             $("#sidekey_operation").hide();
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").hide();
@@ -119,6 +228,7 @@ var MappingView = Backbone.View.extend({
         });
 
         $("#leaf_color_label").click(function() {
+            $("#sidekey_save_img").hide();
             $("#sidekey_operation").hide();
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").hide();
@@ -132,6 +242,7 @@ var MappingView = Backbone.View.extend({
         });
 
         $("#leaf_highlight_label").click(function() {
+            $("#sidekey_save_img").hide();
             $("#sidekey_operation").hide();
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").hide();
@@ -145,6 +256,7 @@ var MappingView = Backbone.View.extend({
         });
 
         $("#fruit_size_label").click(function() {
+            $("#sidekey_save_img").hide();
             $("#sidekey_operation").hide();
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_branch").hide();
@@ -9116,8 +9228,10 @@ var MappingView = Backbone.View.extend({
         $("#sidekey_submit_fruit_size").hide();
         if(jQuery.isEmptyObject(myattribute)){
             $(".sidekey_map").css('visibility', 'hidden');
+            $('#save_label').attr("disabled", true);
         }
         else{
+            $('#save_label').removeAttr("disabled");
             // console.log(self.myattribute);
             for(cmpt in myattribute){
                 var cmpt_id = "#";
@@ -9138,9 +9252,31 @@ var MappingView = Backbone.View.extend({
         
     },
 
+    set_save_component: function(myattribute){
+        var self = this;
+        
+        for(cmpt in myattribute){
+            var cmpt_id = "#";
+            if(cmpt == "stick")
+                continue;
+            cmpt_id += cmpt + "_save_map";
+            // console.log(cmpt_id);
+            $(cmpt_id).text(myattribute[cmpt]);
+            if(myattribute[cmpt] == "none")
+                $(cmpt_id).attr('style', 'background: rgb(252, 180, 183);');
+            else
+                $(cmpt_id).attr('style', 'background: rgb(245, 244, 174);');
+        }
+        $(".sidekey_map").css('visibility', 'visible');
+        
+        // var data_mode = self.model.get("view_mode");
+        
+    },
+
     restructure: function(){
         var self = this;
         tree_size = {};
+        self.model.set({"tree_boundary":{}});
         $("#loading_process").html("<b>Rendering...</b>");
         var ego_selections = self.model.get("selected_egos");
         if(jQuery.isEmptyObject(ego_selections)){

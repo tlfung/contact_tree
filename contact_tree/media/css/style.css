@@ -130,6 +130,13 @@ table, th, td {
 	display: none;
 }
 
+.save_mapping_item{
+  background: white; 
+  height: 30px; 
+  padding: 0 10px;
+  /*border: 1px solid gray;*/
+}
+
 /* Columns */
 .column {
   margin-left: 2%;

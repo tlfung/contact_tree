@@ -1219,7 +1219,7 @@ def set_default_mapping(all_data, table, attr, mapping):
                             else:
                                 size_map = mapping[attr[compt]][1]
                                 val_map = mapping[attr[compt]][0]
-                                
+
                                 if int(d[attr[compt]]) <= int(val_map[0]):
                                     db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(size_map[0]) + ' WHERE e_id=' + str(d['e_id']) + ';')
                                 elif int(d[attr[compt]]) >= int(val_map[-1]):
@@ -1360,6 +1360,39 @@ def one_contact_update(request):
         # print mapping
         # attr['branch'] = 'age'
         precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + ego + '";')
+        all_data = precur.fetchall()
+        set_default_mapping(all_data, table, attr, mapping)
+
+    else:
+        raise Http404
+    
+    return_json = simplejson.dumps(table, indent=4, use_decimal=True)
+    # print return_json
+    return HttpResponse(return_json)
+
+
+def restore_mapping_update(request):
+    db = DB()
+    # table = request.GET.get('contact')
+    # print request.GET['contact']
+    if request.GET.get('restore'):
+        list_request = request.GET['restore'].split(":-")
+        attr = json.loads(list_request[0])
+        ego_list = json.loads(list_request[1])
+        table = list_request[2]
+        mapping = json.loads(list_request[-1])
+        # print attr, ego_list, table, mapping
+
+        if len(ego_list) == 0:
+            return_json = simplejson.dumps(table, indent=4, use_decimal=True)
+            return HttpResponse(return_json)
+            
+        query_request = 'SELECT * FROM ' + table + ' WHERE egoid="' + ego_list[0] + '"'
+        for ego in ego_list[1:]:
+            query_request += ' or egoid="' + ego + '"'
+        query_request += ";"
+        print query_request
+        precur = db.query(query_request)
         all_data = precur.fetchall()
         set_default_mapping(all_data, table, attr, mapping)
 

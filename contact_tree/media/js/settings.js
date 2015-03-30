@@ -9,6 +9,7 @@ var layout = {
 var drawing_canvas = {
     main_canvas: document.getElementById("c"),
     snap_canvas: document.getElementById("one_tree"),
+    save_canvas: document.getElementById("save_tree"),
     middle: 0
 };
 
@@ -116,6 +117,7 @@ var mapping_size = {
 
 var component_attribute = {};
 var attribute_mapping = {};
+var save_user_mapping = [];
 
 // var cat_dblp = ["DB", "AI", "Vis", "Arch", "Dist", "Net", "WWW", "OS", "Sec", "PL", "SE", "Theory", "Crypto", "Bio", " "];
 /*

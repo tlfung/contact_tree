@@ -98,9 +98,12 @@ var MyApp = function MyApp(){
    
     window.onresize = function(event) {
         // var myCanvas = drawing_canvas.main_canvas;
+        // $("#canvas_container").css({'width': "101%"});
         myCanvas.height = window.innerHeight-$("#header").height()-$("#top_list").height()-$("#footer").height()-$("#history").height()-45;
         myCanvas.width = $("#canvas_container").width();
         $("#canvas_container").css({'height': myCanvas.height});
+        $("#c").css({'height': "100%"});
+        $("#c").css({'width': "101%"});
         
         var a_grid = self.model.get("canvas_grid");
         var c_detail = self.model.get("canvas_detail");

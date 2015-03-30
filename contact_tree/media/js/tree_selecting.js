@@ -73,7 +73,10 @@ var SelectingView = Backbone.View.extend({
             self.my_ego_selected = {};
             self.my_ego_display = {};
             attribute_mapping = {};
-
+            save_user_mapping = [];
+            $("#save_mapping_container").empty();
+            self.model.set({"attribute": {}});
+            
             self.model.set({"canvas_translate": [0, 0]});
             self.model.set({"canvas_scale": 0.15});
             self.model.trigger('change:display_egos');
@@ -136,6 +139,8 @@ var SelectingView = Backbone.View.extend({
             self.my_ego_selected = {};
             self.my_ego_display = {};
             attribute_mapping = {};
+            save_user_mapping = [];
+            $("#save_mapping_container").empty();
 
             self.model.set({"canvas_translate": [0, 0]});
             self.model.set({"canvas_scale": 0.15});
