@@ -24,7 +24,8 @@ urlpatterns = patterns('',
     (r'^update_layer/$', query.update_layer),
     (r'^update_structure/$', query.restructure),
     (r'^fetch_data/$', query.fetch_data),
-    (r'^restore_data/$', query.restore_mapping_update)
+    (r'^restore_data/$', query.restore_mapping_update),
+    (r'^dataset_mode/$', query.get_dataset_mode)
 )
 
 urlpatterns += staticfiles_urlpatterns()

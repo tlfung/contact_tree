@@ -121,23 +121,28 @@ var UploadView = Backbone.View.extend({
             self.session = fn;
 
             var request = fn + ":-" + self.dataset;
+            var all_mode = self.model.get("dataset_mode");
             console.log(request);
             $("#loading_process").html("<b>Analyzing...</b>");
             d3.json("collecting_data/?collection=" + request, function(result) {
                 // alert('success');
                 // console.log("wtf");
                 console.log(result);
-                if(result == self.session + "_" + self.dataset){
+                if(result == self.dataset){
                     var container = document.getElementById("dataselect");
                     container.setAttribute("class", "dataset_selector");
                     
                     var selection_opt = document.createElement('option');
-                    selection_opt.value = result;
+                    // selection_opt.value = result;
+                    selection_opt.value = self.dataset;
                     selection_opt.innerHTML = self.dataset;
                     selection_opt.setAttribute("class", "myfont3");
 
                     container.appendChild(selection_opt);
-                    dataset_mode.push(result);
+                    all_mode.push(self.dataset);
+                    self.model.set({"dataset_mode": all_mode});
+                    // self.model.trigger('change:dataset_mode');   
+                    // dataset_mode.push(result);
                     $("#block_page").hide();
                     $("#import_dialog").dialog( "close" );
                     

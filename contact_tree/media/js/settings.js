@@ -26,7 +26,7 @@ var sub_ego = [];
 // var international_countries = ["be", "de", "fi", "gb", "id", "it", "lu", "nl", "pl", "th", "tw", "vn"];
 
 var total_ego = {};
-
+var session_id = 0;
 /*
 var mapping_item = {
     "diary": ["alterid", "sex", "age", "yrknown", "feel", "howlong", "like", "month"],
@@ -38,7 +38,8 @@ var mapping_item = {
 };
 */
 
-var dataset_mode = ["combine_diary", "international"]; //push new dataset
+
+// var dataset_mode = ["combine_diary", "international"]; //push new dataset
 // var dataset_mode = [];
 
 /*

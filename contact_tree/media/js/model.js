@@ -55,7 +55,8 @@ var Tree_Model = Backbone.Model.extend({
 	    filter_contact: 0,
 	    filter_alter: 0,
 	    tree_boundary: {},
-	    save_tree: []
+	    save_tree: [],
+	    dataset_mode: ["combine_diary", "international"]
 	    // stick:"coauthor"
   	},
 

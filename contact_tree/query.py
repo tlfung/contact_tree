@@ -218,8 +218,8 @@ def create_csv2database(request):
     tree_cmpt = ["trunk", "branch", "bside", "leaf_color", "leaf_size", "fruit_size", "root"]
     # print request.GET.get('collection')
     if request.GET.get('collection'):
-        table = request.GET.get('collection').replace(":-", "_")
-        # table = request.GET.get('collection').split(":-")[-1]
+        # table = request.GET.get('collection').replace(":-", "_")
+        table = request.GET.get('collection').split(":-")[1]
         csvfile = request.GET.get('collection').split(":-")[0]
         # attr_json = json.loads(all_info[2])
         # json.dumps(all_info[2], separators=(',',':'))
@@ -236,10 +236,10 @@ def create_csv2database(request):
 
         final_attr_info = test_type(table, attr_type)
         if final_attr_info[0] == table:
-            for c in tree_cmpt:
-                clause.execute('ALTER TABLE ' + table + ' ADD COLUMN `ctree_' + c + '` INT NULL DEFAULT NULL;')
+            # for c in tree_cmpt:
+            #     clause.execute('ALTER TABLE ' + table + ' ADD COLUMN `ctree_' + c + '` INT NULL DEFAULT NULL;')
                     
-            database.commit()
+            # database.commit()
             update_collection_data(table, final_attr_info[1])
         else:
             print "in error drop!!!"
@@ -264,12 +264,14 @@ def update_collection_data(table, attr_json):
     db = DB()
     clause.execute('SET SQL_SAFE_UPDATES = 0;')
     database.commit()
+    data_table = table.split("_of_")[1]
+    session = table.split("_of_")[0]
     # print attr_json
-    clause.execute('DELETE FROM dataset_collection WHERE dataset = "' + table + '";')
+    clause.execute('DELETE FROM dataset_collection WHERE dataset = "' + data_table + '";')
     for a in attr_json:
         print a, attr_json[a]
         # my_attr = '"' + table + '", "' + a + '", "' + str(attr_json[a]["MIN"]) + '", "' + str(attr_json[a]["MAX"]) + '", "' + str(attr_json[a]["RANGE"]) + '", "' + str(attr_json[a]["TYPE"]) + '", "' + str(attr_json[a]["RANGE"]) + '"'
-        my_attr = '"' + table + '", "' + a + '", "' + str(attr_json[a]["MIN"]) + '", "' + str(attr_json[a]["MAX"]) + '", "' + str(attr_json[a]["RANGE"]) + '", "' + str(attr_json[a]["TYPE"]) + '"'
+        my_attr = '"' + data_table + '", "' + a + '", "' + str(attr_json[a]["MIN"]) + '", "' + str(attr_json[a]["MAX"]) + '", "' + str(attr_json[a]["RANGE"]) + '", "' + str(attr_json[a]["TYPE"]) + '"'
         
         # print my_attr
         # clause.execute('INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, type, branch_range) VALUES (%s);' %my_attr)
@@ -277,20 +279,20 @@ def update_collection_data(table, attr_json):
     
     database.commit()
 
-    cur = db.query('SELECT alterid FROM ' + table + ' WHERE egoid=(SELECT min(egoid) FROM ' + table + ');')
+    cur = db.query('SELECT alterid FROM ' + data_table + ' WHERE egoid=(SELECT min(egoid) FROM ' + data_table + ');')
     temp_alter = cur.fetchone()['alterid']
-    cur = db.query('SELECT min(egoid) FROM ' + table + ';')
+    cur = db.query('SELECT min(egoid) FROM ' + data_table + ';')
     temp_ego = cur.fetchone()['min(egoid)']
     for a in attr_json:
         if a == 'dataset':
             continue
         else:
-            # print 'SELECT COUNT(DISTINCT(`' + a + '`)) from ' + table + ' WHERE alterid ="' + str(temp_alter) + '" and egoid="' + str(temp_ego) + '";'
-            cur = db.query('SELECT COUNT(DISTINCT(`' + a + '`)) from ' + table + ' WHERE alterid ="' + str(temp_alter) + '" and egoid="' + str(temp_ego) + '" AND `' + a + '` != "";')
+            # print 'SELECT COUNT(DISTINCT(`' + a + '`)) from ' + data_table + ' WHERE alterid ="' + str(temp_alter) + '" and egoid="' + str(temp_ego) + '";'
+            cur = db.query('SELECT COUNT(DISTINCT(`' + a + '`)) from ' + data_table + ' WHERE alterid ="' + str(temp_alter) + '" and egoid="' + str(temp_ego) + '" AND `' + a + '` != "";')
             alter_count = cur.fetchone()
             if alter_count['COUNT(DISTINCT(`' + a + '`))'] == 1:
-                # print 'UPDATE dataset_collection SET `alter` = 1 WHERE attr="' + a + '" and dataset="' + table + '";'
-                clause.execute('UPDATE dataset_collection SET `alter_info` = 1 WHERE attr="' + a + '" and dataset="' + table + '";')
+                # print 'UPDATE dataset_collection SET `alter` = 1 WHERE attr="' + a + '" and dataset="' + data_table + '";'
+                clause.execute('UPDATE dataset_collection SET `alter_info` = 1 WHERE attr="' + a + '" and dataset = "' + data_table + '";')
 
     clause.execute('SET SQL_SAFE_UPDATES = 1;')
     database.commit()
@@ -303,7 +305,15 @@ def get_dataset(request):
     db = DB()
     if request.GET.get('data'):
         # ./contact_tree/data
-        data_table = request.GET.get('data')
+        data_table = request.GET.get('data').split("_of_")[1]
+        session = request.GET.get('data').split("_of_")[0]
+        session_table = request.GET.get('data')
+
+        check_table = db.query("SHOW TABLES LIKE '" + session_table + "';")
+        
+        if check_table.fetchone() is None:
+            db.query("CREATE TABLE IF NOT EXISTS " + session_table + " LIKE " + data_table + ";")
+            db.query("INSERT " + session_table + " SELECT * FROM " + data_table + ";")
         
         cur = db.query("SELECT attr FROM dataset_collection WHERE dataset='" + data_table + "' and attr='dataset';")
         group = cur.fetchone()
@@ -316,6 +326,9 @@ def get_dataset(request):
         #     break
     else:
         raise Http404
+
+
+    db.conn.commit()
     return_json = simplejson.dumps(group_list, indent=4, use_decimal=True)
     # print json
     return HttpResponse(return_json)
@@ -506,6 +519,23 @@ def csv2mysql(fn, table):
 
 
 ####################################### above is for database #####################################################
+def get_dataset_mode(request):
+    final_return = []
+    db = DB()
+    if request.GET.get('mode'):
+        session = request.GET.get('mode')
+        cur = db.query("SELECT DISTINCT(dataset) FROM dataset_collection;")
+        allset = cur.fetchall()
+        
+        for d in allset:
+            final_return.append(d["dataset"])
+        
+    else:
+        raise Http404
+
+    return_json = simplejson.dumps(final_return, indent=4, use_decimal=True)
+    # print json
+    return HttpResponse(return_json)
 
 def get_list_ego(request):
     final_return = []
@@ -518,16 +548,18 @@ def get_list_ego(request):
         # ./contact_tree/data
         table = request.GET.get('table').split(":-")[0]
         column = request.GET.get('table').split(":-")[1]
+        data_table = table.split("_of_")[1]
+        session = table.split("_of_")[0];
         myego = "egoid"
         if column == "all":
-            cur = db.query("SELECT DISTINCT(" + myego + ") FROM " + table + ";")
+            cur = db.query("SELECT DISTINCT(" + myego + ") FROM " + data_table + ";")
             allego = cur.fetchall()
             e_list["all"] = []
             for e in allego:
                 e_list["all"].append(e[myego])
                 
         else:
-            cur = db.query("SELECT DISTINCT(" + myego + "), " + column + " FROM " + table + " ORDER BY " + column + ";")
+            cur = db.query("SELECT DISTINCT(" + myego + "), " + column + " FROM " + data_table + " ORDER BY " + column + ";")
             allego = cur.fetchall()
             
             for e in allego:
@@ -542,7 +574,7 @@ def get_list_ego(request):
 
         default_attr["stick"] = "alterid"
 
-        cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range < 20 and dataset="' + table + '" and `alter_info`="1" ORDER BY attr_range;')
+        cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range < 20 and dataset="' + data_table + '" and `alter_info`="1" ORDER BY attr_range;')
         all_attr = cur.fetchall()
         # candidate1 = dict()
         candidate1 = []
@@ -561,7 +593,7 @@ def get_list_ego(request):
             default_attr["trunk"] = candidate1[0]
             default_attr["bside"] = candidate1[1]
 
-            cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range >= 20 and dataset="' + table + '" and `alter_info`="1" and `type`="numerical" ORDER BY attr_range;')
+            cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range >= 20 and dataset="' + data_table + '" and `alter_info`="1" and `type`="numerical" ORDER BY attr_range;')
             all_attr = cur.fetchall()
             # candidate2 = dict()
             candidate2 = []
@@ -572,14 +604,14 @@ def get_list_ego(request):
                 default_attr["branch"] = candidate2[-1]
             else:
                 default_attr["branch"] = candidate1[-1]
-                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
+                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + data_table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
                 all_attr = cur.fetchone()
                 default_attr["bside"] = all_attr['attr']
 
         elif len(candidate1) == 1:
             default_attr["trunk"] = candidate1[0]
 
-            cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range >= 20 and dataset="' + table + '" and `alter_info`="1" and `type`="numerical" ORDER BY attr_range;')
+            cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range >= 20 and dataset="' + data_table + '" and `alter_info`="1" and `type`="numerical" ORDER BY attr_range;')
             all_attr = cur.fetchall()
             # candidate2 = dict()
             candidate2 = []
@@ -592,7 +624,7 @@ def get_list_ego(request):
             elif len(candidate2) > 0:
                 default_attr["branch"] = candidate2[-1]
 
-                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
+                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + data_table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
                 all_attr = cur.fetchall()
                 # candidate3 = dict()
                 candidate3 = []
@@ -604,7 +636,7 @@ def get_list_ego(request):
                 if len(candidate3) > 0:
                     default_attr["bside"] = candidate3[0]
             else:
-                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
+                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + data_table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
                 all_attr = cur.fetchall()
                 # candidate3 = dict()
                 candidate3 = []
@@ -618,7 +650,7 @@ def get_list_ego(request):
                     default_attr["branch"] = candidate3[0]
 
         elif len(candidate1) == 0:
-            cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range >= 20 and dataset="' + table + '" and `alter_info`="1" and `type`="numerical" ORDER BY attr_range;')
+            cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range >= 20 and dataset="' + data_table + '" and `alter_info`="1" and `type`="numerical" ORDER BY attr_range;')
             all_attr = cur.fetchall()
             # candidate2 = dict()
             candidate2 = []
@@ -632,7 +664,7 @@ def get_list_ego(request):
             elif len(candidate2) == 2:
                 default_attr["trunk"] = candidate2[0]
                 default_attr["branch"] = candidate2[1]
-                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
+                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + data_table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
                 all_attr = cur.fetchall()
                 # candidate3 = dict()
                 candidate3 = []
@@ -645,7 +677,7 @@ def get_list_ego(request):
             elif len(candidate2) == 1:
                 default_attr["trunk"] = candidate2[0]
                 # default_attr["branch"] = candidate2[1]
-                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
+                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + data_table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
                 all_attr = cur.fetchall()
                 # candidate3 = dict()
                 candidate3 = []
@@ -657,7 +689,7 @@ def get_list_ego(request):
                     default_attr["bside"] = candidate3[0]
                     default_attr["branch"] = candidate3[1]
             else:
-                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
+                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + data_table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
                 all_attr = cur.fetchall()
                 # candidate3 = dict()
                 candidate3 = []
@@ -675,7 +707,7 @@ def get_list_ego(request):
         default_attr["leaf_color"] = "none"
         default_attr["leaf_size"] = "none"
         default_attr["root"] = "none"
-        default_attr["leaf_id"] = "none"
+        default_attr["highlight"] = "none"
         
         # cur = db.query('SELECT * FROM dataset_collection WHERE attr_range < 20 and dataset="' + table + '" and `alter_info`="1";')
         # relate_alter = cur.fetchall()
@@ -705,12 +737,12 @@ def get_list_ego(request):
 
         final_return.append(default_attr)
 
-        cur = db.query('SELECT * FROM dataset_collection WHERE attr!="dataset" and dataset="' + table + '";')
+        cur = db.query('SELECT * FROM dataset_collection WHERE attr!="dataset" and dataset="' + data_table + '";')
         attr_info = cur.fetchall()
         for info in attr_info:
             detail_array = []
             if info['type'] == "boolean" or info['type'] == "categorical" or info['attr_range'] < 20:
-                infocur = db.query('SELECT DISTINCT(`' + info['attr'] + '`) FROM ' + table + ' WHERE `' + info['attr'] + '` != "";')
+                infocur = db.query('SELECT DISTINCT(`' + info['attr'] + '`) FROM ' + data_table + ' WHERE `' + info['attr'] + '` != "";')
                 attr_detail = infocur.fetchall()
                 if info['min'].isdigit():
                     for d in attr_detail:
@@ -763,7 +795,8 @@ def unique_stick(all_data, attr, branch_layer):
 
     root = attr['root']
     stick = "alterid"
-    leaf_id = attr['leaf_id']
+    leaf_id = attr['highlight']
+    # leaf_id = "ctree_highlight"
     f_size = "ctree_fruit_size"
     l_size = "ctree_leaf_size"
     l_color = "ctree_leaf_color"
@@ -792,6 +825,14 @@ def unique_stick(all_data, attr, branch_layer):
         if check_none > 0:
             # print meeting
             continue
+
+        # for a in attr:
+        #     tree_col = "ctree_" + a
+        #     if a != "stick" and attr[a] != 'none' and meeting[tree_col] == -100: # == -100:
+        #         check_none += 1
+        # if check_none > 0:
+        #     # print meeting
+        #     continue
 
         # meeting = c
         if root != "none":
@@ -918,7 +959,8 @@ def duplicate_stick(all_data, attr, branch_layer):
 
     root = attr['root']
     stick = "alterid"
-    leaf_id = attr['leaf_id']
+    leaf_id = attr['highlight']
+    # leaf_id = "ctree_highlight"
 
     alter_array_right = []
     alter_array_left = []
@@ -940,6 +982,14 @@ def duplicate_stick(all_data, attr, branch_layer):
         if check_none > 0:
             print meeting
             continue
+
+        # for a in attr:
+        #     tree_col = "ctree_" + a
+        #     if a != "stick" and attr[a] != 'none' and meeting[tree_col] == -100: # == -100:
+        #         check_none += 1
+        # if check_none > 0:
+        #     # print meeting
+        #     continue
 
         # meeting = c
         if root != "none":
@@ -1087,6 +1137,326 @@ def duplicate_stick(all_data, attr, branch_layer):
     return structure
 
 
+def set_default_mapping_ctree_mapping_info(all_data, table, attr, mapping):
+    # print "set_default_mapping"
+    db = DB()
+    branch_index = []
+    binary_index = dict()
+    db.query('SET SQL_SAFE_UPDATES = 0;')
+    db.conn.commit()
+    data_table = table.split("_of_")[1]
+    session = table.split("_of_")[0]
+    # print mapping
+    for d in all_data:        
+        for compt in attr:
+            # print 'SELECT * FROM ctree_mapping_info WHERE dataset="' + data_table + '" and session_id="' + session + '" and e_id=' + str(d['e_id']) + ';'
+            usercur = db.query('SELECT * FROM ctree_mapping_info WHERE mode="' + data_table + '" and session_id="' + session + '" and e_id=' + str(d['e_id']) + ';')
+            user_data = usercur.fetchone() 
+            dataset = "all"
+            # print ">>>>>>>>>>>>>>>>>>", user_data
+
+            if "dataset" in d:
+                dataset = d["dataset"]
+                
+            if attr[compt] != 'none' and d[attr[compt]] is None:
+                if user_data:
+                    db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=-100 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                else:
+                    # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", -100);'
+                    db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", -100);')
+                continue         
+            cur = db.query('SELECT * FROM dataset_collection WHERE dataset="' + data_table + '" and attr="' + attr[compt] + '";')
+            collecting_data = cur.fetchone()   
+            
+            if compt == 'trunk' or compt == 'bside':
+                if attr[compt] in mapping:
+                    if collecting_data["type"] == "numerical":
+                        if int(d[attr[compt]]) <= int(mapping[attr[compt]]["0"][0]):
+                            if user_data:
+                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                            else:
+                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);'
+                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);')
+                            
+                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                        else:
+                            if user_data:
+                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                            else:
+                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);'
+                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);')
+                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';') 
+                    
+                    else:
+                        if d[attr[compt]] in mapping[attr[compt]]["0"]:
+                            # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
+                            if user_data:
+                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                            else:
+                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);'
+                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);')
+                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                        else:
+                            # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
+                            if user_data:
+                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                            else:
+                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);'
+                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);')
+                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')                        
+
+                else:
+                    # cur = db.query('SELECT min, max, attr_range, type FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
+                    # collecting_data = cur.fetchone()
+                    # if str(collecting_data['min']).isdigit():
+                    if str(collecting_data["type"]) == "numerical":
+                        mid = math.floor((int(collecting_data['max']) + int(collecting_data['min']))*0.5)
+                        if int(d[attr[compt]]) <= int(mid):
+                            if user_data:
+                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                            else:
+                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);'
+                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);')
+                            
+                            # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
+                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                        else:
+                            if user_data:
+                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                            else:
+                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);'
+                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);')
+                            # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
+                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
+                    else:
+                        if compt in binary_index:
+                            if binary_index[compt].index(d[attr[compt]]) < (len(binary_index[compt])*0.5):
+                                if user_data:
+                                    db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                else:
+                                    # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);'
+                                    db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);')
+                                
+                                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
+                                # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                            else:
+                                if user_data:
+                                    db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                else:
+                                    # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);'
+                                    db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);')
+                                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
+                                # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
+
+                        else:
+                            # print 'SELECT DISTINCT(' + attr[compt] + ') FROM ' + table + ' ORDER BY(' + attr[compt] + ');'
+                            binary_index[compt] = []
+                            precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + data_table + ' ORDER BY(' + attr[compt] + ');')
+                            real_data = precur.fetchall()
+                            for dist_d in real_data:
+                                binary_index[compt].append(dist_d[attr[compt]])
+
+                            if binary_index[compt].index(d[attr[compt]]) < (len(binary_index[compt])*0.5):
+                                if user_data:
+                                    db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                else:
+                                    # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);'
+                                    db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);')
+                                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
+                                # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                            else:
+                                if user_data:
+                                    db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                else:
+                                    # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);'
+                                    db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);')
+                                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
+                                # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
+
+
+            elif compt == 'fruit_size' or compt == 'leaf_size' or compt == 'leaf_color' or compt == 'branch' or compt == 'root':
+                # cur1 = db.query('SELECT * FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
+                # collecting_data = cur1.fetchone()
+                if attr[compt] == "none":
+                    if compt == 'fruit_size':
+                        if user_data:
+                            db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                        else:
+                            # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);'
+                            db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);')
+                        # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                    else:
+                        if user_data:
+                            db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=3 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                        else:
+                            # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 3);'
+                            db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 3);')
+                        # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=3 WHERE e_id=' + str(d['e_id']) + ';')
+                else:
+                    if attr[compt] in mapping:
+                        if collecting_data["type"] == "categorical" or collecting_data["type"] == "boolean":
+                            for cat in mapping[attr[compt]]:
+                                # if d[attr[compt]] in mapping[attr[compt]][cat]:
+                                if d[attr[compt]] == cat:
+                                    # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
+                                    # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + cat + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                    if user_data:
+                                        db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(mapping[attr[compt]][cat]) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                    else:
+                                        # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(mapping[attr[compt]][cat]) + ');'
+                                        db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(mapping[attr[compt]][cat]) + ');')
+                                    
+                                    # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(mapping[attr[compt]][cat]) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                    break
+                        else:
+                            if compt == 'branch' and mapping[attr[compt]][1] < mapping[attr[compt]][0]:
+                                if int(d[attr[compt]]) >= int(mapping[attr[compt]][0]):
+                                    if user_data:
+                                        db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                    else:
+                                        # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);'
+                                        db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);')
+                                    # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')                                                                        
+                                elif int(d[attr[compt]]) <= int(mapping[attr[compt]][-1]):
+                                    if user_data:
+                                        db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(len(mapping)) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                    else:
+                                        # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(len(mapping)) + ');'
+                                        db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(len(mapping)) + ');')
+                                    # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(mapping)) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                else:
+                                    for order in range(len(mapping[attr[compt]])-2, -1, -1):
+                                        if int(d[attr[compt]]) <= int(mapping[attr[compt]][order]) and int(d[attr[compt]]) > int(mapping[attr[compt]][order+1]):
+                                            if user_data:
+                                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(order+1) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                            else:
+                                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(order+1) + ');'
+                                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(order+1) + ');')
+                                            
+                                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order+1) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                            break
+                            elif compt == 'branch' or compt == 'leaf_color' or compt == 'root':
+                                if int(d[attr[compt]]) <= int(mapping[attr[compt]][0]):
+                                    if user_data:
+                                        db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                    else:
+                                        # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);'
+                                        db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);')
+                                    # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                                elif int(d[attr[compt]]) >= int(mapping[attr[compt]][-1]):
+                                    if user_data:
+                                        db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(len(mapping)) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                    else:
+                                        # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(len(mapping)) + ');'
+                                        db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(len(mapping)) + ');')
+                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(mapping)) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                else:
+                                    for order in range(1, len(mapping[attr[compt]])):
+                                        if int(d[attr[compt]]) > int(mapping[attr[compt]][order-1]) and int(d[attr[compt]]) <= int(mapping[attr[compt]][order]):
+                                            if user_data:
+                                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                            else:
+                                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(order) + ');'
+                                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(order) + ');')
+                                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                            break
+                            else:
+                                size_map = mapping[attr[compt]][1]
+                                val_map = mapping[attr[compt]][0]
+
+                                if int(d[attr[compt]]) <= int(val_map[0]):
+                                    if user_data:
+                                        db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(size_map[0]) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                    else:
+                                        # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(size_map[0]) + ');'
+                                        db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(size_map[0]) + ');')
+                                    # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(size_map[0]) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                elif int(d[attr[compt]]) >= int(val_map[-1]):
+                                    if user_data:
+                                        db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(size_map[len(val_map)]) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                    else:
+                                        # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(size_map[len(val_map)]) + ');'
+                                        db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(size_map[len(val_map)]) + ');')
+                                    # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(size_map[len(val_map)]) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                else:
+                                    for order in range(1, len(val_map)):
+                                        if int(d[attr[compt]]) > int(val_map[order-1]) and int(d[attr[compt]]) <= int(val_map[order]):
+                                            if user_data:
+                                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(size_map[order]) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                            else:
+                                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(size_map[order]) + ');'
+                                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(size_map[order]) + ');')
+                                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(size_map[order]) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                            break
+
+                                    
+                    else:
+                        # if str(collecting_data['min']).isdigit():
+                        if collecting_data["type"] == "numerical":
+                            gap = collecting_data['attr_range']/9.0
+                            reorder = []
+                            for g in range(collecting_data["min"], collecting_data["max"]+1, gap):
+                                reorder.append(math.round(g*100)/100.0)
+                            
+                            if len(reorder) < 9:
+                                reorder.appenf(collecting_data["max"])
+
+                            if int(d[attr[compt]]) <= reorder[0]:
+                                if user_data:
+                                    db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                else:
+                                    # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);'
+                                    db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);')
+                                # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                            elif int(d[attr[compt]]) >= reorder[-1]:
+                                if user_data:
+                                    db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(len(reorder)) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                else:
+                                    # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(len(reorder)) + ');'
+                                    db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(len(reorder)) + ');')
+                                # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(reorder)) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                            else:
+                                for order in range(1, len(reorder)):
+                                    if int(d[attr[compt]]) > reorder[order-1] and int(d[attr[compt]]) <= reorder[order]:
+                                        if user_data:
+                                            db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                        else:
+                                            # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(order) + ');'
+                                            db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(order) + ');')
+                                        # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                        break
+                        else:
+                            if len(branch_index) == 0:
+                                precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + data_table + ' ORDER BY(' + attr[compt] + ');')
+                                real_data = precur.fetchall()
+                                for dist_d in real_data:
+                                    branch_index.append(dist_d[attr[compt]])
+                            if user_data:
+                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(branch_index.index(d[attr[compt]])) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                            else:
+                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(branch_index.index(d[attr[compt]])) + ');'
+                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(branch_index.index(d[attr[compt]])) + ');')
+                            
+                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(branch_index.index(d[attr[compt]])) + ' WHERE e_id=' + str(d['e_id']) + ';')                   
+
+            elif compt == 'highlight':
+                if attr[compt] == "none":
+                    if user_data:
+                        db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '="none" WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                    else:
+                        # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", "none");'
+                        db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", "none");')
+                else:
+                    if user_data:
+                        db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(d[attr[compt]]) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                    else:
+                        # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(d[attr[compt]]) + ');'
+                        db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(d[attr[compt]]) + ');')
+                     
+    db.query('SET SQL_SAFE_UPDATES = 1;')
+    db.conn.commit()
+
+
 def set_default_mapping(all_data, table, attr, mapping):
     # print "set_default_mapping"
     db = DB()
@@ -1094,14 +1464,19 @@ def set_default_mapping(all_data, table, attr, mapping):
     binary_index = dict()
     db.query('SET SQL_SAFE_UPDATES = 0;')
     db.conn.commit()
+    data_table = table.split("_of_")[1]
+    session = table.split("_of_")[0]
     # print mapping
     for d in all_data:        
         for compt in attr:
+            # print 'SELECT * FROM ctree_mapping_info WHERE dataset="' + data_table + '" and session_id="' + session + '" and e_id=' + str(d['e_id']) + ';'
+            # usercur = db.query('SELECT * FROM ctree_mapping_info WHERE mode="' + data_table + '" and session_id="' + session + '" and e_id=' + str(d['e_id']) + ';')
+            # user_data = usercur.fetchone() 
             if attr[compt] != 'none' and d[attr[compt]] is None:
                 # print 'UPDATE ' + table + ' SET ctree_' + compt + '=-100 WHERE e_id=' + str(d['e_id']) + ';'
                 db.query('UPDATE ' + table + ' SET ctree_' + compt + '=-100 WHERE e_id=' + str(d['e_id']) + ';')
                 continue         
-            cur = db.query('SELECT * FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
+            cur = db.query('SELECT * FROM dataset_collection WHERE dataset="' + data_table + '" and attr="' + attr[compt] + '";')
             collecting_data = cur.fetchone()   
             
             if compt == 'trunk' or compt == 'bside':
@@ -1266,7 +1641,7 @@ def set_default_mapping(all_data, table, attr, mapping):
                             # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(reorder) + ' WHERE e_id=' + str(d['e_id']) + ';')
                         else:
                             if len(branch_index) == 0:
-                                precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + table + ' ORDER BY(' + attr[compt] + ');')
+                                precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + data_table + ' ORDER BY(' + attr[compt] + ');')
                                 real_data = precur.fetchall()
                                 for dist_d in real_data:
                                     branch_index.append(dist_d[attr[compt]])
@@ -1277,6 +1652,76 @@ def set_default_mapping(all_data, table, attr, mapping):
     db.conn.commit()
     
 
+
+def one_contact_new(request):
+    final_structure = dict()
+    db = DB()
+    # table = request.GET.get('contact')
+    # print request.GET['contact']
+    if request.GET.get('contact'):
+        list_request = request.GET['contact'].split(":-")
+        
+        attr = json.loads(list_request[0])
+        ego_info = json.loads(list_request[1])
+        ego_group = list_request[2]
+        table = list_request[3]
+        data_table = table.split("_of_")[1]
+        session = table.split("_of_")[0]
+        # print request.GET['contact']
+        # print ego_info
+        if ego_group == "all":
+            for e in ego_info:
+                precur = db.query('SELECT * FROM ctree_mapping_info WHERE egoid="' + e + '" and mode = "' + data_table + '" and session_id = ' + str(session) + ';')
+                all_data = precur.fetchall()
+                cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
+                stick_unique = cur.fetchone()["alter_info"]
+                # cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
+                # branch_layer = int(cur.fetchone()["attr_range"])
+                cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ctree_mapping_info WHERE session_id = ' + str(session) + ' and mode = "' + data_table + '" and ctree_branch != "" and ctree_branch != -100;')
+                branch_layer = int(cur.fetchone()["MAX(cast(`ctree_branch` as unsigned))"]) + 1
+
+                if stick_unique == '1':
+                    # print "in_unique"
+                    one_structure = unique_stick(all_data, attr, branch_layer)
+
+                else:
+                    # print "in_duplicate"
+                    one_structure = duplicate_stick(all_data, attr, branch_layer)
+
+                final_structure["all"] = dict()
+                final_structure["all"][e] = one_structure
+
+        else:
+            for e in ego_info:
+                for sub in ego_info[e]:
+                    # precur = db.query('SELECT * FROM ' + data_table + ' WHERE dataset="' + sub + '" and egoid="' + e + '";')
+                    precur = db.query('SELECT * FROM ctree_mapping_info WHERE dataset="' + sub + '" and egoid="' + e + '" and mode = "' + data_table + '" and session_id = ' + str(session) + ';')
+                    all_data = precur.fetchall()
+                    cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
+                    stick_unique = cur.fetchone()["alter_info"]
+                    # cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
+                    # branch_layer = int(cur.fetchone()["attr_range"])
+                    # cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ' + table + ' WHERE ctree_branch != "" and ctree_branch != -100;')
+                    cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ctree_mapping_info WHERE session_id = ' + str(session) + ' and mode = "' + data_table + '" and ctree_branch != "" and ctree_branch != -100;')
+                    branch_layer = int(cur.fetchone()["MAX(cast(`ctree_branch` as unsigned))"]) + 1
+
+                    if stick_unique == '1':
+                        # print "in_unique"
+                        one_structure = unique_stick(all_data, attr, branch_layer)
+
+                    else:
+                        # print "in_duplicate"
+                        one_structure = duplicate_stick(all_data, attr, branch_layer)
+
+                    final_structure[sub] = dict()
+                    final_structure[sub][e] = one_structure
+
+    else:
+        raise Http404
+    
+    return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
+    # print return_json
+    return HttpResponse(return_json)
 
 def one_contact(request):
     final_structure = dict()
@@ -1290,14 +1735,15 @@ def one_contact(request):
         ego_info = json.loads(list_request[1])
         ego_group = list_request[2]
         table = list_request[3]
-        
+        data_table = table.split("_of_")[1]
+        session = table.split("_of_")[0]
         # print request.GET['contact']
         # print ego_info
         if ego_group == "all":
             for e in ego_info:
                 precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + e + '";')
                 all_data = precur.fetchall()
-                cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
+                cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
                 stick_unique = cur.fetchone()["alter_info"]
                 # cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
                 # branch_layer = int(cur.fetchone()["attr_range"])
@@ -1320,7 +1766,7 @@ def one_contact(request):
                 for sub in ego_info[e]:
                     precur = db.query('SELECT * FROM ' + table + ' WHERE dataset="' + sub + '" and egoid="' + e + '";')
                     all_data = precur.fetchall()
-                    cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
+                    cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
                     stick_unique = cur.fetchone()["alter_info"]
                     # cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
                     # branch_layer = int(cur.fetchone()["attr_range"])
@@ -1356,12 +1802,16 @@ def one_contact_update(request):
         ego = list_request[1]
         table = list_request[2]
         mapping = json.loads(list_request[3])
+        data_table = table.split("_of_")[1]
+        session = table.split("_of_")[0]
         # print list_request
         # print mapping
         # attr['branch'] = 'age'
+        cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
+        stick_unique = cur.fetchone()["alter_info"]
         precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + ego + '";')
         all_data = precur.fetchall()
-        set_default_mapping(all_data, table, attr, mapping)
+        set_default_mapping(all_data, table, attr, mapping) #!!!
 
     else:
         raise Http404
@@ -1381,13 +1831,15 @@ def restore_mapping_update(request):
         ego_list = json.loads(list_request[1])
         table = list_request[2]
         mapping = json.loads(list_request[-1])
+        data_table = table.split("_of_")[1]
+        session = table.split("_of_")[0]
         # print attr, ego_list, table, mapping
 
         if len(ego_list) == 0:
             return_json = simplejson.dumps(table, indent=4, use_decimal=True)
             return HttpResponse(return_json)
-            
-        query_request = 'SELECT * FROM ' + table + ' WHERE egoid="' + ego_list[0] + '"'
+
+        query_request = 'SELECT * FROM ' + table + ' WHERE egoid="' + ego_list[0] + '"' #!!!
         for ego in ego_list[1:]:
             query_request += ' or egoid="' + ego + '"'
         query_request += ";"
@@ -1421,11 +1873,13 @@ def update_binary(request):
         ori_column = list_request[2]
         new_column = list_request[1]
         zero_val = list_request[3:]
+        data_table = table.split("_of_")[1]
+        session = table.split("_of_")[0]
         # print select_ego
         # print ori_column
         # print new_column
         # print zero_val
-        typecur = db.query('SELECT `type` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + ori_column + '";')
+        typecur = db.query('SELECT `type` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + ori_column + '";')
         mytype = typecur.fetchone()["type"]
         # print mytype
 
@@ -1433,7 +1887,87 @@ def update_binary(request):
             return_json = simplejson.dumps("no update", indent=4, use_decimal=True)
             # print return_json
             return HttpResponse(return_json)
+        #!!!
+        if mytype == "categorical" or mytype == "boolean":
+            update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE (`" + ori_column + "`='" + zero_val[0] + "'"
+            update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE (`" + ori_column + "`!='" + zero_val[0] + "'"
+            for zero in zero_val[1:]:
+                update_query_zero += " OR " + ori_column + "='" + zero + "'"
+                update_query_one += " AND " + ori_column + "!='" + zero + "'"
+            
+            update_query_zero += ") AND ("
+            update_query_one += ") AND ("
+            for update_ego in select_ego[:-1]:
+                update_query_zero += "egoid='" + update_ego + "' OR "
+                update_query_one += "egoid='" + update_ego + "' OR "
 
+            update_query_zero += "egoid='" + select_ego[-1] + "');"
+            update_query_one += "egoid='" + select_ego[-1] + "');"     
+        
+        else:
+            update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE (`" + ori_column + "`<=" + str(zero_val[0])
+            update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE (`" + ori_column + "`>" + str(zero_val[0])
+
+            # if len(select_ego) > 0:
+            update_query_zero += ") AND ("
+            update_query_one += ") AND ("
+            for update_ego in select_ego[:-1]:
+                update_query_zero += "egoid='" + update_ego + "' OR "
+                update_query_one += "egoid='" + update_ego + "' OR "
+
+            update_query_zero += "egoid='" + select_ego[-1] + "');"
+            update_query_one += "egoid='" + select_ego[-1] + "');"     
+            # else:
+            #     update_query_zero += ");"
+            #     update_query_one += ");"
+            
+        print update_query_zero
+        # print update_query_one
+        clause.execute(update_query_zero)
+        clause.execute(update_query_one)
+        clause.execute('SET SQL_SAFE_UPDATES = 1;')
+        database.commit()        
+
+    else:
+        raise Http404
+    
+    return_json = simplejson.dumps("done update", indent=4, use_decimal=True)
+    # print return_json
+    return HttpResponse(return_json)
+
+
+def update_binary_old(request):
+    database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
+    clause = database.cursor()
+    db = DB()
+    clause.execute('SET SQL_SAFE_UPDATES = 0;')
+    database.commit()
+    # table = request.GET.get('contact')
+    # print request.GET['contact']
+    if request.GET.get('update'):
+        list_request = request.GET['update'].split(":=")[0].split(":-")
+        select_ego = request.GET['update'].split(":=")[1:]
+        # print list_request
+        # select_ego = json.loads(list_request[0])
+        table = list_request[0]
+        ori_column = list_request[2]
+        new_column = list_request[1]
+        zero_val = list_request[3:]
+        data_table = table.split("_of_")[1]
+        session = table.split("_of_")[0]
+        # print select_ego
+        # print ori_column
+        # print new_column
+        # print zero_val
+        typecur = db.query('SELECT `type` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + ori_column + '";')
+        mytype = typecur.fetchone()["type"]
+        # print mytype
+
+        if len(select_ego) == 0:
+            return_json = simplejson.dumps("no update", indent=4, use_decimal=True)
+            # print return_json
+            return HttpResponse(return_json)
+        #!!!
         if mytype == "categorical" or mytype == "boolean":
             update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE (`" + ori_column + "`='" + zero_val[0] + "'"
             update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE (`" + ori_column + "`!='" + zero_val[0] + "'"
@@ -1497,6 +2031,8 @@ def update_layer(request):
         ori_column = list_request[2]
         new_column = list_request[1]
         val_map = json.loads(list_request[3])
+        data_table = table.split("_of_")[1]
+        session = table.split("_of_")[0]
         # print select_ego
         # print ori_column
         # print new_column
@@ -1504,7 +2040,7 @@ def update_layer(request):
         
         clause.execute('SET SQL_SAFE_UPDATES = 0;')
         database.commit()
-
+        #!!!
         if len(select_ego) == 0:
             # update_layer_val += ");"
             return_json = simplejson.dumps("no update", indent=4, use_decimal=True)
@@ -1533,7 +2069,7 @@ def update_layer(request):
             return_json = simplejson.dumps("none updated", indent=4, use_decimal=True)
             return HttpResponse(return_json)
 
-        typecur = db.query('SELECT `attr_range`, `type` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + ori_column + '";')
+        typecur = db.query('SELECT `attr_range`, `type` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + ori_column + '";')
         myinfo = typecur.fetchone()
         mytype = myinfo["type"]
         myrange = myinfo["attr_range"]
@@ -1689,17 +2225,27 @@ def restructure(request):
         # print attr
         # print table
         final_structure = dict()
-
+        data_table = table.split("_of_")[1]
+        session = table.split("_of_")[0]
+        #!!!
         if ego_group == "all":
             for e in ego_info:
                 precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + e + '";')
                 all_data = precur.fetchall()
-                cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
+                cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
                 stick_unique = cur.fetchone()["alter_info"]
                 # cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
                 # branch_layer = int(cur.fetchone()["attr_range"])
                 cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ' + table + ' WHERE ctree_branch != "" and ctree_branch != -100;')
                 branch_layer = int(cur.fetchone()["MAX(cast(`ctree_branch` as unsigned))"]) + 1
+
+                # precur = db.query('SELECT * FROM ctree_mapping_info WHERE egoid="' + e + '" and mode = "' + data_table + '" and session_id = ' + str(session) + ';')
+                # all_data = precur.fetchall()
+                # cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
+                # stick_unique = cur.fetchone()["alter_info"]
+                # cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ctree_mapping_info WHERE session_id = ' + str(session) + ' and mode = "' + data_table + '" and ctree_branch != "" and ctree_branch != -100;')
+                # branch_layer = int(cur.fetchone()["MAX(cast(`ctree_branch` as unsigned))"]) + 1
+
 
                 if stick_unique == '1':
                     # print "in_unique"
@@ -1723,12 +2269,20 @@ def restructure(request):
                 for sub in sub_dataset:
                     precur = db.query('SELECT * FROM ' + table + ' WHERE dataset="' + sub + '" and egoid="' + e + '";')
                     all_data = precur.fetchall()
-                    cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['bside'] + '";')
+                    cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
                     stick_unique = cur.fetchone()["alter_info"]
                     # cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
                     # branch_layer = int(cur.fetchone()["attr_range"])
                     cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ' + table + ' WHERE ctree_branch != "" and ctree_branch != -100;')
                     branch_layer = int(cur.fetchone()["MAX(cast(`ctree_branch` as unsigned))"]) + 1
+
+                    # precur = db.query('SELECT * FROM ctree_mapping_info WHERE dataset="' + sub + '" and egoid="' + e + '" and mode = "' + data_table + '" and session_id = ' + str(session) + ';')
+                    # all_data = precur.fetchall()
+                    # cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
+                    # stick_unique = cur.fetchone()["alter_info"]
+                    # cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ctree_mapping_info WHERE session_id = ' + str(session) + ' and mode = "' + data_table + '" and ctree_branch != "" and ctree_branch != -100;')
+                    # branch_layer = int(cur.fetchone()["MAX(cast(`ctree_branch` as unsigned))"]) + 1
+
 
                     if stick_unique == '1':
                         # print "in_unique"
@@ -3150,7 +3704,7 @@ def fetch_data(request):
             # 10009#up#r#0
             bs = 1 #up
             ts = 0 #left
-            print ">>>>>>>>", alter
+            # print ">>>>>>>>", alter
             if alter[1] == 'down':
                 bs = 0
             if alter[2] == 'r':

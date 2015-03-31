@@ -10,10 +10,11 @@ var SelectingView = Backbone.View.extend({
         // _.bindAll(this, 'set_dblp_label');
         // _.bindAll(this, 'set_ego_label');
         _.bindAll(this, 'set_data_label');
+        _.bindAll(this, 'set_dataset');
 
         this.model.bind('change:view_mode', this.change_mode);
         this.model.bind('change:dataset_group', this.change_mode);
-        
+        this.model.bind('change:dataset_mode', this.set_dataset);
         // this.model.bind('change:folder', this.change_mode);
         // this.model.bind('change:done_query_list', this.set_dblp_label);
         // this.model.bind('change:done_query_list', this.set_ego_label);
@@ -56,7 +57,44 @@ var SelectingView = Backbone.View.extend({
                       
         });
 
+        this.get_dataset();
         this.get_data_event();
+    },
+
+    set_dataset: function(){
+        var self = this;
+        var container = document.getElementById("dataselect");
+        $("#dataselect").empty();
+        var data_mode = self.model.get("dataset_mode");
+        container.setAttribute("class", "dataset_selector");
+        for(var s = 0; s < data_mode.length; s++){
+            var selection_opt = document.createElement('option');
+            if(data_mode[s] == ""){
+                selection_opt.value = "0";
+                selection_opt.innerHTML = "dataset";
+                // selection_opt.setAttribute("class", "myfont3");
+            }
+            else{
+                selection_opt.value = session_id + "_of_" + data_mode[s];
+                selection_opt.innerHTML = data_mode[s];
+            }
+            
+            selection_opt.setAttribute("class", "myfont3");
+            container.appendChild(selection_opt);
+        }
+
+    },
+
+    get_dataset: function(){
+        var self = this;
+        // var data_mode = self.model.get("dataset_mode");
+        var request_url = "dataset_mode/?mode=" + session_id;
+        var data_selection = [""]
+        d3.json(request_url, function(result){
+            data_selection = data_selection.concat(result);
+            self.model.set({"dataset_mode": data_selection});
+            // self.model.trigger('change:dataset_mode');          
+        });
 
     },
 
@@ -102,27 +140,27 @@ var SelectingView = Backbone.View.extend({
                 
                 var request_url = "dataset/?data="+data_selected;
                 d3.json(request_url, function(result){
-                        // console.log("in model.query_data_info");
-                        // console.log(result)
-                        var set_dataset_group = function(data){
-                            self.ego_cat = data;
-                            // for(var d = 0; d < data.length; d++){
-                            //   self.ego_cat.push(data[d]);
-                            // }
-                            var container = document.getElementById("egogroup");
-                            // container.setAttribute("class", "dataset_selector");
-                            for(var s = 0; s < self.ego_cat.length; s++){
-                                var selection_opt = document.createElement('option');
-                                selection_opt.value = self.ego_cat[s];
-                                selection_opt.innerHTML = self.ego_cat[s];
-                                selection_opt.setAttribute("class", "myfont3");
-                                
-                                container.appendChild(selection_opt);
-                            }
-                            $("#group_container").show();
-                        };
-                        set_dataset_group(result);
-                      // dataset_mode
+                    // console.log("in model.query_data_info");
+                    // console.log(result)
+                    var set_dataset_group = function(data){
+                        self.ego_cat = data;
+                        // for(var d = 0; d < data.length; d++){
+                        //   self.ego_cat.push(data[d]);
+                        // }
+                        var container = document.getElementById("egogroup");
+                        // container.setAttribute("class", "dataset_selector");
+                        for(var s = 0; s < self.ego_cat.length; s++){
+                            var selection_opt = document.createElement('option');
+                            selection_opt.value = self.ego_cat[s];
+                            selection_opt.innerHTML = self.ego_cat[s];
+                            selection_opt.setAttribute("class", "myfont3");
+                            
+                            container.appendChild(selection_opt);
+                        }
+                        $("#group_container").show();
+                    };
+                    set_dataset_group(result);
+                    // dataset_mode
                 });
                 
             }
@@ -158,8 +196,9 @@ var SelectingView = Backbone.View.extend({
             $("#block_page").show();
             $("#loading_process").html("<b>Fetching...</b>");
             var label = document.getElementById("selecting_label");
-            var all_tree_len = data_selected.toUpperCase().split("_");
+            // var all_tree_len = data_selected.toUpperCase().split("_");
             var all_tree = data_selected.toUpperCase();
+            /*
             if(all_tree_len.length > 2){
                 all_tree = data_selected.toUpperCase().split("_")[2];
                 // replace(/_/g, " ") + ":";
@@ -170,6 +209,7 @@ var SelectingView = Backbone.View.extend({
             else{
                 all_tree = all_tree.replace(/_/g, " ")
             }
+            */
             label.innerHTML = all_tree + ":";
             // label.innerHTML = "<b>" + all_tree + ":</b>";
             // label.innerHTML = data_selected.toUpperCase().replace("_", " ");

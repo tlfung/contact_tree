@@ -90,7 +90,7 @@ var MappingView = Backbone.View.extend({
             });     
 
             save_item_dlt.click(function(){
-                console.log("*****", "del:", this.id, this.value);
+                // console.log("*****", "del:", this.id, this.value);
                 console.log(save_user_mapping);
                 save_user_mapping.splice(this.value-1, 1);
                 var del_container_id = "#mapping_container_" + this.value;

@@ -68,6 +68,25 @@ function resize_dialog(h, w){
 
 var MyApp = function MyApp(){
     var self = this;
+    session_id = Math.floor(Math.random() * 10000000000000001);
+
+    var cookie = document.cookie.split(';');
+    if(document.cookie == ""){
+        document.cookie = "session_id=" + session_id.toString() + ";"
+    }
+    else{
+        for(var ca = 0; ca < cookie.length; ca++){
+            var cname = cookie[ca].split("=")[0];
+            if(cname == "session_id"){
+                session_id = cookie[ca].split("=")[1];
+                break;
+            }
+        }
+    }
+    
+    // $(window).bind('beforeunload',function(){
+    //     return 'are you sure you want to leave?';        
+    // });
 
     if ( arguments.callee._singletonInstance )
         return arguments.callee._singletonInstance;
@@ -202,6 +221,7 @@ var MyApp = function MyApp(){
     // console.log("grid", self.model.get("canvas_grid"));
     // initialize data selecter
 
+    /*
     var container = document.getElementById("dataselect");
     container.setAttribute("class", "dataset_selector");
     for(var s = 2; s < dataset_mode.length; s++){
@@ -212,6 +232,7 @@ var MyApp = function MyApp(){
 
         container.appendChild(selection_opt);
     }
+    */
     
     // bind with view
     // this.importing = new ImportView({model: this.model, containerID: "#importing"});

@@ -24,8 +24,9 @@ var LabelView = Backbone.View.extend({
        
         var my_mode = self.model.get("view_mode");
         // var all_tree = my_mode.toUpperCase().replace("_", " ") + ":";
-        var all_tree_len = my_mode.toUpperCase().split("_");
+        // var all_tree_len = my_mode.toUpperCase().split("_");
         var all_tree = my_mode.toUpperCase();
+        /*
         if(all_tree_len.length > 2){
             all_tree = my_mode.toUpperCase().split("_")[2];
             // replace(/_/g, " ") + ":";
@@ -34,8 +35,9 @@ var LabelView = Backbone.View.extend({
             }
         }            
         else{
-                all_tree = all_tree.replace(/_/g, " ")
-            }
+            all_tree = all_tree.replace(/_/g, " ")
+        }
+        */
         
         $("#selecting_ego").empty();
 
