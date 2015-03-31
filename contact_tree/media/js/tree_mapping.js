@@ -4449,7 +4449,7 @@ var MappingView = Backbone.View.extend({
 
             if($("#sidekeyselect").val() == "none"){
                 var update_info = data_mode + ":-ctree_root:-" + $("#sidekeyselect").val() + ":-" + JSON.stringify(["none"]);
-
+                mapping_color.render_roots_color = mapping_color.roots_color;
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
                 }
@@ -7404,7 +7404,7 @@ var MappingView = Backbone.View.extend({
 
             if($("#sidekeyselect").val() == "none"){
                 var update_info = data_mode + ":-ctree_leaf_color:-" + $("#sidekeyselect").val() + ":-" + JSON.stringify(["none"]);
-
+                mapping_color.render_leaf_color = mapping_color.leaf_color;
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
                 }
