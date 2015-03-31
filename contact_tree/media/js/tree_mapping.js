@@ -52,14 +52,18 @@ var MappingView = Backbone.View.extend({
             var count_item = save_user_mapping.length + 1;
             
             var map_name = prompt("Please enter your mapping name", "Map" + count_item.toString());
-            if (map_name != null) {
+            if (map_name != null){
                 // save_item.text(map_name);
                 user_map["name"] = map_name;
+                save_user_mapping.push(user_map);
+                self.model.set({"user_mapping": save_user_mapping});
+                self.model.trigger('change:user_mapping');
+            }
+            else{
+                return 0;
             }
 
-            save_user_mapping.push(user_map);
-            self.model.set({"user_mapping": save_user_mapping});
-            self.model.trigger('change:user_mapping');
+            
         });
 
         $("#use_label").click(function() {
