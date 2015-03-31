@@ -9,6 +9,7 @@ var MappingView = Backbone.View.extend({
         // _.bindAll(this, 'set_option');
         _.bindAll(this, 'set_component');
         _.bindAll(this, 'restructure');
+        _.bindAll(this, 'set_user_mapping');
 
         // util.sampleTree("ori", "sidekey_tree");
         // this.mode = self.model.get("view_mode");
@@ -33,6 +34,7 @@ var MappingView = Backbone.View.extend({
         });
 
         $("#save_label").click(function() {
+            var save_user_mapping = self.model.get("user_mapping");
             console.log(save_user_mapping);
             if(save_user_mapping.length >= 5){
                 alert("Can only save 5 mapping at most!");
@@ -48,18 +50,81 @@ var MappingView = Backbone.View.extend({
             user_map["render_roots_color"] = JSON.parse(JSON.stringify(mapping_color.render_roots_color));
 
             var count_item = save_user_mapping.length + 1;
+            
+            var map_name = prompt("Please enter your mapping name", "Map" + count_item.toString());
+            if (map_name != null) {
+                // save_item.text(map_name);
+                user_map["name"] = map_name;
+            }
 
+            save_user_mapping.push(user_map);
+            self.model.set({"user_mapping": save_user_mapping});
+            self.model.trigger('change:user_mapping');
+        });
+
+        $("#use_label").click(function() {
+            // console.log(save_user_mapping);
+            var save_user_mapping = self.model.get("user_mapping");
+            var now_attr = JSON.parse(JSON.stringify(save_user_mapping[this.value]["attr"]));
+            var now_mode = save_user_mapping[this.value]["mode"];
+            var now_attr_map = JSON.parse(JSON.stringify(save_user_mapping[this.value]["map_info"]));
+            var all_ego = self.model.get("selected_egos");
+            var ego_list = [];
+            mapping_color.render_leaf_color = JSON.parse(JSON.stringify(save_user_mapping[this.value]["render_leaf_color"]));
+            mapping_color.render_roots_color = JSON.parse(JSON.stringify(save_user_mapping[this.value]["render_roots_color"]));
+            // self.model.trigger('change:attribute');
+            $("#sidekey_save_img").hide();
+            for(var ego in all_ego){
+                ego_list.push(ego);
+            }
+            var request = JSON.stringify(now_attr) + ":-" + JSON.stringify(ego_list) + ":-" + now_mode + ":-" + JSON.stringify(now_attr_map);
+            var request_url = "restore_data/?restore="+request;
+            
+            $("#block_page").show();
+            d3.json(request_url, function(result) {
+                $("#block_page").hide();
+                attribute_mapping = now_attr_map;
+                self.model.set({"attribute": now_attr});
+                self.model.trigger('change:attribute');
+                $("#sidekey_save_img").hide();
+            });            
+            
+        });       
+
+        // this.model.bind('change:view_mode', this.set_option);
+        // this.model.bind('change:attribute', this.set_option);
+        this.model.bind('change:attribute', this.restructure);
+        this.model.bind('change:attribute', this.set_component);
+        this.model.bind('change:user_mapping', this.set_user_mapping);  
+        
+        // this.attribute = self.model.get("attribute");
+        // this.myattribute = {};
+        // this.attr_array = [];
+        // this.data_mode = self.model.get("view_mode");
+        // this.set_default = default_attribute[this.data_mode];
+
+        self.set_option();
+    },
+
+    set_user_mapping: function(){
+        var self = this;
+        var save_user_mapping = self.model.get("user_mapping");
+        // console.log(save_user_mapping);
+        var save_container = $("#save_mapping_container");
+        save_container.empty();
+        for(var s = 1; s <= save_user_mapping.length; s ++){
+            var count_item = s;
+            var map_name = save_user_mapping[s-1]["name"];
             var save_item_container = $("<div class='left' style='margin-left:10px; position:relative'></div>");
             save_item_container.attr('id', "mapping_container_" + count_item.toString());
             var save_item_dlt = $('<span style="position:absolute; top:-4px; right:-4px; display:none;" class="glyphicon glyphicon-remove-circle"></span>');
             save_item_dlt.attr('id', "dlt_mapping_" + count_item.toString()).val(count_item.toString());
             var save_item = $('<button class="btn save_mapping_item"></button>');
-            save_item.val(count_item.toString()).attr('id', "save_mapping_" + count_item.toString()).text("Map" + count_item.toString());
+            save_item.val(count_item.toString()).attr('id', "save_mapping_" + count_item.toString()).text(map_name);
             save_item_container.append(save_item);
             save_item_container.append(save_item_dlt);
-            $("#save_mapping_container").append(save_item_container);
-            
-            save_user_mapping.push(user_map);
+            save_container.append(save_item_container);
+
 
             save_item.hover(function(){
                 var delete_id = "#dlt_mapping_" + this.value;
@@ -91,7 +156,7 @@ var MappingView = Backbone.View.extend({
 
             save_item_dlt.click(function(){
                 // console.log("*****", "del:", this.id, this.value);
-                console.log(save_user_mapping);
+                // console.log(save_user_mapping);
                 save_user_mapping.splice(this.value-1, 1);
                 var del_container_id = "#mapping_container_" + this.value;
                 $(del_container_id).remove();
@@ -99,54 +164,17 @@ var MappingView = Backbone.View.extend({
                     var mapping_id = "#save_mapping_" + s;
                     var dlt_mapping_id = "#dlt_mapping_" + s;
                     var container_id = "#mapping_container_" + s;
-                    $(mapping_id).val((s-1).toString()).attr('id', "save_mapping_" + (s-1).toString()).text("Map"+(s-1));
+                    $(mapping_id).val((s-1).toString()).attr('id', "save_mapping_" + (s-1).toString()); //.text("Map"+(s-1));
                     $(dlt_mapping_id).val((s-1).toString()).attr('id', "dlt_mapping_" + (s-1).toString());
                     $(container_id).attr('id', "mapping_container_" + (s-1).toString());
                 }
+                self.model.set({"user_mapping": save_user_mapping});
+                self.model.trigger('change:user_mapping');
                 return false;
             });
-        });
-
-        $("#use_label").click(function() {
-            // console.log(save_user_mapping);
-            var now_attr = JSON.parse(JSON.stringify(save_user_mapping[this.value]["attr"]));
-            var now_mode = save_user_mapping[this.value]["mode"];
-            var now_attr_map = JSON.parse(JSON.stringify(save_user_mapping[this.value]["map_info"]));
-            var all_ego = self.model.get("selected_egos");
-            var ego_list = [];
-            mapping_color.render_leaf_color = JSON.parse(JSON.stringify(save_user_mapping[this.value]["render_leaf_color"]));
-            mapping_color.render_roots_color = JSON.parse(JSON.stringify(save_user_mapping[this.value]["render_roots_color"]));
-            // self.model.trigger('change:attribute');
-            $("#sidekey_save_img").hide();
-            for(var ego in all_ego){
-                ego_list.push(ego);
-            }
-            var request = JSON.stringify(now_attr) + ":-" + JSON.stringify(ego_list) + ":-" + now_mode + ":-" + JSON.stringify(now_attr_map);
-            var request_url = "restore_data/?restore="+request;
-            
-            $("#block_page").show();
-            d3.json(request_url, function(result) {
-                $("#block_page").hide();
-                attribute_mapping = now_attr_map;
-                self.model.set({"attribute": now_attr});
-                self.model.trigger('change:attribute');
-                $("#sidekey_save_img").hide();
-            });            
-            
-        });       
-
-        // this.model.bind('change:view_mode', this.set_option);
-        // this.model.bind('change:attribute', this.set_option);
-        this.model.bind('change:attribute', this.restructure);
-        this.model.bind('change:attribute', this.set_component);        
+        }
         
-        // this.attribute = self.model.get("attribute");
-        // this.myattribute = {};
-        // this.attr_array = [];
-        // this.data_mode = self.model.get("view_mode");
-        // this.set_default = default_attribute[this.data_mode];
 
-        self.set_option();
     },
 
     set_option: function(){

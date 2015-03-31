@@ -111,8 +111,10 @@ var SelectingView = Backbone.View.extend({
             self.my_ego_selected = {};
             self.my_ego_display = {};
             attribute_mapping = {};
-            save_user_mapping = [];
-            $("#save_mapping_container").empty();
+            // save_user_mapping = [];
+            // $("#save_mapping_container").empty();
+            self.model.set({"user_mapping": []});
+            self.model.trigger('change:user_mapping');
             self.model.set({"attribute": {}});
             
             self.model.set({"canvas_translate": [0, 0]});
@@ -177,8 +179,10 @@ var SelectingView = Backbone.View.extend({
             self.my_ego_selected = {};
             self.my_ego_display = {};
             attribute_mapping = {};
-            save_user_mapping = [];
-            $("#save_mapping_container").empty();
+            // save_user_mapping = [];
+            // $("#save_mapping_container").empty();
+            self.model.set({"user_mapping": []});
+            self.model.trigger('change:user_mapping');
 
             self.model.set({"canvas_translate": [0, 0]});
             self.model.set({"canvas_scale": 0.15});
