@@ -202,7 +202,6 @@ var SelectingView = Backbone.View.extend({
             var label = document.getElementById("selecting_label");
             // var all_tree_len = data_selected.toUpperCase().split("_");
             var all_tree = data_selected.split("_of_")[1].toUpperCase();
-            
             /*
             if(all_tree_len.length > 2){
                 all_tree = data_selected.toUpperCase().split("_")[2];

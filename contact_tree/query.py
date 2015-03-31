@@ -313,8 +313,14 @@ def get_dataset(request):
         
         if check_table.fetchone() is None:
             db.query("CREATE TABLE IF NOT EXISTS " + session_table + " LIKE " + data_table + ";")
-            db.query("INSERT " + session_table + " SELECT * FROM " + data_table + ";")
+            check_table = db.query("SHOW TABLES LIKE '" + session_table + "';")
         
+        s_cur = db.query('SELECT * FROM auto_save WHERE session_id=' + str(session) + ';')
+        if s_cur.fetchone():
+            db.query('UPDATE auto_save SET mode="' + data_table + '" WHERE session_id="' + str(session) + '";')
+        else:
+            db.query('INSERT INTO auto_save (mode, session_id) VALUES ("' + data_table + '",' + session + ');')
+                                        
         cur = db.query("SELECT attr FROM dataset_collection WHERE dataset='" + data_table + "' and attr='dataset';")
         group = cur.fetchone()
         if group:
