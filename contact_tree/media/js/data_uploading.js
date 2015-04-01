@@ -134,7 +134,7 @@ var UploadView = Backbone.View.extend({
                     
                     var selection_opt = document.createElement('option');
                     // selection_opt.value = result;
-                    selection_opt.value = self.dataset;
+                    selection_opt.value = session_id + "_of_" + self.dataset;
                     selection_opt.innerHTML = self.dataset;
                     selection_opt.setAttribute("class", "myfont3");
 

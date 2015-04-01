@@ -24,7 +24,7 @@ var CustomizedView = Backbone.View.extend({
 
     auto_save: function(){
         var self = this;
-        var save_array = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // save all the information needed into array
+        var save_array = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // save all the information needed into array
         // get all the information
         save_array[0] = self.model.get("view_mode");
         if(save_array[0] == "")
@@ -43,6 +43,8 @@ var CustomizedView = Backbone.View.extend({
         save_array[10] = self.model.get("filter_contact");
         save_array[11] = JSON.stringify(self.model.get("tree_boundary"));
         save_array[12] = JSON.stringify(self.model.get("canvas_translate"));
+        save_array[13] = JSON.stringify(total_ego);
+
         
         // mapping parameters
         // var auto_map = {};
@@ -77,7 +79,7 @@ var CustomizedView = Backbone.View.extend({
         var attr_map = self.model.get("attribute");
         if(attr_map == {})
             return;
-        
+
         auto_map["mode"] = data_mode;
         auto_map["attr"] = JSON.parse(JSON.stringify(attr_map));
         auto_map["map_info"] = JSON.parse(JSON.stringify(attribute_mapping));

@@ -64,7 +64,14 @@ var Tree_Model = Backbone.Model.extend({
   	initialize: function(args) {
 	    var self = this;
 	    console.log("in model initialize");
-	    // set all the values of model
+	    // get all the values of model
+	    var request_url = "get_user_data/?user="+session_id;
+	    d3.json(request_url, function(result){
+			console.log(result);
+			console.log(result.tree_boundary);
+			console.log(JSON.parse(result.tree_boundary));
+          	// dataset_mode
+		});
 	    // self.set({"view_mode": session_id + "_of_combine_diary"});
   	},
 
@@ -154,6 +161,7 @@ var Tree_Model = Backbone.Model.extend({
 	   
 	},
 
+	// not use
 	update_data: function(request){
 	    var self = this;
 	    var mode = self.get("view_mode");
@@ -182,8 +190,14 @@ var Tree_Model = Backbone.Model.extend({
 	    var self = this;
 	    var mode = self.get("view_mode");
 	    
-	    var request_url = "get_contact/?contact="+request;
+	    // var request_url = "get_contact/?contact="+request;
+	    var request_url = "get_update/?contact="+request;
 	    // console.log(request_url);
+	    $("#block_page").show();
+        $("#loading_process").html("<b>Loading...</b>");
+	    $("#submit_ego").attr("disabled", true);
+	    $("#submit_ego").text("Loading");
+	    $('.ego_checkbox').attr("disabled", true);
 	    d3.json(request_url, function(result) {
 	      	// console.log("in model.query_one_contact");
 	      	// console.log(result);
@@ -196,6 +210,7 @@ var Tree_Model = Backbone.Model.extend({
 	      	}
 	      	// var tree_structure = self.get("tree_structure");
 	      	var set_structure = function(data, sub){
+
 	        	for(var d in data){
 	          		if(d in tree_structure[mode]){
 	            		tree_structure[mode][d][sub] = data[d][sub];            
@@ -206,20 +221,26 @@ var Tree_Model = Backbone.Model.extend({
 	          		}
 	        	}
 		        // console.log("store", tree_structure);
-		        self.set({"tree_structure": tree_structure});
+		        self.set({"tree_structure": tree_structure}, {silent: true});
+		        
 		        // console.log("lucky", tree_structure);
 	      	};
 	      	// var new_attr = JSON.parse(request.split(":-")[0]);
-		    var sub_request = JSON.parse(request.split(":-")[1]);
+		    var sub_request = JSON.parse(request.split(":-")[5]);
 		    for(s in sub_request)
 		    	set_structure(result, s);
-	      		
-	      	self.trigger('change:tree_structure');
+	      	
 	      	$("#submit_ego").removeAttr("disabled");
+	      	$("#submit_ego").text("Done");
+	      	$('.ego_checkbox').removeAttr("disabled");
 	      	$("#block_page").hide();
-	      	$( "#menu_dialog" ).dialog( "close" );
-	      	self.trigger('change:selected_egos');
-	      	self.trigger('change:display_egos');            
+
+	      	// self.trigger('change:tree_structure');
+	      	// $("#submit_ego").removeAttr("disabled");
+	      	// $("#block_page").hide();
+	      	// $( "#menu_dialog" ).dialog( "close" );
+	      	// self.trigger('change:selected_egos');
+	      	// self.trigger('change:display_egos');            
 
 	    });
 	    

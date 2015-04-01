@@ -35,6 +35,22 @@ class DB:
       cursor.execute(sql)
     return cursor
 
+
+# global_cache = dict()
+user_ctree_data = dict()
+raw_column = dict()
+# define index of ctree component 
+egoid_index = 0
+alterid_index = 1
+trunk_index = 2
+branch_index = 3
+bside_index = 4
+fruit_size_index = 5
+leaf_size_index = 6
+leaf_color_index = 7
+root_index = 8
+highlight_index = 9
+
 # db = DB()
 
 # database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree", cursorclass=MySQLdb.cursors.DictCursor)
@@ -258,25 +274,26 @@ def create_csv2database(request):
     return HttpResponse(jsondata)
     
 
-def update_collection_data(table, attr_json):
+def update_collection_data(data_table, attr_json):
     database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
     clause = database.cursor()
     db = DB()
     clause.execute('SET SQL_SAFE_UPDATES = 0;')
     database.commit()
-    data_table = table.split("_of_")[1]
-    session = table.split("_of_")[0]
+    # data_table = table.split("_of_")[1]
+    # session = table.split("_of_")[0]
     # print attr_json
     clause.execute('DELETE FROM dataset_collection WHERE dataset = "' + data_table + '";')
+    a_index = 0
     for a in attr_json:
         print a, attr_json[a]
         # my_attr = '"' + table + '", "' + a + '", "' + str(attr_json[a]["MIN"]) + '", "' + str(attr_json[a]["MAX"]) + '", "' + str(attr_json[a]["RANGE"]) + '", "' + str(attr_json[a]["TYPE"]) + '", "' + str(attr_json[a]["RANGE"]) + '"'
-        my_attr = '"' + data_table + '", "' + a + '", "' + str(attr_json[a]["MIN"]) + '", "' + str(attr_json[a]["MAX"]) + '", "' + str(attr_json[a]["RANGE"]) + '", "' + str(attr_json[a]["TYPE"]) + '"'
+        my_attr = '"' + data_table + '", "' + a + '", "' + str(attr_json[a]["MIN"]) + '", "' + str(attr_json[a]["MAX"]) + '", "' + str(attr_json[a]["RANGE"]) + '", "' + str(attr_json[a]["TYPE"]) + '", "' + str(a_index) + '"' 
         
         # print my_attr
         # clause.execute('INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, type, branch_range) VALUES (%s);' %my_attr)
-        clause.execute('INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, type) VALUES (%s);' %my_attr)
-    
+        clause.execute('INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, type, a_index) VALUES (%s);' %my_attr)
+        a_index += 1
     database.commit()
 
     cur = db.query('SELECT alterid FROM ' + data_table + ' WHERE egoid=(SELECT min(egoid) FROM ' + data_table + ');')
@@ -305,17 +322,25 @@ def get_dataset(request):
     db = DB()
     db.query('SET SQL_SAFE_UPDATES = 0;')
     db.conn.commit()
+    global user_ctree_data
     if request.GET.get('data'):
         # ./contact_tree/data
         data_table = request.GET.get('data').split("_of_")[1]
         session = request.GET.get('data').split("_of_")[0]
         session_table = request.GET.get('data')
 
-        check_table = db.query("SHOW TABLES LIKE '" + session_table + "';")
+        if session not in user_ctree_data:
+            user_ctree_data[session] = dict()
         
-        if check_table.fetchone() is None:
-            db.query("CREATE TABLE IF NOT EXISTS " + session_table + " LIKE " + data_table + ";")
-            check_table = db.query("SHOW TABLES LIKE '" + session_table + "';")
+        user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
+        with open("./contact_tree/data/user_ctree_data.json", "wb") as json_file:
+            json_file.write(user_ctree_data_json)
+
+        # check_table = db.query("SHOW TABLES LIKE '" + session_table + "';")
+        
+        # if check_table.fetchone() is None:
+        #     db.query("CREATE TABLE IF NOT EXISTS " + session_table + " LIKE " + data_table + ";")
+        #     check_table = db.query("SHOW TABLES LIKE '" + session_table + "';")
         
         s_cur = db.query('SELECT * FROM auto_save WHERE session_id=' + str(session) + ';')
         if s_cur.fetchone():
@@ -502,6 +527,7 @@ def csv2mysql(fn, table):
                 # create index for more efficient access
                 try:
                     clause.execute('CREATE INDEX ids ON %s (e_id);' % table)
+                    clause.execute('CREATE INDEX ego_id ON %s (egoid);' % table)
                     #db.query('CREATE INDEX ids ON %s (id);' % table)
                 except MySQLdb.OperationalError:
                     pass # index already exists
@@ -804,12 +830,13 @@ def unique_stick(all_data, attr, branch_layer):
     structure["left"] = []  
 
     root = attr['root']
-    stick = "alterid"
-    leaf_id = attr['highlight']
+    stick = alterid_index
+    
+    # leaf_id = attr['highlight']
     # leaf_id = "ctree_highlight"
-    f_size = "ctree_fruit_size"
-    l_size = "ctree_leaf_size"
-    l_color = "ctree_leaf_color"
+    # f_size = fruit_size_index
+    # l_size = leaf_size_index
+    # l_color = leaf_color_index
 
     alter_array_right_up = []
     alter_array_left_up = []
@@ -829,46 +856,35 @@ def unique_stick(all_data, attr, branch_layer):
 
     for meeting in all_data:
         check_none = 0
-        for a in attr:
-            if attr[a] != 'none' and meeting[attr[a]] is None: # == -100:
+        for a in range(10):
+            if meeting[a] == -100:
                 check_none += 1
         if check_none > 0:
             # print meeting
             continue
 
-        # for a in attr:
-        #     tree_col = "ctree_" + a
-        #     if a != "stick" and attr[a] != 'none' and meeting[tree_col] == -100: # == -100:
-        #         check_none += 1
-        # if check_none > 0:
-        #     # print meeting
-        #     continue
-
         # meeting = c
         if root != "none":
-            if meeting["ctree_root"] not in structure["root"][0]:
-                structure["root"][0][meeting["ctree_root"]] = dict()
-                structure["root"][0][meeting["ctree_root"]]["length"] = 0
-                structure["root"][0][meeting["ctree_root"]]["sub"] = [10 for i in range(12)] # may add attribute mapping
-                structure["root"][0][meeting["ctree_root"]]["root_cat"] = meeting["ctree_root"]
+            if meeting[root_index] not in structure["root"][0]:
+                structure["root"][0][meeting[root_index]] = dict()
+                structure["root"][0][meeting[root_index]]["length"] = 0
+                structure["root"][0][meeting[root_index]]["sub"] = [10 for i in range(12)] # may add attribute mapping
+                structure["root"][0][meeting[root_index]]["root_cat"] = meeting[root_index]
                 # print structure["root"]
             else:
-                structure["root"][0][meeting["ctree_root"]]["length"] += 1
+                structure["root"][0][meeting[root_index]]["length"] += 1
 
-        if leaf_id == "none":
-            leaf_highlights = "none"
-        else:
-            leaf_highlights = meeting[leaf_id]
+        leaf_highlights = meeting[highlight_index]
         # left
-        if meeting['ctree_trunk'] == 0:
+        if meeting[trunk_index] == 0:
             level = 0
             new_alter = -1
             for l in range(branch_layer):
                 # level and up
-                if meeting["ctree_branch"] == l and meeting["ctree_bside"] == 1:
+                if meeting[branch_index] == l and meeting[bside_index] == 1:
                     if len(alter_array_left_up[level]) == 0:
-                        structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                        structure["left"][level]["level"]["up"][len(alter_array_left_up[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                        structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                        structure["left"][level]["level"]["up"][len(alter_array_left_up[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                         alter_array_left_up[level].append(meeting[stick])
 
                     else:
@@ -879,19 +895,19 @@ def unique_stick(all_data, attr, branch_layer):
                                 break
                             count_alter += 1
                         if new_alter == -1:
-                            structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                            structure["left"][level]["level"]["up"][len(alter_array_left_up[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
-                            alter_array_left_up[level].append(meeting["alterid"])
+                            structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                            structure["left"][level]["level"]["up"][len(alter_array_left_up[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
+                            alter_array_left_up[level].append(meeting[stick])
                         else:
-                            structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                            structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
 
                     break
 
                 # level and down
-                elif meeting["ctree_branch"] == l and meeting["ctree_bside"] == 0:
+                elif meeting[branch_index] == l and meeting[bside_index] == 0:
                     if len(alter_array_left_down[level]) == 0:
-                        structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                        structure["left"][level]["level"]["down"][len(alter_array_left_down[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                        structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                        structure["left"][level]["level"]["down"][len(alter_array_left_down[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                         alter_array_left_down[level].append(meeting[stick])
                     else:
                         count_alter = 0
@@ -901,11 +917,11 @@ def unique_stick(all_data, attr, branch_layer):
                                 break
                             count_alter += 1
                         if new_alter == -1:
-                            structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                            structure["left"][level]["level"]["down"][len(alter_array_left_down[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                            structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                            structure["left"][level]["level"]["down"][len(alter_array_left_down[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             alter_array_left_down[level].append(meeting[stick])
                         else:
-                            structure["left"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                            structure["left"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
 
                     break
                 level += 1
@@ -915,10 +931,10 @@ def unique_stick(all_data, attr, branch_layer):
             new_alter = -1
             for l in range(branch_layer):
                 # level and up
-                if meeting["ctree_branch"] == l and meeting["ctree_bside"] == 1:
+                if meeting[branch_index] == l and meeting[bside_index] == 1:
                     if len(alter_array_right_up[level]) == 0:
-                        structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                        structure["right"][level]["level"]["up"][len(alter_array_right_up[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                        structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                        structure["right"][level]["level"]["up"][len(alter_array_right_up[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                         alter_array_right_up[level].append(meeting[stick])
                     else:
                         count_alter = 0
@@ -928,18 +944,18 @@ def unique_stick(all_data, attr, branch_layer):
                                 break
                             count_alter += 1
                         if new_alter == -1:
-                            structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                            structure["right"][level]["level"]["up"][len(alter_array_right_up[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                            structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                            structure["right"][level]["level"]["up"][len(alter_array_right_up[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             alter_array_right_up[level].append(meeting[stick])
                         else:
-                            structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                            structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
 
                     break
                 # level and down
-                elif meeting["ctree_branch"] == l and meeting["ctree_bside"] == 0:
+                elif meeting[branch_index] == l and meeting[bside_index] == 0:
                     if len(alter_array_right_down[level]) == 0:
-                        structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                        structure["right"][level]["level"]["down"][len(alter_array_right_down[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                        structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                        structure["right"][level]["level"]["down"][len(alter_array_right_down[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                         alter_array_right_down[level].append(meeting[stick])
                     else:
                         count_alter = 0
@@ -949,16 +965,17 @@ def unique_stick(all_data, attr, branch_layer):
                                 break
                             count_alter += 1
                         if new_alter == -1:
-                            structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                            structure["right"][level]["level"]["down"][len(alter_array_right_down[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
-                            alter_array_right_down[level].append(meeting["alterid"])
+                            structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                            structure["right"][level]["level"]["down"][len(alter_array_right_down[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
+                            alter_array_right_down[level].append(meeting[stick])
                         else:
-                            structure["right"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                            structure["right"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
 
                     break
                 level += 1
 
     return structure
+
 
 
 def duplicate_stick(all_data, attr, branch_layer):
@@ -968,8 +985,8 @@ def duplicate_stick(all_data, attr, branch_layer):
     structure["left"] = []
 
     root = attr['root']
-    stick = "alterid"
-    leaf_id = attr['highlight']
+    stick = alterid_index
+    # leaf_id = attr['highlight']
     # leaf_id = "ctree_highlight"
 
     alter_array_right = []
@@ -986,46 +1003,38 @@ def duplicate_stick(all_data, attr, branch_layer):
     
     for meeting in all_data:
         check_none = 0
-        for a in attr:
-            if attr[a] != 'none' and meeting[attr[a]] is None: # == -100:
+        for a in range(10):
+            if meeting[a] == -100:
                 check_none += 1
         if check_none > 0:
-            print meeting
+            # print meeting
             continue
-
-        # for a in attr:
-        #     tree_col = "ctree_" + a
-        #     if a != "stick" and attr[a] != 'none' and meeting[tree_col] == -100: # == -100:
-        #         check_none += 1
-        # if check_none > 0:
-        #     # print meeting
-        #     continue
-
+        
         # meeting = c
         if root != "none":
-            if meeting["ctree_root"] not in structure["root"][0]:
-                structure["root"][0][meeting["ctree_root"]] = dict()
-                structure["root"][0][meeting["ctree_root"]]["length"] = 0
-                structure["root"][0][meeting["ctree_root"]]["sub"] = [10 for i in range(12)] # may add attribute mapping
-                structure["root"][0][meeting["ctree_root"]]["root_cat"] = meeting["ctree_root"]
+            if meeting[root_index] not in structure["root"][0]:
+                structure["root"][0][meeting[root_index]] = dict()
+                structure["root"][0][meeting[root_index]]["length"] = 0
+                structure["root"][0][meeting[root_index]]["sub"] = [10 for i in range(12)] # may add attribute mapping
+                structure["root"][0][meeting[root_index]]["root_cat"] = meeting[root_index]
                 # print structure["root"]
             else:
-                structure["root"][0][meeting["ctree_root"]]["length"] += 1
+                structure["root"][0][meeting[root_index]]["length"] += 1
 
         if leaf_id == "none":
             leaf_highlights = "none"
         else:
-            leaf_highlights = meeting[leaf_id]
+            leaf_highlights = meeting[highlight_index]
         # left
-        if meeting['ctree_trunk'] == 0:
+        if meeting[trunk_index] == 0:
             level = 0
             new_alter = -1
             for l in range(branch_layer):
                 # level and up
-                if meeting["ctree_branch"] == l and meeting["ctree_bside"] == 1:
+                if meeting[branch_index] == l and meeting[bside_index] == 1:
                     if len(alter_array_left[level]) == 0:
-                        structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                        structure["left"][level]["level"]["up"][len(alter_array_left[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                        structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                        structure["left"][level]["level"]["up"][len(alter_array_left[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                         structure["left"][level]["level"]["down"].append({})
                         alter_array_left[level].append(meeting[stick])
 
@@ -1037,26 +1046,26 @@ def duplicate_stick(all_data, attr, branch_layer):
                                 break
                             count_alter += 1
                         if new_alter == -1:
-                            structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                            structure["left"][level]["level"]["up"][len(alter_array_left[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                            structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                            structure["left"][level]["level"]["up"][len(alter_array_left[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             structure["left"][level]["level"]["down"].append({})
                             alter_array_left[level].append(meeting[stick])
                         else:
                             if is_empty(structure["left"][level]["level"]["up"][new_alter]):
-                                structure["left"][level]["level"]["up"][new_alter] = {"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []}
-                                structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                                structure["left"][level]["level"]["up"][new_alter] = {"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []}
+                                structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             else:
-                                structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                                structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
 
-                            # structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                            # structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
 
                     break
 
                 # level and down
-                elif meeting["ctree_branch"] == l and meeting["ctree_bside"] == 0:
+                elif meeting[branch_index] == l and meeting[bside_index] == 0:
                     if len(alter_array_left[level]) == 0:
-                        structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                        structure["left"][level]["level"]["down"][len(alter_array_left[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                        structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                        structure["left"][level]["level"]["down"][len(alter_array_left[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                         structure["left"][level]["level"]["up"].append({})
                         alter_array_left[level].append(meeting[stick])
                     else:
@@ -1067,16 +1076,16 @@ def duplicate_stick(all_data, attr, branch_layer):
                                 break
                             count_alter += 1
                         if new_alter == -1:
-                            structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                            structure["left"][level]["level"]["down"][len(alter_array_left[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                            structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                            structure["left"][level]["level"]["down"][len(alter_array_left[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             structure["left"][level]["level"]["up"].append({})
                             alter_array_left[level].append(meeting[stick])
                         else:
                             if is_empty(structure["left"][level]["level"]["down"][new_alter]):
-                                structure["left"][level]["level"]["down"][new_alter] = {"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []}
-                                structure["left"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                                structure["left"][level]["level"]["down"][new_alter] = {"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []}
+                                structure["left"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             else:
-                                structure["left"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                                structure["left"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
 
                     break
                 level += 1
@@ -1086,10 +1095,10 @@ def duplicate_stick(all_data, attr, branch_layer):
             new_alter = -1
             for l in range(branch_layer):
                 # level and up
-                if meeting["ctree_branch"] == l and meeting["ctree_bside"] == 1:
+                if meeting[branch_index] == l and meeting[bside_index] == 1:
                     if len(alter_array_right[level]) == 0:
-                        structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                        structure["right"][level]["level"]["up"][len(alter_array_right[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                        structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                        structure["right"][level]["level"]["up"][len(alter_array_right[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                         structure["right"][level]["level"]["down"].append({})
                         alter_array_right[level].append(meeting[stick])
                     else:
@@ -1100,25 +1109,25 @@ def duplicate_stick(all_data, attr, branch_layer):
                                 break
                             count_alter += 1
                         if new_alter == -1:
-                            structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                            structure["right"][level]["level"]["up"][len(alter_array_right[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                            structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                            structure["right"][level]["level"]["up"][len(alter_array_right[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             structure["right"][level]["level"]["down"].append({})
                             alter_array_right[level].append(meeting[stick])
                         else:
                             if is_empty(structure["right"][level]["level"]["up"][new_alter]):
-                                structure["right"][level]["level"]["up"][new_alter] = {"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []}
-                                structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                                structure["right"][level]["level"]["up"][new_alter] = {"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []}
+                                structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             else:
-                                structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                                structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                                 
-                            # structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                            # structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
 
                     break
                 # level and down
-                elif meeting["ctree_branch"] == l and meeting["ctree_bside"] == 0:
+                elif meeting[branch_index] == l and meeting[bside_index] == 0:
                     if len(alter_array_right[level]) == 0:
-                        structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                        structure["right"][level]["level"]["down"][len(alter_array_right[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                        structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                        structure["right"][level]["level"]["down"][len(alter_array_right[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                         structure["right"][level]["level"]["up"].append({})
                         alter_array_right[level].append(meeting[stick])
                     else:
@@ -1129,16 +1138,16 @@ def duplicate_stick(all_data, attr, branch_layer):
                                 break
                             count_alter += 1
                         if new_alter == -1:
-                            structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []})
-                            structure["right"][level]["level"]["down"][len(alter_array_right[level])]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                            structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                            structure["right"][level]["level"]["down"][len(alter_array_right[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             structure["right"][level]["level"]["up"].append({})
-                            alter_array_right[level].append(meeting["alterid"])
+                            alter_array_right[level].append(meeting[stick])
                         else:
                             if is_empty(structure["right"][level]["level"]["down"][new_alter]):
-                                structure["right"][level]["level"]["down"][new_alter] = {"id": meeting[stick], "fruit": meeting["ctree_fruit_size"], "leaf": []}
-                                structure["right"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                                structure["right"][level]["level"]["down"][new_alter] = {"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []}
+                                structure["right"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             else:
-                                structure["right"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting["ctree_leaf_size"], "color": meeting["ctree_leaf_color"], "leaf_id": leaf_highlights})
+                                structure["right"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                                 
                     break
                 level += 1
@@ -1147,116 +1156,109 @@ def duplicate_stick(all_data, attr, branch_layer):
     return structure
 
 
-def set_default_mapping_ctree_mapping_info(all_data, table, attr, mapping):
+def set_default_mapping(all_data, table, attr, mapping):
     # print "set_default_mapping"
     db = DB()
-    branch_index = []
     binary_index = dict()
-    db.query('SET SQL_SAFE_UPDATES = 0;')
-    db.conn.commit()
+    branch_order_index = []
+    
     data_table = table.split("_of_")[1]
     session = table.split("_of_")[0]
-    # print mapping
-    for d in all_data:        
-        for compt in attr:
-            # print 'SELECT * FROM ctree_mapping_info WHERE dataset="' + data_table + '" and session_id="' + session + '" and e_id=' + str(d['e_id']) + ';'
-            usercur = db.query('SELECT * FROM ctree_mapping_info WHERE mode="' + data_table + '" and session_id="' + session + '" and e_id=' + str(d['e_id']) + ';')
-            user_data = usercur.fetchone() 
-            dataset = "all"
-            # print ">>>>>>>>>>>>>>>>>>", user_data
 
-            if "dataset" in d:
-                dataset = d["dataset"]
-                
-            if attr[compt] != 'none' and d[attr[compt]] is None:
-                if user_data:
-                    db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=-100 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
-                else:
-                    # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", -100);'
-                    db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", -100);')
-                continue         
+    # user_ctree_data[session] = dict()
+    global user_ctree_data
+    
+    if data_table not in user_ctree_data[session]:
+        user_ctree_data[session][data_table] = {}
+        user_ctree_data[session][data_table]["layer"] = -1
+
+    # pre store dataset_collection query
+    attr_detail = dict()
+    for compt in attr: 
+        attr_detail[compt] = dict() 
+        if attr[compt] != 'none':
             cur = db.query('SELECT * FROM dataset_collection WHERE dataset="' + data_table + '" and attr="' + attr[compt] + '";')
-            collecting_data = cur.fetchone()   
-            
+            attr_detail[compt] = cur.fetchone()
+    
+    # print mapping
+    dataset = "all"
+    layer_count = []
+    for d in all_data:  
+        if "dataset" in d:
+            dataset = d["dataset"]
+        record_label = str(d['egoid']) + "_" + dataset
+        if record_label not in user_ctree_data[session][data_table]:
+            user_ctree_data[session][data_table][record_label] = dict() 
+            user_ctree_data[session][data_table][record_label]["record"] = []
+            user_ctree_data[session][data_table][record_label]["done"] = -1
+        
+        elif user_ctree_data[session][data_table][record_label]["done"] == 1:
+            return
+
+        # ctree_record = [-100 for i in range(10)]
+        ctree_record = [-100 for i in range(10)]
+        ctree_record[egoid_index] = d['egoid']
+        ctree_record[alterid_index] = d['alterid']
+        for compt in attr:
+            if attr[compt] != 'none' and d[attr[compt]] is None:
+                continue        
+            # cur = db.query('SELECT * FROM dataset_collection WHERE dataset="' + data_table + '" and attr="' + attr[compt] + '";')
+            # collecting_data = cur.fetchone()
+            collecting_data = attr_detail[compt]  
+
+                        
             if compt == 'trunk' or compt == 'bside':
                 if attr[compt] in mapping:
                     if collecting_data["type"] == "numerical":
                         if int(d[attr[compt]]) <= int(mapping[attr[compt]]["0"][0]):
-                            if user_data:
-                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                            if compt == 'trunk':
+                                ctree_record[trunk_index] = 0
                             else:
-                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);'
-                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);')
-                            
-                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                                ctree_record[bside_index] = 0
                         else:
-                            if user_data:
-                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                            if compt == 'trunk':
+                                ctree_record[trunk_index] = 1
                             else:
-                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);'
-                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);')
-                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';') 
+                                ctree_record[bside_index] = 1
                     
                     else:
                         if d[attr[compt]] in mapping[attr[compt]]["0"]:
-                            # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
-                            if user_data:
-                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                            if compt == 'trunk':
+                                ctree_record[trunk_index] = 0
                             else:
-                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);'
-                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);')
-                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                                ctree_record[bside_index] = 0
                         else:
-                            # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
-                            if user_data:
-                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                            if compt == 'trunk':
+                                ctree_record[trunk_index] = 1
                             else:
-                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);'
-                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);')
-                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')                        
+                                ctree_record[bside_index] = 1         
 
                 else:
-                    # cur = db.query('SELECT min, max, attr_range, type FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
-                    # collecting_data = cur.fetchone()
-                    # if str(collecting_data['min']).isdigit():
                     if str(collecting_data["type"]) == "numerical":
                         mid = math.floor((int(collecting_data['max']) + int(collecting_data['min']))*0.5)
                         if int(d[attr[compt]]) <= int(mid):
-                            if user_data:
-                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                            if compt == 'trunk':
+                                ctree_record[trunk_index] = 0
                             else:
-                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);'
-                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);')
+                                ctree_record[bside_index] = 0
                             
-                            # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
-                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
                         else:
-                            if user_data:
-                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                            if compt == 'trunk':
+                                ctree_record[trunk_index] = 1
                             else:
-                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);'
-                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);')
-                            # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
-                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
+                                ctree_record[bside_index] = 1
                     else:
                         if compt in binary_index:
                             if binary_index[compt].index(d[attr[compt]]) < (len(binary_index[compt])*0.5):
-                                if user_data:
-                                    db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                if compt == 'trunk':
+                                    ctree_record[trunk_index] = 0
                                 else:
-                                    # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);'
-                                    db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);')
-                                
-                                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
-                                # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                                    ctree_record[bside_index] = 0
                             else:
-                                if user_data:
-                                    db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                if compt == 'trunk':
+                                    ctree_record[trunk_index] = 1
                                 else:
-                                    # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);'
-                                    db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);')
-                                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
-                                # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
+                                    ctree_record[bside_index] = 1
 
                         else:
                             # print 'SELECT DISTINCT(' + attr[compt] + ') FROM ' + table + ' ORDER BY(' + attr[compt] + ');'
@@ -1267,140 +1269,124 @@ def set_default_mapping_ctree_mapping_info(all_data, table, attr, mapping):
                                 binary_index[compt].append(dist_d[attr[compt]])
 
                             if binary_index[compt].index(d[attr[compt]]) < (len(binary_index[compt])*0.5):
-                                if user_data:
-                                    db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                if compt == 'trunk':
+                                    ctree_record[trunk_index] = 0
                                 else:
-                                    # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);'
-                                    db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);')
-                                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
-                                # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                                    ctree_record[bside_index] = 0
                             else:
-                                if user_data:
-                                    db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
+                                if compt == 'trunk':
+                                    ctree_record[trunk_index] = 1
                                 else:
-                                    # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);'
-                                    db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 1);')
-                                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
-                                # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
+                                    ctree_record[bside_index] = 1
 
 
             elif compt == 'fruit_size' or compt == 'leaf_size' or compt == 'leaf_color' or compt == 'branch' or compt == 'root':
                 # cur1 = db.query('SELECT * FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
                 # collecting_data = cur1.fetchone()
+
                 if attr[compt] == "none":
                     if compt == 'fruit_size':
-                        if user_data:
-                            db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
-                        else:
-                            # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);'
-                            db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);')
-                        # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
-                    else:
-                        if user_data:
-                            db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=3 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
-                        else:
-                            # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 3);'
-                            db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 3);')
-                        # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=3 WHERE e_id=' + str(d['e_id']) + ';')
+                        ctree_record[fruit_size_index] = 0
+                    elif compt == 'leaf_size':
+                        ctree_record[leaf_size_index] = 3
+                    elif compt == 'leaf_color':
+                        ctree_record[leaf_color_index] = 3
+                    elif compt == 'branch':
+                        ctree_record[branch_index] = 3
+                        layer_count = 3
+                    elif compt == 'root':
+                        ctree_record[root_index] = 3
+                    
                 else:
                     if attr[compt] in mapping:
                         if collecting_data["type"] == "categorical" or collecting_data["type"] == "boolean":
                             for cat in mapping[attr[compt]]:
                                 # if d[attr[compt]] in mapping[attr[compt]][cat]:
                                 if d[attr[compt]] == cat:
-                                    # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
-                                    # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + cat + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                    if user_data:
-                                        db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(mapping[attr[compt]][cat]) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
-                                    else:
-                                        # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(mapping[attr[compt]][cat]) + ');'
-                                        db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(mapping[attr[compt]][cat]) + ');')
+                                    if compt == 'fruit_size':
+                                        ctree_record[fruit_size_index] = mapping[attr[compt]][cat]
+                                    elif compt == 'leaf_size':
+                                        ctree_record[leaf_size_index] = mapping[attr[compt]][cat]
+                                    elif compt == 'leaf_color':
+                                        ctree_record[leaf_color_index] = mapping[attr[compt]][cat]
+                                    elif compt == 'branch':
+                                        ctree_record[branch_index] = mapping[attr[compt]][cat]
+                                        layer_count.append(mapping[attr[compt]][cat])
+                                    elif compt == 'root':
+                                        ctree_record[root_index] = mapping[attr[compt]][cat]
                                     
-                                    # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(mapping[attr[compt]][cat]) + ' WHERE e_id=' + str(d['e_id']) + ';')
                                     break
                         else:
                             if compt == 'branch' and mapping[attr[compt]][1] < mapping[attr[compt]][0]:
                                 if int(d[attr[compt]]) >= int(mapping[attr[compt]][0]):
-                                    if user_data:
-                                        db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
-                                    else:
-                                        # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);'
-                                        db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);')
-                                    # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')                                                                        
+                                    ctree_record[branch_index] = 0
+                                                                                                         
                                 elif int(d[attr[compt]]) <= int(mapping[attr[compt]][-1]):
-                                    if user_data:
-                                        db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(len(mapping)) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
-                                    else:
-                                        # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(len(mapping)) + ');'
-                                        db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(len(mapping)) + ');')
-                                    # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(mapping)) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                    ctree_record[branch_index] = len(mapping)
+                                    layer_count.append(len(mapping))
+                                    
                                 else:
                                     for order in range(len(mapping[attr[compt]])-2, -1, -1):
                                         if int(d[attr[compt]]) <= int(mapping[attr[compt]][order]) and int(d[attr[compt]]) > int(mapping[attr[compt]][order+1]):
-                                            if user_data:
-                                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(order+1) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
-                                            else:
-                                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(order+1) + ');'
-                                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(order+1) + ');')
-                                            
-                                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order+1) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                            ctree_record[branch_index] = (order+1)
                                             break
                             elif compt == 'branch' or compt == 'leaf_color' or compt == 'root':
                                 if int(d[attr[compt]]) <= int(mapping[attr[compt]][0]):
-                                    if user_data:
-                                        db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
-                                    else:
-                                        # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);'
-                                        db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);')
-                                    # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                                    if compt == 'leaf_color':
+                                        ctree_record[leaf_color_index] = 0
+                                    elif compt == 'branch':
+                                        ctree_record[branch_index] = 0
+                                    elif compt == 'root':
+                                        ctree_record[root_index] = 0
+
                                 elif int(d[attr[compt]]) >= int(mapping[attr[compt]][-1]):
-                                    if user_data:
-                                        db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(len(mapping)) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
-                                    else:
-                                        # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(len(mapping)) + ');'
-                                        db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(len(mapping)) + ');')
-                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(mapping)) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                    if compt == 'leaf_color':
+                                        ctree_record[leaf_color_index] = len(mapping)
+                                    elif compt == 'branch':
+                                        ctree_record[branch_index] = len(mapping)
+                                        layer_count.append(len(mapping))
+                                    elif compt == 'root':
+                                        ctree_record[root_index] = len(mapping)
+                                
                                 else:
                                     for order in range(1, len(mapping[attr[compt]])):
                                         if int(d[attr[compt]]) > int(mapping[attr[compt]][order-1]) and int(d[attr[compt]]) <= int(mapping[attr[compt]][order]):
-                                            if user_data:
-                                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
-                                            else:
-                                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(order) + ');'
-                                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(order) + ');')
-                                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                            if compt == 'leaf_color':
+                                                ctree_record[leaf_color_index] = order
+                                            elif compt == 'branch':
+                                                ctree_record[branch_index] = order
+                                            elif compt == 'root':
+                                                ctree_record[root_index] = order
+
                                             break
                             else:
                                 size_map = mapping[attr[compt]][1]
                                 val_map = mapping[attr[compt]][0]
 
                                 if int(d[attr[compt]]) <= int(val_map[0]):
-                                    if user_data:
-                                        db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(size_map[0]) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
-                                    else:
-                                        # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(size_map[0]) + ');'
-                                        db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(size_map[0]) + ');')
-                                    # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(size_map[0]) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                    if compt == 'fruit_size':
+                                        ctree_record[fruit_size_index] = size_map[0]
+                                    elif compt == 'leaf_size':
+                                        ctree_record[leaf_size_index] = size_map[0]
+                                    
                                 elif int(d[attr[compt]]) >= int(val_map[-1]):
-                                    if user_data:
-                                        db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(size_map[len(val_map)]) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
-                                    else:
-                                        # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(size_map[len(val_map)]) + ');'
-                                        db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(size_map[len(val_map)]) + ');')
-                                    # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(size_map[len(val_map)]) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                    if compt == 'fruit_size':
+                                        ctree_record[fruit_size_index] = size_map[len(val_map)]
+                                    elif compt == 'leaf_size':
+                                        ctree_record[leaf_size_index] = size_map[len(val_map)]
+                                    
                                 else:
                                     for order in range(1, len(val_map)):
                                         if int(d[attr[compt]]) > int(val_map[order-1]) and int(d[attr[compt]]) <= int(val_map[order]):
-                                            if user_data:
-                                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(size_map[order]) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
-                                            else:
-                                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(size_map[order]) + ');'
-                                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(size_map[order]) + ');')
-                                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(size_map[order]) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                            if compt == 'fruit_size':
+                                                ctree_record[fruit_size_index] = size_map[order]
+                                            elif compt == 'leaf_size':
+                                                ctree_record[leaf_size_index] = size_map[order]
+                                            
                                             break
 
                                     
-                    else:
+                    else: # only branch will have default mapping
                         # if str(collecting_data['min']).isdigit():
                         if collecting_data["type"] == "numerical":
                             gap = collecting_data['attr_range']/9.0
@@ -1409,331 +1395,74 @@ def set_default_mapping_ctree_mapping_info(all_data, table, attr, mapping):
                                 reorder.append(math.round(g*100)/100.0)
                             
                             if len(reorder) < 9:
-                                reorder.appenf(collecting_data["max"])
+                                reorder.append(collecting_data["max"])
 
                             if int(d[attr[compt]]) <= reorder[0]:
-                                if user_data:
-                                    db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
-                                else:
-                                    # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);'
-                                    db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", 0);')
-                                # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
+                                if compt == 'branch':
+                                    ctree_record[branch_index] = 0
+                                elif compt == 'fruit_size':
+                                    ctree_record[fruit_size_index] = 0
+                                elif compt == 'leaf_size':
+                                    ctree_record[leaf_size_index] = 0
+                                elif compt == 'leaf_color':
+                                    ctree_record[leaf_color_index] = 0
+                                elif compt == 'root':
+                                    ctree_record[root_index] = 0
+
                             elif int(d[attr[compt]]) >= reorder[-1]:
-                                if user_data:
-                                    db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(len(reorder)) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
-                                else:
-                                    # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(len(reorder)) + ');'
-                                    db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(len(reorder)) + ');')
-                                # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(reorder)) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                if compt == 'branch':
+                                    ctree_record[branch_index] = len(reorder)
+                                    layer_count.append(len(reorder))
+                                elif compt == 'fruit_size':
+                                    ctree_record[fruit_size_index] = len(reorder)
+                                elif compt == 'leaf_size':
+                                    ctree_record[leaf_size_index] = len(reorder)
+                                elif compt == 'leaf_color':
+                                    ctree_record[leaf_color_index] = len(reorder)
+                                elif compt == 'root':
+                                    ctree_record[root_index] = len(reorder)
+                                
                             else:
                                 for order in range(1, len(reorder)):
                                     if int(d[attr[compt]]) > reorder[order-1] and int(d[attr[compt]]) <= reorder[order]:
-                                        if user_data:
-                                            db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
-                                        else:
-                                            # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(order) + ');'
-                                            db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(order) + ');')
-                                        # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
+                                        if compt == 'branch':
+                                            ctree_record[branch_index] = order
+                                        elif compt == 'fruit_size':
+                                            ctree_record[fruit_size_index] = order
+                                        elif compt == 'leaf_size':
+                                            ctree_record[leaf_size_index] = order
+                                        elif compt == 'leaf_color':
+                                            ctree_record[leaf_color_index] = order
+                                        elif compt == 'root':
+                                            ctree_record[root_index] = order
+                                        
                                         break
                         else:
-                            if len(branch_index) == 0:
+                            if len(branch_order_index) == 0:
                                 precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + data_table + ' ORDER BY(' + attr[compt] + ');')
                                 real_data = precur.fetchall()
                                 for dist_d in real_data:
-                                    branch_index.append(dist_d[attr[compt]])
-                            if user_data:
-                                db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(branch_index.index(d[attr[compt]])) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
-                            else:
-                                # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(branch_index.index(d[attr[compt]])) + ');'
-                                db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(branch_index.index(d[attr[compt]])) + ');')
+                                    branch_order_index.append(dist_d[attr[compt]])
                             
-                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(branch_index.index(d[attr[compt]])) + ' WHERE e_id=' + str(d['e_id']) + ';')                   
+                            ctree_record[branch_index] = branch_order_index.index(d[attr[compt]])
+                            layer_count.append(branch_order_index.index(d[attr[compt]]))
+                                                                           
 
             elif compt == 'highlight':
                 if attr[compt] == "none":
-                    if user_data:
-                        db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '="none" WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
-                    else:
-                        # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", "none");'
-                        db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", "none");')
+                    ctree_record[highlight_index] = "none"
                 else:
-                    if user_data:
-                        db.query('UPDATE ctree_mapping_info SET ctree_' + compt + '=' + str(d[attr[compt]]) + ' WHERE e_id=' + str(d['e_id']) + ' and session_id="' + str(session) + '" and mode="' + data_table + '";')
-                    else:
-                        # print 'INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(d[attr[compt]]) + ');'
-                        db.query('INSERT INTO ctree_mapping_info (dataset, e_id, session_id, mode, egoid, alterid, ctree_' + compt + ') VALUES ("' + dataset + '",' + str(d['e_id']) + ',' + str(session) + ',"' + str(data_table) + '","' + str(d['egoid']) + '","' + str(d['alterid']) + '", ' + str(d[attr[compt]]) + ');')
-                     
-    db.query('SET SQL_SAFE_UPDATES = 1;')
-    db.conn.commit()
-
-
-def set_default_mapping(all_data, table, attr, mapping):
-    # print "set_default_mapping"
-    db = DB()
-    branch_index = []
-    binary_index = dict()
-    db.query('SET SQL_SAFE_UPDATES = 0;')
-    db.conn.commit()
-    data_table = table.split("_of_")[1]
-    session = table.split("_of_")[0]
-    # print mapping
-    for d in all_data:        
-        for compt in attr:
-            # print 'SELECT * FROM ctree_mapping_info WHERE dataset="' + data_table + '" and session_id="' + session + '" and e_id=' + str(d['e_id']) + ';'
-            # usercur = db.query('SELECT * FROM ctree_mapping_info WHERE mode="' + data_table + '" and session_id="' + session + '" and e_id=' + str(d['e_id']) + ';')
-            # user_data = usercur.fetchone() 
-            if attr[compt] != 'none' and d[attr[compt]] is None:
-                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=-100 WHERE e_id=' + str(d['e_id']) + ';'
-                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=-100 WHERE e_id=' + str(d['e_id']) + ';')
-                continue         
-            cur = db.query('SELECT * FROM dataset_collection WHERE dataset="' + data_table + '" and attr="' + attr[compt] + '";')
-            collecting_data = cur.fetchone()   
+                    ctree_record[highlight_index] = d[attr[compt]]
             
-            if compt == 'trunk' or compt == 'bside':
-                if attr[compt] in mapping:
-                    if collecting_data["type"] == "numerical":
-                        if int(d[attr[compt]]) <= int(mapping[attr[compt]]["0"][0]):
-                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
-                        else:
-                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';') 
-                    
-                    else:
-                        if d[attr[compt]] in mapping[attr[compt]]["0"]:
-                            # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
-                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
-                        else:
-                            # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
-                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')                        
+        user_ctree_data[session][data_table][record_label]["record"].append(ctree_record)
 
-                else:
-                    # cur = db.query('SELECT min, max, attr_range, type FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
-                    # collecting_data = cur.fetchone()
-                    # if str(collecting_data['min']).isdigit():
-                    if str(collecting_data["type"]) == "numerical":
-                        mid = math.floor((int(collecting_data['max']) + int(collecting_data['min']))*0.5)
-                        if int(d[attr[compt]]) <= int(mid):
-                            # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
-                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
-                        else:
-                            # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
-                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
-                    else:
-                        if compt in binary_index:
-                            if binary_index[compt].index(d[attr[compt]]) < (len(binary_index[compt])*0.5):
-                                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
-                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
-                            else:
-                                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
-                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
+    if user_ctree_data[session][data_table]["layer"] == -1:
+        user_ctree_data[session][data_table]["layer"] = max(layer_count)
 
-                        else:
-                            # print 'SELECT DISTINCT(' + attr[compt] + ') FROM ' + table + ' ORDER BY(' + attr[compt] + ');'
-                            binary_index[compt] = []
-                            precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + table + ' ORDER BY(' + attr[compt] + ');')
-                            real_data = precur.fetchall()
-                            for dist_d in real_data:
-                                binary_index[compt].append(dist_d[attr[compt]])
+    for label in user_ctree_data[session][data_table]:
+        if label != "layer":
+            user_ctree_data[session][data_table][label]["done"] = 1
 
-                            if binary_index[compt].index(d[attr[compt]]) < (len(binary_index[compt])*0.5):
-                                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
-                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
-                            else:
-                                # print 'UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';'
-                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=1 WHERE e_id=' + str(d['e_id']) + ';')
-
-
-            if compt == 'fruit_size' or compt == 'leaf_size' or compt == 'leaf_color' or compt == 'branch' or compt == 'root':
-                # cur1 = db.query('SELECT * FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
-                # collecting_data = cur1.fetchone()
-                if attr[compt] == "none":
-                    if compt == 'fruit_size':
-                        db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
-                    else:
-                        db.query('UPDATE ' + table + ' SET ctree_' + compt + '=3 WHERE e_id=' + str(d['e_id']) + ';')
-                else:
-                    if attr[compt] in mapping:
-                        # if compt == 'branch':
-                        #     if collecting_data["attr_range"] < 20 or collecting_data["type"] == "categorical":
-                        #         print mapping[attr[compt]]
-                        #         for cat in mapping[attr[compt]]:
-                        #             # if d[attr[compt]] in mapping[attr[compt]][cat]:
-                        #             if d[attr[compt]] == cat:
-                        #                 # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
-                        #                 db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(mapping[attr[compt]][cat]) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                        #                 break
-                        #     else:
-                        #         if int(d[attr[compt]]) <= int(mapping[attr[compt]][0]):
-                        #             db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
-                        #         elif int(d[attr[compt]]) >= int(mapping[attr[compt]][-1]):
-                        #             db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(mapping)-1) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                        #         else:
-                        #             for order in range(1, len(mapping[attr[compt]])-1):
-                        #                 if int(d[attr[compt]]) > int(mapping[attr[compt]][order-1]) and int(d[attr[compt]]) <= int(mapping[attr[compt]][order]):
-                        #                     db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                        #                     break
-                        # else:
-                        if collecting_data["type"] == "categorical" or collecting_data["type"] == "boolean":
-                            for cat in mapping[attr[compt]]:
-                                # if d[attr[compt]] in mapping[attr[compt]][cat]:
-                                if d[attr[compt]] == cat:
-                                    # print 'UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';'
-                                    # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + cat + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(mapping[attr[compt]][cat]) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                    break
-                        else:
-                            if compt == 'branch' and mapping[attr[compt]][1] < mapping[attr[compt]][0]:
-                                if int(d[attr[compt]]) >= int(mapping[attr[compt]][0]):
-                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')                                                                        
-                                elif int(d[attr[compt]]) <= int(mapping[attr[compt]][-1]):
-                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(mapping)) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                else:
-                                    for order in range(len(mapping[attr[compt]])-2, -1, -1):
-                                        if int(d[attr[compt]]) <= int(mapping[attr[compt]][order]) and int(d[attr[compt]]) > int(mapping[attr[compt]][order+1]):
-                                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order+1) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                            break
-                            elif compt == 'branch' or compt == 'leaf_color' or compt == 'root':
-                                if int(d[attr[compt]]) <= int(mapping[attr[compt]][0]):
-                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
-                                elif int(d[attr[compt]]) >= int(mapping[attr[compt]][-1]):
-                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(mapping)) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                else:
-                                    for order in range(1, len(mapping[attr[compt]])):
-                                        if int(d[attr[compt]]) > int(mapping[attr[compt]][order-1]) and int(d[attr[compt]]) <= int(mapping[attr[compt]][order]):
-                                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                            break
-                            else:
-                                size_map = mapping[attr[compt]][1]
-                                val_map = mapping[attr[compt]][0]
-
-                                if int(d[attr[compt]]) <= int(val_map[0]):
-                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(size_map[0]) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                elif int(d[attr[compt]]) >= int(val_map[-1]):
-                                    db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(size_map[len(val_map)]) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                else:
-                                    for order in range(1, len(val_map)):
-                                        if int(d[attr[compt]]) > int(val_map[order-1]) and int(d[attr[compt]]) <= int(val_map[order]):
-                                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(size_map[order]) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                            break
-
-                                    
-                    else:
-                        # if str(collecting_data['min']).isdigit():
-                        if collecting_data["type"] == "numerical":
-                            gap = collecting_data['attr_range']/9.0
-                            reorder = []
-                            for g in range(collecting_data["min"], collecting_data["max"]+1, gap):
-                                reorder.append(math.round(g*100)/100.0)
-                            
-                            if len(reorder) < 9:
-                                reorder.appenf(collecting_data["max"])
-
-                            if int(d[attr[compt]]) <= reorder[0]:
-                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=0 WHERE e_id=' + str(d['e_id']) + ';')
-                            elif int(d[attr[compt]]) >= reorder[-1]:
-                                db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(len(reorder)) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                            else:
-                                for order in range(1, len(reorder)):
-                                    if int(d[attr[compt]]) > reorder[order-1] and int(d[attr[compt]]) <= reorder[order]:
-                                        db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(order) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                                        break
-                            # if collecting_data['attr_range'] < 20:
-                            #     reorder = int(d[attr[compt]]) - int(collecting_data['min'])
-                            #     if reorder > 15:
-                            #         reorder = 15 # set restrictions
-                            # else:
-                            #     if len(branch_index) == 0:
-                            #         for r in range(int(collecting_data['min']) + (collecting_data['attr_range']/10), int(collecting_data['max'])- (collecting_data['attr_range']/10), collecting_data['attr_range']/10):
-                            #             branch_index.append(r)
-                            #         print branch_index
-                            #     reorder = takeClosest(int(d[attr[compt]]), branch_index)
-
-                            # print 'UPDATE ' + table + ' SET ctree_' + compt + '=' + str(reorder) + ' WHERE e_id=' + str(d['e_id']) + ';'
-                            # db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(reorder) + ' WHERE e_id=' + str(d['e_id']) + ';')
-                        else:
-                            if len(branch_index) == 0:
-                                precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + data_table + ' ORDER BY(' + attr[compt] + ');')
-                                real_data = precur.fetchall()
-                                for dist_d in real_data:
-                                    branch_index.append(dist_d[attr[compt]])
-                                
-                            db.query('UPDATE ' + table + ' SET ctree_' + compt + '=' + str(branch_index.index(d[attr[compt]])) + ' WHERE e_id=' + str(d['e_id']) + ';')                   
-
-    db.query('SET SQL_SAFE_UPDATES = 1;')
-    db.conn.commit()
-    
-
-
-def one_contact_new(request):
-    final_structure = dict()
-    db = DB()
-    # table = request.GET.get('contact')
-    # print request.GET['contact']
-    if request.GET.get('contact'):
-        list_request = request.GET['contact'].split(":-")
-        
-        attr = json.loads(list_request[0])
-        ego_info = json.loads(list_request[1])
-        ego_group = list_request[2]
-        table = list_request[3]
-        data_table = table.split("_of_")[1]
-        session = table.split("_of_")[0]
-        # print request.GET['contact']
-        # print ego_info
-        if ego_group == "all":
-            for e in ego_info:
-                precur = db.query('SELECT * FROM ctree_mapping_info WHERE egoid="' + e + '" and mode = "' + data_table + '" and session_id = ' + str(session) + ';')
-                all_data = precur.fetchall()
-                cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
-                stick_unique = cur.fetchone()["alter_info"]
-                # cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
-                # branch_layer = int(cur.fetchone()["attr_range"])
-                cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ctree_mapping_info WHERE session_id = ' + str(session) + ' and mode = "' + data_table + '" and ctree_branch != "" and ctree_branch != -100;')
-                branch_layer = int(cur.fetchone()["MAX(cast(`ctree_branch` as unsigned))"]) + 1
-
-                if stick_unique == '1':
-                    # print "in_unique"
-                    one_structure = unique_stick(all_data, attr, branch_layer)
-
-                else:
-                    # print "in_duplicate"
-                    one_structure = duplicate_stick(all_data, attr, branch_layer)
-
-                final_structure["all"] = dict()
-                final_structure["all"][e] = one_structure
-
-        else:
-            for e in ego_info:
-                for sub in ego_info[e]:
-                    # precur = db.query('SELECT * FROM ' + data_table + ' WHERE dataset="' + sub + '" and egoid="' + e + '";')
-                    precur = db.query('SELECT * FROM ctree_mapping_info WHERE dataset="' + sub + '" and egoid="' + e + '" and mode = "' + data_table + '" and session_id = ' + str(session) + ';')
-                    all_data = precur.fetchall()
-                    cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
-                    stick_unique = cur.fetchone()["alter_info"]
-                    # cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
-                    # branch_layer = int(cur.fetchone()["attr_range"])
-                    # cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ' + table + ' WHERE ctree_branch != "" and ctree_branch != -100;')
-                    cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ctree_mapping_info WHERE session_id = ' + str(session) + ' and mode = "' + data_table + '" and ctree_branch != "" and ctree_branch != -100;')
-                    branch_layer = int(cur.fetchone()["MAX(cast(`ctree_branch` as unsigned))"]) + 1
-
-                    if stick_unique == '1':
-                        # print "in_unique"
-                        one_structure = unique_stick(all_data, attr, branch_layer)
-
-                    else:
-                        # print "in_duplicate"
-                        one_structure = duplicate_stick(all_data, attr, branch_layer)
-
-                    final_structure[sub] = dict()
-                    final_structure[sub][e] = one_structure
-
-    else:
-        raise Http404
-    
-    return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
-    with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
-       json_file.write(return_json)
-    # print return_json
-    return HttpResponse(return_json)
 
 def one_contact(request):
     final_structure = dict()
@@ -1751,16 +1480,13 @@ def one_contact(request):
         session = table.split("_of_")[0]
         # print request.GET['contact']
         # print ego_info
+        cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
+        stick_unique = cur.fetchone()["alter_info"]
         if ego_group == "all":
             for e in ego_info:
-                precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + e + '";')
-                all_data = precur.fetchall()
-                cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
-                stick_unique = cur.fetchone()["alter_info"]
-                # cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
-                # branch_layer = int(cur.fetchone()["attr_range"])
-                cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ' + table + ' WHERE ctree_branch != "" and ctree_branch != -100;')
-                branch_layer = int(cur.fetchone()["MAX(cast(`ctree_branch` as unsigned))"]) + 1
+                record_label = e + "_" + ego_group
+                all_data = user_ctree_data[session][data_table][record_label]
+                branch_layer = user_ctree_data[session][data_table]["layer"] + 1
 
                 if stick_unique == '1':
                     # print "in_unique"
@@ -1776,14 +1502,9 @@ def one_contact(request):
         else:
             for e in ego_info:
                 for sub in ego_info[e]:
-                    precur = db.query('SELECT * FROM ' + table + ' WHERE dataset="' + sub + '" and egoid="' + e + '";')
-                    all_data = precur.fetchall()
-                    cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
-                    stick_unique = cur.fetchone()["alter_info"]
-                    # cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
-                    # branch_layer = int(cur.fetchone()["attr_range"])
-                    cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ' + table + ' WHERE ctree_branch != "" and ctree_branch != -100;')
-                    branch_layer = int(cur.fetchone()["MAX(cast(`ctree_branch` as unsigned))"]) + 1
+                    record_label = e + "_" + sub
+                    all_data = user_ctree_data[session][data_table][record_label]
+                    branch_layer = user_ctree_data[session][data_table]["layer"] + 1
 
                     if stick_unique == '1':
                         # print "in_unique"
@@ -1806,31 +1527,107 @@ def one_contact(request):
     return HttpResponse(return_json)
 
 
+def one_contact_structure(structure_request):
+    final_structure = dict()
+    db = DB()
+
+    list_request = structure_request.split(":-")
+    attr = json.loads(list_request[0])
+    ego_info = json.loads(list_request[1])
+    ego_group = list_request[2]
+    table = list_request[3]
+    data_table = table.split("_of_")[1]
+    session = table.split("_of_")[0]
+
+    global user_ctree_data
+    
+    # print request.GET['contact']
+    # print ego_info
+    cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
+    stick_unique = cur.fetchone()["alter_info"]
+    if ego_group == "all":
+        for e in ego_info:
+            record_label = e + "_" + ego_group
+            all_data = user_ctree_data[session][data_table][record_label]["record"]
+            branch_layer = user_ctree_data[session][data_table]["layer"] + 1
+
+            if stick_unique == '1':
+                # print "in_unique"
+                one_structure = unique_stick(all_data, attr, branch_layer)
+
+            else:
+                # print "in_duplicate"
+                one_structure = duplicate_stick(all_data, attr, branch_layer)
+
+            final_structure["all"] = dict()
+            final_structure["all"][e] = one_structure
+
+    else:
+        for e in ego_info:
+            for sub in ego_info[e]:
+                record_label = e + "_" + sub
+                all_data = user_ctree_data[session][data_table][record_label]["record"]
+                branch_layer = user_ctree_data[session][data_table]["layer"] + 1
+
+                if stick_unique == '1':
+                    # print "in_unique"
+                    one_structure = unique_stick(all_data, attr, branch_layer)
+
+                else:
+                    # print "in_duplicate"
+                    one_structure = duplicate_stick(all_data, attr, branch_layer)
+
+                final_structure[sub] = dict()
+                final_structure[sub][e] = one_structure
+
+
+    
+    return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
+    with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
+       json_file.write(return_json)
+    # print return_json
+    return return_json
+
+
 def one_contact_update(request):
     db = DB()
     # table = request.GET.get('contact')
     # print request.GET['contact']
+    global user_ctree_data
+
+    with open("./contact_tree/data/user_ctree_data.json", "rb") as json_file:
+        user_ctree_data = json.load(json_file)
+
     if request.GET.get('contact'):
         list_request = request.GET['contact'].split(":-")
         attr = json.loads(list_request[0])
         ego = list_request[1]
         table = list_request[2]
         mapping = json.loads(list_request[3])
+        # ego_group = list_request[4]
+        # ego_info = json.loads(list_request[5])
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0]
         # print list_request
         # print mapping
         # attr['branch'] = 'age'
+        
         cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
         stick_unique = cur.fetchone()["alter_info"]
-        precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + ego + '";')
+        precur = db.query('SELECT * FROM ' + data_table + ' WHERE egoid="' + ego + '" ORDER BY (e_id);')
         all_data = precur.fetchall()
         set_default_mapping(all_data, table, attr, mapping) #!!!
 
+        structure_request = list_request[0] + ":-" + list_request[5] + ":-" + list_request[4] + ":-" + list_request[2]
+        return_json = one_contact_structure(structure_request)
+
     else:
         raise Http404
-    
-    return_json = simplejson.dumps(table, indent=4, use_decimal=True)
+
+    user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
+    with open("./contact_tree/data/user_ctree_data.json", "wb") as json_file:
+        json_file.write(user_ctree_data_json)
+    # return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
     # print return_json
     return HttpResponse(return_json)
 
@@ -1853,13 +1650,15 @@ def restore_mapping_update(request):
             return_json = simplejson.dumps(table, indent=4, use_decimal=True)
             return HttpResponse(return_json)
 
-        query_request = 'SELECT * FROM ' + table + ' WHERE egoid="' + ego_list[0] + '"' #!!!
+        query_request = 'SELECT * FROM ' + data_table + ' WHERE egoid="' + ego_list[0] + '"' #!!!
         for ego in ego_list[1:]:
             query_request += ' or egoid="' + ego + '"'
-        query_request += ";"
+        query_request += " ORDER BY (e_id);"
         print query_request
         precur = db.query(query_request)
         all_data = precur.fetchall()
+
+        user_ctree_data[session] = dict() 
         set_default_mapping(all_data, table, attr, mapping)
 
     else:
@@ -1889,6 +1688,7 @@ def update_binary(request):
         zero_val = list_request[3:]
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0]
+
         # print select_ego
         # print ori_column
         # print new_column
@@ -1903,8 +1703,8 @@ def update_binary(request):
             return HttpResponse(return_json)
         #!!!
         if mytype == "categorical" or mytype == "boolean":
-            update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE (`" + ori_column + "`='" + zero_val[0] + "'"
-            update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE (`" + ori_column + "`!='" + zero_val[0] + "'"
+            update_query_zero = "UPDATE " + data_table + " SET " + new_column + " = 0 WHERE (`" + ori_column + "`='" + zero_val[0] + "'"
+            update_query_one = "UPDATE " + data_table + " SET " + new_column + " = 1 WHERE (`" + ori_column + "`!='" + zero_val[0] + "'"
             for zero in zero_val[1:]:
                 update_query_zero += " OR " + ori_column + "='" + zero + "'"
                 update_query_one += " AND " + ori_column + "!='" + zero + "'"
@@ -1919,8 +1719,8 @@ def update_binary(request):
             update_query_one += "egoid='" + select_ego[-1] + "');"     
         
         else:
-            update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE (`" + ori_column + "`<=" + str(zero_val[0])
-            update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE (`" + ori_column + "`>" + str(zero_val[0])
+            update_query_zero = "UPDATE " + data_table + " SET " + new_column + " = 0 WHERE (`" + ori_column + "`<=" + str(zero_val[0])
+            update_query_one = "UPDATE " + data_table + " SET " + new_column + " = 1 WHERE (`" + ori_column + "`>" + str(zero_val[0])
 
             # if len(select_ego) > 0:
             update_query_zero += ") AND ("
@@ -1944,86 +1744,18 @@ def update_binary(request):
 
     else:
         raise Http404
+
+    # query_request = 'SELECT * FROM ' + data_table + ' WHERE egoid="' + select_ego[0] + '"' #!!!
+    # for ego in select_ego[1:]:
+    #     query_request += ' or egoid="' + ego + '"'
+    # query_request += " ORDER BY (e_id);"
     
-    return_json = simplejson.dumps("done update", indent=4, use_decimal=True)
-    # print return_json
-    return HttpResponse(return_json)
+    # precur = db.query(query_request)
+    # all_data = precur.fetchall()
 
 
-def update_binary_old(request):
-    database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
-    clause = database.cursor()
-    db = DB()
-    clause.execute('SET SQL_SAFE_UPDATES = 0;')
-    database.commit()
-    # table = request.GET.get('contact')
-    # print request.GET['contact']
-    if request.GET.get('update'):
-        list_request = request.GET['update'].split(":=")[0].split(":-")
-        select_ego = request.GET['update'].split(":=")[1:]
-        # print list_request
-        # select_ego = json.loads(list_request[0])
-        table = list_request[0]
-        ori_column = list_request[2]
-        new_column = list_request[1]
-        zero_val = list_request[3:]
-        data_table = table.split("_of_")[1]
-        session = table.split("_of_")[0]
-        # print select_ego
-        # print ori_column
-        # print new_column
-        # print zero_val
-        typecur = db.query('SELECT `type` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + ori_column + '";')
-        mytype = typecur.fetchone()["type"]
-        # print mytype
 
-        if len(select_ego) == 0:
-            return_json = simplejson.dumps("no update", indent=4, use_decimal=True)
-            # print return_json
-            return HttpResponse(return_json)
-        #!!!
-        if mytype == "categorical" or mytype == "boolean":
-            update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE (`" + ori_column + "`='" + zero_val[0] + "'"
-            update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE (`" + ori_column + "`!='" + zero_val[0] + "'"
-            for zero in zero_val[1:]:
-                update_query_zero += " OR " + ori_column + "='" + zero + "'"
-                update_query_one += " AND " + ori_column + "!='" + zero + "'"
-            
-            update_query_zero += ") AND ("
-            update_query_one += ") AND ("
-            for update_ego in select_ego[:-1]:
-                update_query_zero += "egoid='" + update_ego + "' OR "
-                update_query_one += "egoid='" + update_ego + "' OR "
-
-            update_query_zero += "egoid='" + select_ego[-1] + "');"
-            update_query_one += "egoid='" + select_ego[-1] + "');"     
-        
-        else:
-            update_query_zero = "UPDATE " + table + " SET " + new_column + " = 0 WHERE (`" + ori_column + "`<=" + str(zero_val[0])
-            update_query_one = "UPDATE " + table + " SET " + new_column + " = 1 WHERE (`" + ori_column + "`>" + str(zero_val[0])
-
-            # if len(select_ego) > 0:
-            update_query_zero += ") AND ("
-            update_query_one += ") AND ("
-            for update_ego in select_ego[:-1]:
-                update_query_zero += "egoid='" + update_ego + "' OR "
-                update_query_one += "egoid='" + update_ego + "' OR "
-
-            update_query_zero += "egoid='" + select_ego[-1] + "');"
-            update_query_one += "egoid='" + select_ego[-1] + "');"     
-            # else:
-            #     update_query_zero += ");"
-            #     update_query_one += ");"
-            
-        print update_query_zero
-        # print update_query_one
-        clause.execute(update_query_zero)
-        clause.execute(update_query_one)
-        clause.execute('SET SQL_SAFE_UPDATES = 1;')
-        database.commit()        
-
-    else:
-        raise Http404
+    # user_ctree_data[session]
     
     return_json = simplejson.dumps("done update", indent=4, use_decimal=True)
     # print return_json
@@ -2244,14 +1976,17 @@ def restructure(request):
         #!!!
         if ego_group == "all":
             for e in ego_info:
-                precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + e + '";')
-                all_data = precur.fetchall()
-                cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
-                stick_unique = cur.fetchone()["alter_info"]
-                # cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
-                # branch_layer = int(cur.fetchone()["attr_range"])
-                cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ' + table + ' WHERE ctree_branch != "" and ctree_branch != -100;')
-                branch_layer = int(cur.fetchone()["MAX(cast(`ctree_branch` as unsigned))"]) + 1
+                record_label = e + "_" + ego_group
+                all_data = user_ctree_data[session][data_table][record_label]
+                branch_layer = user_ctree_data[session][data_table]["layer"] + 1
+                # precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + e + '";')
+                # all_data = precur.fetchall()
+                # cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
+                # stick_unique = cur.fetchone()["alter_info"]
+                # # cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
+                # # branch_layer = int(cur.fetchone()["attr_range"])
+                # cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ' + table + ' WHERE ctree_branch != "" and ctree_branch != -100;')
+                # branch_layer = int(cur.fetchone()["MAX(cast(`ctree_branch` as unsigned))"]) + 1
 
                 # precur = db.query('SELECT * FROM ctree_mapping_info WHERE egoid="' + e + '" and mode = "' + data_table + '" and session_id = ' + str(session) + ';')
                 # all_data = precur.fetchall()
@@ -2281,14 +2016,17 @@ def restructure(request):
 
             for e in ego_info:
                 for sub in sub_dataset:
-                    precur = db.query('SELECT * FROM ' + table + ' WHERE dataset="' + sub + '" and egoid="' + e + '";')
-                    all_data = precur.fetchall()
-                    cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
-                    stick_unique = cur.fetchone()["alter_info"]
-                    # cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
-                    # branch_layer = int(cur.fetchone()["attr_range"])
-                    cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ' + table + ' WHERE ctree_branch != "" and ctree_branch != -100;')
-                    branch_layer = int(cur.fetchone()["MAX(cast(`ctree_branch` as unsigned))"]) + 1
+                    record_label = e + "_" + sub
+                    all_data = user_ctree_data[session][data_table][record_label]
+                    branch_layer = user_ctree_data[session][data_table]["layer"] + 1
+                    # precur = db.query('SELECT * FROM ' + table + ' WHERE dataset="' + sub + '" and egoid="' + e + '";')
+                    # all_data = precur.fetchall()
+                    # cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
+                    # stick_unique = cur.fetchone()["alter_info"]
+                    # # cur = db.query('SELECT attr_range FROM dataset_collection WHERE dataset= "' + table + '" and attr="' + attr['branch'] + '";')
+                    # # branch_layer = int(cur.fetchone()["attr_range"])
+                    # cur = db.query('SELECT MAX(cast(`ctree_branch` as unsigned)) FROM ' + table + ' WHERE ctree_branch != "" and ctree_branch != -100;')
+                    # branch_layer = int(cur.fetchone()["MAX(cast(`ctree_branch` as unsigned))"]) + 1
 
                     # precur = db.query('SELECT * FROM ctree_mapping_info WHERE dataset="' + sub + '" and egoid="' + e + '" and mode = "' + data_table + '" and session_id = ' + str(session) + ';')
                     # all_data = precur.fetchall()
@@ -2347,8 +2085,9 @@ def auto_save(request):
         filter_contact = 'filter_contact=' + str(save_detail[10])
         tree_boundary = "tree_boundary='" + str(save_detail[11]) + "'"
         canvas_translate = "canvas_translate='" + str(save_detail[12]) + "'"
+        total_ego = "total_ego='" + str(save_detail[13]) + "'"
 
-        update_query = mode + "," + display_egos + "," + selected_egos + "," + leaf_scale + "," + fruit_scale + "," + sub_leaf_len_scale + "," + dtl_branch_curve + "," + root_curve + "," + root_len_scale + "," + filter_contact + "," + canvas_scale + "," + tree_boundary + "," + canvas_translate
+        update_query = mode + "," + display_egos + "," + selected_egos + "," + leaf_scale + "," + fruit_scale + "," + sub_leaf_len_scale + "," + dtl_branch_curve + "," + root_curve + "," + root_len_scale + "," + filter_contact + "," + canvas_scale + "," + tree_boundary + "," + canvas_translate + "," + total_ego
         # check_update1 = "UPDATE auto_save SET %s WHERE session_id=%s;" %(update_query, session)
         db.query("UPDATE auto_save SET %s WHERE session_id=%s;" %(update_query, session))
 
@@ -2398,6 +2137,48 @@ def save_mapping(request):
     db.query('SET SQL_SAFE_UPDATES = 1;')
     db.conn.commit()
     return_json = simplejson.dumps("mapping save", indent=4, use_decimal=True)
+    # print json
+    return HttpResponse(return_json)
+
+
+def get_user_data(request):
+    db = DB()
+    last_used_info = dict() 
+    if request.GET.get('user'):
+        session = request.GET.get('user')
+        
+        
+        mapcur = db.query("SELECT * FROM attribute_mapping WHERE session_id=" + session + " AND mapping_name='auto_map';")
+        mapping_exist = mapcur.fetchone()
+
+        auto_save_cur = db.query("SELECT * FROM auto_save WHERE session_id=" + session + ";")
+        saving_exist = auto_save_cur.fetchone()
+
+
+        if mapping_exist:
+            last_used_info["mode"] = mapping_exist['mode']
+            last_used_info["mapping_name"] = mapping_exist['mapping_name']
+            last_used_info["attr_info"] = mapping_exist['attr_info']
+        
+        if saving_exist:
+            last_used_info["display_egos"] = saving_exist['display_egos']
+            last_used_info["selected_egos"] = saving_exist['selected_egos']
+            last_used_info["leaf_scale"] = saving_exist['leaf_scale']
+            last_used_info["fruit_scale"] = saving_exist['fruit_scale']
+            last_used_info["leaf_len_scale"] = saving_exist['leaf_len_scale']
+            last_used_info["branch_curve"] = saving_exist['branch_curve']
+            last_used_info["root_curve"] = saving_exist['root_curve']
+            last_used_info["root_len_scale"] = saving_exist['root_len_scale']
+            last_used_info["canvas_scale"] = saving_exist['canvas_scale']
+            last_used_info["filter_contact"] = saving_exist['filter_contact']
+            last_used_info["tree_boundary"] = saving_exist['tree_boundary']
+            last_used_info["canvas_translate"] = saving_exist['canvas_translate']
+            last_used_info["total_ego"] = saving_exist['total_ego']
+           
+    else:
+        raise Http404
+
+    return_json = simplejson.dumps(last_used_info, indent=4, use_decimal=True)
     # print json
     return HttpResponse(return_json)
 
@@ -3774,7 +3555,8 @@ def fetch_data(request):
         sub = ego_info[2]
         column_name = ["row_id"]
         column_map = ["row_id"]
-
+        data_table = table.split("_of_")[1]
+        session = table.split("_of_")[0]
 
         query_string = 'SELECT '
         
@@ -3787,9 +3569,9 @@ def fetch_data(request):
         raw_data = [column_map, column_name]
         if len(all_info) < 3:
             if sub == 'all':
-                query_string = query_string[:-2] + ' FROM ' + table + ' WHERE egoid="' + str(ego) + '";'
+                query_string = query_string[:-2] + ' FROM ' + data_table + ' WHERE egoid="' + str(ego) + '";'
             else:
-                query_string = query_string[:-2] + ' FROM ' + table + ' WHERE egoid="' + str(ego) + '" AND dataset="' + str(sub) + '";'
+                query_string = query_string[:-2] + ' FROM ' + data_table + ' WHERE egoid="' + str(ego) + '" AND dataset="' + str(sub) + '";'
         else:
             alter = json.loads(all_info[2])
             # 10009#up#r#0
@@ -3802,9 +3584,9 @@ def fetch_data(request):
                 ts = 1
 
             if sub == 'all':
-                query_string = query_string[:-2] + ' FROM ' + table + ' WHERE egoid="' + str(ego) + '" AND alterid="' + str(alter[0]) + '" AND ctree_trunk="' + str(ts) + '" AND ctree_branch="' + str(alter[3]) + '" AND ctree_bside="' + str(bs) + '";'
+                query_string = query_string[:-2] + ' FROM ' + data_table + ' WHERE egoid="' + str(ego) + '" AND alterid="' + str(alter[0]) + '" AND ctree_trunk="' + str(ts) + '" AND ctree_branch="' + str(alter[3]) + '" AND ctree_bside="' + str(bs) + '";'
             else:
-                query_string = query_string[:-2] + ' FROM ' + table + ' WHERE egoid="' + str(ego) + '" AND dataset="' + str(sub) + '" AND alterid="' + str(alter[0]) + '" AND ctree_trunk="' + str(ts) + '" AND ctree_branch="' + str(alter[3]) + '" AND ctree_bside="' + str(bs) + '";'
+                query_string = query_string[:-2] + ' FROM ' + data_table + ' WHERE egoid="' + str(ego) + '" AND dataset="' + str(sub) + '" AND alterid="' + str(alter[0]) + '" AND ctree_trunk="' + str(ts) + '" AND ctree_branch="' + str(alter[3]) + '" AND ctree_bside="' + str(bs) + '";'
             
         
         print query_string

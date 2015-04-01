@@ -301,7 +301,8 @@ var SelectingView = Backbone.View.extend({
                     }
                }
             }
-           
+            var ego_group = {};
+            ego_group[self.my_ego] = ego_subgroup;
             for(var s = 0; s < ego_subgroup.length; s++){
                 if(s == ego_subgroup.length-1)
                     $("#sub_selection").append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + ego_subgroup[s] + '" id="' + ego_subgroup[s] + '" checked>' + ego_subgroup[s] + '</label>');            
@@ -309,12 +310,14 @@ var SelectingView = Backbone.View.extend({
                     $("#sub_selection").append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + ego_subgroup[s] + '" id="' + ego_subgroup[s] + '">' + ego_subgroup[s] + '</label>');            
                 $("#sub_selection").append("<p></p>");
             }
+            var data_group = self.model.get("dataset_group");
             var now_attr = JSON.stringify(self.model.get("attribute"));
             var now_mode = self.model.get("view_mode");
+            var ego_group = JSON.stringify(ego_group);
 
-            var requst = now_attr + ":-" + self.my_ego + ":-" + now_mode + ":-" + JSON.stringify(attribute_mapping);
-            self.model.update_data(requst);
-
+            var requst = now_attr + ":-" + self.my_ego + ":-" + now_mode + ":-" + JSON.stringify(attribute_mapping) + ":-" + data_group + ":-" + ego_group;
+            // self.model.update_data(requst);
+            self.model.query_data(requst);
             
             // button click event
             $("#submit_ego").click(function(){ // store selecting data
@@ -345,10 +348,10 @@ var SelectingView = Backbone.View.extend({
                 $("#block_page").show();
                 $("#loading_process").html("<b>Rendering...</b>");
                 $("#submit_ego").text("Rendering");
-                now_ego[self.my_ego] = select_ego;
-                now_ego = JSON.stringify(now_ego);
-                var requst = now_attr + ":-" + now_ego + ":-" + now_subset + ":-" + now_mode;
-                self.model.query_data(requst);
+
+                // now_ego[self.my_ego] = select_ego;
+                // now_ego = JSON.stringify(now_ego);
+                console.log(">>>>", self.model.get("tree_structure"));
 
                 self.my_ego_selected[self.my_ego] = select_ego;
 
@@ -360,6 +363,18 @@ var SelectingView = Backbone.View.extend({
                 
                 self.model.set({"canvas_translate":[0, 0]});
                 self.model.set({"canvas_scale":0.15});
+                
+                self.model.trigger('change:tree_structure');
+                $("#submit_ego").removeAttr("disabled");
+                $("#block_page").hide();
+                $( "#menu_dialog" ).dialog( "close" );
+
+                self.model.trigger('change:selected_egos');
+                self.model.trigger('change:display_egos');   
+                // var requst = now_attr + ":-" + now_ego + ":-" + now_subset + ":-" + now_mode;
+                // self.model.query_data(requst);
+
+                
                 // self.model.trigger('change:display_egos');
                 // self.model.trigger('change:selected_egos');
 
