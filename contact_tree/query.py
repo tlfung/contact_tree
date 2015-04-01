@@ -303,6 +303,8 @@ def get_dataset(request):
     # folder = []
     group_list = ["", "all"]
     db = DB()
+    db.query('SET SQL_SAFE_UPDATES = 0;')
+    db.conn.commit()
     if request.GET.get('data'):
         # ./contact_tree/data
         data_table = request.GET.get('data').split("_of_")[1]
@@ -318,8 +320,10 @@ def get_dataset(request):
         s_cur = db.query('SELECT * FROM auto_save WHERE session_id=' + str(session) + ';')
         if s_cur.fetchone():
             db.query('UPDATE auto_save SET mode="' + data_table + '" WHERE session_id="' + str(session) + '";')
+            # db.query('UPDATE attribute_mapping SET mode="' + data_table + '" WHERE session_id="' + str(session) + '";')
         else:
             db.query('INSERT INTO auto_save (mode, session_id) VALUES ("' + data_table + '",' + session + ');')
+            # db.query('INSERT INTO attribute_mapping (mode, session_id, mapping_name) VALUES ("' + data_table + '",' + session + ', "auto_map");')
                                         
         cur = db.query("SELECT attr FROM dataset_collection WHERE dataset='" + data_table + "' and attr='dataset';")
         group = cur.fetchone()
@@ -333,7 +337,7 @@ def get_dataset(request):
     else:
         raise Http404
 
-
+    db.query('SET SQL_SAFE_UPDATES = 1;')
     db.conn.commit()
     return_json = simplejson.dumps(group_list, indent=4, use_decimal=True)
     # print json
@@ -1726,6 +1730,8 @@ def one_contact_new(request):
         raise Http404
     
     return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
+    with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
+       json_file.write(return_json)
     # print return_json
     return HttpResponse(return_json)
 
@@ -1794,6 +1800,8 @@ def one_contact(request):
         raise Http404
     
     return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
+    with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
+       json_file.write(return_json)
     # print return_json
     return HttpResponse(return_json)
 
@@ -2224,7 +2232,7 @@ def restructure(request):
         list_request = request.GET['restructure'].split(":=")[0].split(":-")
         ego_info = request.GET['restructure'].split(":=")[1:]
         # print list_request
-        attr = select_ego = json.loads(list_request[2])
+        attr = json.loads(list_request[2])
         table = list_request[0]
         ego_group = list_request[1]
         # print select_ego
@@ -2310,11 +2318,88 @@ def restructure(request):
         raise Http404
     
     return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
+    with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
+       json_file.write(return_json)
     # print return_json
     
     return HttpResponse(return_json)
        
 
+def auto_save(request):
+    db = DB()
+    db.query('SET SQL_SAFE_UPDATES = 0;')
+    db.conn.commit()
+    if request.GET.get('save'):
+        save_detail = json.loads(request.GET.get('save'))
+        
+        #general saving info
+        session = str(save_detail[0].split("_of_")[0])
+        mode = 'mode="' + str(save_detail[0].split("_of_")[1]) + '"'
+        display_egos = "display_egos='" + str(save_detail[1]) + "'"
+        selected_egos = "selected_egos='" + str(save_detail[2]) + "'"
+        leaf_scale = 'leaf_scale=' + str(save_detail[3])
+        fruit_scale = 'fruit_scale=' + str(save_detail[4])
+        sub_leaf_len_scale = 'leaf_len_scale=' + str(save_detail[5])
+        dtl_branch_curve = 'branch_curve=' + str(save_detail[6])
+        root_curve = 'root_curve=' + str(save_detail[7])
+        root_len_scale = 'root_len_scale=' + str(save_detail[8])
+        canvas_scale = 'canvas_scale=' + str(save_detail[9])
+        filter_contact = 'filter_contact=' + str(save_detail[10])
+        tree_boundary = "tree_boundary='" + str(save_detail[11]) + "'"
+        canvas_translate = "canvas_translate='" + str(save_detail[12]) + "'"
+
+        update_query = mode + "," + display_egos + "," + selected_egos + "," + leaf_scale + "," + fruit_scale + "," + sub_leaf_len_scale + "," + dtl_branch_curve + "," + root_curve + "," + root_len_scale + "," + filter_contact + "," + canvas_scale + "," + tree_boundary + "," + canvas_translate
+        # check_update1 = "UPDATE auto_save SET %s WHERE session_id=%s;" %(update_query, session)
+        db.query("UPDATE auto_save SET %s WHERE session_id=%s;" %(update_query, session))
+
+
+    else:
+        raise Http404
+
+    db.query('SET SQL_SAFE_UPDATES = 1;')
+    db.conn.commit()
+    return_json = simplejson.dumps("auto saved", indent=4, use_decimal=True)
+    # print json
+    return HttpResponse(return_json)
+
+
+def save_mapping(request):
+    db = DB()
+    db.query('SET SQL_SAFE_UPDATES = 0;')
+    db.conn.commit()
+    if request.GET.get('save'):
+        save_detail = request.GET.get('save').split(":-")
+        
+        #general saving info
+        session = str(save_detail[0].split("_of_")[0])
+        mode = str(save_detail[0].split("_of_")[1])
+        name = save_detail[1]
+        map_detail = save_detail[2]
+
+        mapcur = db.query("SELECT * FROM attribute_mapping WHERE session_id=" + session + " AND mapping_name='" + name + "' AND mode='" + mode + "';")
+        mapping_exist = mapcur.fetchone()
+        # mapping saving info
+        # attr_info = "attr_info='" + map_detail + "'"
+        # mapping_exist
+        check_query = ""
+
+        if mapping_exist:
+            check_query = "UPDATE attribute_mapping SET attr_info='" + map_detail + "', mode='" + mode + "' WHERE session_id=" + session + " AND mapping_name='" + name + "';"
+        else:
+            check_query = "INSERT INTO attribute_mapping (mode, session_id, mapping_name, attr_info) VALUES ('" + mode + "'," + session + ", '" + name + "', '" + map_detail + "');"
+            db.conn.commit()
+        
+        db.query(check_query)
+
+
+    else:
+        raise Http404
+
+    db.query('SET SQL_SAFE_UPDATES = 1;')
+    db.conn.commit()
+    return_json = simplejson.dumps("mapping save", indent=4, use_decimal=True)
+    # print json
+    return HttpResponse(return_json)
 
 ############################ old code #################################
 # rewrite

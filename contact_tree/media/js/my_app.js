@@ -246,6 +246,7 @@ var MyApp = function MyApp(){
     this.zooming = new ZoomView({model: this.model, containerID: "#zooming"});
     this.styling = new StyleView({model: this.model, containerID: "#styling"});
     this.controling = new ControlView({model: this.model, containerID: "#controling"});
+    this.customizing = new CustomizedView({model: this.model, containerID: "#customizing"});    
 
 };
 

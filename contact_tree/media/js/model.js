@@ -64,10 +64,8 @@ var Tree_Model = Backbone.Model.extend({
   	initialize: function(args) {
 	    var self = this;
 	    console.log("in model initialize");
-	    // self.set({"component": default_component});
-	    // var c_detail = self.get("canvas_detail")*self.get("canvas_scale");
-	    // self.set({"canvas_detail": c_detail});
-	    // self.set({"attr_option": mapping_item["diary"]});
+	    // set all the values of model
+	    // self.set({"view_mode": session_id + "_of_combine_diary"});
   	},
 
   	query_dataset: function(request){
@@ -150,7 +148,7 @@ var Tree_Model = Backbone.Model.extend({
 
 	        var d = self.get("done_query_list");
 	        self.set({"done_query_list": d+1});
-	        self.trigger('change:attribute');        
+	        // self.trigger('change:attribute');        
 	        // dataset_mode
 	    });
 	   

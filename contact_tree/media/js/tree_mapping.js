@@ -56,8 +56,18 @@ var MappingView = Backbone.View.extend({
                 // save_item.text(map_name);
                 user_map["name"] = map_name;
                 save_user_mapping.push(user_map);
-                self.model.set({"user_mapping": save_user_mapping});
-                self.model.trigger('change:user_mapping');
+                
+
+                var request = self.model.get("view_mode") + ":-" + map_name + ":-" + JSON.stringify(user_map);
+                var request_url = "save_mapping/?save="+request;
+                // $("#block_page").show();
+                d3.json(request_url, function(result) {
+                    // $("#block_page").hide();
+                    console.log(">>>>>>>>>", result);
+                    self.model.set({"user_mapping": save_user_mapping});
+                    self.model.trigger('change:user_mapping');
+                }); 
+                
             }
             else{
                 return 0;
@@ -85,6 +95,7 @@ var MappingView = Backbone.View.extend({
             var request_url = "restore_data/?restore="+request;
             
             $("#block_page").show();
+
             d3.json(request_url, function(result) {
                 $("#block_page").hide();
                 attribute_mapping = now_attr_map;
@@ -873,7 +884,7 @@ var MappingView = Backbone.View.extend({
                         attr_map["trunk"] = $("#sidekeyselect").val()
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
-                        self.model.trigger('change:attribute');
+                        // self.model.trigger('change:attribute');
                         // console.log(self.model.get("attribute"));
                         // console.log(self.model.get("attr_option"));
                     };
@@ -2717,7 +2728,7 @@ var MappingView = Backbone.View.extend({
                         attr_map["branch"] = $("#sidekeyselect").val()
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
-                        self.model.trigger('change:attribute');
+                        // self.model.trigger('change:attribute');
                         // console.log(self.model.get("attribute"));
                         // console.log(self.model.get("attr_option"));
                     };
@@ -2756,7 +2767,7 @@ var MappingView = Backbone.View.extend({
                     attr_map["branch"] = $("#sidekeyselect").val()
                     self.model.set({"attribute": attr_map});
                     self.model.set({"attr_option": attr_opt});
-                    self.model.trigger('change:attribute');
+                    // self.model.trigger('change:attribute');
                     // console.log(self.model.get("attribute"));
                     // console.log(self.model.get("attr_option"));
                 };

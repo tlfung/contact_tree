@@ -87,6 +87,7 @@ var ControlView = Backbone.View.extend({
 
         this.set_slider();
         this.set_control_box();
+        this.update_tabs();
     },
 
     view_canvas: function(){

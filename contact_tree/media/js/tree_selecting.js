@@ -63,6 +63,7 @@ var SelectingView = Backbone.View.extend({
 
     set_dataset: function(){
         var self = this;
+        var on_mode = self.model.get("view_mode");
         var container = document.getElementById("dataselect");
         $("#dataselect").empty();
         var data_mode = self.model.get("dataset_mode");
@@ -72,11 +73,15 @@ var SelectingView = Backbone.View.extend({
             if(data_mode[s] == ""){
                 selection_opt.value = "0";
                 selection_opt.innerHTML = "dataset";
+                if(data_mode[s] == on_mode)
+                    selection_opt.setAttribute("selected", true);
                 // selection_opt.setAttribute("class", "myfont3");
             }
             else{
                 selection_opt.value = session_id + "_of_" + data_mode[s];
                 selection_opt.innerHTML = data_mode[s];
+                if(selection_opt.value == on_mode)
+                    selection_opt.setAttribute("selected", true);
             }
             
             selection_opt.setAttribute("class", "myfont3");
