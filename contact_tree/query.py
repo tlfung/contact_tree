@@ -1646,8 +1646,8 @@ def one_contact_structure(structure_request):
         for e in ego_info:
             for sub in ego_info[e]:
                 record_label = e + "_of_" + sub
-                if record_label not in user_ctree_data[session][data_table]:
-                    continue
+                # if record_label not in user_ctree_data[session][data_table]:
+                #     continue
                 all_data = user_ctree_data[session][data_table][record_label]["record"]
                 branch_layer = user_ctree_data[session][data_table]["layer"] + 1
 
@@ -1728,7 +1728,10 @@ def restore_mapping_update(request):
         attr = json.loads(list_request[0])
         ego_list = json.loads(list_request[1])
         table = list_request[2]
-        mapping = json.loads(list_request[-1])
+        mapping = json.loads(list_request[3])
+        # data_group = list_request[4]
+        # ego_info = json.loads(list_request[5])
+
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0]
         # print attr, ego_list, table, mapping
@@ -1749,6 +1752,9 @@ def restore_mapping_update(request):
         user_ctree_data[session][data_table]["layer"] = -1
         set_default_mapping(all_data, table, attr, mapping)
 
+        structure_request = list_request[0] + ":-" + list_request[4] + ":-" + list_request[5] + ":-" + list_request[2]
+        return_json = one_contact_structure(structure_request)
+
     else:
         raise Http404
 
@@ -1756,7 +1762,7 @@ def restore_mapping_update(request):
     with open("./contact_tree/data/user_ctree_data.json", "wb") as json_file:
         json_file.write(user_ctree_data_json)
     
-    return_json = simplejson.dumps(table, indent=4, use_decimal=True)
+    # return_json = simplejson.dumps(table, indent=4, use_decimal=True)
     # print return_json
     return HttpResponse(return_json)
 

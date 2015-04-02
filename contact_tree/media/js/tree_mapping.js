@@ -63,7 +63,7 @@ var MappingView = Backbone.View.extend({
                 // $("#block_page").show();
                 d3.json(request_url, function(result) {
                     // $("#block_page").hide();
-                    console.log(">>>>>>>>>", result);
+                    // console.log(">>>>>>>>>", result);
                     self.model.set({"user_mapping": save_user_mapping});
                     self.model.trigger('change:user_mapping');
                 }); 
@@ -78,6 +78,7 @@ var MappingView = Backbone.View.extend({
 
         $("#use_label").click(function() {
             // console.log(save_user_mapping);
+            var data_group = self.model.get("dataset_group");
             var save_user_mapping = self.model.get("user_mapping");
             var now_attr = JSON.parse(JSON.stringify(save_user_mapping[this.value]["attr"]));
             var now_mode = save_user_mapping[this.value]["mode"];
@@ -91,7 +92,7 @@ var MappingView = Backbone.View.extend({
             for(var ego in all_ego){
                 ego_list.push(ego);
             }
-            var request = JSON.stringify(now_attr) + ":-" + JSON.stringify(ego_list) + ":-" + now_mode + ":-" + JSON.stringify(now_attr_map);
+            var request = JSON.stringify(now_attr) + ":-" + JSON.stringify(ego_list) + ":-" + now_mode + ":-" + JSON.stringify(now_attr_map) + ":-" + data_group + ":-" + JSON.stringify(all_ego);
             var request_url = "restore_data/?restore="+request;
             
             $("#block_page").show();
@@ -100,6 +101,7 @@ var MappingView = Backbone.View.extend({
                 $("#block_page").hide();
                 attribute_mapping = now_attr_map;
                 self.model.set({"attribute": now_attr});
+                self.restructure(result);
                 self.model.trigger('change:attribute');
                 $("#sidekey_save_img").hide();
             });            
@@ -7614,7 +7616,7 @@ var MappingView = Backbone.View.extend({
             var attr_opt = self.model.get("attr_option");
             $("#block_page").show();
             $("#loading_process").html("<b>Mapping...</b>");
-            
+
             var update_info = data_mode + ":-ctree_highlight:-" + $("#sidekeyselect").val();
             for(ego in ego_selections){
                 update_info += ":=" + ego;

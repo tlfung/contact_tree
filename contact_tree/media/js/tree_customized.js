@@ -65,7 +65,7 @@ var CustomizedView = Backbone.View.extend({
         // $("#block_page").show();
         d3.json(request_url, function(result) {
             // $("#block_page").hide();
-            console.log(">>>>>>>>>", result);
+            // console.log(">>>>>>>>>", result);
             
         }); 
     },
@@ -93,8 +93,7 @@ var CustomizedView = Backbone.View.extend({
         // $("#block_page").show();
         d3.json(request_url, function(result) {
             // $("#block_page").hide();
-            console.log(">>>>>>>>>", result);
-            
+            // console.log(">>>>>>>>>", result);            
         }); 
          
 
