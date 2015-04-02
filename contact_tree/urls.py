@@ -28,7 +28,8 @@ urlpatterns = patterns('',
     (r'^dataset_mode/$', query.get_dataset_mode),
     (r'^auto_save/$', query.auto_save),
     (r'^save_mapping/$', query.save_mapping),
-    (r'^get_user_data/$', query.get_user_data)
+    (r'^get_user_data/$', query.get_user_data),
+    (r'^update_highlight/$', query.update_highlight)
 )
 
 urlpatterns += staticfiles_urlpatterns()

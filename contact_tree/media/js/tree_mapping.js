@@ -108,7 +108,7 @@ var MappingView = Backbone.View.extend({
 
         // this.model.bind('change:view_mode', this.set_option);
         // this.model.bind('change:attribute', this.set_option);
-        this.model.bind('change:attribute', this.restructure);
+        // this.model.bind('change:attribute', this.update_restructure);
         this.model.bind('change:attribute', this.set_component);
         this.model.bind('change:user_mapping', this.set_user_mapping);  
         
@@ -819,7 +819,7 @@ var MappingView = Backbone.View.extend({
                 delete attribute_mapping[attr_map["trunk"]];
                 // attribute_mapping[$("#sidekeyselect").val()] = {"0": [], "1": []};
             }
-
+            attr_map["trunk"] = $("#sidekeyselect").val()
             if($("#sidekeyselect").val() == "none"){}
             
             else{
@@ -868,7 +868,7 @@ var MappingView = Backbone.View.extend({
 
                 }
                 
-                var request_url = "update_binary/?update="+update_info;
+                var request_url = "update_binary/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
@@ -881,7 +881,8 @@ var MappingView = Backbone.View.extend({
                         $("#sidekey_submit_trunk").removeAttr("disabled");
                         // attr_opt.replace(attr_map["trunk"], $("#sidekeyselect").val());
                         attr_opt[attr_opt.indexOf(attr_map["trunk"])] = $("#sidekeyselect").val();
-                        attr_map["trunk"] = $("#sidekeyselect").val()
+                        attr_map["trunk"] = $("#sidekeyselect").val();
+                        self.restructure(data);
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
                         // self.model.trigger('change:attribute');
@@ -2676,7 +2677,7 @@ var MappingView = Backbone.View.extend({
                 delete attribute_mapping[attr_map["branch"]];
                 // attribute_mapping[$("#sidekeyselect").val()] = {"0": [], "1": []};
             }
-
+            attr_map["branch"] = $("#sidekeyselect").val();
             if($("#sidekeyselect").val() == "none"){}
             
             else{
@@ -2712,7 +2713,7 @@ var MappingView = Backbone.View.extend({
                     update_info += ":=" + ego;
                 }
 
-                var request_url = "update_layer/?update="+update_info;
+                var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
@@ -2725,7 +2726,8 @@ var MappingView = Backbone.View.extend({
                         $("#sidekey_submit_branch").removeAttr("disabled");
                         // attr_opt.replace(attr_map["branch"], $("#sidekeyselect").val());
                         attr_opt[attr_opt.indexOf(attr_map["branch"])] = $("#sidekeyselect").val();
-                        attr_map["branch"] = $("#sidekeyselect").val()
+                        attr_map["branch"] = $("#sidekeyselect").val();
+                        self.restructure(data);
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
                         // self.model.trigger('change:attribute');
@@ -3251,7 +3253,7 @@ var MappingView = Backbone.View.extend({
                 delete attribute_mapping[attr_map["bside"]];
                 // attribute_mapping[$("#sidekeyselect").val()] = {"0": [], "1": []};
             }
-
+            attr_map["bside"] = $("#sidekeyselect").val()
             if($("#sidekeyselect").val() == "none"){}
 
             else{
@@ -3300,7 +3302,7 @@ var MappingView = Backbone.View.extend({
 
                 }
                 
-                var request_url = "update_binary/?update="+update_info;
+                var request_url = "update_binary/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
@@ -3313,7 +3315,8 @@ var MappingView = Backbone.View.extend({
                         $("#sidekey_submit_bside").removeAttr("disabled");
                         // attr_opt.replace(attr_map["bside"], $("#sidekeyselect").val());
                         attr_opt[attr_opt.indexOf(attr_map["bside"])] = $("#sidekeyselect").val();
-                        attr_map["bside"] = $("#sidekeyselect").val()
+                        attr_map["bside"] = $("#sidekeyselect").val();
+                        self.restructure(data);
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
                         self.model.trigger('change:attribute');
@@ -4489,6 +4492,7 @@ var MappingView = Backbone.View.extend({
                 console.log(attribute_mapping);
                 delete attribute_mapping[attr_map["root"]];
             }
+            attr_map["root"] = $("#sidekeyselect").val();
 
             if($("#sidekeyselect").val() == "none"){
                 var update_info = data_mode + ":-ctree_root:-" + $("#sidekeyselect").val() + ":-" + JSON.stringify(["none"]);
@@ -4496,8 +4500,7 @@ var MappingView = Backbone.View.extend({
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
                 }
-                var request_url = "update_layer/?update="+update_info;
-                console.log(request_url);
+                var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 d3.json(request_url, function(result){
                     console.log("finish update");
                     var set_update_info = function(data){
@@ -4509,9 +4512,10 @@ var MappingView = Backbone.View.extend({
                         $("#sidekey_submit_root").removeAttr("disabled");
 
                         attr_opt[attr_opt.indexOf(attr_map["root"])] = $("#sidekeyselect").val();
-                        attr_map["root"] = $("#sidekeyselect").val()
+                        attr_map["root"] = $("#sidekeyselect").val();
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
+                        self.restructure(data);
                         self.model.trigger('change:attribute');
                     };
                     set_update_info(result);
@@ -4558,7 +4562,7 @@ var MappingView = Backbone.View.extend({
                     update_info += ":=" + ego;
                 }
 
-                var request_url = "update_layer/?update="+update_info;
+                var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
@@ -4574,6 +4578,7 @@ var MappingView = Backbone.View.extend({
                         attr_map["root"] = $("#sidekeyselect").val()
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
+                        self.restructure(data);
                         self.model.trigger('change:attribute');
                         // console.log(self.model.get("attribute"));
                         // console.log(self.model.get("attr_option"));
@@ -6207,14 +6212,14 @@ var MappingView = Backbone.View.extend({
                 delete attribute_mapping[attr_map["leaf_size"]];
                 // attribute_mapping[$("#sidekeyselect").val()] = {"0": [], "1": []};
             }
-
+            attr_map["leaf_size"] = $("#sidekeyselect").val();
             if($("#sidekeyselect").val() == "none"){
                 var update_info = data_mode + ":-ctree_leaf_size:-" + $("#sidekeyselect").val() + ":-" + JSON.stringify(["none"]);
 
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
                 }
-                var request_url = "update_layer/?update="+update_info;
+                var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
@@ -6227,7 +6232,8 @@ var MappingView = Backbone.View.extend({
                         $("#sidekey_submit_leaf_size").removeAttr("disabled");
 
                         attr_opt[attr_opt.indexOf(attr_map["leaf_size"])] = $("#sidekeyselect").val();
-                        attr_map["leaf_size"] = $("#sidekeyselect").val()
+                        attr_map["leaf_size"] = $("#sidekeyselect").val();
+                        self.restructure(data);
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
                         self.model.trigger('change:attribute');
@@ -6275,7 +6281,7 @@ var MappingView = Backbone.View.extend({
                     update_info += ":=" + ego;
                 }               
 
-                var request_url = "update_layer/?update="+update_info;
+                var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
@@ -6288,9 +6294,10 @@ var MappingView = Backbone.View.extend({
                         $("#sidekey_submit_leaf_size").removeAttr("disabled");
 
                         attr_opt[attr_opt.indexOf(attr_map["leaf_size"])] = $("#sidekeyselect").val();
-                        attr_map["leaf_size"] = $("#sidekeyselect").val()
+                        attr_map["leaf_size"] = $("#sidekeyselect").val();
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
+                        self.restructure(data);
                         self.model.trigger('change:attribute');
                         // console.log(self.model.get("attribute"));
                         // console.log(self.model.get("attr_option"));
@@ -7444,14 +7451,14 @@ var MappingView = Backbone.View.extend({
                 console.log(attribute_mapping);
                 delete attribute_mapping[attr_map["leaf_color"]];
             }
-
+            attr_map["leaf_color"] = $("#sidekeyselect").val();
             if($("#sidekeyselect").val() == "none"){
                 var update_info = data_mode + ":-ctree_leaf_color:-" + $("#sidekeyselect").val() + ":-" + JSON.stringify(["none"]);
                 mapping_color.render_leaf_color = mapping_color.leaf_color;
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
                 }
-                var request_url = "update_layer/?update="+update_info;
+                var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
@@ -7464,7 +7471,8 @@ var MappingView = Backbone.View.extend({
                         $("#sidekey_submit_leaf_color").removeAttr("disabled");
 
                         attr_opt[attr_opt.indexOf(attr_map["leaf_color"])] = $("#sidekeyselect").val();
-                        attr_map["leaf_color"] = $("#sidekeyselect").val()
+                        attr_map["leaf_color"] = $("#sidekeyselect").val();
+                        self.restructure(data);
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
                         self.model.trigger('change:attribute');
@@ -7511,7 +7519,7 @@ var MappingView = Backbone.View.extend({
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
                 }
-                var request_url = "update_layer/?update="+update_info;
+                var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
@@ -7524,7 +7532,8 @@ var MappingView = Backbone.View.extend({
                         $("#sidekey_submit_leaf_color").removeAttr("disabled");
 
                         attr_opt[attr_opt.indexOf(attr_map["leaf_color"])] = $("#sidekeyselect").val();
-                        attr_map["leaf_color"] = $("#sidekeyselect").val()
+                        attr_map["leaf_color"] = $("#sidekeyselect").val();
+                        self.restructure(data);
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
                         self.model.trigger('change:attribute');
@@ -7544,6 +7553,8 @@ var MappingView = Backbone.View.extend({
         var data_mode = self.model.get("view_mode");
         var attr_map = self.model.get("attribute");
         var attr_opt = self.model.get("attr_option");
+        var data_mode = self.model.get("view_mode");
+        var ego_selections = self.model.get("selected_egos");
         console.log("in leaf_highlight mapping");
         $('#mapping_img').attr('src', 'media/img/leaf_highlight_mapping.png');
         $("#sidekey_selection").show();
@@ -7603,17 +7614,44 @@ var MappingView = Backbone.View.extend({
             var attr_opt = self.model.get("attr_option");
             $("#block_page").show();
             $("#loading_process").html("<b>Mapping...</b>");
+            
+            var update_info = data_mode + ":-ctree_highlight:-" + $("#sidekeyselect").val();
+            for(ego in ego_selections){
+                update_info += ":=" + ego;
+            }
+            attr_map["leaf_id"] = $("#sidekeyselect").val();
+            var request_url = "update_highlight/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
+            console.log(request_url);
+            d3.json(request_url, function(result){
+                console.log("finish update");
+                var set_update_info = function(data){
+                    var attr_map = self.model.get("attribute");
+                    var attr_opt = self.model.get("attr_option");
+                    // console.log(data)
+                    $("#block_layer").hide();
+                    $("#sidekey_submit_leaf_highlight").text("Done");
+                    $("#sidekey_submit_leaf_highlight").removeAttr("disabled");
+
+                    attr_opt[attr_opt.indexOf(attr_map["leaf_id"])] = $("#sidekeyselect").val();
+                    attr_map["leaf_id"] = $("#sidekeyselect").val();
+                    self.restructure(data);
+                    self.model.set({"attribute": attr_map});
+                    self.model.set({"attr_option": attr_opt});
+                    self.model.trigger('change:attribute');
+                };
+                set_update_info(result);
+            });
             // console.log(component_attribute);
             // console.log(component_attribute[data_mode]);
             // console.log(data_mode);
             // console.log(component_attribute[data_mode][$("#sidekeyselect").val()]);
 
             // attribute_mapping[$("#sidekeyselect").val()].push($(layer_id).val());
-            attr_opt[attr_opt.indexOf(attr_map["leaf_id"])] = $("#sidekeyselect").val();
-            attr_map["leaf_id"] = $("#sidekeyselect").val();
-            self.model.set({"attribute": attr_map});
-            self.model.set({"attr_option": attr_opt});
-            self.model.trigger('change:attribute');
+            // attr_opt[attr_opt.indexOf(attr_map["leaf_id"])] = $("#sidekeyselect").val();
+            // attr_map["leaf_id"] = $("#sidekeyselect").val();
+            // self.model.set({"attribute": attr_map});
+            // self.model.set({"attr_option": attr_opt});
+            // self.model.trigger('change:attribute');
         });
     },
 
@@ -9156,14 +9194,14 @@ var MappingView = Backbone.View.extend({
                 delete attribute_mapping[attr_map["fruit_size"]];
                 // attribute_mapping[$("#sidekeyselect").val()] = {"0": [], "1": []};
             }
-
+            attr_map["fruit_size"] = $("#sidekeyselect").val();
             if($("#sidekeyselect").val() == "none"){
                 var update_info = data_mode + ":-ctree_fruit_size:-" + $("#sidekeyselect").val() + ":-" + JSON.stringify(["none"]);
 
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
                 }
-                var request_url = "update_layer/?update="+update_info;
+                var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
@@ -9176,7 +9214,8 @@ var MappingView = Backbone.View.extend({
                         $("#sidekey_submit_fruit_size").removeAttr("disabled");
 
                         attr_opt[attr_opt.indexOf(attr_map["fruit_size"])] = $("#sidekeyselect").val();
-                        attr_map["fruit_size"] = $("#sidekeyselect").val()
+                        attr_map["fruit_size"] = $("#sidekeyselect").val();
+                        self.restructure(data);
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
                         self.model.trigger('change:attribute');
@@ -9224,7 +9263,7 @@ var MappingView = Backbone.View.extend({
                     update_info += ":=" + ego;
                 }               
 
-                var request_url = "update_layer/?update="+update_info;
+                var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
@@ -9237,7 +9276,8 @@ var MappingView = Backbone.View.extend({
                         $("#sidekey_submit_fruit_size").removeAttr("disabled");
 
                         attr_opt[attr_opt.indexOf(attr_map["fruit_size"])] = $("#sidekeyselect").val();
-                        attr_map["fruit_size"] = $("#sidekeyselect").val()
+                        attr_map["fruit_size"] = $("#sidekeyselect").val();
+                        self.restructure(data);
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
                         self.model.trigger('change:attribute');
@@ -9316,7 +9356,7 @@ var MappingView = Backbone.View.extend({
         
     },
 
-    restructure: function(){
+    update_restructure: function(){
         var self = this;
         tree_size = {};
         self.model.set({"tree_boundary":{}});
@@ -9368,6 +9408,47 @@ var MappingView = Backbone.View.extend({
             self.model.trigger('change:tree_structure');  
             $("#block_page").hide();          
         });
+    },
+
+    restructure: function(data){
+        var self = this;
+        tree_size = {};
+        self.model.set({"tree_boundary":{}});
+        $("#loading_process").html("<b>Rendering...</b>");
+        var ego_selections = self.model.get("selected_egos");
+        if(jQuery.isEmptyObject(ego_selections)){
+            $("#block_page").hide();
+            return
+        }
+            
+        var data_mode = self.model.get("view_mode");
+        // var data_group = self.model.get("dataset_group");
+        var all_ego = [];
+       
+        
+        for(ego in ego_selections){
+            all_ego.push(ego);
+        }
+        
+        console.log("in model.restructure");
+        var tree_structure = self.model.get("tree_structure");
+        // console.log(result);
+        
+        for(var i = 0; i < all_ego.length; i++){
+            for(var d in data){
+                if(d in tree_structure[data_mode]){
+                    tree_structure[data_mode][d][all_ego[i]] = data[d][all_ego[i]];            
+                }
+                else{
+                    tree_structure[data_mode][d] = {};
+                    tree_structure[data_mode][d][all_ego[i]] = data[d][all_ego[i]];
+                }
+            }
+        }                
+
+        self.model.trigger('change:tree_structure');  
+        $("#block_page").hide();          
+ 
     }
 
 });

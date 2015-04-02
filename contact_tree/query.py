@@ -252,10 +252,10 @@ def create_csv2database(request):
 
         final_attr_info = test_type(table, attr_type)
         if final_attr_info[0] == table:
-            # for c in tree_cmpt:
-            #     clause.execute('ALTER TABLE ' + table + ' ADD COLUMN `ctree_' + c + '` INT NULL DEFAULT NULL;')
+            for c in tree_cmpt:
+                clause.execute('ALTER TABLE ' + table + ' ADD COLUMN `ctree_' + c + '` INT NULL DEFAULT NULL;')
                     
-            # database.commit()
+            database.commit()
             update_collection_data(table, final_attr_info[1])
         else:
             print "in error drop!!!"
@@ -1169,7 +1169,7 @@ def set_default_mapping(all_data, table, attr, mapping):
     global user_ctree_data
     
     if data_table not in user_ctree_data[session]:
-        user_ctree_data[session][data_table] = {}
+        user_ctree_data[session][data_table] = dict()
         user_ctree_data[session][data_table]["layer"] = -1
 
     # pre store dataset_collection query
@@ -1186,7 +1186,7 @@ def set_default_mapping(all_data, table, attr, mapping):
     for d in all_data:  
         if "dataset" in d:
             dataset = d["dataset"]
-        record_label = str(d['egoid']) + "_" + dataset
+        record_label = str(d['egoid']) + "_of_" + dataset
         if record_label not in user_ctree_data[session][data_table]:
             user_ctree_data[session][data_table][record_label] = dict() 
             user_ctree_data[session][data_table][record_label]["record"] = []
@@ -1205,7 +1205,6 @@ def set_default_mapping(all_data, table, attr, mapping):
             # cur = db.query('SELECT * FROM dataset_collection WHERE dataset="' + data_table + '" and attr="' + attr[compt] + '";')
             # collecting_data = cur.fetchone()
             collecting_data = attr_detail[compt]  
-
                         
             if compt == 'trunk' or compt == 'bside':
                 if attr[compt] in mapping:
@@ -1464,6 +1463,87 @@ def set_default_mapping(all_data, table, attr, mapping):
             user_ctree_data[session][data_table][label]["done"] = 1
 
 
+def update_default_mapping(select_ego, table, new_column):
+    db = DB()
+    binary_index = dict()
+    branch_order_index = []
+    
+    data_table = table.split("_of_")[1]
+    session = table.split("_of_")[0]
+
+    # user_ctree_data[session] = dict()
+    global user_ctree_data
+    
+    # pre store dataset_collection query
+    del_label = []
+    layer_count = 0
+    restructure_request = ""
+    ego_group = dict()
+    for label in user_ctree_data[session][data_table]:
+        if label == "layer":
+            continue
+       
+        ego = label.split("_of_")[0]
+        dataset = label.split("_of_")[1]
+
+        if ego in select_ego:
+            # for restructure information
+            if ego not in ego_group:
+                ego_group[ego] = []
+                ego_group[ego].append(dataset)
+            else:
+                if dataset not in ego_group[ego]:
+                    ego_group[ego].append(dataset)
+
+            if dataset != "all":
+                query_request = 'SELECT ' + new_column + ' FROM ' + data_table + ' WHERE egoid="' + ego + '" AND dataset="' + dataset + '" ORDER BY (e_id);'
+                restructure_request = "dataset"
+            else:
+                query_request = 'SELECT ' + new_column + ' FROM ' + data_table + ' WHERE egoid="' + ego + '" ORDER BY (e_id);'
+                restructure_request = "all"
+            precur = db.query(query_request)
+            all_data = precur.fetchall()
+            count_record = 0
+            
+            for d in all_data:
+                ctree_record = user_ctree_data[session][data_table][label]["record"][count_record]
+                               
+                if new_column == 'ctree_trunk':
+                    ctree_record[trunk_index] = d['ctree_trunk']
+                elif new_column == 'ctree_branch':
+                    ctree_record[branch_index] = d['ctree_branch']
+                    if layer_count < d['ctree_branch']:
+                        layer_count = d['ctree_branch']
+                elif new_column == 'ctree_bside':
+                    ctree_record[bside_index] = d['ctree_bside']
+                elif new_column == 'ctree_fruit_size':
+                    ctree_record[fruit_size_index] = d['ctree_fruit_size']
+                elif new_column == 'ctree_leaf_size':
+                    ctree_record[leaf_size_index] = d['ctree_leaf_size']
+                elif new_column == 'ctree_leaf_color':
+                    ctree_record[leaf_color_index] = d['ctree_leaf_color']
+                elif new_column == 'ctree_root': 
+                    ctree_record[root_index] = d['ctree_root']
+
+                # elif new_column == 'ctree_highlight':
+                #     ctree_record[highlight_index] = d['ctree_highlight'] 
+                
+                count_record += 1
+            
+                
+        else:
+            del_label.append(label)
+
+    for d in del_label:
+        del user_ctree_data[session][data_table][d]
+
+    if new_column == 'ctree_branch':
+        user_ctree_data[session][data_table]["layer"] = layer_count
+
+    restructure_request = restructure_request + ":-" + simplejson.dumps(ego_group, use_decimal=True)
+    return restructure_request
+
+# not use  
 def one_contact(request):
     final_structure = dict()
     db = DB()
@@ -1533,8 +1613,8 @@ def one_contact_structure(structure_request):
 
     list_request = structure_request.split(":-")
     attr = json.loads(list_request[0])
-    ego_info = json.loads(list_request[1])
-    ego_group = list_request[2]
+    ego_info = json.loads(list_request[2])
+    ego_group = list_request[1]
     table = list_request[3]
     data_table = table.split("_of_")[1]
     session = table.split("_of_")[0]
@@ -1547,7 +1627,7 @@ def one_contact_structure(structure_request):
     stick_unique = cur.fetchone()["alter_info"]
     if ego_group == "all":
         for e in ego_info:
-            record_label = e + "_" + ego_group
+            record_label = e + "_of_" + ego_group
             all_data = user_ctree_data[session][data_table][record_label]["record"]
             branch_layer = user_ctree_data[session][data_table]["layer"] + 1
 
@@ -1565,7 +1645,9 @@ def one_contact_structure(structure_request):
     else:
         for e in ego_info:
             for sub in ego_info[e]:
-                record_label = e + "_" + sub
+                record_label = e + "_of_" + sub
+                if record_label not in user_ctree_data[session][data_table]:
+                    continue
                 all_data = user_ctree_data[session][data_table][record_label]["record"]
                 branch_layer = user_ctree_data[session][data_table]["layer"] + 1
 
@@ -1618,7 +1700,7 @@ def one_contact_update(request):
         all_data = precur.fetchall()
         set_default_mapping(all_data, table, attr, mapping) #!!!
 
-        structure_request = list_request[0] + ":-" + list_request[5] + ":-" + list_request[4] + ":-" + list_request[2]
+        structure_request = list_request[0] + ":-" + list_request[4] + ":-" + list_request[5] + ":-" + list_request[2]
         return_json = one_contact_structure(structure_request)
 
     else:
@@ -1636,6 +1718,11 @@ def restore_mapping_update(request):
     db = DB()
     # table = request.GET.get('contact')
     # print request.GET['contact']
+    global user_ctree_data
+
+    with open("./contact_tree/data/user_ctree_data.json", "rb") as json_file:
+        user_ctree_data = json.load(json_file)
+
     if request.GET.get('restore'):
         list_request = request.GET['restore'].split(":-")
         attr = json.loads(list_request[0])
@@ -1658,11 +1745,16 @@ def restore_mapping_update(request):
         precur = db.query(query_request)
         all_data = precur.fetchall()
 
-        user_ctree_data[session] = dict() 
+        user_ctree_data[session][data_table] = dict()
+        user_ctree_data[session][data_table]["layer"] = -1
         set_default_mapping(all_data, table, attr, mapping)
 
     else:
         raise Http404
+
+    user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
+    with open("./contact_tree/data/user_ctree_data.json", "wb") as json_file:
+        json_file.write(user_ctree_data_json)
     
     return_json = simplejson.dumps(table, indent=4, use_decimal=True)
     # print return_json
@@ -1672,9 +1764,11 @@ def restore_mapping_update(request):
 def update_binary(request):
     database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
     clause = database.cursor()
-    db = DB()
-    clause.execute('SET SQL_SAFE_UPDATES = 0;')
-    database.commit()
+    
+    global user_ctree_data
+
+    with open("./contact_tree/data/user_ctree_data.json", "rb") as json_file:
+        user_ctree_data = json.load(json_file)
     # table = request.GET.get('contact')
     # print request.GET['contact']
     if request.GET.get('update'):
@@ -1682,23 +1776,23 @@ def update_binary(request):
         select_ego = request.GET['update'].split(":=")[1:]
         # print list_request
         # select_ego = json.loads(list_request[0])
-        table = list_request[0]
-        ori_column = list_request[2]
-        new_column = list_request[1]
-        zero_val = list_request[3:]
+        table = list_request[1]
+        ori_column = list_request[3]
+        new_column = list_request[2]
+        attr = list_request[0]
+        zero_val = list_request[4:]
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0]
 
-        # print select_ego
-        # print ori_column
-        # print new_column
-        # print zero_val
+
         typecur = db.query('SELECT `type` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + ori_column + '";')
         mytype = typecur.fetchone()["type"]
         # print mytype
 
         if len(select_ego) == 0:
-            return_json = simplejson.dumps("no update", indent=4, use_decimal=True)
+            user_ctree_data[session][data_table] = dict()
+            user_ctree_data[session][data_table]["layer"] = -1
+            return_json = simplejson.dumps({}, indent=4, use_decimal=True)
             # print return_json
             return HttpResponse(return_json)
         #!!!
@@ -1735,6 +1829,9 @@ def update_binary(request):
             #     update_query_zero += ");"
             #     update_query_one += ");"
             
+        db = DB()
+        clause.execute('SET SQL_SAFE_UPDATES = 0;')
+        database.commit()
         print update_query_zero
         # print update_query_one
         clause.execute(update_query_zero)
@@ -1745,19 +1842,27 @@ def update_binary(request):
     else:
         raise Http404
 
-    # query_request = 'SELECT * FROM ' + data_table + ' WHERE egoid="' + select_ego[0] + '"' #!!!
-    # for ego in select_ego[1:]:
-    #     query_request += ' or egoid="' + ego + '"'
-    # query_request += " ORDER BY (e_id);"
     
-    # precur = db.query(query_request)
-    # all_data = precur.fetchall()
+    restructure_info = update_default_mapping(select_ego, table, new_column)
 
+    # list_request = structure_request.split(":-")
+    # attr = json.loads(list_request[0])
+    # ego_info = json.loads(list_request[1])
+    # ego_group = list_request[2]
+    # table = list_request[3]
+    # data_table = table.split("_of_")[1]
+    # session = table.split("_of_")[0]
 
+    structure_request = attr + ":-" + restructure_info + ":-" + table
+    return_json = one_contact_structure(structure_request)
+
+    user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
+    with open("./contact_tree/data/user_ctree_data.json", "wb") as json_file:
+        json_file.write(user_ctree_data_json)
 
     # user_ctree_data[session]
     
-    return_json = simplejson.dumps("done update", indent=4, use_decimal=True)
+    # return_json = simplejson.dumps("done update", indent=4, use_decimal=True)
     # print return_json
     return HttpResponse(return_json)
 
@@ -1767,16 +1872,21 @@ def update_layer(request):
     clause = database.cursor()
     # table = request.GET.get('contact')
     # print request.GET['contact']
+    global user_ctree_data
+
+    with open("./contact_tree/data/user_ctree_data.json", "rb") as json_file:
+        user_ctree_data = json.load(json_file)
     db = DB()
     if request.GET.get('update'):
         list_request = request.GET['update'].split(":=")[0].split(":-")
         select_ego = request.GET['update'].split(":=")[1:]
         # print list_request
         # select_ego = json.loads(list_request[0])
-        table = list_request[0]
-        ori_column = list_request[2]
-        new_column = list_request[1]
-        val_map = json.loads(list_request[3])
+        table = list_request[1]
+        ori_column = list_request[3]
+        new_column = list_request[2]
+        attr = list_request[0]
+        val_map = json.loads(list_request[4])
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0]
         # print select_ego
@@ -1789,16 +1899,19 @@ def update_layer(request):
         #!!!
         if len(select_ego) == 0:
             # update_layer_val += ");"
-            return_json = simplejson.dumps("no update", indent=4, use_decimal=True)
+            user_ctree_data[session][data_table] = dict()
+            user_ctree_data[session][data_table]["layer"] = -1
+            return_json = simplejson.dumps({}, indent=4, use_decimal=True)
+    
             clause.execute('SET SQL_SAFE_UPDATES = 1;')
             print return_json
             return HttpResponse(return_json)
 
         if ori_column == "none":
             if new_column == 'ctree_fruit_size':
-               update_none = 'UPDATE ' + table + ' SET ' + new_column + '=0 WHERE ('
+               update_none = 'UPDATE ' + data_table + ' SET ' + new_column + '=0 WHERE ('
             else:
-                update_none = 'UPDATE ' + table + ' SET ' + new_column + '=3 WHERE ('
+                update_none = 'UPDATE ' + data_table + ' SET ' + new_column + '=3 WHERE ('
 
             for update_ego in select_ego[:-1]:
                 update_none += "egoid='" + update_ego + "' OR "
@@ -1822,7 +1935,7 @@ def update_layer(request):
 
         if mytype == "categorical" or mytype == "boolean":
             for ori_val in val_map:
-                update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(val_map[ori_val]) + " WHERE (`" + ori_column + "`='" + str(ori_val) + "'"
+                update_layer_val = "UPDATE " + data_table + " SET " + new_column + "=" + str(val_map[ori_val]) + " WHERE (`" + ori_column + "`='" + str(ori_val) + "'"
                 # if len(select_ego) > 0:
                 update_layer_val += ") AND ("
                 for update_ego in select_ego[:-1]:
@@ -1834,6 +1947,7 @@ def update_layer(request):
                     
                 # print update_layer_val
                 clause.execute(update_layer_val)
+                database.commit()
         else:
             if new_column == 'ctree_branch' and val_map[1] < val_map[0]:
                 # print "in revert"
@@ -1841,7 +1955,7 @@ def update_layer(request):
                 for layer_order in range(len(val_map)-1, -1, -1):
                     # print layer_order
                     if layer_order == len(val_map)-1:
-                        update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order+1) + " WHERE (`" + ori_column + "`<=" + str(val_map[layer_order])
+                        update_layer_val = "UPDATE " + data_table + " SET " + new_column + "=" + str(layer_order+1) + " WHERE (`" + ori_column + "`<=" + str(val_map[layer_order])
                         # if len(select_ego) > 0:
                         update_layer_val += ") AND ("
                         for update_ego in select_ego[:-1]:
@@ -1849,7 +1963,7 @@ def update_layer(request):
 
                         update_layer_val += "egoid='" + select_ego[-1] + "');"  
                     else:
-                        update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order+1) + " WHERE (" + str(val_map[layer_order+1]) + "<`" + ori_column + "` AND `" + ori_column + "`<=" + str(val_map[layer_order])
+                        update_layer_val = "UPDATE " + data_table + " SET " + new_column + "=" + str(layer_order+1) + " WHERE (" + str(val_map[layer_order+1]) + "<`" + ori_column + "` AND `" + ori_column + "`<=" + str(val_map[layer_order])
                         # if len(select_ego) > 0:
                         update_layer_val += ") AND ("
                         for update_ego in select_ego[:-1]:
@@ -1860,7 +1974,7 @@ def update_layer(request):
                         if layer_order == 0:
                             print update_layer_val
                             clause.execute(update_layer_val)
-                            update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(0) + " WHERE (`" + ori_column + "`>=" + str(val_map[layer_order])
+                            update_layer_val = "UPDATE " + data_table + " SET " + new_column + "=" + str(0) + " WHERE (`" + ori_column + "`>=" + str(val_map[layer_order])
                             # if len(select_ego) > 0:
                             update_layer_val += ") AND ("
                             for update_ego in select_ego[:-1]:
@@ -1872,10 +1986,11 @@ def update_layer(request):
                     
                     print update_layer_val
                     clause.execute(update_layer_val)
+
             elif new_column == 'ctree_branch' or new_column == 'ctree_leaf_color' or new_column == 'ctree_root':
                 for layer_order in range(len(val_map)):
                     if layer_order == 0:
-                        update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order) + " WHERE (`" + ori_column + "`<=" + str(val_map[layer_order])
+                        update_layer_val = "UPDATE " + data_table + " SET " + new_column + "=" + str(layer_order) + " WHERE (`" + ori_column + "`<=" + str(val_map[layer_order])
                         # if len(select_ego) > 0:
                         update_layer_val += ") AND ("
                         for update_ego in select_ego[:-1]:
@@ -1883,7 +1998,7 @@ def update_layer(request):
 
                         update_layer_val += "egoid='" + select_ego[-1] + "');"  
                     else:
-                        update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order) + " WHERE (" + str(val_map[layer_order-1]) + "<`" + ori_column + "` AND `" + ori_column + "`<=" + str(val_map[layer_order])
+                        update_layer_val = "UPDATE " + data_table + " SET " + new_column + "=" + str(layer_order) + " WHERE (" + str(val_map[layer_order-1]) + "<`" + ori_column + "` AND `" + ori_column + "`<=" + str(val_map[layer_order])
                         # if len(select_ego) > 0:
                         update_layer_val += ") AND ("
                         for update_ego in select_ego[:-1]:
@@ -1894,7 +2009,7 @@ def update_layer(request):
                         if layer_order == len(val_map)-1:
                             print update_layer_val
                             clause.execute(update_layer_val)
-                            update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(layer_order+1) + " WHERE (`" + ori_column + "`>=" + str(val_map[layer_order])
+                            update_layer_val = "UPDATE " + data_table + " SET " + new_column + "=" + str(layer_order+1) + " WHERE (`" + ori_column + "`>=" + str(val_map[layer_order])
                             # if len(select_ego) > 0:
                             update_layer_val += ") AND ("
                             for update_ego in select_ego[:-1]:
@@ -1911,7 +2026,7 @@ def update_layer(request):
                 size_map = json.loads(list_request[4])
                 for layer_order in range(len(val_map)):
                     if layer_order == 0:
-                        update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(size_map[layer_order]) + " WHERE (`" + ori_column + "`<=" + str(val_map[layer_order])
+                        update_layer_val = "UPDATE " + data_table + " SET " + new_column + "=" + str(size_map[layer_order]) + " WHERE (`" + ori_column + "`<=" + str(val_map[layer_order])
                         # if len(select_ego) > 0:
                         update_layer_val += ") AND ("
                         for update_ego in select_ego[:-1]:
@@ -1919,7 +2034,7 @@ def update_layer(request):
 
                         update_layer_val += "egoid='" + select_ego[-1] + "');"  
                     else:
-                        update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(size_map[layer_order]) + " WHERE (" + str(val_map[layer_order-1]) + "<`" + ori_column + "` AND `" + ori_column + "`<=" + str(val_map[layer_order])
+                        update_layer_val = "UPDATE " + data_table + " SET " + new_column + "=" + str(size_map[layer_order]) + " WHERE (" + str(val_map[layer_order-1]) + "<`" + ori_column + "` AND `" + ori_column + "`<=" + str(val_map[layer_order])
                         # if len(select_ego) > 0:
                         update_layer_val += ") AND ("
                         for update_ego in select_ego[:-1]:
@@ -1930,7 +2045,7 @@ def update_layer(request):
                         if layer_order == len(val_map)-1:
                             print update_layer_val
                             clause.execute(update_layer_val)
-                            update_layer_val = "UPDATE " + table + " SET " + new_column + "=" + str(size_map[layer_order+1]) + " WHERE (`" + ori_column + "`>=" + str(val_map[layer_order])
+                            update_layer_val = "UPDATE " + data_table + " SET " + new_column + "=" + str(size_map[layer_order+1]) + " WHERE (`" + ori_column + "`>=" + str(val_map[layer_order])
                             # if len(select_ego) > 0:
                             update_layer_val += ") AND ("
                             for update_ego in select_ego[:-1]:
@@ -1942,24 +2057,130 @@ def update_layer(request):
                         
                     print update_layer_val
                     clause.execute(update_layer_val)
+                    database.commit()
 
         clause.execute('SET SQL_SAFE_UPDATES = 1;')
         database.commit()
         
-
     else:
         raise Http404
+
+    restructure_info = update_default_mapping(select_ego, table, new_column)
+
+    # list_request = structure_request.split(":-")
+    # attr = json.loads(list_request[0])
+    # ego_info = json.loads(list_request[1])
+    # ego_group = list_request[2]
+    # table = list_request[3]
+    # data_table = table.split("_of_")[1]
+    # session = table.split("_of_")[0]
+
+    structure_request = attr + ":-" + restructure_info + ":-" + table
+    print structure_request
+    return_json = one_contact_structure(structure_request)
+
+    user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
+    with open("./contact_tree/data/user_ctree_data.json", "wb") as json_file:
+        json_file.write(user_ctree_data_json)
     
-    return_json = simplejson.dumps("done update", indent=4, use_decimal=True)
-    # print return_json
+    # return_json = simplejson.dumps("done update", indent=4, use_decimal=True)
+    # # print return_json
 
     return HttpResponse(return_json)
 
 
+def update_highlight(request):
+    database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
+    clause = database.cursor()
+    db = DB()
+
+    global user_ctree_data
+
+    with open("./contact_tree/data/user_ctree_data.json", "rb") as json_file:
+        user_ctree_data = json.load(json_file)
+    # table = request.GET.get('contact')
+    # print request.GET['contact']
+    if request.GET.get('update'):
+        list_request = request.GET['update'].split(":=")[0].split(":-")
+        select_ego = request.GET['update'].split(":=")[1:]
+        # print list_request
+        # select_ego = json.loads(list_request[0])
+        table = list_request[1]
+        ori_column = list_request[3]
+        new_column = list_request[2]
+        attr = list_request[0]
+        data_table = table.split("_of_")[1]
+        session = table.split("_of_")[0]
+        
+        restructure_request = ""
+        ego_group = dict()
+
+        if len(select_ego) == 0:
+            # update_layer_val += ");"
+            user_ctree_data[session][data_table] = dict()
+            user_ctree_data[session][data_table]["layer"] = -1
+            return_json = simplejson.dumps({}, indent=4, use_decimal=True)
+            # print return_json
+            return HttpResponse(return_json)
+       
+        for label in user_ctree_data[session][data_table]:
+            if label == "layer":
+                continue
+            ego = label.split("_of_")[0]
+            dataset = label.split("_of_")[1]
+            if ego in select_ego:
+                if ego not in ego_group:
+                    ego_group[ego] = []
+                    ego_group[ego].append(dataset)
+                else:
+                    if dataset not in ego_group[ego]:
+                        ego_group[ego].append(dataset)
+
+                if dataset != "all":
+                    query_request = 'SELECT ' + ori_column + ' FROM ' + data_table + ' WHERE egoid="' + ego + '" AND dataset="' + dataset + '" ORDER BY (e_id);'
+                    restructure_request = "dataset"
+                else:
+                    query_request = 'SELECT ' + ori_column + ' FROM ' + data_table + ' WHERE egoid="' + ego + '" ORDER BY (e_id);'
+                    restructure_request = "all"
+                precur = db.query(query_request)
+                all_data = precur.fetchall()
+                count_record = 0
+                for d in all_data:
+                    # print d[ori_column] 
+                    ctree_record = user_ctree_data[session][data_table][label]["record"][count_record]
+                    ctree_record[highlight_index] = d[ori_column] 
+                    count_record += 1
+            else:
+                del user_ctree_data[session][data_table][label]
+
+        restructure_request = restructure_request + ":-" + simplejson.dumps(ego_group, use_decimal=True)
+
+    else:
+        raise Http404
+
+    structure_request = attr + ":-" + restructure_request + ":-" + table
+    return_json = one_contact_structure(structure_request)
+
+    user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
+    with open("./contact_tree/data/user_ctree_data.json", "wb") as json_file:
+        json_file.write(user_ctree_data_json)
+
+    # user_ctree_data[session]
+    
+    # return_json = simplejson.dumps("done update", indent=4, use_decimal=True)
+    # print return_json
+    return HttpResponse(return_json)
+
+# not use
 def restructure(request):
     db = DB()
     # table = request.GET.get('contact')
     # print request.GET['contact']
+    global user_ctree_data
+
+    with open("./contact_tree/data/user_ctree_data.json", "rb") as json_file:
+        user_ctree_data = json.load(json_file)
+
     if request.GET.get('restructure'):
         list_request = request.GET['restructure'].split(":=")[0].split(":-")
         ego_info = request.GET['restructure'].split(":=")[1:]
@@ -1973,11 +2194,13 @@ def restructure(request):
         final_structure = dict()
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0]
+        cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
+        stick_unique = cur.fetchone()["alter_info"]
         #!!!
         if ego_group == "all":
             for e in ego_info:
-                record_label = e + "_" + ego_group
-                all_data = user_ctree_data[session][data_table][record_label]
+                record_label = e + "_of_" + ego_group
+                all_data = user_ctree_data[session][data_table][record_label]["record"]
                 branch_layer = user_ctree_data[session][data_table]["layer"] + 1
                 # precur = db.query('SELECT * FROM ' + table + ' WHERE egoid="' + e + '";')
                 # all_data = precur.fetchall()
@@ -2016,8 +2239,10 @@ def restructure(request):
 
             for e in ego_info:
                 for sub in sub_dataset:
-                    record_label = e + "_" + sub
-                    all_data = user_ctree_data[session][data_table][record_label]
+                    record_label = e + "_of_" + sub
+                    if record_label not in user_ctree_data[session][data_table]:
+                        continue
+                    all_data = user_ctree_data[session][data_table][record_label]["record"]
                     branch_layer = user_ctree_data[session][data_table]["layer"] + 1
                     # precur = db.query('SELECT * FROM ' + table + ' WHERE dataset="' + sub + '" and egoid="' + e + '";')
                     # all_data = precur.fetchall()
