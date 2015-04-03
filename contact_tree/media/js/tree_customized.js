@@ -19,6 +19,7 @@ var CustomizedView = Backbone.View.extend({
         this.model.bind('change:canvas_scale', this.auto_save);
         this.model.bind('change:filter_contact', this.auto_save);
         this.model.bind('change:tree_structure', this.auto_save);
+        this.model.bind('change:attribute', this.auto_save);
         this.model.bind('change:attribute', this.auto_save_mapping);
         this.model.bind('change:view_mode', this.user_mapping_restore);
     },
