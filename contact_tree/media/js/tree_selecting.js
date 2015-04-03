@@ -130,7 +130,7 @@ var SelectingView = Backbone.View.extend({
                 $("#group_container").hide();
                 // initial_user = 1;
             }
-
+            $("#egogroup").empty();
             if($("#dataselect").val() == "0"){
                 self.model.set({"egos_data": {}});
                 self.model.set({"view_mode":"0"});

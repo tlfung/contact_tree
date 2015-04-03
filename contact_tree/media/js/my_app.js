@@ -77,10 +77,14 @@ var MyApp = function MyApp(){
     else{
         for(var ca = 0; ca < cookie.length; ca++){
             var cname = cookie[ca].split("=")[0];
-            if(cname == "session_id"){
+            if(cname == "session_id" || cname == " session_id" || cname == "session_id " || cname == " session_id "){
                 session_id = cookie[ca].split("=")[1];
+                first_use = 1;
                 break;
             }
+        }
+        if(first_use == 0){
+            document.cookie = "session_id=" + session_id.toString() + ";"
         }
     }
     

@@ -66,6 +66,8 @@ var Tree_Model = Backbone.Model.extend({
 	    user_history = 0;
 	    console.log("in model initialize");
 	    // get all the values of model
+	    if(first_use == 0)
+	    	return;
 	    var request_url = "get_user_data/?user="+session_id;
 	    var get_auto_saving = function(result){
 			// var restore_array = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; // total = 15
