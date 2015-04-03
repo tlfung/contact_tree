@@ -37,7 +37,7 @@ class DB:
 
 
 # global_cache = dict()
-user_ctree_data = dict()
+# user_ctree_data = dict()
 raw_column = dict()
 # define index of ctree component 
 egoid_index = 0
@@ -322,18 +322,23 @@ def get_dataset(request):
     db = DB()
     db.query('SET SQL_SAFE_UPDATES = 0;')
     db.conn.commit()
-    global user_ctree_data
     if request.GET.get('data'):
         # ./contact_tree/data
         data_table = request.GET.get('data').split("_of_")[1]
         session = request.GET.get('data').split("_of_")[0]
         session_table = request.GET.get('data')
 
+        user_ctree_data = dict()
+        check_file_exist = os.path.exists("./contact_tree/data/auto_save/" + session + ".json")
+        if check_file_exist:
+            with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
+                user_ctree_data = json.load(json_file)
+
         if session not in user_ctree_data:
             user_ctree_data[session] = dict()
         
         user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
-        with open("./contact_tree/data/user_ctree_data.json", "wb") as json_file:
+        with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
             json_file.write(user_ctree_data_json)
 
         # check_table = db.query("SHOW TABLES LIKE '" + session_table + "';")
@@ -1156,7 +1161,7 @@ def duplicate_stick(all_data, attr, branch_layer):
     return structure
 
 
-def set_default_mapping(all_data, table, attr, mapping):
+def set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_group):
     # print "set_default_mapping"
     db = DB()
     binary_index = dict()
@@ -1166,7 +1171,7 @@ def set_default_mapping(all_data, table, attr, mapping):
     session = table.split("_of_")[0]
 
     # user_ctree_data[session] = dict()
-    global user_ctree_data
+    # user_ctree_data = dict()
     
     if data_table not in user_ctree_data[session]:
         user_ctree_data[session][data_table] = dict()
@@ -1181,10 +1186,11 @@ def set_default_mapping(all_data, table, attr, mapping):
             attr_detail[compt] = cur.fetchone()
     
     # print mapping
+
     dataset = "all"
     layer_count = []
     for d in all_data:  
-        if "dataset" in d:
+        if ego_group != "all" and "dataset" in d:
             dataset = d["dataset"]
         record_label = str(d['egoid']) + "_of_" + dataset
         if record_label not in user_ctree_data[session][data_table]:
@@ -1463,7 +1469,7 @@ def set_default_mapping(all_data, table, attr, mapping):
             user_ctree_data[session][data_table][label]["done"] = 1
 
 
-def update_default_mapping(select_ego, table, new_column):
+def update_default_mapping(user_ctree_data, select_ego, table, new_column):
     db = DB()
     binary_index = dict()
     branch_order_index = []
@@ -1472,7 +1478,7 @@ def update_default_mapping(select_ego, table, new_column):
     session = table.split("_of_")[0]
 
     # user_ctree_data[session] = dict()
-    global user_ctree_data
+    # user_ctree_data = dict()
     
     # pre store dataset_collection query
     del_label = []
@@ -1607,7 +1613,7 @@ def one_contact(request):
     return HttpResponse(return_json)
 
 
-def one_contact_structure(structure_request):
+def one_contact_structure(user_ctree_data, structure_request):
     final_structure = dict()
     db = DB()
     print "testing>>>\n", structure_request
@@ -1619,7 +1625,7 @@ def one_contact_structure(structure_request):
     data_table = table.split("_of_")[1]
     session = table.split("_of_")[0]
 
-    global user_ctree_data
+    # user_ctree_data = dict()
     
     # print request.GET['contact']
     # print ego_info
@@ -1675,39 +1681,40 @@ def one_contact_update(request):
     db = DB()
     # table = request.GET.get('contact')
     # print request.GET['contact']
-    global user_ctree_data
+    user_ctree_data = dict()
 
-    with open("./contact_tree/data/user_ctree_data.json", "rb") as json_file:
-        user_ctree_data = json.load(json_file)
-
+    # check_file_exist = os.path.exists("./contact_tree/data/auto_save/" + session + ".json")
+       
     if request.GET.get('contact'):
         list_request = request.GET['contact'].split(":-")
         attr = json.loads(list_request[0])
         ego = list_request[1]
         table = list_request[2]
         mapping = json.loads(list_request[3])
-        # ego_group = list_request[4]
+        ego_group = list_request[4]
         # ego_info = json.loads(list_request[5])
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0]
         # print list_request
         # print mapping
         # attr['branch'] = 'age'
+        with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
+            user_ctree_data = json.load(json_file)
         
         cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
         stick_unique = cur.fetchone()["alter_info"]
         precur = db.query('SELECT * FROM ' + data_table + ' WHERE egoid="' + ego + '" ORDER BY (e_id);')
         all_data = precur.fetchall()
-        set_default_mapping(all_data, table, attr, mapping) #!!!
+        set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_group) #!!!
 
         structure_request = list_request[0] + ":-" + list_request[4] + ":-" + list_request[5] + ":-" + list_request[2]
-        return_json = one_contact_structure(structure_request)
+        return_json = one_contact_structure(user_ctree_data, structure_request)
 
     else:
         raise Http404
 
     user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
-    with open("./contact_tree/data/user_ctree_data.json", "wb") as json_file:
+    with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
         json_file.write(user_ctree_data_json)
     # return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
     # print return_json
@@ -1718,10 +1725,7 @@ def restore_mapping_update(request):
     db = DB()
     # table = request.GET.get('contact')
     # print request.GET['contact']
-    global user_ctree_data
-
-    with open("./contact_tree/data/user_ctree_data.json", "rb") as json_file:
-        user_ctree_data = json.load(json_file)
+    user_ctree_data = dict()
 
     if request.GET.get('restore'):
         list_request = request.GET['restore'].split(":-")
@@ -1729,12 +1733,20 @@ def restore_mapping_update(request):
         ego_list = json.loads(list_request[1])
         table = list_request[2]
         mapping = json.loads(list_request[3])
-        # data_group = list_request[4]
+        data_group = list_request[4]
         # ego_info = json.loads(list_request[5])
 
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0]
         # print attr, ego_list, table, mapping
+        check_file_exist = os.path.exists("./contact_tree/data/auto_save/" + session + ".json")
+        if check_file_exist:
+            with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
+                user_ctree_data = json.load(json_file)
+            user_ctree_data[session][data_table] = dict()
+            user_ctree_data[session][data_table]["layer"] = -1
+        else:
+            user_ctree_data[session] = dict()
 
         if len(ego_list) == 0:
             return_json = simplejson.dumps(table, indent=4, use_decimal=True)
@@ -1748,18 +1760,17 @@ def restore_mapping_update(request):
         precur = db.query(query_request)
         all_data = precur.fetchall()
 
-        user_ctree_data[session][data_table] = dict()
-        user_ctree_data[session][data_table]["layer"] = -1
-        set_default_mapping(all_data, table, attr, mapping)
+        
+        set_default_mapping(user_ctree_data, all_data, table, attr, mapping, data_group)
 
         structure_request = list_request[0] + ":-" + list_request[4] + ":-" + list_request[5] + ":-" + list_request[2]
-        return_json = one_contact_structure(structure_request)
+        return_json = one_contact_structure(user_ctree_data, structure_request)
 
     else:
         raise Http404
 
     user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
-    with open("./contact_tree/data/user_ctree_data.json", "wb") as json_file:
+    with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
         json_file.write(user_ctree_data_json)
     
     # return_json = simplejson.dumps(table, indent=4, use_decimal=True)
@@ -1771,10 +1782,8 @@ def update_binary(request):
     database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
     clause = database.cursor()
     
-    global user_ctree_data
+    user_ctree_data = dict()
 
-    with open("./contact_tree/data/user_ctree_data.json", "rb") as json_file:
-        user_ctree_data = json.load(json_file)
     # table = request.GET.get('contact')
     # print request.GET['contact']
     if request.GET.get('update'):
@@ -1790,6 +1799,8 @@ def update_binary(request):
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0]
 
+        with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
+            user_ctree_data = json.load(json_file)
 
         typecur = db.query('SELECT `type` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + ori_column + '";')
         mytype = typecur.fetchone()["type"]
@@ -1849,7 +1860,7 @@ def update_binary(request):
         raise Http404
 
     
-    restructure_info = update_default_mapping(select_ego, table, new_column)
+    restructure_info = update_default_mapping(user_ctree_data, select_ego, table, new_column)
 
     # list_request = structure_request.split(":-")
     # attr = json.loads(list_request[0])
@@ -1860,10 +1871,10 @@ def update_binary(request):
     # session = table.split("_of_")[0]
 
     structure_request = attr + ":-" + restructure_info + ":-" + table
-    return_json = one_contact_structure(structure_request)
+    return_json = one_contact_structure(user_ctree_data, structure_request)
 
     user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
-    with open("./contact_tree/data/user_ctree_data.json", "wb") as json_file:
+    with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
         json_file.write(user_ctree_data_json)
 
     # user_ctree_data[session]
@@ -1878,10 +1889,8 @@ def update_layer(request):
     clause = database.cursor()
     # table = request.GET.get('contact')
     # print request.GET['contact']
-    global user_ctree_data
+    user_ctree_data = dict()
 
-    with open("./contact_tree/data/user_ctree_data.json", "rb") as json_file:
-        user_ctree_data = json.load(json_file)
     db = DB()
     if request.GET.get('update'):
         list_request = request.GET['update'].split(":=")[0].split(":-")
@@ -1899,7 +1908,9 @@ def update_layer(request):
         # print ori_column
         # print new_column
         # print val_map
-        
+        with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
+            user_ctree_data = json.load(json_file)
+
         clause.execute('SET SQL_SAFE_UPDATES = 0;')
         database.commit()
         #!!!
@@ -2071,7 +2082,7 @@ def update_layer(request):
     else:
         raise Http404
 
-    restructure_info = update_default_mapping(select_ego, table, new_column)
+    restructure_info = update_default_mapping(user_ctree_data, select_ego, table, new_column)
 
     # list_request = structure_request.split(":-")
     # attr = json.loads(list_request[0])
@@ -2083,10 +2094,10 @@ def update_layer(request):
 
     structure_request = attr + ":-" + restructure_info + ":-" + table
     print structure_request
-    return_json = one_contact_structure(structure_request)
+    return_json = one_contact_structure(user_ctree_data, structure_request)
 
     user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
-    with open("./contact_tree/data/user_ctree_data.json", "wb") as json_file:
+    with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
         json_file.write(user_ctree_data_json)
     
     # return_json = simplejson.dumps("done update", indent=4, use_decimal=True)
@@ -2100,10 +2111,8 @@ def update_highlight(request):
     clause = database.cursor()
     db = DB()
 
-    global user_ctree_data
+    user_ctree_data = dict()
 
-    with open("./contact_tree/data/user_ctree_data.json", "rb") as json_file:
-        user_ctree_data = json.load(json_file)
     # table = request.GET.get('contact')
     # print request.GET['contact']
     if request.GET.get('update'):
@@ -2120,6 +2129,9 @@ def update_highlight(request):
         
         restructure_request = ""
         ego_group = dict()
+
+        with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
+            user_ctree_data = json.load(json_file)
 
         if len(select_ego) == 0:
             # update_layer_val += ");"
@@ -2165,10 +2177,10 @@ def update_highlight(request):
         raise Http404
 
     structure_request = attr + ":-" + restructure_request + ":-" + table
-    return_json = one_contact_structure(structure_request)
+    return_json = one_contact_structure(user_ctree_data, structure_request)
 
     user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
-    with open("./contact_tree/data/user_ctree_data.json", "wb") as json_file:
+    with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
         json_file.write(user_ctree_data_json)
 
     # user_ctree_data[session]
@@ -2182,10 +2194,7 @@ def restructure(request):
     db = DB()
     # table = request.GET.get('contact')
     # print request.GET['contact']
-    global user_ctree_data
-
-    with open("./contact_tree/data/user_ctree_data.json", "rb") as json_file:
-        user_ctree_data = json.load(json_file)
+    user_ctree_data = dict()
 
     if request.GET.get('restructure'):
         list_request = request.GET['restructure'].split(":=")[0].split(":-")
@@ -2202,6 +2211,9 @@ def restructure(request):
         session = table.split("_of_")[0]
         cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
         stick_unique = cur.fetchone()["alter_info"]
+
+        with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
+            user_ctree_data = json.load(json_file)
         #!!!
         if ego_group == "all":
             for e in ego_info:
@@ -2320,8 +2332,8 @@ def auto_save(request):
         group = 'data_group="' + str(save_detail[14]) + '"'
 
         update_query = mode + "," + group + "," + display_egos + "," + selected_egos + "," + leaf_scale + "," + fruit_scale + "," + sub_leaf_len_scale + "," + dtl_branch_curve + "," + root_curve + "," + root_len_scale + "," + filter_contact + "," + canvas_scale + "," + tree_boundary + "," + canvas_translate + "," + total_ego
-        check_update = "UPDATE auto_save SET %s WHERE session_id=%s;" %(update_query, session)
-        print check_update
+        # check_update = "UPDATE auto_save SET %s WHERE session_id=%s;" %(update_query, session)
+        # print check_update
         db.query("UPDATE auto_save SET %s WHERE session_id=%s;" %(update_query, session))
 
 
@@ -2438,20 +2450,6 @@ def restore_user_mapping(request):
     # print return_json
     return HttpResponse(return_json)
 
-#not use
-def get_last_structure(request):
-    if request.GET.get('user'):
-        session = request.GET.get('user')        
-        
-        with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
-            last_used_info = simplejson.load(json_file)
-               
-    else:
-        raise Http404
-
-    return_json = simplejson.dumps(last_used_info, indent=4, use_decimal=True)
-    # print return_json
-    return HttpResponse(return_json)
 
 ############################ old code #################################
 # rewrite
