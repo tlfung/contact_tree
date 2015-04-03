@@ -592,6 +592,7 @@ def get_list_ego(request):
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0];
         myego = "egoid"
+        print "++++", column
         if column == "all":
             cur = db.query("SELECT DISTINCT(" + myego + ") FROM " + data_table + ";")
             allego = cur.fetchall()
@@ -1166,7 +1167,7 @@ def set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gro
     db = DB()
     binary_index = dict()
     branch_order_index = []
-    
+    reorder = []
     data_table = table.split("_of_")[1]
     session = table.split("_of_")[0]
 
@@ -1394,14 +1395,18 @@ def set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gro
                     else: # only branch will have default mapping
                         # if str(collecting_data['min']).isdigit():
                         if collecting_data["type"] == "numerical":
-                            gap = collecting_data['attr_range']/9.0
-                            reorder = []
-                            for g in range(collecting_data["min"], collecting_data["max"]+1, gap):
-                                reorder.append(math.round(g*100)/100.0)
-                            
-                            if len(reorder) < 9:
-                                reorder.append(collecting_data["max"])
-
+                            # reorder = []
+                            if len(reorder) == 0: 
+                                gap = collecting_data['attr_range']/9.0
+                                g = float(collecting_data["min"])
+                                while g <= float(collecting_data["max"]):
+                                # for g in range(collecting_data["min"], collecting_data["max"]+1, gap):
+                                    reorder.append(round(g, 2))
+                                    g += gap
+                               
+                                if len(reorder) < 9:
+                                    reorder.append(collecting_data["max"])
+                                layer_count = [9]
                             if int(d[attr[compt]]) <= reorder[0]:
                                 if compt == 'branch':
                                     ctree_record[branch_index] = 0
@@ -1417,7 +1422,6 @@ def set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gro
                             elif int(d[attr[compt]]) >= reorder[-1]:
                                 if compt == 'branch':
                                     ctree_record[branch_index] = len(reorder)
-                                    layer_count.append(len(reorder))
                                 elif compt == 'fruit_size':
                                     ctree_record[fruit_size_index] = len(reorder)
                                 elif compt == 'leaf_size':
@@ -1616,7 +1620,7 @@ def one_contact(request):
 def one_contact_structure(user_ctree_data, structure_request):
     final_structure = dict()
     db = DB()
-    print "testing>>>\n", structure_request
+    
     list_request = structure_request.split(":-")
     attr = json.loads(list_request[0])
     ego_info = json.loads(list_request[2])
@@ -1781,7 +1785,7 @@ def restore_mapping_update(request):
 def update_binary(request):
     database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
     clause = database.cursor()
-    
+    db = DB()
     user_ctree_data = dict()
 
     # table = request.GET.get('contact')
@@ -1846,7 +1850,7 @@ def update_binary(request):
             #     update_query_zero += ");"
             #     update_query_one += ");"
             
-        db = DB()
+        
         clause.execute('SET SQL_SAFE_UPDATES = 0;')
         database.commit()
         print update_query_zero

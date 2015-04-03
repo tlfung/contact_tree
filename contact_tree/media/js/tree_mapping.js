@@ -8,7 +8,7 @@ var MappingView = Backbone.View.extend({
         console.log("in mapping initialize");
         // _.bindAll(this, 'set_option');
         _.bindAll(this, 'set_component');
-        _.bindAll(this, 'restructure');
+        // _.bindAll(this, 'restructure');
         _.bindAll(this, 'set_user_mapping');
 
         // util.sampleTree("ori", "sidekey_tree");
@@ -101,7 +101,7 @@ var MappingView = Backbone.View.extend({
                 attribute_mapping = now_attr_map;
                 self.model.set({"attribute": now_attr});
                 self.restructure(result);
-                self.model.trigger('change:attribute');
+                // self.model.trigger('change:attribute');
                 $("#sidekey_save_img").hide();
             });            
             
@@ -883,9 +883,10 @@ var MappingView = Backbone.View.extend({
                         // attr_opt.replace(attr_map["trunk"], $("#sidekeyselect").val());
                         attr_opt[attr_opt.indexOf(attr_map["trunk"])] = $("#sidekeyselect").val();
                         attr_map["trunk"] = $("#sidekeyselect").val();
-                        self.restructure(data);
+                        
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
+                        self.restructure(data);
                         // self.model.trigger('change:attribute');
                         // console.log(self.model.get("attribute"));
                         // console.log(self.model.get("attr_option"));
@@ -2728,9 +2729,10 @@ var MappingView = Backbone.View.extend({
                         // attr_opt.replace(attr_map["branch"], $("#sidekeyselect").val());
                         attr_opt[attr_opt.indexOf(attr_map["branch"])] = $("#sidekeyselect").val();
                         attr_map["branch"] = $("#sidekeyselect").val();
-                        self.restructure(data);
+                        
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
+                        self.restructure(data);
                         // self.model.trigger('change:attribute');
                         // console.log(self.model.get("attribute"));
                         // console.log(self.model.get("attr_option"));
@@ -3317,10 +3319,11 @@ var MappingView = Backbone.View.extend({
                         // attr_opt.replace(attr_map["bside"], $("#sidekeyselect").val());
                         attr_opt[attr_opt.indexOf(attr_map["bside"])] = $("#sidekeyselect").val();
                         attr_map["bside"] = $("#sidekeyselect").val();
-                        self.restructure(data);
+                        
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
-                        self.model.trigger('change:attribute');
+                        self.restructure(data);
+                        // self.model.trigger('change:attribute');
                         // console.log(self.model.get("attribute"));
                         // console.log(self.model.get("attr_option"));
                     };
@@ -4517,7 +4520,7 @@ var MappingView = Backbone.View.extend({
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
                         self.restructure(data);
-                        self.model.trigger('change:attribute');
+                        // self.model.trigger('change:attribute');
                     };
                     set_update_info(result);
                 });
@@ -4580,7 +4583,7 @@ var MappingView = Backbone.View.extend({
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
                         self.restructure(data);
-                        self.model.trigger('change:attribute');
+                        // self.model.trigger('change:attribute');
                         // console.log(self.model.get("attribute"));
                         // console.log(self.model.get("attr_option"));
                     };
@@ -6234,10 +6237,11 @@ var MappingView = Backbone.View.extend({
 
                         attr_opt[attr_opt.indexOf(attr_map["leaf_size"])] = $("#sidekeyselect").val();
                         attr_map["leaf_size"] = $("#sidekeyselect").val();
-                        self.restructure(data);
+                        
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
-                        self.model.trigger('change:attribute');
+                        self.restructure(data);
+                        // self.model.trigger('change:attribute');
                     };
                     set_update_info(result);
                 });
@@ -6299,7 +6303,7 @@ var MappingView = Backbone.View.extend({
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
                         self.restructure(data);
-                        self.model.trigger('change:attribute');
+                        // self.model.trigger('change:attribute');
                         // console.log(self.model.get("attribute"));
                         // console.log(self.model.get("attr_option"));
                     };
@@ -7473,10 +7477,11 @@ var MappingView = Backbone.View.extend({
 
                         attr_opt[attr_opt.indexOf(attr_map["leaf_color"])] = $("#sidekeyselect").val();
                         attr_map["leaf_color"] = $("#sidekeyselect").val();
-                        self.restructure(data);
+                        
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
-                        self.model.trigger('change:attribute');
+                        self.restructure(data);
+                        // self.model.trigger('change:attribute');
                     };
                     set_update_info(result);
                 });
@@ -7534,10 +7539,11 @@ var MappingView = Backbone.View.extend({
 
                         attr_opt[attr_opt.indexOf(attr_map["leaf_color"])] = $("#sidekeyselect").val();
                         attr_map["leaf_color"] = $("#sidekeyselect").val();
-                        self.restructure(data);
+                        
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
-                        self.model.trigger('change:attribute');
+                        self.restructure(data);
+                        // self.model.trigger('change:attribute');
                         // console.log(self.model.get("attribute"));
                         // console.log(self.model.get("attr_option"));
                     };
@@ -7635,10 +7641,11 @@ var MappingView = Backbone.View.extend({
 
                     attr_opt[attr_opt.indexOf(attr_map["leaf_id"])] = $("#sidekeyselect").val();
                     attr_map["leaf_id"] = $("#sidekeyselect").val();
-                    self.restructure(data);
+                    
                     self.model.set({"attribute": attr_map});
                     self.model.set({"attr_option": attr_opt});
-                    self.model.trigger('change:attribute');
+                    self.restructure(data);
+                    // self.model.trigger('change:attribute');
                 };
                 set_update_info(result);
             });
@@ -9216,10 +9223,11 @@ var MappingView = Backbone.View.extend({
 
                         attr_opt[attr_opt.indexOf(attr_map["fruit_size"])] = $("#sidekeyselect").val();
                         attr_map["fruit_size"] = $("#sidekeyselect").val();
-                        self.restructure(data);
+                        
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
-                        self.model.trigger('change:attribute');
+                        self.restructure(data);
+                        // self.model.trigger('change:attribute');
                     };
                     set_update_info(result);
                 });
@@ -9278,10 +9286,11 @@ var MappingView = Backbone.View.extend({
 
                         attr_opt[attr_opt.indexOf(attr_map["fruit_size"])] = $("#sidekeyselect").val();
                         attr_map["fruit_size"] = $("#sidekeyselect").val();
-                        self.restructure(data);
+                        
                         self.model.set({"attribute": attr_map});
                         self.model.set({"attr_option": attr_opt});
-                        self.model.trigger('change:attribute');
+                        self.restructure(data);
+                        // self.model.trigger('change:attribute');
                         // console.log(self.model.get("attribute"));
                         // console.log(self.model.get("attr_option"));
                     };
@@ -9416,6 +9425,7 @@ var MappingView = Backbone.View.extend({
         var self = this;
         tree_size = {};
         self.model.set({"tree_boundary":{}});
+        self.model.trigger('change:attribute');
         $("#loading_process").html("<b>Rendering...</b>");
         var ego_selections = self.model.get("selected_egos");
         if(jQuery.isEmptyObject(ego_selections)){
