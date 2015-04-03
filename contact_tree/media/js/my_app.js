@@ -87,6 +87,14 @@ var MyApp = function MyApp(){
             document.cookie = "session_id=" + session_id.toString() + ";"
         }
     }
+
+    var current_url = window.location.href;
+    if(current_url.search("#share_id=") != -1){
+        session_id = current_url.split("#share_id=").pop();
+        $("#share_link").attr('href', "#share_id=" + session_id);
+        first_use = 1;
+    }
+    console.log("sssss", session_id, current_url);
     
     // $(window).bind('beforeunload',function(){
     //     return 'are you sure you want to leave?';        
@@ -155,6 +163,16 @@ var MyApp = function MyApp(){
             initial_grid[x][y] = -1;
         }
     }
+
+     $("#share_link").click(function(){ 
+        var share_link = window.location.href;
+        if(share_link.search("#share_id") == -1)
+            share_link = window.location.href + "share_id=" + session_id;
+        
+        var share_window = prompt("Here is the share link:", share_link);
+        window.location.href = share_link;
+
+    });
     
     $("#help_link").click(function(){ 
         $("#help_page").show();
