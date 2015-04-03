@@ -7,6 +7,7 @@ var CustomizedView = Backbone.View.extend({
         console.log("in customized initialize");
         _.bindAll(this, 'auto_save');
         _.bindAll(this, 'auto_save_mapping');
+        _.bindAll(this, 'user_mapping_restore');
 
         this.model.bind('change:display_egos', this.auto_save);
         this.model.bind('change:leaf_scale', this.auto_save);
@@ -19,15 +20,15 @@ var CustomizedView = Backbone.View.extend({
         this.model.bind('change:filter_contact', this.auto_save);
         this.model.bind('change:tree_structure', this.auto_save);
         this.model.bind('change:attribute', this.auto_save_mapping);
-        // this.model.bind('change:view_mode', this.change_mode);
+        this.model.bind('change:view_mode', this.user_mapping_restore);
     },
 
     auto_save: function(){
         var self = this;
-        var save_array = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // save all the information needed into array
+        var save_array = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // save all the information needed into array
         // get all the information
         save_array[0] = self.model.get("view_mode");
-        if(save_array[0] == "")
+        if(save_array[0] == "" || save_array[0] == "0")
             return;
 
         // render parameters
@@ -44,6 +45,7 @@ var CustomizedView = Backbone.View.extend({
         save_array[11] = JSON.stringify(self.model.get("tree_boundary"));
         save_array[12] = JSON.stringify(self.model.get("canvas_translate"));
         save_array[13] = JSON.stringify(total_ego);
+        save_array[14] = self.model.get("dataset_group");
 
         
         // mapping parameters
@@ -86,21 +88,33 @@ var CustomizedView = Backbone.View.extend({
         auto_map["render_leaf_color"] = JSON.parse(JSON.stringify(mapping_color.render_leaf_color));
         auto_map["render_roots_color"] = JSON.parse(JSON.stringify(mapping_color.render_roots_color));
         auto_map["name"] = "auto_map";
-
+        
         // generate the request link
-        var request = self.model.get("view_mode") + ":-" + auto_map["name"] + ":-" + JSON.stringify(auto_map);
+        var request = self.model.get("view_mode") + ":-" + encodeURIComponent(JSON.stringify(auto_map)) + ":-" + auto_map["name"];
+
         var request_url = "save_mapping/?save="+request;
+        
         // $("#block_page").show();
         d3.json(request_url, function(result) {
             // $("#block_page").hide();
             // console.log(">>>>>>>>>", result);            
-        }); 
-         
+        });          
 
     },
 
-    sharing_restore: function(){
+    user_mapping_restore: function(){
         var self = this;
+        // var save_user_mapping = self.model.get("user_mapping");
+        // var save_user_mapping = [];
+        var request = self.model.get("view_mode"); 
+        var request_url = "restore_user_mapping/?user="+request;
+        // $("#block_page").show();
+        d3.json(request_url, function(result) {
+            console.log(">>>>>>>>>", result);
+            self.model.set({"user_mapping": result});
+            self.model.trigger('change:user_mapping');
+        }); 
+       
         // drawing_canvas.middle = (myCanvas.width/0.15)/2;
     }
 

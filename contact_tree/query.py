@@ -1601,8 +1601,8 @@ def one_contact(request):
         raise Http404
     
     return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
-    with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
-       json_file.write(return_json)
+    # with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
+    #    json_file.write(return_json)
     # print return_json
     return HttpResponse(return_json)
 
@@ -1610,7 +1610,7 @@ def one_contact(request):
 def one_contact_structure(structure_request):
     final_structure = dict()
     db = DB()
-
+    print "testing>>>\n", structure_request
     list_request = structure_request.split(":-")
     attr = json.loads(list_request[0])
     ego_info = json.loads(list_request[2])
@@ -1658,15 +1658,15 @@ def one_contact_structure(structure_request):
                 else:
                     # print "in_duplicate"
                     one_structure = duplicate_stick(all_data, attr, branch_layer)
-
-                final_structure[sub] = dict()
+                if sub not in final_structure:
+                    final_structure[sub] = dict()
                 final_structure[sub][e] = one_structure
 
 
     
     return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
-    with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
-       json_file.write(return_json)
+    # with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
+    #    json_file.write(return_json)
     # print return_json
     return return_json
 
@@ -2287,8 +2287,8 @@ def restructure(request):
         raise Http404
     
     return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
-    with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
-       json_file.write(return_json)
+    # with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
+    #    json_file.write(return_json)
     # print return_json
     
     return HttpResponse(return_json)
@@ -2317,9 +2317,11 @@ def auto_save(request):
         tree_boundary = "tree_boundary='" + str(save_detail[11]) + "'"
         canvas_translate = "canvas_translate='" + str(save_detail[12]) + "'"
         total_ego = "total_ego='" + str(save_detail[13]) + "'"
+        group = 'data_group="' + str(save_detail[14]) + '"'
 
-        update_query = mode + "," + display_egos + "," + selected_egos + "," + leaf_scale + "," + fruit_scale + "," + sub_leaf_len_scale + "," + dtl_branch_curve + "," + root_curve + "," + root_len_scale + "," + filter_contact + "," + canvas_scale + "," + tree_boundary + "," + canvas_translate + "," + total_ego
-        # check_update1 = "UPDATE auto_save SET %s WHERE session_id=%s;" %(update_query, session)
+        update_query = mode + "," + group + "," + display_egos + "," + selected_egos + "," + leaf_scale + "," + fruit_scale + "," + sub_leaf_len_scale + "," + dtl_branch_curve + "," + root_curve + "," + root_len_scale + "," + filter_contact + "," + canvas_scale + "," + tree_boundary + "," + canvas_translate + "," + total_ego
+        check_update = "UPDATE auto_save SET %s WHERE session_id=%s;" %(update_query, session)
+        print check_update
         db.query("UPDATE auto_save SET %s WHERE session_id=%s;" %(update_query, session))
 
 
@@ -2343,8 +2345,8 @@ def save_mapping(request):
         #general saving info
         session = str(save_detail[0].split("_of_")[0])
         mode = str(save_detail[0].split("_of_")[1])
-        name = save_detail[1]
-        map_detail = save_detail[2]
+        name = save_detail[2]
+        map_detail = save_detail[1]
 
         mapcur = db.query("SELECT * FROM attribute_mapping WHERE session_id=" + session + " AND mapping_name='" + name + "' AND mode='" + mode + "';")
         mapping_exist = mapcur.fetchone()
@@ -2378,7 +2380,6 @@ def get_user_data(request):
     if request.GET.get('user'):
         session = request.GET.get('user')
         
-        
         mapcur = db.query("SELECT * FROM attribute_mapping WHERE session_id=" + session + " AND mapping_name='auto_map';")
         mapping_exist = mapcur.fetchone()
 
@@ -2387,11 +2388,11 @@ def get_user_data(request):
 
 
         if mapping_exist:
-            last_used_info["mode"] = mapping_exist['mode']
-            last_used_info["mapping_name"] = mapping_exist['mapping_name']
+            # last_used_info["mapping_name"] = mapping_exist['mapping_name']
             last_used_info["attr_info"] = mapping_exist['attr_info']
-        
+                    
         if saving_exist:
+            last_used_info["mode"] = saving_exist['mode']
             last_used_info["display_egos"] = saving_exist['display_egos']
             last_used_info["selected_egos"] = saving_exist['selected_egos']
             last_used_info["leaf_scale"] = saving_exist['leaf_scale']
@@ -2405,12 +2406,51 @@ def get_user_data(request):
             last_used_info["tree_boundary"] = saving_exist['tree_boundary']
             last_used_info["canvas_translate"] = saving_exist['canvas_translate']
             last_used_info["total_ego"] = saving_exist['total_ego']
+            last_used_info["group"] = saving_exist['data_group']
            
     else:
         raise Http404
 
     return_json = simplejson.dumps(last_used_info, indent=4, use_decimal=True)
     # print json
+    return HttpResponse(return_json)
+
+
+def restore_user_mapping(request):
+    db = DB()
+    user_save_map = []
+    if request.GET.get('user'):
+        session = request.GET.get('user').split("_of_")[0]
+        data_table = request.GET.get('user').split("_of_")[1]
+        mapcur = db.query("SELECT * FROM attribute_mapping WHERE session_id=" + session + " AND mode='" + data_table + "' AND mapping_name!='auto_map';")
+        mapping_exist = mapcur.fetchall()
+        all_mapping = []
+        if mapping_exist:
+            for mapping in mapping_exist:
+                if mapping['mapping_name'] not in all_mapping:
+                    all_mapping.append(mapping['mapping_name'])
+                    user_save_map.append(json.loads(mapping['attr_info']))
+        
+    else:
+        raise Http404
+
+    return_json = simplejson.dumps(user_save_map, indent=4, use_decimal=True)
+    # print return_json
+    return HttpResponse(return_json)
+
+#not use
+def get_last_structure(request):
+    if request.GET.get('user'):
+        session = request.GET.get('user')        
+        
+        with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
+            last_used_info = simplejson.load(json_file)
+               
+    else:
+        raise Http404
+
+    return_json = simplejson.dumps(last_used_info, indent=4, use_decimal=True)
+    # print return_json
     return HttpResponse(return_json)
 
 ############################ old code #################################

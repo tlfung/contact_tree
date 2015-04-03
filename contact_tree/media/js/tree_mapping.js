@@ -58,7 +58,7 @@ var MappingView = Backbone.View.extend({
                 save_user_mapping.push(user_map);
                 
 
-                var request = self.model.get("view_mode") + ":-" + map_name + ":-" + JSON.stringify(user_map);
+                var request = self.model.get("view_mode") + ":-" + encodeURIComponent(JSON.stringify(user_map)) + ":-" + map_name;
                 var request_url = "save_mapping/?save="+request;
                 // $("#block_page").show();
                 d3.json(request_url, function(result) {
@@ -72,7 +72,6 @@ var MappingView = Backbone.View.extend({
             else{
                 return 0;
             }
-
             
         });
 
@@ -126,10 +125,10 @@ var MappingView = Backbone.View.extend({
     set_user_mapping: function(){
         var self = this;
         var save_user_mapping = self.model.get("user_mapping");
-        // console.log(save_user_mapping);
+        console.log(save_user_mapping);
         var save_container = $("#save_mapping_container");
         save_container.empty();
-        for(var s = 1; s <= save_user_mapping.length; s ++){
+        for(var s = 1; s <= save_user_mapping.length; s++){
             var count_item = s;
             var map_name = save_user_mapping[s-1]["name"];
             var save_item_container = $("<div class='left' style='margin-left:10px; position:relative'></div>");
@@ -871,7 +870,7 @@ var MappingView = Backbone.View.extend({
                 }
                 
                 var request_url = "update_binary/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
-                console.log(request_url);
+                // console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
                     var set_update_info = function(data){
@@ -2716,7 +2715,7 @@ var MappingView = Backbone.View.extend({
                 }
 
                 var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
-                console.log(request_url);
+                // console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
                     var set_update_info = function(data){
@@ -3305,7 +3304,7 @@ var MappingView = Backbone.View.extend({
                 }
                 
                 var request_url = "update_binary/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
-                console.log(request_url);
+                // console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
                     var set_update_info = function(data){
@@ -4498,7 +4497,7 @@ var MappingView = Backbone.View.extend({
 
             if($("#sidekeyselect").val() == "none"){
                 var update_info = data_mode + ":-ctree_root:-" + $("#sidekeyselect").val() + ":-" + JSON.stringify(["none"]);
-                mapping_color.render_roots_color = mapping_color.roots_color;
+                mapping_color.render_roots_color = ["#964343", "#90093F", "#967636", "#6B435E"];
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
                 }
@@ -4565,7 +4564,7 @@ var MappingView = Backbone.View.extend({
                 }
 
                 var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
-                console.log(request_url);
+                // console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
                     var set_update_info = function(data){
@@ -6222,7 +6221,7 @@ var MappingView = Backbone.View.extend({
                     update_info += ":=" + ego;
                 }
                 var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
-                console.log(request_url);
+                // console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
                     var set_update_info = function(data){
@@ -6284,7 +6283,7 @@ var MappingView = Backbone.View.extend({
                 }               
 
                 var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
-                console.log(request_url);
+                // console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
                     var set_update_info = function(data){
@@ -7456,12 +7455,12 @@ var MappingView = Backbone.View.extend({
             attr_map["leaf_color"] = $("#sidekeyselect").val();
             if($("#sidekeyselect").val() == "none"){
                 var update_info = data_mode + ":-ctree_leaf_color:-" + $("#sidekeyselect").val() + ":-" + JSON.stringify(["none"]);
-                mapping_color.render_leaf_color = mapping_color.leaf_color;
+                mapping_color.render_leaf_color = ["#924307", "#C2B208", "#94AE0F", "#5F9915"];
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
                 }
                 var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
-                console.log(request_url);
+                // console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
                     var set_update_info = function(data){
@@ -7522,7 +7521,7 @@ var MappingView = Backbone.View.extend({
                     update_info += ":=" + ego;
                 }
                 var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
-                console.log(request_url);
+                // console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
                     var set_update_info = function(data){
@@ -7623,7 +7622,7 @@ var MappingView = Backbone.View.extend({
             }
             attr_map["leaf_id"] = $("#sidekeyselect").val();
             var request_url = "update_highlight/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
-            console.log(request_url);
+            // console.log(request_url);
             d3.json(request_url, function(result){
                 console.log("finish update");
                 var set_update_info = function(data){
@@ -9204,7 +9203,7 @@ var MappingView = Backbone.View.extend({
                     update_info += ":=" + ego;
                 }
                 var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
-                console.log(request_url);
+                // console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
                     var set_update_info = function(data){
@@ -9266,7 +9265,7 @@ var MappingView = Backbone.View.extend({
                 }               
 
                 var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
-                console.log(request_url);
+                // console.log(request_url);
                 d3.json(request_url, function(result){
                     console.log("finish update");
                     var set_update_info = function(data){
@@ -9325,8 +9324,9 @@ var MappingView = Backbone.View.extend({
                 cmpt_id += cmpt + "_map";
                 // console.log(cmpt_id);
                 $(cmpt_id).text(myattribute[cmpt]);
-                if(myattribute[cmpt] == "none")
+                if(myattribute[cmpt] == "none"){
                     $(cmpt_id).attr('style', 'background: rgb(252, 180, 183);');
+                }
                 else
                     $(cmpt_id).attr('style', 'background: rgb(245, 244, 174);');
             }
@@ -9426,7 +9426,6 @@ var MappingView = Backbone.View.extend({
         var data_mode = self.model.get("view_mode");
         // var data_group = self.model.get("dataset_group");
         var all_ego = [];
-       
         
         for(ego in ego_selections){
             all_ego.push(ego);

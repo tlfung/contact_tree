@@ -7,29 +7,31 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 
 urlpatterns = patterns('',
     (r'^$', view.index),
-    (r'^get_contact/$', query.one_contact),
+    # (r'^get_contact/$', query.one_contact),
     (r'^get_update/$', query.one_contact_update),
-    (r'^update_contact/$', query.update_contact),
-    (r'^dblp_list/$', query.list_author),
-    (r'^one_author/$', query.one_author),
+    # (r'^update_contact/$', query.update_contact),
+    # (r'^dblp_list/$', query.list_author),
+    # (r'^one_author/$', query.one_author),
     (r'^dataset/$', query.get_dataset),
     (r'^datatable/$', query.get_list_ego),
     (r'^datainfo/$', query.get_data_info),
-    (r'^one_country/$', query.get_country),
-    (r'^update_author/$', query.upadte_author),
+    # (r'^one_country/$', query.get_country),
+    # (r'^update_author/$', query.upadte_author),
     (r'^upload_csv/$', query.upload_file),
     (r'^update_collection/$', query.update_collection_data),
     (r'^collecting_data/$', query.create_csv2database),
     (r'^update_binary/$', query.update_binary),
     (r'^update_layer/$', query.update_layer),
-    (r'^update_structure/$', query.restructure),
+    # (r'^update_structure/$', query.restructure),
     (r'^fetch_data/$', query.fetch_data),
     (r'^restore_data/$', query.restore_mapping_update),
     (r'^dataset_mode/$', query.get_dataset_mode),
     (r'^auto_save/$', query.auto_save),
     (r'^save_mapping/$', query.save_mapping),
     (r'^get_user_data/$', query.get_user_data),
-    (r'^update_highlight/$', query.update_highlight)
+    (r'^update_highlight/$', query.update_highlight),
+    (r'^restore_user_mapping/$', query.restore_user_mapping)
+    # (r'^get_last_structure/$', query.get_last_structure)
 )
 
 urlpatterns += staticfiles_urlpatterns()

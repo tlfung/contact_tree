@@ -19,7 +19,7 @@ var Tree_Model = Backbone.Model.extend({
 	    // component: [],
 	    // attribute_info: {},
 	    // component_attribute: {},
-	    dataset_group: "all",
+	    dataset_group: "",
 	    stick_unique: "",
 
 	    fruit_control: 1,
@@ -63,14 +63,176 @@ var Tree_Model = Backbone.Model.extend({
 
   	initialize: function(args) {
 	    var self = this;
+	    user_history = 0;
 	    console.log("in model initialize");
 	    // get all the values of model
 	    var request_url = "get_user_data/?user="+session_id;
-	    d3.json(request_url, function(result){
-			console.log(result);
-			console.log(result.tree_boundary);
-			console.log(JSON.parse(result.tree_boundary));
-          	// dataset_mode
+	    var get_auto_saving = function(result){
+			// var restore_array = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; // total = 15
+			var restore_array = [];
+			console.log(restore_array);
+			var view_mode = session_id.toString() + "_of_" + result.mode;
+			restore_array.push(view_mode); // mode
+			restore_array.push(JSON.parse(result.display_egos)); // display_egos
+			restore_array.push(JSON.parse(result.selected_egos)); // selected_egos
+			restore_array.push(result.leaf_scale); // leaf_scale
+			restore_array.push(result.fruit_scale); // fruit_scale
+			restore_array.push(result.leaf_len_scale); // leaf_len_scale
+			restore_array.push(result.branch_curve); // branch_curve
+			restore_array.push(result.root_curve); // root_curve
+			restore_array.push(result.root_len_scale); // root_len_scale
+			restore_array.push(result.canvas_scale); // canvas_scale
+			restore_array.push(result.filter_contact); // filter_contact
+			restore_array.push(JSON.parse(result.tree_boundary)); // tree_boundary
+			restore_array.push(JSON.parse(result.canvas_translate)); // canvas_translate
+			restore_array.push(JSON.parse(result.total_ego)); // total_ego
+			restore_array.push(JSON.parse(result.attr_info)); // attr_info
+			restore_array.push(result.group); // attr_info
+
+			// restore_array[0] = session_id + "_of_" + result.mode; // mode
+			// restore_array[1] = JSON.parse(result.display_egos); // display_egos
+			// restore_array[2] = JSON.parse(result.selected_egos); // selected_egos
+			// restore_array[3] = result.leaf_scale; // leaf_scale
+			// restore_array[4] = result.fruit_scale; // fruit_scale
+			// restore_array[5] = result.leaf_len_scale; // leaf_len_scale
+			// restore_array[6] = result.branch_curve; // branch_curve
+			// restore_array[7] = result.root_curve; // root_curve
+			// restore_array[8] = result.root_len_scale; // root_len_scale
+			// restore_array[9] = result.canvas_scale; // canvas_scale
+			// restore_array[10] = result.filter_contact; // filter_contact
+			// restore_array[11] = JSON.parse(result.tree_boundary); // tree_boundary
+			// restore_array[12] = JSON.parse(result.canvas_translate); // canvas_translate
+			// restore_array[13] = JSON.parse(result.total_ego); // total_ego
+			// restore_array[14] = JSON.parse(result.attr_info); // attr_info
+			
+	        self.set({"view_mode": restore_array[0]}, {silent: true});
+	        self.set({"display_egos": restore_array[1]}, {silent: true});
+	        self.set({"selected_egos": restore_array[2]}, {silent: true});
+	        self.set({"leaf_scale": restore_array[3]}, {silent: true});
+	        self.set({"fruit_scale": restore_array[4]}, {silent: true});
+	        self.set({"sub_leaf_len_scale": restore_array[5]}, {silent: true});
+	        self.set({"dtl_branch_curve": restore_array[6]}, {silent: true});
+	        self.set({"root_curve": restore_array[7]}, {silent: true});
+	        self.set({"root_len_scale": restore_array[8]}, {silent: true});
+	        self.set({"canvas_scale": restore_array[9]}, {silent: true});
+	        self.set({"filter_contact": restore_array[10]}, {silent: true});
+	        self.set({"tree_boundary": restore_array[11]}, {silent: true});
+	        self.set({"canvas_translate": restore_array[12]}, {silent: true});
+	        total_ego = restore_array[13];
+	        self.set({"dataset_group": restore_array[15]}, {silent: true});
+
+			self.set({"attribute": restore_array[14]["attr"]}, {silent: true});
+			attribute_mapping = restore_array[14]["map_info"];
+			mapping_color.render_leaf_color = restore_array[14]["render_leaf_color"];
+			mapping_color.render_roots_color = restore_array[14]["render_roots_color"];
+			$("#dataselect").trigger('change');
+
+			self.trigger('change:attribute');
+			self.trigger('change:view_mode');
+			self.trigger('change:dataset_mode');
+			self.trigger('change:selected_egos');
+			self.trigger('change:canvas_scale'); 
+		};
+
+	    d3.json(request_url, function(user_result){
+			console.log(user_result);
+			
+			var get_structure = function(){
+				console.log("in get structure");
+				$("#block_page").show();
+		        $("#loading_process").html("<b>Loading...</b>");
+		        var my_request_url = "get_last_structure/?user="+session_id;
+			    d3.json(my_request_url, function(result){
+			      	var tree_structure = {};
+			      	
+			      	var set_structure = function(data){
+			      		console.log(">>>", data);
+			      		var ego_selections = self.get("selected_egos");
+			      		var data_mode = self.get("view_mode");
+			      		// var all_ego = [];
+			      		// for(ego in ego_selections){
+						// all_ego.push(ego);
+						// }
+						tree_structure[data_mode] = data;
+			        	// for(var i = 0; i < all_ego.length; i++){
+				        //     for(var d in data){
+				        //         if(d in tree_structure[data_mode]){
+				        //             tree_structure[data_mode][d][all_ego[i]] = data[d][all_ego[i]];            
+				        //         }
+				        //         else{
+				        //             tree_structure[data_mode][d] = {};
+				        //             tree_structure[data_mode][d][all_ego[i]] = data[d][all_ego[i]];
+				        //         }
+				        //     }
+				        // }
+				        self.set({"tree_structure": tree_structure}, {silent: true});
+				        // console.log("lucky", tree_structure);
+			      	};
+			      	
+				    set_structure(result);
+			      	
+			      	$("#block_page").hide();
+			      	self.trigger('change:tree_structure');
+			    });
+			};
+
+			var restore_structure = function(){
+				var set_structure = function(data, all_ego){
+			        var ego_selections = self.get("selected_egos");
+			        if(jQuery.isEmptyObject(ego_selections)){
+			            $("#block_page").hide();
+			            return
+			        }
+			        var data_mode = self.get("view_mode");
+			        
+			        var tree_structure = self.get("tree_structure");
+			        tree_structure[data_mode] = {};
+			        for(var i = 0; i < all_ego.length; i++){
+			            for(var d in data){
+			                if(d in tree_structure[data_mode]){
+			                    tree_structure[data_mode][d][all_ego[i]] = data[d][all_ego[i]];            
+			                }
+			                else{
+			                    tree_structure[data_mode][d] = {};
+			                    tree_structure[data_mode][d][all_ego[i]] = data[d][all_ego[i]];
+			                }
+			            }
+			        }                
+			        self.set({"tree_structure": tree_structure}, {silent: true});
+			        $("#block_page").hide();   
+				};
+
+				var data_group = self.get("dataset_group");
+	            var now_attr = self.get("attribute");
+	            var now_mode = self.get("view_mode");;
+	            var all_ego = self.get("selected_egos");
+	            var ego_list = [];
+	            
+				for(var ego in all_ego){
+	                ego_list.push(ego);
+	            }
+	            var request = JSON.stringify(now_attr) + ":-" + JSON.stringify(ego_list) + ":-" + now_mode + ":-" + JSON.stringify(attribute_mapping) + ":-" + data_group + ":-" + JSON.stringify(all_ego);
+	            var request_url = "restore_data/?restore="+request;
+	            
+	            $("#block_page").show();
+
+	            d3.json(request_url, function(result) {
+	                set_structure(result, ego_list);
+	                self.trigger('change:tree_structure');
+	            }); 
+			};
+
+			if(user_result != {}){
+				get_auto_saving(user_result);
+		        restore_structure();
+		        user_history = 1;
+		    }
+
+			// self.trigger('change:attribute');
+			// self.trigger('change:view_mode');
+			// self.trigger('change:dataset_mode');
+			// self.trigger('change:selected_egos');
+			// self.trigger('change:canvas_scale');  
 		});
 	    // self.set({"view_mode": session_id + "_of_combine_diary"});
   	},
@@ -150,9 +312,14 @@ var Tree_Model = Backbone.Model.extend({
 	        };
 
 	        set_ego_list_json(result[0]);
-	        set_default_attr(result[1]);
+	        // console.log(user_history);
+	        if(user_history == 0){
+	        	set_default_attr(result[1]);
+	        }
+	        else{
+	        	set_default_attr(self.get("attribute"));
+	        }
 	        set_attribute_info(result[2]);
-
 	        var d = self.get("done_query_list");
 	        self.set({"done_query_list": d+1});
 	        // self.trigger('change:attribute');        
@@ -201,7 +368,7 @@ var Tree_Model = Backbone.Model.extend({
 	    d3.json(request_url, function(result) {
 	      	// console.log("in model.query_one_contact");
 	      	// console.log(result);
-	      	var egos_data = self.get("egos_data");
+	      	// var egos_data = self.get("egos_data");
 	      	var tree_structure = self.get("tree_structure");
 	      	if(mode in tree_structure){}
 	      	else{

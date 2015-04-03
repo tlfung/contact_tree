@@ -88,7 +88,7 @@ var mapping_color = {
     fruit: "#C91313",
     root: "#362C21",
     leaf_stork: "#83A06E",
-    render_leaf_color: ["#924307", "#C2B208", "#94AE0F", "#5F9915", "#4A8E18"],
+    render_leaf_color: ["#924307", "#C2B208", "#94AE0F", "#5F9915"],
     render_roots_color: ["#964343", "#90093F", "#967636", "#6B435E"],
     /*
     roots_color: ["#1f77b4", "#aec7e8", "#ff7f0e", "#ffbb78", "#2ca02c",
@@ -119,6 +119,8 @@ var mapping_size = {
 var component_attribute = {};
 var attribute_mapping = {};
 // var save_user_mapping = [];
+var initial_user = 0;
+var user_history = 0;
 
 // var cat_dblp = ["DB", "AI", "Vis", "Arch", "Dist", "Net", "WWW", "OS", "Sec", "PL", "SE", "Theory", "Crypto", "Bio", " "];
 /*
