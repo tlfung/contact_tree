@@ -29,7 +29,7 @@ var CustomizedView = Backbone.View.extend({
         var save_array = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // save all the information needed into array
         // get all the information
         save_array[0] = self.model.get("view_mode");
-        if(save_array[0] == "" || save_array[0] == "0")
+        if(save_array[0] == "" || save_array[0] == "0" || in_change_mode == 1)
             return;
 
         // render parameters
@@ -80,7 +80,7 @@ var CustomizedView = Backbone.View.extend({
         var auto_map = {};
         var data_mode = self.model.get("view_mode");
         var attr_map = self.model.get("attribute");
-        if(attr_map == {} || data_mode == "0" || data_mode == "")
+        if(jQuery.isEmptyObject(attr_map) || data_mode == "0" || data_mode == "")
             return;
 
         auto_map["mode"] = data_mode;

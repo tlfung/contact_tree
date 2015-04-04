@@ -108,6 +108,7 @@ var SelectingView = Backbone.View.extend({
         $("#dataselect").change(function(){
             // default_component = ["stick", "trunk", "branch", "bside", "leaf_color", "leaf_size", "fruit"];
             if(initial_user != 0){
+                in_change_mode = 1;
                 self.model.set({"moving": 0});
                 self.model.set({"selected_egos": {}});
                 self.model.set({"display_egos": {}});
@@ -129,8 +130,9 @@ var SelectingView = Backbone.View.extend({
                 $("#egogroup").empty();
                 $("#group_container").hide();
                 user_history = 0;
-                // initial_user = 1;
+                // initial_user = 1;                
             }
+            
             $("#egogroup").empty();
             if($("#dataselect").val() == "0"){
                 self.model.set({"egos_data": {}});
@@ -211,15 +213,17 @@ var SelectingView = Backbone.View.extend({
                 self.model.set({"canvas_scale": 0.15});
                 self.model.trigger('change:display_egos');
                 user_history = 0;
+                in_change_mode = 1;
             }
-            else
+            else{
                 initial_user = 1;
+                in_change_mode = 1;
+            }
             var data_selected = $("#dataselect").val();
             var ego_group = $("#egogroup").val();
             if(ego_group == ""){
                 return
-            }
-            
+            }            
             self.model.query_ego_list(data_selected, ego_group);
             
             self.model.set({"dataset_group": ego_group});

@@ -276,7 +276,7 @@ var Tree_Model = Backbone.Model.extend({
 	        	}
 	        	component_attribute[mode]["none"] = [["none"], 0, 0, 0, 1, "none"];
 	        };
-
+	        in_change_mode = 0;
 	        set_ego_list_json(result[0]);
 	        // console.log(user_history);
 	        if(user_history == 0){
