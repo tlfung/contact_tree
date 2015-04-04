@@ -66,10 +66,11 @@
                     <button type="button" id="default_scale" class="myfont2 menu_button btn btn-default" disabled>Restore</button> -->
                 </div>
             </div>
-            <div class="right">
+            <div class="right" style="display:flex;">
                 <!-- <p><a href="media/Contact_Tree_Demo.pdf">Help</a></p> -->
                 <!-- <p><a href="media/implementation.pdf">Help</a></p> -->
-                <p><a id="help_link" href="#">Help</a></p>
+                <a id="share_link" href="#">Share</a>
+                <p><a id="help_link" href="#" style="margin-left:10px;">Help</a></p>
             </div>
             
             <!-- <div class="right">
@@ -263,11 +264,11 @@
         <img id="loading_table" src="media/img/loader.gif" style="position:absolute; left:78%; top:50%; height:40px; diaplay:none;"></img>
         
         <!-- <canvas id='one_tree' class='left' style="margin:15% 10 0 30; /*border:1.5px solid gray;*/ border-radius:5px; background:white; width:57%; height:70%;"></canvas> -->
-        <div id='snap_container' class='left' style="position:relative; margin:10% 10px 0 30px; width:57%; height:70%;">
+        <div id='snap_container' class='left' style="position:relative; margin:5% 10px 0 30px; width:57%; height:80%;">
             <canvas id='one_tree' style="/*border:1.5px solid gray;*/ border-radius:5px; background:white; height:100%; width:100%; display:block; z-index:150;"></canvas>
         </div>
         
-        <div id='info_table' class='left' style="z-index:150; margin-top:10%; border-left:2.5px solid; max-height:70%; overflow-y:auto; width:38%; height:70%; padding-right:10px;">
+        <div id='info_table' class='left' style="z-index:150; margin-top:5%; border-left:2.5px solid; max-height:80%; overflow-y:auto; width:38%; height:80%; padding-right:10px;">
 
             <div id="data_info_box" class='config' style="z-index:150; opacity:1; width:100%; height:initial; margin-left:10px; position:inherit; display:table;">
                 <ul>
@@ -500,8 +501,8 @@
         <div id="group_container" class="left" style="margin-left:10px; width:45%; display:none;">
             <span class="left myfont3">Group:</span>
             <select id="egogroup" style="width:70%; margin-left:5px;">
-                <option value="0">Ego group</option>
-                <option value="all">All</option>
+                <!-- <option value="0">Ego group</option>
+                <option value="all">All</option> -->
             </select>        
         </div>
         <!-- <div id="sub_selection"></div> -->

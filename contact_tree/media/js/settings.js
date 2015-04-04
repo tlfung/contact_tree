@@ -121,6 +121,7 @@ var attribute_mapping = {};
 // var save_user_mapping = [];
 var initial_user = 0;
 var user_history = 0;
+var first_use = 0;
 
 // var cat_dblp = ["DB", "AI", "Vis", "Arch", "Dist", "Net", "WWW", "OS", "Sec", "PL", "SE", "Theory", "Crypto", "Bio", " "];
 /*

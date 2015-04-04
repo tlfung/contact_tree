@@ -66,6 +66,8 @@ var Tree_Model = Backbone.Model.extend({
 	    user_history = 0;
 	    console.log("in model initialize");
 	    // get all the values of model
+	    if(first_use == 0)
+	    	return;
 	    var request_url = "get_user_data/?user="+session_id;
 	    var get_auto_saving = function(result){
 			// var restore_array = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; // total = 15
@@ -136,7 +138,7 @@ var Tree_Model = Backbone.Model.extend({
 
 	    d3.json(request_url, function(user_result){
 			console.log(user_result);
-
+			
 			var restore_structure = function(){
 				var set_structure = function(data, all_ego){
 			        var ego_selections = self.get("selected_egos");
@@ -283,7 +285,7 @@ var Tree_Model = Backbone.Model.extend({
 	        set_attribute_info(result[2]);
 	        var d = self.get("done_query_list");
 	        self.set({"done_query_list": d+1});
-	        // self.trigger('change:attribute');        
+	        self.trigger('change:attribute');        
 	        // dataset_mode
 	    });
 	   

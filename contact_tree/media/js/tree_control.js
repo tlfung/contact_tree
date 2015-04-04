@@ -53,12 +53,14 @@ var ControlView = Backbone.View.extend({
             self.model.set({"fruit_scale":3});
             self.model.set({"sub_leaf_len_scale":1});
             self.model.set({"dtl_branch_curve":1});
+            self.model.set({"filter_contact":0});
             // self.model.set({"abt_branch_curve":1});
             self.model.set({"root_curve":0});
             self.model.set({"root_len_scale":1});
             self.model.set({"canvas_translate":[0, 0]});
             self.model.set({"canvas_scale":0.15});
             self.model.set({"clicking_leaf":-1});
+            
             self.model.trigger('change:canvas_scale');
             self.model.trigger('change:tree_style');
             $("#dtl_length").ionRangeSlider("update", {

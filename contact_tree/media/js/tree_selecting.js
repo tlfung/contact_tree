@@ -128,9 +128,10 @@ var SelectingView = Backbone.View.extend({
                 self.ego_cat = ["", "all"];
                 $("#egogroup").empty();
                 $("#group_container").hide();
+                user_history = 0;
                 // initial_user = 1;
             }
-
+            $("#egogroup").empty();
             if($("#dataselect").val() == "0"){
                 self.model.set({"egos_data": {}});
                 self.model.set({"view_mode":"0"});
@@ -156,7 +157,10 @@ var SelectingView = Backbone.View.extend({
                     // console.log(result)
                     var set_dataset_group = function(data){
                         self.ego_cat = data;
+                        
                         var on_group = self.model.get("dataset_group");
+                        if(initial_user != 0)
+                            on_group = "";
                         // for(var d = 0; d < data.length; d++){
                         //   self.ego_cat.push(data[d]);
                         // }
@@ -173,7 +177,7 @@ var SelectingView = Backbone.View.extend({
                             container.appendChild(selection_opt);
                         }
                         $("#group_container").show();
-                        if(on_group != "")
+                        if(initial_user == 0)
                             $("#egogroup").trigger('change');
                     };
                     set_dataset_group(result);
@@ -203,10 +207,15 @@ var SelectingView = Backbone.View.extend({
                 self.model.set({"canvas_translate": [0, 0]});
                 self.model.set({"canvas_scale": 0.15});
                 self.model.trigger('change:display_egos');
-                initial_user = 1;
+                user_history = 0;
             }
+            else
+                initial_user = 1;
             var data_selected = $("#dataselect").val();
             var ego_group = $("#egogroup").val();
+            if(ego_group == ""){
+                return
+            }
             
             self.model.query_ego_list(data_selected, ego_group);
             
