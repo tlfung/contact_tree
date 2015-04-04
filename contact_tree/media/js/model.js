@@ -136,45 +136,6 @@ var Tree_Model = Backbone.Model.extend({
 
 	    d3.json(request_url, function(user_result){
 			console.log(user_result);
-			
-			var get_structure = function(){
-				console.log("in get structure");
-				$("#block_page").show();
-		        $("#loading_process").html("<b>Loading...</b>");
-		        var my_request_url = "get_last_structure/?user="+session_id;
-			    d3.json(my_request_url, function(result){
-			      	var tree_structure = {};
-			      	
-			      	var set_structure = function(data){
-			      		console.log(">>>", data);
-			      		var ego_selections = self.get("selected_egos");
-			      		var data_mode = self.get("view_mode");
-			      		// var all_ego = [];
-			      		// for(ego in ego_selections){
-						// all_ego.push(ego);
-						// }
-						tree_structure[data_mode] = data;
-			        	// for(var i = 0; i < all_ego.length; i++){
-				        //     for(var d in data){
-				        //         if(d in tree_structure[data_mode]){
-				        //             tree_structure[data_mode][d][all_ego[i]] = data[d][all_ego[i]];            
-				        //         }
-				        //         else{
-				        //             tree_structure[data_mode][d] = {};
-				        //             tree_structure[data_mode][d][all_ego[i]] = data[d][all_ego[i]];
-				        //         }
-				        //     }
-				        // }
-				        self.set({"tree_structure": tree_structure}, {silent: true});
-				        // console.log("lucky", tree_structure);
-			      	};
-			      	
-				    set_structure(result);
-			      	
-			      	$("#block_page").hide();
-			      	self.trigger('change:tree_structure');
-			    });
-			};
 
 			var restore_structure = function(){
 				var set_structure = function(data, all_ego){
