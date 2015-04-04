@@ -346,10 +346,10 @@ def get_dataset(request):
         # if check_table.fetchone() is None:
         #     db.query("CREATE TABLE IF NOT EXISTS " + session_table + " LIKE " + data_table + ";")
         #     check_table = db.query("SHOW TABLES LIKE '" + session_table + "';")
-        
-        s_cur = db.query('SELECT * FROM auto_save WHERE session_id=' + str(session) + ';')
+        print 'SELECT * FROM auto_save WHERE session_id=' + str(session) + ' AND mode="' + data_table + '";'
+        s_cur = db.query('SELECT * FROM auto_save WHERE session_id=' + str(session) + ' AND mode="' + data_table + '";')
         if s_cur.fetchone():
-            db.query('UPDATE auto_save SET mode="' + data_table + '" WHERE session_id="' + str(session) + '";')
+            db.query('UPDATE auto_save SET mode="' + data_table + '" WHERE session_id="' + str(session) + '"  AND mode="' + data_table + '";')
             # db.query('UPDATE attribute_mapping SET mode="' + data_table + '" WHERE session_id="' + str(session) + '";')
         else:
             db.query('INSERT INTO auto_save (mode, session_id) VALUES ("' + data_table + '",' + session + ');')
@@ -2320,6 +2320,7 @@ def auto_save(request):
         #general saving info
         session = str(save_detail[0].split("_of_")[0])
         mode = 'mode="' + str(save_detail[0].split("_of_")[1]) + '"'
+
         display_egos = "display_egos='" + str(save_detail[1]) + "'"
         selected_egos = "selected_egos='" + str(save_detail[2]) + "'"
         leaf_scale = 'leaf_scale=' + str(save_detail[3])
@@ -2335,10 +2336,12 @@ def auto_save(request):
         total_ego = "total_ego='" + str(save_detail[13]) + "'"
         group = 'data_group="' + str(save_detail[14]) + '"'
 
-        update_query = mode + "," + group + "," + display_egos + "," + selected_egos + "," + leaf_scale + "," + fruit_scale + "," + sub_leaf_len_scale + "," + dtl_branch_curve + "," + root_curve + "," + root_len_scale + "," + filter_contact + "," + canvas_scale + "," + tree_boundary + "," + canvas_translate + "," + total_ego
-        # check_update = "UPDATE auto_save SET %s WHERE session_id=%s;" %(update_query, session)
-        # print check_update
-        db.query("UPDATE auto_save SET %s WHERE session_id=%s;" %(update_query, session))
+        condition = "session_id=" + session + " AND " + mode
+
+        update_query = group + "," + display_egos + "," + selected_egos + "," + leaf_scale + "," + fruit_scale + "," + sub_leaf_len_scale + "," + dtl_branch_curve + "," + root_curve + "," + root_len_scale + "," + filter_contact + "," + canvas_scale + "," + tree_boundary + "," + canvas_translate + "," + total_ego
+        check_update = "UPDATE auto_save SET %s WHERE %s;" %(update_query, condition)
+        print check_update
+        db.query("UPDATE auto_save SET %s WHERE %s;" %(update_query, condition))
 
 
     else:
@@ -2372,7 +2375,7 @@ def save_mapping(request):
         check_query = ""
 
         if mapping_exist:
-            check_query = "UPDATE attribute_mapping SET attr_info='" + map_detail + "', mode='" + mode + "' WHERE session_id=" + session + " AND mapping_name='" + name + "';"
+            check_query = "UPDATE attribute_mapping SET attr_info='" + map_detail + "' WHERE session_id=" + session + " AND mapping_name='" + name + "' AND mode='" + mode + "';"
         else:
             check_query = "INSERT INTO attribute_mapping (mode, session_id, mapping_name, attr_info) VALUES ('" + mode + "'," + session + ", '" + name + "', '" + map_detail + "');"
             db.conn.commit()
@@ -2394,18 +2397,19 @@ def get_user_data(request):
     db = DB()
     last_used_info = dict() 
     if request.GET.get('user'):
-        session = request.GET.get('user')
+        session = request.GET.get('user').split(":-")[0]
+        data_table = request.GET.get('user').split(":-")[1]
+        if data_table == "none":
+            auto_save_cur = db.query("SELECT * FROM auto_save WHERE session_id=" + session + ";")
+        else:
+            auto_save_cur = db.query("SELECT * FROM auto_save WHERE session_id=" + session + " AND mode='" + data_table + "';")
         
-        mapcur = db.query("SELECT * FROM attribute_mapping WHERE session_id=" + session + " AND mapping_name='auto_map';")
-        mapping_exist = mapcur.fetchone()
-
-        auto_save_cur = db.query("SELECT * FROM auto_save WHERE session_id=" + session + ";")
+        # auto_save_cur = db.query("SELECT * FROM auto_save WHERE session_id=" + session + " AND mode='" + data_table + "';")
+        
         saving_exist = auto_save_cur.fetchone()
 
-
-        if mapping_exist:
-            # last_used_info["mapping_name"] = mapping_exist['mapping_name']
-            last_used_info["attr_info"] = mapping_exist['attr_info']
+        # mapcur = db.query("SELECT * FROM attribute_mapping WHERE session_id=" + session + " AND mapping_name='auto_map' AND mode='" + data_table + "';")
+        # mapping_exist = mapcur.fetchone()
                     
         if saving_exist:
             last_used_info["mode"] = saving_exist['mode']
@@ -2423,7 +2427,13 @@ def get_user_data(request):
             last_used_info["canvas_translate"] = saving_exist['canvas_translate']
             last_used_info["total_ego"] = saving_exist['total_ego']
             last_used_info["group"] = saving_exist['data_group']
-           
+            mapcur = db.query("SELECT * FROM attribute_mapping WHERE session_id=" + session + " AND mapping_name='auto_map' AND mode='" + saving_exist['mode'] + "';")
+            mapping_exist = mapcur.fetchone()
+            
+        if mapping_exist:
+            # last_used_info["mapping_name"] = mapping_exist['mapping_name']
+            last_used_info["attr_info"] = mapping_exist['attr_info']
+
     else:
         raise Http404
 

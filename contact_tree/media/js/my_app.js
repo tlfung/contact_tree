@@ -80,7 +80,9 @@ var MyApp = function MyApp(){
             if(cname == "session_id" || cname == " session_id" || cname == "session_id " || cname == " session_id "){
                 session_id = cookie[ca].split("=")[1];
                 first_use = 1;
-                break;
+            }
+            else if(cname == "mode" || cname == " mode" || cname == "mode " || cname == " mode "){
+                last_use = cookie[ca].split("=")[1];
             }
         }
         if(first_use == 0){

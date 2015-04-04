@@ -136,6 +136,7 @@ var SelectingView = Backbone.View.extend({
                 self.model.set({"egos_data": {}});
                 self.model.set({"view_mode":"0"});
                 $("#group_container").hide();
+                document.cookie = "mode=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
             }
             // others data
             else{
@@ -150,6 +151,8 @@ var SelectingView = Backbone.View.extend({
 
                 if(data_selected == null)
                     data_selected = self.model.get("view_mode");
+
+                document.cookie = "mode=" + data_selected.split("_of_")[1] + ";";
                 
                 var request_url = "dataset/?data="+data_selected;
                 d3.json(request_url, function(result){

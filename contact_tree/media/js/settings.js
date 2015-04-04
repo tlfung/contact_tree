@@ -27,6 +27,7 @@ var sub_ego = [];
 
 var total_ego = {};
 var session_id = 0;
+var last_use = "none";
 /*
 var mapping_item = {
     "diary": ["alterid", "sex", "age", "yrknown", "feel", "howlong", "like", "month"],

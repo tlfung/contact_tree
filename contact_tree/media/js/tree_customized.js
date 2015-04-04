@@ -80,7 +80,7 @@ var CustomizedView = Backbone.View.extend({
         var auto_map = {};
         var data_mode = self.model.get("view_mode");
         var attr_map = self.model.get("attribute");
-        if(attr_map == {})
+        if(attr_map == {} || data_mode == "0" || data_mode == "")
             return;
 
         auto_map["mode"] = data_mode;
@@ -108,6 +108,8 @@ var CustomizedView = Backbone.View.extend({
         // var save_user_mapping = self.model.get("user_mapping");
         // var save_user_mapping = [];
         var request = self.model.get("view_mode"); 
+        if(request == "0")
+            return;
         var request_url = "restore_user_mapping/?user="+request;
         // $("#block_page").show();
         d3.json(request_url, function(result) {
