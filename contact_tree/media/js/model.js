@@ -69,7 +69,7 @@ var Tree_Model = Backbone.Model.extend({
 
 	    if(first_use == 0)
 	    	return;
-	    
+
 	    var request = session_id + ":-" + last_use;
 	    var request_url = "get_user_data/?user="+request;
 	    var get_auto_saving = function(result){
@@ -93,23 +93,8 @@ var Tree_Model = Backbone.Model.extend({
 			restore_array.push(JSON.parse(result.total_ego)); // total_ego
 			restore_array.push(JSON.parse(result.attr_info)); // attr_info
 			restore_array.push(result.group); // attr_info
+			// restore_array.push(result.component_attr); // attr_info
 
-			// restore_array[0] = session_id + "_of_" + result.mode; // mode
-			// restore_array[1] = JSON.parse(result.display_egos); // display_egos
-			// restore_array[2] = JSON.parse(result.selected_egos); // selected_egos
-			// restore_array[3] = result.leaf_scale; // leaf_scale
-			// restore_array[4] = result.fruit_scale; // fruit_scale
-			// restore_array[5] = result.leaf_len_scale; // leaf_len_scale
-			// restore_array[6] = result.branch_curve; // branch_curve
-			// restore_array[7] = result.root_curve; // root_curve
-			// restore_array[8] = result.root_len_scale; // root_len_scale
-			// restore_array[9] = result.canvas_scale; // canvas_scale
-			// restore_array[10] = result.filter_contact; // filter_contact
-			// restore_array[11] = JSON.parse(result.tree_boundary); // tree_boundary
-			// restore_array[12] = JSON.parse(result.canvas_translate); // canvas_translate
-			// restore_array[13] = JSON.parse(result.total_ego); // total_ego
-			// restore_array[14] = JSON.parse(result.attr_info); // attr_info
-			
 	        self.set({"view_mode": restore_array[0]}, {silent: true});
 	        self.set({"display_egos": restore_array[1]}, {silent: true});
 	        self.set({"selected_egos": restore_array[2]}, {silent: true});
@@ -125,6 +110,7 @@ var Tree_Model = Backbone.Model.extend({
 	        self.set({"canvas_translate": restore_array[12]}, {silent: true});
 	        total_ego = restore_array[13];
 	        self.set({"dataset_group": restore_array[15]}, {silent: true});
+	        // component_attribute[view_mode] = restore_array[16]
 
 			self.set({"attribute": restore_array[14]["attr"]}, {silent: true});
 			attribute_mapping = restore_array[14]["map_info"];
@@ -132,11 +118,11 @@ var Tree_Model = Backbone.Model.extend({
 			mapping_color.render_roots_color = restore_array[14]["render_roots_color"];
 			$("#dataselect").trigger('change');
 
-			self.trigger('change:attribute');
-			self.trigger('change:view_mode');
-			self.trigger('change:dataset_mode');
-			self.trigger('change:selected_egos');
-			self.trigger('change:canvas_scale'); 
+			// self.trigger('change:attribute');
+			// self.trigger('change:view_mode');
+			// self.trigger('change:dataset_mode');
+			// self.trigger('change:selected_egos');
+			// self.trigger('change:canvas_scale'); 
 		};
 
 	    d3.json(request_url, function(user_result){
@@ -188,10 +174,10 @@ var Tree_Model = Backbone.Model.extend({
 	            }); 
 			};
 
-			if(user_result != {}){
+			if(!jQuery.isEmptyObject(user_result)){
 				get_auto_saving(user_result);
-		        restore_structure();
-		        user_history = 1;
+		        // restore_structure();
+		        // user_history = 1;
 		    }
 
 			// self.trigger('change:attribute');
@@ -233,49 +219,52 @@ var Tree_Model = Backbone.Model.extend({
   	query_ego_list: function(table, group){
 	    var self = this;
 	    // console.log(request);
+	    
+        var set_ego_list_json = function(data){
+          	total_ego = data;
+          	var sub_array = [];
+          	for(var d in data){
+	            // var obj = {};
+	            // obj[d] = data[d].length;
+	            sub_array.push({sub: d, len: data[d].length});
+          	}
+          	sub_array.sort(function(obj1, obj2) {
+	            // Ascending: first age less than the previous
+	            return obj2.len - obj1.len;
+          	});
+          	// console.log(sub_array);
+          	var temp_array = [];
+          	for(var t = 0; t < sub_array.length; t++){
+            	temp_array.push(sub_array[t].sub);
+          	}
+          	sub_ego = temp_array;
+        };
+
+        var set_default_attr = function(data){
+          	var single_attr = [];
+          	// self.set({"attr_option": data});
+          	self.set({"attribute": data});
+          	for(a in data){
+            	single_attr.push(data[a]);
+          	}
+          	self.set({"attr_option": single_attr});
+        };
+
+        var set_attribute_info = function(data){
+        	var mode = self.get("view_mode");
+        	component_attribute[mode] = {};
+        	for(a in data){
+        		component_attribute[mode][a] = data[a];
+        	}
+        	component_attribute[mode]["none"] = [["none"], 0, 0, 0, 1, "none"];
+        };
+
+	    	   
 	    var request = table + ":-" + group;
 	    var request_url = "datatable/?table="+request;
 	    d3.json(request_url, function(result){
-	        // console.log("in model.query_ego_list");
 	        console.log(result);
-	        var set_ego_list_json = function(data){
-	          	total_ego = data;
-	          	var sub_array = [];
-	          	for(var d in data){
-		            // var obj = {};
-		            // obj[d] = data[d].length;
-		            sub_array.push({sub: d, len: data[d].length});
-	          	}
-	          	sub_array.sort(function(obj1, obj2) {
-		            // Ascending: first age less than the previous
-		            return obj2.len - obj1.len;
-	          	});
-	          	// console.log(sub_array);
-	          	var temp_array = [];
-	          	for(var t = 0; t < sub_array.length; t++){
-	            	temp_array.push(sub_array[t].sub);
-	          	}
-	          	sub_ego = temp_array;
-	        };
-
-	        var set_default_attr = function(data){
-	          	var single_attr = [];
-	          	// self.set({"attr_option": data});
-	          	self.set({"attribute": data});
-	          	for(a in data){
-	            	single_attr.push(data[a]);
-	          	}
-	          	self.set({"attr_option": single_attr});
-	        };
-
-	        var set_attribute_info = function(data){
-	        	var mode = self.get("view_mode");
-	        	component_attribute[mode] = {};
-	        	for(a in data){
-	        		component_attribute[mode][a] = data[a];
-	        	}
-	        	component_attribute[mode]["none"] = [["none"], 0, 0, 0, 1, "none"];
-	        };
+	        
 	        in_change_mode = 0;
 	        set_ego_list_json(result[0]);
 	        // console.log(user_history);

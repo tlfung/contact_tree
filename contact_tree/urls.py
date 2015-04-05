@@ -30,8 +30,8 @@ urlpatterns = patterns('',
     (r'^save_mapping/$', query.save_mapping),
     (r'^get_user_data/$', query.get_user_data),
     (r'^update_highlight/$', query.update_highlight),
-    (r'^restore_user_mapping/$', query.restore_user_mapping)
-    # (r'^get_last_structure/$', query.get_last_structure)
+    (r'^restore_user_mapping/$', query.restore_user_mapping),
+    (r'^restore_user_history/$', query.restore_user_history)
 )
 
 urlpatterns += staticfiles_urlpatterns()

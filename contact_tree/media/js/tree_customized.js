@@ -8,6 +8,7 @@ var CustomizedView = Backbone.View.extend({
         _.bindAll(this, 'auto_save');
         _.bindAll(this, 'auto_save_mapping');
         _.bindAll(this, 'user_mapping_restore');
+        
 
         this.model.bind('change:display_egos', this.auto_save);
         this.model.bind('change:leaf_scale', this.auto_save);
@@ -22,11 +23,12 @@ var CustomizedView = Backbone.View.extend({
         this.model.bind('change:attribute', this.auto_save);
         this.model.bind('change:attribute', this.auto_save_mapping);
         this.model.bind('change:view_mode', this.user_mapping_restore);
+        
     },
 
     auto_save: function(){
         var self = this;
-        var save_array = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // save all the information needed into array
+        var save_array = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // save all the information needed into array
         // get all the information
         save_array[0] = self.model.get("view_mode");
         if(save_array[0] == "" || save_array[0] == "0" || in_change_mode == 1)
@@ -47,7 +49,7 @@ var CustomizedView = Backbone.View.extend({
         save_array[12] = JSON.stringify(self.model.get("canvas_translate"));
         save_array[13] = JSON.stringify(total_ego);
         save_array[14] = self.model.get("dataset_group");
-
+        save_array[15] = JSON.stringify(component_attribute[save_array[0]]);
         
         // mapping parameters
         // var auto_map = {};
@@ -110,6 +112,7 @@ var CustomizedView = Backbone.View.extend({
         var request = self.model.get("view_mode"); 
         if(request == "0")
             return;
+
         var request_url = "restore_user_mapping/?user="+request;
         // $("#block_page").show();
         d3.json(request_url, function(result) {

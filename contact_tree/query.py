@@ -2335,10 +2335,11 @@ def auto_save(request):
         canvas_translate = "canvas_translate='" + str(save_detail[12]) + "'"
         total_ego = "total_ego='" + str(save_detail[13]) + "'"
         group = 'data_group="' + str(save_detail[14]) + '"'
+        component_attribute = "component_attribute='" + str(save_detail[15]) + "'"
 
         condition = "session_id=" + session + " AND " + mode
 
-        update_query = group + "," + display_egos + "," + selected_egos + "," + leaf_scale + "," + fruit_scale + "," + sub_leaf_len_scale + "," + dtl_branch_curve + "," + root_curve + "," + root_len_scale + "," + filter_contact + "," + canvas_scale + "," + tree_boundary + "," + canvas_translate + "," + total_ego
+        update_query = group + "," + display_egos + "," + selected_egos + "," + leaf_scale + "," + fruit_scale + "," + sub_leaf_len_scale + "," + dtl_branch_curve + "," + root_curve + "," + root_len_scale + "," + filter_contact + "," + canvas_scale + "," + tree_boundary + "," + canvas_translate + "," + total_ego + "," + component_attribute
         check_update = "UPDATE auto_save SET %s WHERE %s;" %(update_query, condition)
         print check_update
         db.query("UPDATE auto_save SET %s WHERE %s;" %(update_query, condition))
@@ -2427,9 +2428,10 @@ def get_user_data(request):
             last_used_info["canvas_translate"] = saving_exist['canvas_translate']
             last_used_info["total_ego"] = saving_exist['total_ego']
             last_used_info["group"] = saving_exist['data_group']
+            last_used_info["component_attribute"] = saving_exist['component_attribute']
             mapcur = db.query("SELECT * FROM attribute_mapping WHERE session_id=" + session + " AND mapping_name='auto_map' AND mode='" + saving_exist['mode'] + "';")
             mapping_exist = mapcur.fetchone()
-            
+
         if mapping_exist:
             # last_used_info["mapping_name"] = mapping_exist['mapping_name']
             last_used_info["attr_info"] = mapping_exist['attr_info']
@@ -2461,6 +2463,49 @@ def restore_user_mapping(request):
         raise Http404
 
     return_json = simplejson.dumps(user_save_map, indent=4, use_decimal=True)
+    # print return_json
+    return HttpResponse(return_json)
+
+
+def restore_user_history(request):
+    db = DB()
+    user_history = dict()
+    if request.GET.get('user'):
+        session = request.GET.get('user').split("_of_")[0]
+        data_table = request.GET.get('user').split("_of_")[1]
+
+        mapcur = db.query("SELECT * FROM attribute_mapping WHERE session_id=" + session + " AND mode='" + data_table + "' AND mapping_name='auto_map';")
+        mapping_exist = mapcur.fetchone()
+        # auto_save_cur = db.query("SELECT * FROM auto_save WHERE session_id=" + session + " AND mode='" + data_table + "';")
+        # saving_exist = auto_save_cur.fetchone()
+
+        all_mapping = []
+        if mapping_exist:
+            auto_save_cur = db.query("SELECT * FROM auto_save WHERE session_id=" + session + " AND mode='" + data_table + "';")
+            saving_exist = auto_save_cur.fetchone()
+            user_history["mode"] = saving_exist['mode']
+            user_history["display_egos"] = saving_exist['display_egos']
+            user_history["selected_egos"] = saving_exist['selected_egos']
+            user_history["leaf_scale"] = saving_exist['leaf_scale']
+            user_history["fruit_scale"] = saving_exist['fruit_scale']
+            user_history["leaf_len_scale"] = saving_exist['leaf_len_scale']
+            user_history["branch_curve"] = saving_exist['branch_curve']
+            user_history["root_curve"] = saving_exist['root_curve']
+            user_history["root_len_scale"] = saving_exist['root_len_scale']
+            user_history["canvas_scale"] = saving_exist['canvas_scale']
+            user_history["filter_contact"] = saving_exist['filter_contact']
+            user_history["tree_boundary"] = saving_exist['tree_boundary']
+            user_history["canvas_translate"] = saving_exist['canvas_translate']
+            user_history["total_ego"] = saving_exist['total_ego']
+            user_history["group"] = saving_exist['data_group']
+            user_history["component_attr"] = saving_exist['component_attribute']
+
+            user_history["attr_info"] = mapping_exist['attr_info']
+        
+    else:
+        raise Http404
+
+    return_json = simplejson.dumps(user_history, indent=4, use_decimal=True)
     # print return_json
     return HttpResponse(return_json)
 
