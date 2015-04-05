@@ -1926,6 +1926,9 @@ def update_layer(request):
     
             clause.execute('SET SQL_SAFE_UPDATES = 1;')
             print return_json
+            user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
+            with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
+                json_file.write(user_ctree_data_json)
             return HttpResponse(return_json)
 
         if ori_column == "none":
@@ -1942,11 +1945,30 @@ def update_layer(request):
             #     update_layer_val += ");"
                 
             # print update_layer_val
-            print update_none
+            # print update_none
             clause.execute(update_none)     
             clause.execute('SET SQL_SAFE_UPDATES = 1;')
             database.commit()       
-            return_json = simplejson.dumps("none updated", indent=4, use_decimal=True)
+
+            restructure_info = update_default_mapping(user_ctree_data, select_ego, table, new_column)
+
+            # list_request = structure_request.split(":-")
+            # attr = json.loads(list_request[0])
+            # ego_info = json.loads(list_request[1])
+            # ego_group = list_request[2]
+            # table = list_request[3]
+            # data_table = table.split("_of_")[1]
+            # session = table.split("_of_")[0]
+
+            structure_request = attr + ":-" + restructure_info + ":-" + table
+            print structure_request
+            return_json = one_contact_structure(user_ctree_data, structure_request)
+
+            user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
+            with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
+                json_file.write(user_ctree_data_json)
+            
+            # return_json = simplejson.dumps("none updated", indent=4, use_decimal=True)
             return HttpResponse(return_json)
 
         typecur = db.query('SELECT `attr_range`, `type` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + ori_column + '";')
@@ -2340,8 +2362,8 @@ def auto_save(request):
         condition = "session_id=" + session + " AND " + mode
 
         update_query = group + "," + display_egos + "," + selected_egos + "," + leaf_scale + "," + fruit_scale + "," + sub_leaf_len_scale + "," + dtl_branch_curve + "," + root_curve + "," + root_len_scale + "," + filter_contact + "," + canvas_scale + "," + tree_boundary + "," + canvas_translate + "," + total_ego + "," + component_attribute
-        check_update = "UPDATE auto_save SET %s WHERE %s;" %(update_query, condition)
-        print check_update
+        # check_update = "UPDATE auto_save SET %s WHERE %s;" %(update_query, condition)
+        # print check_update
         db.query("UPDATE auto_save SET %s WHERE %s;" %(update_query, condition))
 
 
