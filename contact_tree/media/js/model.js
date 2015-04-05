@@ -93,7 +93,7 @@ var Tree_Model = Backbone.Model.extend({
 			restore_array.push(JSON.parse(result.total_ego)); // total_ego
 			restore_array.push(JSON.parse(result.attr_info)); // attr_info
 			restore_array.push(result.group); // attr_info
-			// restore_array.push(result.component_attr); // attr_info
+			// restore_array.push(JSON.parse(result.component_attr)); // attr_info
 
 	        self.set({"view_mode": restore_array[0]}, {silent: true});
 	        self.set({"display_egos": restore_array[1]}, {silent: true});
@@ -279,6 +279,7 @@ var Tree_Model = Backbone.Model.extend({
 	        self.set({"done_query_list": d+1});
 	        self.trigger('change:attribute');        
 	        // dataset_mode
+	        initial_user = 1;
 	    });
 	   
 	},

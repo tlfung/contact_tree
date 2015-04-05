@@ -133,7 +133,7 @@ var SelectingView = Backbone.View.extend({
             restore_array.push(JSON.parse(result.total_ego)); // total_ego
             restore_array.push(JSON.parse(result.attr_info)); // attr_info
             restore_array.push(result.group); // group
-            restore_array.push(result.component_attr); // component_attribute
+            restore_array.push(JSON.parse(result.component_attr)); // component_attribute
 
             self.model.set({"view_mode": restore_array[0]}, {silent: true});
             self.model.set({"display_egos": restore_array[1]}, {silent: true});
@@ -263,8 +263,17 @@ var SelectingView = Backbone.View.extend({
                 self.model.trigger('change:user_mapping');
                 self.model.set({"attribute": {}});
                 
-                self.model.set({"canvas_translate": [0, 0]});
-                self.model.set({"canvas_scale": 0.15});
+                self.model.set({"leaf_scale":3});
+                self.model.set({"fruit_scale":3});
+                self.model.set({"sub_leaf_len_scale":1});
+                self.model.set({"dtl_branch_curve":1});
+                self.model.set({"filter_contact":0});
+                // self.model.set({"abt_branch_curve":1});
+                self.model.set({"root_curve":0});
+                self.model.set({"root_len_scale":1});
+                self.model.set({"canvas_translate":[0, 0]});
+                self.model.set({"canvas_scale":0.15});
+
                 self.model.trigger('change:display_egos');
                 self.ego_cat = ["", "all"];
                 $("#egogroup").empty();
@@ -291,7 +300,7 @@ var SelectingView = Backbone.View.extend({
                 $("#sub_title").hide();
                 $("#detail_menu").hide();
 
-                if(data_selected == null || initial_user == 0)
+                if((data_selected == null || initial_user == 0) && first_use != 0)
                     data_selected = self.model.get("view_mode");
 
 
@@ -300,6 +309,43 @@ var SelectingView = Backbone.View.extend({
                 // add function to get the last infomation
                 // set evert model parameter silent
                 var pre_request_url = "restore_user_history/?user="+data_selected;
+
+                if(first_use == 0){
+                    var request_url = "dataset/?data="+data_selected;
+                    d3.json(request_url, function(result){
+                        // console.log("in model.query_data_info");
+                        // console.log(result)
+                        var set_dataset_group = function(data){
+                            self.ego_cat = data;
+                            
+                            var on_group = self.model.get("dataset_group");
+                            if(user_history == 0)
+                                on_group = "";
+                            // for(var d = 0; d < data.length; d++){
+                            //   self.ego_cat.push(data[d]);
+                            // }
+                            var container = document.getElementById("egogroup");
+                            // container.setAttribute("class", "dataset_selector");
+                            for(var s = 0; s < self.ego_cat.length; s++){
+                                var selection_opt = document.createElement('option');
+                                selection_opt.value = self.ego_cat[s];
+                                if(selection_opt.value == on_group)
+                                    selection_opt.setAttribute("selected", true);
+                                selection_opt.innerHTML = self.ego_cat[s];
+                                selection_opt.setAttribute("class", "myfont3");
+                                
+                                container.appendChild(selection_opt);
+                            }
+                            $("#group_container").show();
+                            if(user_history == 1)
+                                $("#egogroup").trigger('change');
+                        };
+                        set_dataset_group(result);
+                        // dataset_mode
+                    });
+                    return;
+                }
+                    
                 d3.json(pre_request_url, function(result){
                     console.log(result);
                     
@@ -362,8 +408,17 @@ var SelectingView = Backbone.View.extend({
                 self.model.set({"user_mapping": []});
                 self.model.trigger('change:user_mapping');
 
-                self.model.set({"canvas_translate": [0, 0]});
-                self.model.set({"canvas_scale": 0.15});
+                self.model.set({"leaf_scale":3});
+                self.model.set({"fruit_scale":3});
+                self.model.set({"sub_leaf_len_scale":1});
+                self.model.set({"dtl_branch_curve":1});
+                self.model.set({"filter_contact":0});
+                // self.model.set({"abt_branch_curve":1});
+                self.model.set({"root_curve":0});
+                self.model.set({"root_len_scale":1});
+                self.model.set({"canvas_translate":[0, 0]});
+                self.model.set({"canvas_scale":0.15});
+
                 self.model.trigger('change:display_egos');
                 // user_history = 0;                
             }
