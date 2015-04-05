@@ -156,6 +156,7 @@ var RenderingView = Backbone.View.extend({
         
         self.model.set({"moving": 0});
         self.model.trigger('change:canvas_grid');
+        $("#block_page").hide();
     },
 
     redraw_crooked: function(){

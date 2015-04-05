@@ -280,6 +280,7 @@ var Tree_Model = Backbone.Model.extend({
 	        self.trigger('change:attribute');        
 	        // dataset_mode
 	        initial_user = 1;
+	        first_use = 1;
 	    });
 	   
 	},

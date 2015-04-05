@@ -212,7 +212,8 @@ var SelectingView = Backbone.View.extend({
                     }
                 }                
                 self.model.set({"tree_structure": tree_structure}, {silent: true});
-                $("#block_page").hide();   
+                self.model.trigger('change:tree_structure');
+                // $("#block_page").hide();   
             };
 
             var data_group = self.model.get("dataset_group");
@@ -231,7 +232,8 @@ var SelectingView = Backbone.View.extend({
 
             d3.json(request_url, function(result) {
                 set_structure(result, ego_list);
-                self.model.trigger('change:tree_structure');
+                // self.model.trigger('change:tree_structure');
+                // $("#block_page").hide();
             }); 
          
 
@@ -426,12 +428,13 @@ var SelectingView = Backbone.View.extend({
                 initial_user = 1;
                 in_change_mode = 1;
                 set_display_value();
-                self.set_data_label();
+                
                 self.model.trigger('change:attribute');
                 self.model.trigger('change:view_mode');
                 self.model.trigger('change:dataset_mode');
                 self.model.trigger('change:selected_egos');
                 self.model.trigger('change:canvas_scale');
+                self.set_data_label();
                 return;
             }
 
@@ -509,7 +512,8 @@ var SelectingView = Backbone.View.extend({
         var name = "EGO";
         var sub = "";
         var select_ego = [];
-        $("#block_page").hide();
+        if(user_history == 0)
+            $("#block_page").hide();
         $('#egogroup').removeAttr("disabled");
         function opt_change(ego){
             // console.log("in opt_function", ego);
