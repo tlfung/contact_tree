@@ -173,20 +173,33 @@ var MappingView = Backbone.View.extend({
             save_item_dlt.click(function(){
                 // console.log("*****", "del:", this.id, this.value);
                 // console.log(save_user_mapping);
-                save_user_mapping.splice(this.value-1, 1);
-                var del_container_id = "#mapping_container_" + this.value;
-                $(del_container_id).remove();
-                for(var s = (parseInt(this.value)+1); s <= save_user_mapping.length+1; s++){
-                    var mapping_id = "#save_mapping_" + s;
-                    var dlt_mapping_id = "#dlt_mapping_" + s;
-                    var container_id = "#mapping_container_" + s;
-                    $(mapping_id).val((s-1).toString()).attr('id', "save_mapping_" + (s-1).toString()); //.text("Map"+(s-1));
-                    $(dlt_mapping_id).val((s-1).toString()).attr('id', "dlt_mapping_" + (s-1).toString());
-                    $(container_id).attr('id', "mapping_container_" + (s-1).toString());
-                }
-                self.model.set({"user_mapping": save_user_mapping});
-                self.model.trigger('change:user_mapping');
-                return false;
+                var set_new_record = function(){
+                    save_user_mapping.splice(this.value-1, 1);
+                    var del_container_id = "#mapping_container_" + this.value;
+                    $(del_container_id).remove();
+                    for(var s = (parseInt(this.value)+1); s <= save_user_mapping.length+1; s++){
+                        var mapping_id = "#save_mapping_" + s;
+                        var dlt_mapping_id = "#dlt_mapping_" + s;
+                        var container_id = "#mapping_container_" + s;
+                        $(mapping_id).val((s-1).toString()).attr('id', "save_mapping_" + (s-1).toString()); //.text("Map"+(s-1));
+                        $(dlt_mapping_id).val((s-1).toString()).attr('id', "dlt_mapping_" + (s-1).toString());
+                        $(container_id).attr('id', "mapping_container_" + (s-1).toString());
+                    }
+                    self.model.set({"user_mapping": save_user_mapping});
+                    self.model.trigger('change:user_mapping');
+                    return false;
+                };
+
+                var request = self.model.get("view_mode") + ":-" + save_user_mapping[this.value-1]["name"];
+                var request_url = "del_mapping/?save="+request;
+                // $("#block_page").show();
+                d3.json(request_url, function(result) {
+                    // $("#block_page").hide();
+                    // console.log(">>>>>>>>>", result);
+                    set_new_record();
+                }); 
+
+                
             });
         }
         
@@ -7577,7 +7590,7 @@ var MappingView = Backbone.View.extend({
         for(s in component_attribute[data_mode]){
             if(s == "none"){}
             else{
-                if(s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["leaf_id"])
+                if(s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["highlight"]) 
                     continue;
             }
             var selection_opt = document.createElement('option');
@@ -7587,7 +7600,7 @@ var MappingView = Backbone.View.extend({
             else
                 selection_opt.innerHTML = s;
             selection_opt.setAttribute("class", "myfont3");
-            if(s == attr_map["leaf_id"])
+            if(s == attr_map["highlight"])
                 selection_opt.setAttribute("selected", true);
             container.appendChild(selection_opt);
         }
@@ -7629,7 +7642,7 @@ var MappingView = Backbone.View.extend({
             for(ego in ego_selections){
                 update_info += ":=" + ego;
             }
-            attr_map["leaf_id"] = $("#sidekeyselect").val();
+            attr_map["highlight"] = $("#sidekeyselect").val();
             var request_url = "update_highlight/?update=" + self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
             // console.log(request_url);
             d3.json(request_url, function(result){
@@ -7642,8 +7655,8 @@ var MappingView = Backbone.View.extend({
                     $("#sidekey_submit_leaf_highlight").text("Done");
                     $("#sidekey_submit_leaf_highlight").removeAttr("disabled");
 
-                    attr_opt[attr_opt.indexOf(attr_map["leaf_id"])] = $("#sidekeyselect").val();
-                    attr_map["leaf_id"] = $("#sidekeyselect").val();
+                    attr_opt[attr_opt.indexOf(attr_map["highlight"])] = $("#sidekeyselect").val();
+                    attr_map["highlight"] = $("#sidekeyselect").val();
                     
                     self.model.set({"attribute": attr_map});
                     self.model.set({"attr_option": attr_opt});
@@ -7658,8 +7671,8 @@ var MappingView = Backbone.View.extend({
             // console.log(component_attribute[data_mode][$("#sidekeyselect").val()]);
 
             // attribute_mapping[$("#sidekeyselect").val()].push($(layer_id).val());
-            // attr_opt[attr_opt.indexOf(attr_map["leaf_id"])] = $("#sidekeyselect").val();
-            // attr_map["leaf_id"] = $("#sidekeyselect").val();
+            // attr_opt[attr_opt.indexOf(attr_map["highlight"])] = $("#sidekeyselect").val();
+            // attr_map["highlight"] = $("#sidekeyselect").val();
             // self.model.set({"attribute": attr_map});
             // self.model.set({"attr_option": attr_opt});
             // self.model.trigger('change:attribute');

@@ -2193,21 +2193,28 @@ def update_highlight(request):
                 else:
                     if dataset not in ego_group[ego]:
                         ego_group[ego].append(dataset)
+                
 
                 if group != "all":
-                    query_request = 'SELECT ' + ori_column + ' FROM ' + data_table + ' WHERE egoid="' + ego + '" AND dataset="' + dataset + '" ORDER BY (e_id);'
+                    query_request = 'SELECT * FROM ' + data_table + ' WHERE egoid="' + ego + '" AND dataset="' + dataset + '" ORDER BY (e_id);'
                     restructure_request = "dataset"
                 else:
-                    query_request = 'SELECT ' + ori_column + ' FROM ' + data_table + ' WHERE egoid="' + ego + '" ORDER BY (e_id);'
+                    query_request = 'SELECT * FROM ' + data_table + ' WHERE egoid="' + ego + '" ORDER BY (e_id);'
                     restructure_request = "all"
+                print ">>>>", query_request
                 precur = db.query(query_request)
                 all_data = precur.fetchall()
                 count_record = 0
                 for d in all_data:
                     # print d[ori_column] 
-                    ctree_record = user_ctree_data[session][data_table][label]["record"][count_record]
-                    ctree_record[highlight_index] = d[ori_column] 
-                    count_record += 1
+                    if ori_column == "none":
+                        ctree_record = user_ctree_data[session][data_table][label]["record"][count_record]
+                        ctree_record[highlight_index] = "none"
+                        count_record += 1
+                    else:
+                        ctree_record = user_ctree_data[session][data_table][label]["record"][count_record]
+                        ctree_record[highlight_index] = d[ori_column] 
+                        count_record += 1
             else:
                 del_label.append(label)
 
@@ -2429,6 +2436,33 @@ def save_mapping(request):
     db.query('SET SQL_SAFE_UPDATES = 1;')
     db.conn.commit()
     return_json = simplejson.dumps("mapping save", indent=4, use_decimal=True)
+    # print json
+    return HttpResponse(return_json)
+
+
+def del_mapping(request):
+    db = DB()
+    db.query('SET SQL_SAFE_UPDATES = 0;')
+    db.conn.commit()
+    if request.GET.get('save'):
+        save_detail = request.GET.get('save').split(":-")
+        print save_detail
+        session = str(save_detail[0].split("_of_")[0])
+        mode = str(save_detail[0].split("_of_")[1])
+        name = save_detail[1]
+        
+        mapcur = db.query("DELETE FROM attribute_mapping WHERE session_id=" + session + " AND mapping_name='" + name + "' AND mode='" + mode + "';")
+        # mapping_exist = mapcur.fetchone()
+        # mapping saving info
+        # attr_info = "attr_info='" + map_detail + "'"
+        # mapping_exist
+
+    else:
+        raise Http404
+
+    db.query('SET SQL_SAFE_UPDATES = 1;')
+    db.conn.commit()
+    return_json = simplejson.dumps("mapping del", indent=4, use_decimal=True)
     # print json
     return HttpResponse(return_json)
 
