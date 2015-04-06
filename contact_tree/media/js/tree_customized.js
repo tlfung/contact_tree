@@ -77,13 +77,21 @@ var CustomizedView = Backbone.View.extend({
 
     auto_save_mapping: function(){
         var self = this;
+        var single_attr = [];
+        // self.set({"attr_option": data});
 
         // mapping parameters
         var auto_map = {};
         var data_mode = self.model.get("view_mode");
         var attr_map = self.model.get("attribute");
+
         if(jQuery.isEmptyObject(attr_map) || data_mode == "0" || data_mode == "")
             return;
+
+        for(a in attr_map){
+            single_attr.push(attr_map[a]);
+        }
+        self.model.set({"attr_option": single_attr});
 
         auto_map["mode"] = data_mode;
         auto_map["attr"] = JSON.parse(JSON.stringify(attr_map));

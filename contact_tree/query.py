@@ -1228,12 +1228,13 @@ def set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gro
                                 ctree_record[bside_index] = 1
                     
                     else:
-                        if d[attr[compt]] in mapping[attr[compt]]["0"]:
+                        if str(d[attr[compt]]) in str(mapping[attr[compt]]["0"]):
                             if compt == 'trunk':
                                 ctree_record[trunk_index] = 0
                             else:
                                 ctree_record[bside_index] = 0
                         else:
+                            print d[attr[compt]], mapping[attr[compt]]["1"]
                             if compt == 'trunk':
                                 ctree_record[trunk_index] = 1
                             else:
@@ -1765,7 +1766,7 @@ def restore_mapping_update(request):
         for ego in ego_list[1:]:
             query_request += ' or egoid="' + ego + '"'
         query_request += " ORDER BY (e_id);"
-        print query_request
+        # print query_request
         precur = db.query(query_request)
         all_data = precur.fetchall()
 
