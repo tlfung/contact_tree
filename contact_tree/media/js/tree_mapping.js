@@ -357,7 +357,7 @@ var MappingView = Backbone.View.extend({
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.innerHTML = s + "(distinct)";
+                selection_opt.innerHTML = s + "*";
             else
                 selection_opt.innerHTML = s;
             selection_opt.setAttribute("class", "myfont3");
@@ -925,7 +925,7 @@ var MappingView = Backbone.View.extend({
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.innerHTML = s + "(distinct)";
+                selection_opt.innerHTML = s + "*";
             else
                 selection_opt.innerHTML = s;
             selection_opt.setAttribute("class", "myfont3");
@@ -2808,7 +2808,7 @@ var MappingView = Backbone.View.extend({
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.innerHTML = s + "(distinct)";
+                selection_opt.innerHTML = s + "*";
             else
                 selection_opt.innerHTML = s;
             selection_opt.setAttribute("class", "myfont3");
@@ -3357,7 +3357,7 @@ var MappingView = Backbone.View.extend({
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.innerHTML = s + "(distinct)";
+                selection_opt.innerHTML = s + "*";
             else
                 selection_opt.innerHTML = s;
             selection_opt.setAttribute("class", "myfont3");
@@ -4644,11 +4644,11 @@ var MappingView = Backbone.View.extend({
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
             if(component_attribute[data_mode][s][4] == "1" && s != "none")
-                selection_opt.innerHTML = s + "(distinct)";
-                
+                selection_opt.innerHTML = s + "*";
+
             else
                 if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.innerHTML = s + "(distinct)";
+                selection_opt.innerHTML = s + "*";
             else
                 selection_opt.innerHTML = s;
             selection_opt.setAttribute("class", "myfont3");
@@ -6341,7 +6341,7 @@ var MappingView = Backbone.View.extend({
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.innerHTML = s + "(distinct)";
+                selection_opt.innerHTML = s + "*";
             else
                 selection_opt.innerHTML = s;
             selection_opt.setAttribute("class", "myfont3");
@@ -7583,7 +7583,7 @@ var MappingView = Backbone.View.extend({
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.innerHTML = s + "(distinct)";
+                selection_opt.innerHTML = s + "*";
             else
                 selection_opt.innerHTML = s;
             selection_opt.setAttribute("class", "myfont3");
@@ -7690,7 +7690,7 @@ var MappingView = Backbone.View.extend({
             var selection_opt = document.createElement('option');
             selection_opt.value = s;
             if(s != "none")
-                selection_opt.innerHTML = s + "(distinct)";
+                selection_opt.innerHTML = s + "*";
             else
                 selection_opt.innerHTML = s;
             selection_opt.setAttribute("class", "myfont3");
