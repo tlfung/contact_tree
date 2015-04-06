@@ -75,7 +75,7 @@ var Tree_Model = Backbone.Model.extend({
 	    var get_auto_saving = function(result){
 			// var restore_array = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; // total = 15
 			var restore_array = [];
-			console.log(restore_array);
+			// console.log(restore_array);
 			var view_mode = session_id.toString() + "_of_" + result.mode;
 			restore_array.push(view_mode); // mode
 			restore_array.push(JSON.parse(result.display_egos)); // display_egos
@@ -126,7 +126,7 @@ var Tree_Model = Backbone.Model.extend({
 		};
 
 	    d3.json(request_url, function(user_result){
-			console.log(user_result);
+			// console.log(user_result);
 			
 			var restore_structure = function(){
 				var set_structure = function(data, all_ego){
@@ -270,11 +270,12 @@ var Tree_Model = Backbone.Model.extend({
 	        // console.log(user_history);
 	        if(user_history == 0){
 	        	set_default_attr(result[1]);
+	        	set_attribute_info(result[2]);
 	        }
 	        else{
 	        	set_default_attr(self.get("attribute"));
 	        }
-	        set_attribute_info(result[2]);
+	        // set_attribute_info(result[2]);
 	        var d = self.get("done_query_list");
 	        self.set({"done_query_list": d+1});
 	        self.trigger('change:attribute');        

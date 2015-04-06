@@ -2111,7 +2111,7 @@ var RenderingView = Backbone.View.extend({
                         // sub_total_leaf += this.draw_right_leaf(short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
                         var stick_leaf = 0;
                         if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                           stick_leaf = this.draw_leaf(short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]); 
+                           stick_leaf = this.draw_leaf(set_alter_id, short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]); 
                         }
                         sub_total_leaf += stick_leaf;
 
@@ -2242,6 +2242,7 @@ var RenderingView = Backbone.View.extend({
             
             var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"] + "#" + long_stick + "#r#" + layer;
             */
+            var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"] + "#" + long_stick + "#r#" + layer;
             if(this.snap == 0 && this.save_img == 0){
                 if(!jQuery.isEmptyObject(alters[long_stick][n])){
                     for(var i = 0; i < Math.round(stick_len*this.scale); i++){
@@ -2278,9 +2279,9 @@ var RenderingView = Backbone.View.extend({
             // sub_total_leaf += this.draw_right_leaf(long_stick, alters[long_stick][n], leaf_line[long_stick], stick_m[long_stick], start_point, stick_v[long_stick]);
             var stick_leaf = 0;
             if(!jQuery.isEmptyObject(alters[long_stick][n])){
-                stick_leaf = this.draw_leaf(long_stick, alters[long_stick][n], leaf_line[long_stick], stick_m[long_stick], start_point, stick_v[long_stick]);
+                stick_leaf = this.draw_leaf(set_alter_id, long_stick, alters[long_stick][n], leaf_line[long_stick], stick_m[long_stick], start_point, stick_v[long_stick]);
             }
-            // var stick_leaf = this.draw_leaf(long_stick, alters[long_stick][n], leaf_line[long_stick], stick_m[long_stick], start_point, stick_v[long_stick]);
+            // var stick_leaf = this.draw_leaf(set_alter_id, long_stick, alters[long_stick][n], leaf_line[long_stick], stick_m[long_stick], start_point, stick_v[long_stick]);
             sub_total_leaf += stick_leaf;
 
             if(!jQuery.isEmptyObject(alters[long_stick][n])){
@@ -2353,7 +2354,7 @@ var RenderingView = Backbone.View.extend({
                     // sub_total_leaf += this.draw_right_leaf(short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
                     var stick_leaf = 0;
                     if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                       stick_leaf = this.draw_leaf(short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]); 
+                       stick_leaf = this.draw_leaf(set_alter_id, short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]); 
                     }
                     sub_total_leaf += stick_leaf;
 
@@ -2773,9 +2774,9 @@ var RenderingView = Backbone.View.extend({
                         // sub_total_leaf += this.draw_left_leaf(short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
                         stick_leaf = 0;
                         if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                            stick_leaf = this.draw_leaf(short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
+                            stick_leaf = this.draw_leaf(set_alter_id, short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
                         }
-                        // var stick_leaf = this.draw_leaf(short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
+                        // var stick_leaf = this.draw_leaf(set_alter_id, short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
                         sub_total_leaf += stick_leaf;
 
                         if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
@@ -2861,6 +2862,7 @@ var RenderingView = Backbone.View.extend({
             var stick_vector = [extra_slope[long_stick][0]/stick_len, extra_slope[long_stick][1]/stick_len];
             var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"] + "#" + long_stick + "#l#" + layer;
             */
+            var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"] + "#" + long_stick + "#l#" + layer;
             if(this.snap == 0 && this.save_img == 0){
                 if(!jQuery.isEmptyObject(alters[long_stick][n])){
                     for(var i = 0; i < Math.round(stick_len*this.scale); i++){
@@ -2893,9 +2895,9 @@ var RenderingView = Backbone.View.extend({
             // sub_total_leaf += this.draw_left_leaf(long_stick, alters[long_stick][n], leaf_line[long_stick], stick_m[long_stick], start_point, stick_v[long_stick]);
             var stick_leaf = 0;
             if(!jQuery.isEmptyObject(alters[long_stick][n])){
-                stick_leaf = this.draw_leaf(long_stick, alters[long_stick][n], leaf_line[long_stick], stick_m[long_stick], start_point, stick_v[long_stick]);
+                stick_leaf = this.draw_leaf(set_alter_id, long_stick, alters[long_stick][n], leaf_line[long_stick], stick_m[long_stick], start_point, stick_v[long_stick]);
             }
-            // var stick_leaf = this.draw_leaf(long_stick, alters[long_stick][n], leaf_line[long_stick], stick_m[long_stick], start_point, stick_v[long_stick]);
+            // var stick_leaf = this.draw_leaf(set_alter_id, long_stick, alters[long_stick][n], leaf_line[long_stick], stick_m[long_stick], start_point, stick_v[long_stick]);
             sub_total_leaf += stick_leaf;
 
             if(!jQuery.isEmptyObject(alters[long_stick][n])){
@@ -2971,9 +2973,9 @@ var RenderingView = Backbone.View.extend({
                     // sub_total_leaf += this.draw_left_leaf(short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
                     stick_leaf = 0;
                     if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                        stick_leaf = this.draw_leaf(short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
+                        stick_leaf = this.draw_leaf(set_alter_id, short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
                     }
-                    // var stick_leaf = this.draw_leaf(short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
+                    // var stick_leaf = this.draw_leaf(set_alter_id, short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
                     sub_total_leaf += stick_leaf;
 
                     if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
@@ -3078,7 +3080,7 @@ var RenderingView = Backbone.View.extend({
 
     },
 
-    draw_leaf: function(side, alter, line, m, p, v){
+    draw_leaf: function(set_alter_id, side, alter, line, m, p, v){
         var self = this;
         var next = 0;
         // var leaf_size_table = [5*0.5, 8*0.5, 11*0.5, 14*0.5, 17*0.5, 20*0.5, 23*0.5, 26*0.5];
@@ -3324,7 +3326,8 @@ var RenderingView = Backbone.View.extend({
             }
 
             // var set_alter_id = this.subyear + "_" + alter["id"];
-            var set_alter_id = this.subyear + "_" + alter["id"] + "#" + side;
+            // var set_alter_id = this.subyear + "_" + alter["id"] + "#" + side;
+
             /*
             if(self.view == "inter")
                 set_alter_id = this.subyear + "_" + alter["id"] + "#" + side;

@@ -115,7 +115,7 @@ var SelectingView = Backbone.View.extend({
                 return;
             }
             var restore_array = [];
-            console.log(restore_array);
+            // console.log(restore_array);
             var view_mode = session_id.toString() + "_of_" + result.mode;
             restore_array.push(view_mode); // mode
             restore_array.push(JSON.parse(result.display_egos)); // display_egos
@@ -349,7 +349,7 @@ var SelectingView = Backbone.View.extend({
                 }
                     
                 d3.json(pre_request_url, function(result){
-                    console.log(result);
+                    // console.log(result);
                     
                     // if(!jQuery.isEmptyObject(result)){
                     set_user_history(result);
@@ -424,7 +424,7 @@ var SelectingView = Backbone.View.extend({
                 self.model.trigger('change:display_egos');
                 // user_history = 0;                
             }
-            else{
+            else if(user_history == 1){
                 initial_user = 1;
                 in_change_mode = 1;
                 set_display_value();
@@ -434,8 +434,42 @@ var SelectingView = Backbone.View.extend({
                 self.model.trigger('change:dataset_mode');
                 self.model.trigger('change:selected_egos');
                 self.model.trigger('change:canvas_scale');
+                // $("#divTable_menu").empty();
+                // $("#main_title").hide();
+                // $("#divTable_menu").hide();
                 self.set_data_label();
+                user_history = 2;
                 return;
+            }
+            else if(user_history == 2){
+                in_change_mode = 1;
+                self.model.set({"moving": 0});
+                // console.log("on menu dialog before:", self.model.get("display_egos"));
+                self.model.set({"selected_egos": {}});
+                self.model.set({"display_egos": {}});
+                self.model.set({"tree_structure":{}});
+                
+                self.my_ego_selected = {};
+                self.my_ego_display = {};
+                attribute_mapping = {};
+               
+                // save_user_mapping = [];
+                // $("#save_mapping_container").empty();
+                // self.model.set({"user_mapping": []});
+                // self.model.trigger('change:user_mapping');
+
+                self.model.set({"leaf_scale":3});
+                self.model.set({"fruit_scale":3});
+                self.model.set({"sub_leaf_len_scale":1});
+                self.model.set({"dtl_branch_curve":1});
+                self.model.set({"filter_contact":0});
+                // self.model.set({"abt_branch_curve":1});
+                self.model.set({"root_curve":0});
+                self.model.set({"root_len_scale":1});
+                self.model.set({"canvas_translate":[0, 0]});
+                self.model.set({"canvas_scale":0.15});
+
+                self.model.trigger('change:display_egos');
             }
 
             var data_selected = $("#dataselect").val();
@@ -487,7 +521,7 @@ var SelectingView = Backbone.View.extend({
             $("#sub_title").hide();
             $("#detail_menu").hide();
         }
-        else if(user_history == 0){
+        else if(user_history != 1){
             this.data_option();
         }
        
@@ -512,7 +546,7 @@ var SelectingView = Backbone.View.extend({
         var name = "EGO";
         var sub = "";
         var select_ego = [];
-        if(user_history == 0)
+        if(user_history != 1)
             $("#block_page").hide();
         $('#egogroup').removeAttr("disabled");
         function opt_change(ego){
@@ -603,7 +637,7 @@ var SelectingView = Backbone.View.extend({
 
                 // now_ego[self.my_ego] = select_ego;
                 // now_ego = JSON.stringify(now_ego);
-                console.log(">>>>", self.model.get("tree_structure"));
+                // console.log(">>>>", self.model.get("tree_structure"));
 
                 self.my_ego_selected[self.my_ego] = select_ego;
 
@@ -612,7 +646,7 @@ var SelectingView = Backbone.View.extend({
                 
                 self.model.set({"display_egos":self.my_ego_display});
                 self.model.set({"selected_egos":self.my_ego_selected});
-                console.log(">>>>", self.model.get("selected_egos"));
+                // console.log(">>>>", self.model.get("selected_egos"));
                 
                 self.model.set({"canvas_translate":[0, 0]});
                 self.model.set({"canvas_scale":0.15});

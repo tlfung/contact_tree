@@ -116,7 +116,7 @@ var CustomizedView = Backbone.View.extend({
         var request_url = "restore_user_mapping/?user="+request;
         // $("#block_page").show();
         d3.json(request_url, function(result) {
-            console.log(">>>>>>>>>", result);
+            // console.log(">>>>>>>>>", result);
             self.model.set({"user_mapping": result});
             self.model.trigger('change:user_mapping');
         }); 

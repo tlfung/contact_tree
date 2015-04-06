@@ -125,7 +125,7 @@ var MappingView = Backbone.View.extend({
     set_user_mapping: function(){
         var self = this;
         var save_user_mapping = self.model.get("user_mapping");
-        console.log(save_user_mapping);
+        // console.log(save_user_mapping);
         var save_container = $("#save_mapping_container");
         save_container.empty();
         for(var s = 1; s <= save_user_mapping.length; s++){
@@ -816,7 +816,7 @@ var MappingView = Backbone.View.extend({
             $("#block_layer").show();
 
             if(attr_map["trunk"] in attribute_mapping){
-                console.log(attribute_mapping);
+                // console.log(attribute_mapping);
                 delete attribute_mapping[attr_map["trunk"]];
                 // attribute_mapping[$("#sidekeyselect").val()] = {"0": [], "1": []};
             }
@@ -872,7 +872,7 @@ var MappingView = Backbone.View.extend({
                 var request_url = "update_binary/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
-                    console.log("finish update");
+                    // console.log("finish update");
                     var set_update_info = function(data){
                         var attr_map = self.model.get("attribute");
                         var attr_opt = self.model.get("attr_option");
@@ -2675,7 +2675,7 @@ var MappingView = Backbone.View.extend({
             
 
             if(attr_map["branch"] in attribute_mapping){
-                console.log(attribute_mapping);
+                // console.log(attribute_mapping);
                 delete attribute_mapping[attr_map["branch"]];
                 // attribute_mapping[$("#sidekeyselect").val()] = {"0": [], "1": []};
             }
@@ -2718,7 +2718,7 @@ var MappingView = Backbone.View.extend({
                 var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
-                    console.log("finish update");
+                    // console.log("finish update");
                     var set_update_info = function(data){
                         var attr_map = self.model.get("attribute");
                         var attr_opt = self.model.get("attr_option");
@@ -2759,7 +2759,7 @@ var MappingView = Backbone.View.extend({
             var request_url = "update_layer/?update="+update_info;
             console.log(request_url);
             d3.json(request_url, function(result){
-                console.log("finish update");
+                // console.log("finish update");
                 var set_update_info = function(data){
                     var attr_map = self.model.get("attribute");
                     var attr_opt = self.model.get("attr_option");
@@ -3252,7 +3252,7 @@ var MappingView = Backbone.View.extend({
             $("#block_layer").show();
 
             if(attr_map["bside"] in attribute_mapping){
-                console.log(attribute_mapping);
+                // console.log(attribute_mapping);
                 delete attribute_mapping[attr_map["bside"]];
                 // attribute_mapping[$("#sidekeyselect").val()] = {"0": [], "1": []};
             }
@@ -3308,7 +3308,7 @@ var MappingView = Backbone.View.extend({
                 var request_url = "update_binary/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
-                    console.log("finish update");
+                    // console.log("finish update");
                     var set_update_info = function(data){
                         var attr_map = self.model.get("attribute");
                         var attr_opt = self.model.get("attr_option");
@@ -4493,21 +4493,21 @@ var MappingView = Backbone.View.extend({
             // $("#sidekey_img").attr("disabled", true);
             $("#block_layer").show();
             if(attr_map["root"] in attribute_mapping){
-                console.log(attribute_mapping);
+                // console.log(attribute_mapping);
                 delete attribute_mapping[attr_map["root"]];
             }
             attr_map["root"] = $("#sidekeyselect").val();
 
             if($("#sidekeyselect").val() == "none"){
                 var update_info = data_mode + ":-ctree_root:-" + $("#sidekeyselect").val() + ":-" + JSON.stringify(["none"]);
-                // mapping_color.render_roots_color = ["#964343", "#90093F", "#967636", "#6B435E"];
-                mapping_color.render_roots_color = mapping_color.roots_color;
+                mapping_color.render_roots_color = ["#964343", "#90093F", "#967636", "#6B435E"];
+                // mapping_color.render_roots_color = mapping_color.roots_color;
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
                 }
                 var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 d3.json(request_url, function(result){
-                    console.log("finish update");
+                    // console.log("finish update");
                     var set_update_info = function(data){
                         var attr_map = self.model.get("attribute");
                         var attr_opt = self.model.get("attr_option");
@@ -4570,7 +4570,7 @@ var MappingView = Backbone.View.extend({
                 var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
-                    console.log("finish update");
+                    // console.log("finish update");
                     var set_update_info = function(data){
                         var attr_map = self.model.get("attribute");
                         var attr_opt = self.model.get("attr_option");
@@ -4597,7 +4597,7 @@ var MappingView = Backbone.View.extend({
             var request_url = "update_layer/?update="+update_info;
             console.log(request_url);
             d3.json(request_url, function(result){
-                console.log("finish update");
+                // console.log("finish update");
                 var set_update_info = function(data){
                     var attr_map = self.model.get("attribute");
                     var attr_opt = self.model.get("attr_option");
@@ -4645,6 +4645,7 @@ var MappingView = Backbone.View.extend({
             selection_opt.value = s;
             if(component_attribute[data_mode][s][4] == "1" && s != "none")
                 selection_opt.innerHTML = s + "(distinct)";
+                
             else
                 if(s != "none" && component_attribute[data_mode][s][4] == 1)
                 selection_opt.innerHTML = s + "(distinct)";
@@ -6213,7 +6214,7 @@ var MappingView = Backbone.View.extend({
             $("#block_layer").show();
 
             if(attr_map["leaf_size"] in attribute_mapping){
-                console.log(attribute_mapping);
+                // console.log(attribute_mapping);
                 delete attribute_mapping[attr_map["leaf_size"]];
                 // attribute_mapping[$("#sidekeyselect").val()] = {"0": [], "1": []};
             }
@@ -6227,7 +6228,7 @@ var MappingView = Backbone.View.extend({
                 var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
-                    console.log("finish update");
+                    // console.log("finish update");
                     var set_update_info = function(data){
                         var attr_map = self.model.get("attribute");
                         var attr_opt = self.model.get("attr_option");
@@ -6290,7 +6291,7 @@ var MappingView = Backbone.View.extend({
                 var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
-                    console.log("finish update");
+                    // console.log("finish update");
                     var set_update_info = function(data){
                         var attr_map = self.model.get("attribute");
                         var attr_opt = self.model.get("attr_option");
@@ -7454,21 +7455,21 @@ var MappingView = Backbone.View.extend({
             // $("#sidekey_img").attr("disabled", true);
             $("#block_layer").show();
             if(attr_map["leaf_color"] in attribute_mapping){
-                console.log(attribute_mapping);
+                // console.log(attribute_mapping);
                 delete attribute_mapping[attr_map["leaf_color"]];
             }
             attr_map["leaf_color"] = $("#sidekeyselect").val();
             if($("#sidekeyselect").val() == "none"){
                 var update_info = data_mode + ":-ctree_leaf_color:-" + $("#sidekeyselect").val() + ":-" + JSON.stringify(["none"]);
-                // mapping_color.render_leaf_color = ["#924307", "#C2B208", "#94AE0F", "#5F9915"];
-                mapping_color.render_leaf_color = mapping_color.leaf_color;
+                mapping_color.render_leaf_color = ["#924307", "#C2B208", "#94AE0F", "#5F9915"];
+                // mapping_color.render_leaf_color = mapping_color.leaf_color;
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
                 }
                 var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
-                    console.log("finish update");
+                    // console.log("finish update");
                     var set_update_info = function(data){
                         var attr_map = self.model.get("attribute");
                         var attr_opt = self.model.get("attr_option");
@@ -7530,7 +7531,7 @@ var MappingView = Backbone.View.extend({
                 var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
-                    console.log("finish update");
+                    // console.log("finish update");
                     var set_update_info = function(data){
                         var attr_map = self.model.get("attribute");
                         var attr_opt = self.model.get("attr_option");
@@ -7632,7 +7633,7 @@ var MappingView = Backbone.View.extend({
             var request_url = "update_highlight/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
             // console.log(request_url);
             d3.json(request_url, function(result){
-                console.log("finish update");
+                // console.log("finish update");
                 var set_update_info = function(data){
                     var attr_map = self.model.get("attribute");
                     var attr_opt = self.model.get("attr_option");
@@ -9200,7 +9201,7 @@ var MappingView = Backbone.View.extend({
             $("#block_layer").show();
 
             if(attr_map["fruit_size"] in attribute_mapping){
-                console.log(attribute_mapping);
+                // console.log(attribute_mapping);
                 delete attribute_mapping[attr_map["fruit_size"]];
                 // attribute_mapping[$("#sidekeyselect").val()] = {"0": [], "1": []};
             }
@@ -9214,7 +9215,7 @@ var MappingView = Backbone.View.extend({
                 var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
-                    console.log("finish update");
+                    // console.log("finish update");
                     var set_update_info = function(data){
                         var attr_map = self.model.get("attribute");
                         var attr_opt = self.model.get("attr_option");
@@ -9277,7 +9278,7 @@ var MappingView = Backbone.View.extend({
                 var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
-                    console.log("finish update");
+                    // console.log("finish update");
                     var set_update_info = function(data){
                         var attr_map = self.model.get("attribute");
                         var attr_opt = self.model.get("attr_option");

@@ -96,7 +96,7 @@ var MyApp = function MyApp(){
         $("#share_link").attr('href', "#share_id=" + session_id);
         first_use = 1;
     }
-    console.log("sssss", session_id, current_url);
+    // console.log(session_id, current_url);
     
     // $(window).bind('beforeunload',function(){
     //     return 'are you sure you want to leave?';        
