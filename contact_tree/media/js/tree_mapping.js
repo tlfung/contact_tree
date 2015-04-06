@@ -869,7 +869,7 @@ var MappingView = Backbone.View.extend({
 
                 }
                 
-                var request_url = "update_binary/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
+                var request_url = "update_binary/?update=" + self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
                     // console.log("finish update");
@@ -2715,7 +2715,7 @@ var MappingView = Backbone.View.extend({
                     update_info += ":=" + ego;
                 }
 
-                var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
+                var request_url = "update_layer/?update=" + self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
                     // console.log("finish update");
@@ -3305,7 +3305,7 @@ var MappingView = Backbone.View.extend({
 
                 }
                 
-                var request_url = "update_binary/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
+                var request_url = "update_binary/?update=" + self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
                     // console.log("finish update");
@@ -4505,7 +4505,7 @@ var MappingView = Backbone.View.extend({
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
                 }
-                var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
+                var request_url = "update_layer/?update=" + self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
                 d3.json(request_url, function(result){
                     // console.log("finish update");
                     var set_update_info = function(data){
@@ -4567,7 +4567,7 @@ var MappingView = Backbone.View.extend({
                     update_info += ":=" + ego;
                 }
 
-                var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
+                var request_url = "update_layer/?update=" + self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
                     // console.log("finish update");
@@ -6225,7 +6225,7 @@ var MappingView = Backbone.View.extend({
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
                 }
-                var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
+                var request_url = "update_layer/?update=" + self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
                     // console.log("finish update");
@@ -6288,7 +6288,7 @@ var MappingView = Backbone.View.extend({
                     update_info += ":=" + ego;
                 }               
 
-                var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
+                var request_url = "update_layer/?update=" + self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
                     // console.log("finish update");
@@ -7466,7 +7466,7 @@ var MappingView = Backbone.View.extend({
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
                 }
-                var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
+                var request_url = "update_layer/?update=" + self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
                     // console.log("finish update");
@@ -7528,7 +7528,7 @@ var MappingView = Backbone.View.extend({
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
                 }
-                var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
+                var request_url = "update_layer/?update=" + self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
                     // console.log("finish update");
@@ -7630,7 +7630,7 @@ var MappingView = Backbone.View.extend({
                 update_info += ":=" + ego;
             }
             attr_map["leaf_id"] = $("#sidekeyselect").val();
-            var request_url = "update_highlight/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
+            var request_url = "update_highlight/?update=" + self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
             // console.log(request_url);
             d3.json(request_url, function(result){
                 // console.log("finish update");
@@ -9212,7 +9212,7 @@ var MappingView = Backbone.View.extend({
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
                 }
-                var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
+                var request_url = "update_layer/?update=" + self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
                     // console.log("finish update");
@@ -9275,7 +9275,7 @@ var MappingView = Backbone.View.extend({
                     update_info += ":=" + ego;
                 }               
 
-                var request_url = "update_layer/?update=" + JSON.stringify(attr_map) + ":-" + update_info;
+                var request_url = "update_layer/?update=" + self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
                 // console.log(request_url);
                 d3.json(request_url, function(result){
                     // console.log("finish update");

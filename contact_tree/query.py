@@ -1473,7 +1473,7 @@ def set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gro
             user_ctree_data[session][data_table][label]["done"] = 1
 
 
-def update_default_mapping(user_ctree_data, select_ego, table, new_column):
+def update_default_mapping(user_ctree_data, select_ego, table, new_column, group):
     db = DB()
     binary_index = dict()
     branch_order_index = []
@@ -1495,6 +1495,12 @@ def update_default_mapping(user_ctree_data, select_ego, table, new_column):
        
         ego = label.split("_of_")[0]
         dataset = label.split("_of_")[1]
+        if group != "all" and dataset == "all":
+            del_label.append(label)
+            continue
+        if group == "all" and dataset != "all":
+            del_label.append(label)
+            continue
 
         if ego in select_ego:
             # for restructure information
@@ -1505,7 +1511,7 @@ def update_default_mapping(user_ctree_data, select_ego, table, new_column):
                 if dataset not in ego_group[ego]:
                     ego_group[ego].append(dataset)
 
-            if dataset != "all":
+            if group != "all":
                 query_request = 'SELECT ' + new_column + ' FROM ' + data_table + ' WHERE egoid="' + ego + '" AND dataset="' + dataset + '" ORDER BY (e_id);'
                 restructure_request = "dataset"
             else:
@@ -1539,7 +1545,6 @@ def update_default_mapping(user_ctree_data, select_ego, table, new_column):
                 #     ctree_record[highlight_index] = d['ctree_highlight'] 
                 
                 count_record += 1
-            
                 
         else:
             del_label.append(label)
@@ -1795,11 +1800,12 @@ def update_binary(request):
         select_ego = request.GET['update'].split(":=")[1:]
         # print list_request
         # select_ego = json.loads(list_request[0])
-        table = list_request[1]
-        ori_column = list_request[3]
-        new_column = list_request[2]
-        attr = list_request[0]
-        zero_val = list_request[4:]
+        table = list_request[2]
+        ori_column = list_request[4]
+        new_column = list_request[3]
+        attr = list_request[1]
+        group = list_request[0]
+        zero_val = list_request[5:]
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0]
 
@@ -1864,7 +1870,7 @@ def update_binary(request):
         raise Http404
 
     
-    restructure_info = update_default_mapping(user_ctree_data, select_ego, table, new_column)
+    restructure_info = update_default_mapping(user_ctree_data, select_ego, table, new_column, group)
 
     # list_request = structure_request.split(":-")
     # attr = json.loads(list_request[0])
@@ -1899,13 +1905,14 @@ def update_layer(request):
     if request.GET.get('update'):
         list_request = request.GET['update'].split(":=")[0].split(":-")
         select_ego = request.GET['update'].split(":=")[1:]
-        # print list_request
+        
         # select_ego = json.loads(list_request[0])
-        table = list_request[1]
-        ori_column = list_request[3]
-        new_column = list_request[2]
-        attr = list_request[0]
-        val_map = json.loads(list_request[4])
+        table = list_request[2]
+        ori_column = list_request[4]
+        new_column = list_request[3]
+        attr = list_request[1]
+        group = list_request[0]
+        val_map = json.loads(list_request[5])
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0]
         # print select_ego
@@ -1945,12 +1952,11 @@ def update_layer(request):
             #     update_layer_val += ");"
                 
             # print update_layer_val
-            # print update_none
             clause.execute(update_none)     
             clause.execute('SET SQL_SAFE_UPDATES = 1;')
             database.commit()       
 
-            restructure_info = update_default_mapping(user_ctree_data, select_ego, table, new_column)
+            restructure_info = update_default_mapping(user_ctree_data, select_ego, table, new_column, group)
 
             # list_request = structure_request.split(":-")
             # attr = json.loads(list_request[0])
@@ -1961,7 +1967,7 @@ def update_layer(request):
             # session = table.split("_of_")[0]
 
             structure_request = attr + ":-" + restructure_info + ":-" + table
-            # print structure_request
+            print ">>>>>>>>>>>>>", structure_request
             return_json = one_contact_structure(user_ctree_data, structure_request)
 
             user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
@@ -2108,7 +2114,7 @@ def update_layer(request):
     else:
         raise Http404
 
-    restructure_info = update_default_mapping(user_ctree_data, select_ego, table, new_column)
+    restructure_info = update_default_mapping(user_ctree_data, select_ego, table, new_column, group)
 
     # list_request = structure_request.split(":-")
     # attr = json.loads(list_request[0])
@@ -2146,16 +2152,17 @@ def update_highlight(request):
         select_ego = request.GET['update'].split(":=")[1:]
         # print list_request
         # select_ego = json.loads(list_request[0])
-        table = list_request[1]
-        ori_column = list_request[3]
-        new_column = list_request[2]
-        attr = list_request[0]
+        table = list_request[2]
+        ori_column = list_request[4]
+        new_column = list_request[3]
+        attr = list_request[1]
+        group = list_request[0]
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0]
         
         restructure_request = ""
         ego_group = dict()
-
+        del_label = []
         with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
             user_ctree_data = json.load(json_file)
 
@@ -2172,6 +2179,13 @@ def update_highlight(request):
                 continue
             ego = label.split("_of_")[0]
             dataset = label.split("_of_")[1]
+            if group != "all" and dataset == "all":
+                del_label.append(label)
+                continue
+            if group == "all" and dataset != "all":
+                del_label.append(label)
+                continue
+
             if ego in select_ego:
                 if ego not in ego_group:
                     ego_group[ego] = []
@@ -2180,7 +2194,7 @@ def update_highlight(request):
                     if dataset not in ego_group[ego]:
                         ego_group[ego].append(dataset)
 
-                if dataset != "all":
+                if group != "all":
                     query_request = 'SELECT ' + ori_column + ' FROM ' + data_table + ' WHERE egoid="' + ego + '" AND dataset="' + dataset + '" ORDER BY (e_id);'
                     restructure_request = "dataset"
                 else:
@@ -2195,7 +2209,10 @@ def update_highlight(request):
                     ctree_record[highlight_index] = d[ori_column] 
                     count_record += 1
             else:
-                del user_ctree_data[session][data_table][label]
+                del_label.append(label)
+
+        for d in del_label:
+            del user_ctree_data[session][data_table][d]
 
         restructure_request = restructure_request + ":-" + simplejson.dumps(ego_group, use_decimal=True)
 

@@ -451,7 +451,7 @@ var SelectingView = Backbone.View.extend({
                 
                 self.my_ego_selected = {};
                 self.my_ego_display = {};
-                attribute_mapping = {};
+                // attribute_mapping = {};
                
                 // save_user_mapping = [];
                 // $("#save_mapping_container").empty();
@@ -606,6 +606,7 @@ var SelectingView = Backbone.View.extend({
             self.model.query_data(requst);
             
             // button click event
+            $("#submit_ego").unbind();
             $("#submit_ego").click(function(){ // store selecting data
                 self.my_ego_selected = self.model.get("selected_egos");
                 self.my_ego_display = self.model.get("display_egos");
