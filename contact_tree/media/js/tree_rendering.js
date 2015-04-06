@@ -118,7 +118,7 @@ var RenderingView = Backbone.View.extend({
         this.filter_cnt = self.model.get("filter_contact");        
         self.tree_size = self.model.get("tree_boundary");
         this.translate_point = self.model.get("canvas_translate");
-        this.c_detail = 10*this.scale;
+        this.c_detail = 8*this.scale;
 
         if(this.scale > 0.6){
             this.on_moving = 0;

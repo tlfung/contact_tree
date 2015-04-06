@@ -11,14 +11,14 @@ var CustomizedView = Backbone.View.extend({
         
 
         this.model.bind('change:display_egos', this.auto_save);
-        this.model.bind('change:leaf_scale', this.auto_save);
-        this.model.bind('change:fruit_scale', this.auto_save);
-        this.model.bind('change:sub_leaf_len_scale', this.auto_save);
-        this.model.bind('change:dtl_branch_curve', this.auto_save);
-        this.model.bind('change:root_curve', this.auto_save);
-        this.model.bind('change:root_len_scale', this.auto_save);
-        this.model.bind('change:canvas_scale', this.auto_save);
-        this.model.bind('change:filter_contact', this.auto_save);
+        // this.model.bind('change:leaf_scale', this.auto_save);
+        // this.model.bind('change:fruit_scale', this.auto_save);
+        // this.model.bind('change:sub_leaf_len_scale', this.auto_save);
+        // this.model.bind('change:dtl_branch_curve', this.auto_save);
+        // this.model.bind('change:root_curve', this.auto_save);
+        // this.model.bind('change:root_len_scale', this.auto_save);
+        // this.model.bind('change:canvas_scale', this.auto_save);
+        // this.model.bind('change:filter_contact', this.auto_save);
         this.model.bind('change:tree_structure', this.auto_save);
         this.model.bind('change:attribute', this.auto_save);
         this.model.bind('change:attribute', this.auto_save_mapping);
