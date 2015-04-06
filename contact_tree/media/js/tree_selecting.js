@@ -334,6 +334,10 @@ var SelectingView = Backbone.View.extend({
                                 if(selection_opt.value == on_group)
                                     selection_opt.setAttribute("selected", true);
                                 selection_opt.innerHTML = self.ego_cat[s];
+                                if (self.ego_cat[s] == "dataset"){
+                                    selection_opt.innerHTML = "wave";
+                                }
+                                
                                 selection_opt.setAttribute("class", "myfont3");
                                 
                                 container.appendChild(selection_opt);
@@ -375,6 +379,9 @@ var SelectingView = Backbone.View.extend({
                                 if(selection_opt.value == on_group)
                                     selection_opt.setAttribute("selected", true);
                                 selection_opt.innerHTML = self.ego_cat[s];
+                                if (self.ego_cat[s] == "dataset"){
+                                    selection_opt.innerHTML = "wave";
+                                }
                                 selection_opt.setAttribute("class", "myfont3");
                                 
                                 container.appendChild(selection_opt);
