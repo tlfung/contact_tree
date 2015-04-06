@@ -1234,7 +1234,6 @@ def set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gro
                             else:
                                 ctree_record[bside_index] = 0
                         else:
-                            print d[attr[compt]], mapping[attr[compt]]["1"]
                             if compt == 'trunk':
                                 ctree_record[trunk_index] = 1
                             else:

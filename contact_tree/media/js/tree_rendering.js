@@ -4147,6 +4147,12 @@ var RenderingView = Backbone.View.extend({
     
     leaf_style_1: function(ctx, cx, cy, radius, color, angle, l_id) {
         var self = this;
+        if(this.snap == 0 && this.save_img == 0){
+            var canvas_x_boundary = [-this.translate_point[0]/this.scale, (self.myCanvas.width - this.translate_point[0]) / this.scale ];
+            var canvas_y_boundary = [-this.translate_point[1]/this.scale, (self.myCanvas.height - this.translate_point[1]) / self.scale ];
+            if(cx < canvas_x_boundary[0] || cx > canvas_x_boundary[1] || cy > canvas_y_boundary[1] || cy < canvas_y_boundary[0])
+                return;
+        }
         ctx.save();
         this.context.lineWidth = 1;
         if(l_id != "none" && self.leaf_hovor == l_id){
