@@ -129,7 +129,7 @@ var ZoomView = Backbone.View.extend({
             // var mes = Pos.x +','+Pos.y;
             // self.writeMessage(self.myCanvas, mes);
             
-            
+            $("#c").css("cursor", "");
             if (self.dragStart && Math.abs(mousePos.x-self.dragStart.x)>0.1){
                 self.dragged = true;
                 // console.log("mousemove");
@@ -148,9 +148,16 @@ var ZoomView = Backbone.View.extend({
                 if(self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)] != -1){
                     // console.log("Display Info:", self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)]);
                     var point_info = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)]
-                    if(point_info.split("*+")[0] == "leaf"){
-                        self.model.set({"clicking_leaf":point_info.split("*+")[1]});
-                        self.writeNote(Math.round(mousePos.x), Math.round(mousePos.y), self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1]);
+                    var pointer = point_info.split("*+");
+                    if(pointer.length == 1){
+                        $("#c").css("cursor", "pointer");
+                    }
+                    else{ 
+                        $("#c").css("cursor", "");
+                        if(point_info.split("*+")[0] == "leaf"){
+                            self.model.set({"clicking_leaf":point_info.split("*+")[1]});
+                            self.writeNote(Math.round(mousePos.x), Math.round(mousePos.y), self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1]);
+                        }
                     }
                 }
             }
@@ -416,7 +423,7 @@ var ZoomView = Backbone.View.extend({
                 });
             }
             else{
-                $("#info_title").html("EGO" + ego + "(" + sub + ")");
+                $("#info_title").html("EGO" + ego + "(" + sub.toUpperCase() + ")");
                 $("#raw_data_table").empty();
                 $("#loading_table").show();
                 var list_table = function(data){
@@ -451,41 +458,20 @@ var ZoomView = Backbone.View.extend({
                 });
 
             }
-            /*
-            $("#info_title").html("EGO" + ego + "(" + sub + "):");;
-            var list_table = function(data){
-                // console.log("table:", data);
-                $("#raw_data_table").empty();
-                var table_container = document.getElementById("raw_data_table");
-                for(var r = 0; r < data.length; r++){
-                    var row = document.createElement("tr");
-                    row.id = data[r][0];
-                    if(r == 0){
-                        row.setAttribute('style', 'background:rgb(175, 175, 175)');
-                    }
-                    if(r == 1){
-                        row.setAttribute('style', 'background:rgb(205, 205, 205)');
-                    }
-                    for(var c = 1; c < data[r].length; c++){
-                        var column = document.createElement("td");
-                        if(r < 2)
-                            column.innerHTML = "<b>" + data[r][c] + "</b>";
-                        else
-                            column.innerHTML = data[r][c];
-                        row.appendChild(column);
-                    }
-                    table_container.appendChild(row);
-                }
-               
-            };
             
-            var request_url = "fetch_data/?ego="+table+":-"+ego+":-"+sub+":="+JSON.stringify(attr_map);
-            
-            d3.json(request_url, function(result) {
-                list_table(result);
-            });
-            */
+        },false);
 
+        self.snapCanvas.addEventListener('mousemove',function(evt){
+            var mousePos = self.getMousePos(self.snapCanvas, evt);
+            var grid = self.model.get("snap_grid");
+
+            // console.log("snap_grid:", grid);
+            if(grid[Math.round(mousePos.x)][Math.round(mousePos.y)] != -1){
+                $("#one_tree").css("cursor", "pointer");
+            }
+            else{
+               $("#one_tree").css("cursor", "");
+            }
             
         },false);
     }

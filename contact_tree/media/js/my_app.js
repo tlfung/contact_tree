@@ -180,7 +180,7 @@ var MyApp = function MyApp(){
         $("#help_page").show();
          
         if($("#help_slide").height() > $(window).height()){
-            console.log("ttttt");
+            // console.log("ttttt");
             $("#help_slide").removeAttr("width");
             $("#help_slide").attr("height", "90%");
         }  
@@ -191,7 +191,7 @@ var MyApp = function MyApp(){
     $("#slide_next").click(function(){
         var num_slide =  parseInt($('#help_slide').attr('value'));
         if(num_slide < 10){
-            $('#help_slide').attr('src', 'media/img/help/slide' + (num_slide+1) +'.jpg');
+            $('#help_slide').attr('src', 'media/img/new_help/slide' + (num_slide+1) +'.jpg');
             $("#help_slide").attr('value', (num_slide+1)); 
         }
         return false;
@@ -200,7 +200,7 @@ var MyApp = function MyApp(){
     $("#slide_previous").click(function(){
         var num_slide =  parseInt($('#help_slide').attr('value'));
         if(num_slide > 1){
-            $('#help_slide').attr('src', 'media/img/help/slide' + (num_slide-1) +'.jpg');
+            $('#help_slide').attr('src', 'media/img/new_help/slide' + (num_slide-1) +'.jpg');
             $("#help_slide").attr('value', (num_slide-1)); 
         }
         return false;

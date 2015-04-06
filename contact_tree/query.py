@@ -1967,7 +1967,7 @@ def update_layer(request):
             # session = table.split("_of_")[0]
 
             structure_request = attr + ":-" + restructure_info + ":-" + table
-            print ">>>>>>>>>>>>>", structure_request
+            # print ">>>>>>>>>>>>>", structure_request
             return_json = one_contact_structure(user_ctree_data, structure_request)
 
             user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
