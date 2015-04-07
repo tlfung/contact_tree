@@ -1,85 +1,9 @@
-/*
-var layout = {
-    header_height: 80,
-    footer_height: 50,
-    chart_height: 250
-};
-*/
-
 var drawing_canvas = {
     main_canvas: document.getElementById("c"),
     snap_canvas: document.getElementById("one_tree"),
     save_canvas: document.getElementById("save_tree"),
     middle: 0
 };
-
-// var time = ["2004", "2008", "2012"];
-// var time = [];
-var sub_ego = [];
-
-// var total_ego = {
-//     "2004": ["1", "2", "4", "5", "6", "7", "9", "14", "15", "16", "17", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "51", "52", "53", "54", "55", "56", "57", "59", "60"],
-//     "2008": ["1", "4", "6", "7", "15", "19", "21", "22", "23", "24", "25", "26", "27", "30", "33", "34", "35", "39", "43", "46", "49", "51", "52", "53", "54", "57", "59", "60"],
-//     "2012": ["1", "15", "23", "33", "34", "36", "43", "46", "52", "57", "59", "60"]
-// };
-
-// var international_countries = ["be", "de", "fi", "gb", "id", "it", "lu", "nl", "pl", "th", "tw", "vn"];
-
-var total_ego = {};
-var session_id = 0;
-var last_use = "none";
-var in_change_mode = 0;
-/*
-var mapping_item = {
-    "diary": ["alterid", "sex", "age", "yrknown", "feel", "howlong", "like", "month"],
-    "DBLP": ["coauthor", "co_area_cat", "first_cooperation", "total_paper", "paper_year", "paper_authors", "tier1_paper", "area_detail_cat"],
-    // "inter": ["ego", "egosex", "egoage", "altersex", "place", "duration", "ego_education_length", "ego_hhsize"]
-    "inter": ["ego", "ego_hhsize", "egoage", "ego_occupation", "touch", "duration", "ego_education_length", "place"] //(1)
-    // "inter": ["ego", "egosex", "egoage", "altersex", "place", "duration", "ego_education_length", "ego_hhsize"] //(2)
-    // "inter": ["ego", "egosex", "egoage", "touch", "place", "duration", "ego_education_length", "ego_hhsize"] //(3)
-};
-*/
-
-
-// var dataset_mode = ["combine_diary", "international"]; //push new dataset
-// var dataset_mode = [];
-
-/*
-var default_attribute = {
-    "diary": {
-        "stick": "alterid",
-        "trunk": "sex",
-        "branch": "age",
-        "bside": "yrknown",
-        "leaf_color": "feel",
-        "leaf_size": "howlong",
-        "fruit": "like",
-        "root": "month"
-    },
-    "DBLP": {
-        "stick": "coauthor",
-        "trunk": "co_area_cat",
-        "branch": "first_cooperation",
-        "bside": "total_paper",
-        "leaf_color": "paper_year",
-        "leaf_size": "paper_authors",
-        "fruit": "tier1_paper",
-        "root": "area_detail_cat"
-    },
-    "inter": {
-        "stick": "ego_id",
-        "trunk": "ego_hhsize",
-        "branch": "egoage",
-        "bside": "ego_occupation",
-        "leaf_color": "touch",
-        "leaf_size": "duration",
-        "fruit": "ego_education_length",
-        "root": "place"
-    }
-};
-
-var default_component = ["stick", "trunk", "branch", "bside", "leaf_color", "leaf_size", "fruit", "root"];
-*/
 
 var mapping_color = {
     // leaf_color: ["#927007", "#CF9D00", "#C2B208", "#699B1A", "#2E7523", "#214E33", "#1F4230", "#184E35", "#19432F"],
@@ -118,12 +42,80 @@ var mapping_size = {
     fruit_size_table: [0, 2, 4, 6, 8, 10, 12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32, 34, 36, 38, 40]
 };
 
+// about the contact tree
 var component_attribute = {};
 var attribute_mapping = {};
-// var save_user_mapping = [];
+var initial_grid = [];
+
+// ego information
+var sub_ego = [];
+var total_ego = {};
+
+// user behaiver
+var session_id = 0;
+var last_use = "none";
+var in_change_mode = 0;
 var initial_user = 0;
 var user_history = 0;
 var first_use = 0;
+
+
+/*********************** hard code setting ***************************/
+// var total_ego = {
+//     "2004": ["1", "2", "4", "5", "6", "7", "9", "14", "15", "16", "17", "19", "20", "21", "22", "23", "24", "25", "26", "27", "28", "29", "30", "33", "34", "35", "36", "37", "38", "39", "40", "41", "42", "43", "44", "45", "46", "47", "48", "49", "51", "52", "53", "54", "55", "56", "57", "59", "60"],
+//     "2008": ["1", "4", "6", "7", "15", "19", "21", "22", "23", "24", "25", "26", "27", "30", "33", "34", "35", "39", "43", "46", "49", "51", "52", "53", "54", "57", "59", "60"],
+//     "2012": ["1", "15", "23", "33", "34", "36", "43", "46", "52", "57", "59", "60"]
+// };
+
+// var international_countries = ["be", "de", "fi", "gb", "id", "it", "lu", "nl", "pl", "th", "tw", "vn"];
+
+/*
+var mapping_item = {
+    "diary": ["alterid", "sex", "age", "yrknown", "feel", "howlong", "like", "month"],
+    "DBLP": ["coauthor", "co_area_cat", "first_cooperation", "total_paper", "paper_year", "paper_authors", "tier1_paper", "area_detail_cat"],
+    // "inter": ["ego", "egosex", "egoage", "altersex", "place", "duration", "ego_education_length", "ego_hhsize"]
+    "inter": ["ego", "ego_hhsize", "egoage", "ego_occupation", "touch", "duration", "ego_education_length", "place"] //(1)
+    // "inter": ["ego", "egosex", "egoage", "altersex", "place", "duration", "ego_education_length", "ego_hhsize"] //(2)
+    // "inter": ["ego", "egosex", "egoage", "touch", "place", "duration", "ego_education_length", "ego_hhsize"] //(3)
+};
+*/
+
+/*
+var default_attribute = {
+    "diary": {
+        "stick": "alterid",
+        "trunk": "sex",
+        "branch": "age",
+        "bside": "yrknown",
+        "leaf_color": "feel",
+        "leaf_size": "howlong",
+        "fruit": "like",
+        "root": "month"
+    },
+    "DBLP": {
+        "stick": "coauthor",
+        "trunk": "co_area_cat",
+        "branch": "first_cooperation",
+        "bside": "total_paper",
+        "leaf_color": "paper_year",
+        "leaf_size": "paper_authors",
+        "fruit": "tier1_paper",
+        "root": "area_detail_cat"
+    },
+    "inter": {
+        "stick": "ego_id",
+        "trunk": "ego_hhsize",
+        "branch": "egoage",
+        "bside": "ego_occupation",
+        "leaf_color": "touch",
+        "leaf_size": "duration",
+        "fruit": "ego_education_length",
+        "root": "place"
+    }
+};
+
+var default_component = ["stick", "trunk", "branch", "bside", "leaf_color", "leaf_size", "fruit", "root"];
+*/
 
 // var cat_dblp = ["DB", "AI", "Vis", "Arch", "Dist", "Net", "WWW", "OS", "Sec", "PL", "SE", "Theory", "Crypto", "Bio", " "];
 /*
@@ -167,8 +159,6 @@ var data_range = {
     }
 };
 */
-
-// var attribute_info = {};
 
 /*
 var component_attribute = {
@@ -214,4 +204,3 @@ var component_attribute = {
 };
 */
 
-var initial_grid = [];
