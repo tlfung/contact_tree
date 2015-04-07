@@ -37,7 +37,6 @@ var Tree_Model = Backbone.Model.extend({
 	    root_len_scale: 1,
 	    sub_leaf_len_scale: 1,
 	    dtl_branch_curve: 1,
-	    // abt_branch_curve: 1,
 
 	    canvas_grid: [],
 	    snap_grid: [],

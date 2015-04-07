@@ -227,7 +227,6 @@ var LabelView = Backbone.View.extend({
                     self.model.set({"fruit_scale":1});
                     self.model.set({"sub_leaf_len_scale":1});
                     self.model.set({"dtl_branch_curve":1});
-                    self.model.set({"abt_branch_curve":1});
                     self.model.set({"root_curve":0});
                     self.model.set({"root_len_scale":1});
                     // self.model.set({"attr_option": mapping_item[mode]});
@@ -265,7 +264,6 @@ var LabelView = Backbone.View.extend({
                     self.model.set({"fruit_scale":1});
                     self.model.set({"sub_leaf_len_scale":1});
                     self.model.set({"dtl_branch_curve":1});
-                    self.model.set({"abt_branch_curve":1});
                     self.model.set({"canvas_translate":[0, 0]});
                     self.model.set({"canvas_scale":0.15});
                     self.model.set({"root_curve":0});
@@ -304,8 +302,7 @@ var LabelView = Backbone.View.extend({
         });
         $("#root_bend").ionRangeSlider("update", {
             from: 0
-        });
-                
+        });                
     }
 
 

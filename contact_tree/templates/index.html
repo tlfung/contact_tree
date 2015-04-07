@@ -56,19 +56,16 @@
                 <h1 class="myfont1" style="margin:15px 0 2px 10px;  width:230px;">Contact Tree</h1>
             </div>
             <div class="left">
+                <!-- main menu -->
                 <div class="btn-group" style="margin:20px 0 2px 15px;">
                     <button type="button" id="import" class="myfont2 menu_button btn btn-default">Import</button>
                     <button type="button" id="menu" class="myfont2 menu_button btn btn-default">Data</button>
-                    <!-- <button type="button" id="element" class="myfont2 menu_button btn btn-default">Components</button> -->
                     <button type="button" id="map" class="myfont2 menu_button btn btn-default">Mapping</button>
                     <!-- <button type="button" id="style" class="myfont2 menu_button btn btn-default">Style</button> -->
-                    <!-- <button type="button" id="save" class="myfont2 menu_button btn btn-default" disabled>Save</button>
-                    <button type="button" id="default_scale" class="myfont2 menu_button btn btn-default" disabled>Restore</button> -->
                 </div>
             </div>
             <div class="right" style="display:flex;">
                 <!-- <p><a href="media/Contact_Tree_Demo.pdf">Help</a></p> -->
-                <!-- <p><a href="media/implementation.pdf">Help</a></p> -->
                 <a id="share_link" href="#">Share</a>
                 <p><a id="help_link" href="#" style="margin-left:10px;">Help</a></p>
             </div>
@@ -78,7 +75,7 @@
             </div> -->
         </div>
 
-        <!-- menu -->
+        <!-- labels of selection -->
         <div id="top_list" class="ui-widget row" style="margin-top:10px;">
             <div>
                 <span id="selecting_label" class="left myfont2" style="margin-left:15px; font-size:18; color:#0B173B; margin-top:5px;">SELECTION: </span>
@@ -101,8 +98,7 @@
             </button>
         </div>
 
-
-        <!-- top:120px -->
+        <!-- control panel --><!-- top:120px -->
         <div id="dtl_box" class='config' style="display: none;">
             <ul>
                 <li><a href="#dtl_tabs-1" style="height:24px; font-size:12;">Tree</a></li>
@@ -195,54 +191,14 @@
                 </div>
             </div>           
         </div>
-
-        <!-- not use -->
-        <div id="abt_box" class='config' style="display: none;">
-            <ul>
-                <li><a href="#abt_tabs-1" style="height:24px; font-size:12px;">Tree</a></li>
-                <li><a href="#abt_tabs-2" style="height:24px; font-size:12px;">Component</a></li>
-                <!-- <li><a href="#abt_tabs-3" style="height:24px; font-size:12px;">View</a></li> -->
-            </ul>
-            <div id="abt_tabs-1">
-                <p><p>
-                <div class="ui-widget row">
-                    <div class="col-md-3">Bend:</div>
-                    <div class="col-md-9">
-                        <input type="text" id="abt_bend" />
-                    </div>
-                </div>
-            </div>
-            <div id="abt_tabs-2">
-                <div class="ui-widget row">
-                    <div class="col-md-3">Leaf Size:</div>
-                    <div class="col-md-9">
-                        <input type="text" id="abt_leaf_size" />
-                    </div>
-                </div>
-                <div class="ui-widget row">
-                    <div class="col-md-3">Fruit Size:</div>
-                    <div class="col-md-9">
-                        <input type="text" id="abt_fruit_size" />
-                    </div>
-                </div>
-            </div>  
-            <!-- <div id="abt_tabs-3">
-                in View
-            </div> -->            
-        </div>
-
-        <!-- history view-->
-        <!-- <div id="history" style="height:150px; background:beige; border-radius:5px; margin-top:3px;"> -->
-            <!-- this is history view -->
-        <!-- </div> -->
-
+        
         <!-- footer -->
         <div id="footer" class="row text-center">
             &copy; 2015 Visualization & Interface Design Innovation Lab @ University of California, Davis
         </div>
     </div>
 
-
+    <!-- block whole website while processing information -->
     <div id="block_page" style="position:absolute; left:0px; top:0px; z-index:125; background:rgba(128, 128, 128, 0.1); display:none;">
         <div style="position:absolute; left:50%; top:50%;">
             <img src="media/img/loader.gif" style="height:50px;"></img><br>
@@ -250,6 +206,7 @@
         </div>        
     </div>
 
+    <!-- show user guide slides -->
     <div id="help_page" style="position:absolute; left:0px; top:0px; z-index:125; background:rgba(128, 128, 128, 0.3); display:none; ">
         <img id="help_slide" src="media/img/new_help/slide1.jpg" value="1" class="instruction" width="80%" style="z-index:150;"></img>
         <img id="slide_previous" src="media/img/previous.png" style="z-index:130; top:43%; position:absolute; left:10px; cursor:pointer;"></img>
@@ -258,11 +215,11 @@
         <span id="slide_next" class="right glyphicon glyphicon-chevron-right" aria-hidden="true" style="position:absolute; z-index:150; top:50%; right:10;"></span> -->
     </div>
 
+    <!-- snap tree with information table -->
     <div id="information_page" style="position:absolute; left:0; z-index:130; background:rgb(55, 55, 55); display:none;">
         <span id="info_title" style="position:absolute; z-index:150; left:10px; top:0; font-size:32px; color:rgb(105, 105, 105);"></span>
         <span id="close_info" style="position:absolute; cursor:pointer; z-index:150; right:10px; top:0; font-size:32px; color:rgb(105, 105, 105);">X</span>
         <img id="loading_table" src="media/img/loader.gif" style="position:absolute; left:78%; top:50%; height:40px; diaplay:none;"></img>
-        
         <!-- <canvas id='one_tree' class='left' style="margin:15% 10 0 30; /*border:1.5px solid gray;*/ border-radius:5px; background:white; width:57%; height:70%;"></canvas> -->
         <div id='snap_container' class='left' style="position:relative; margin:5% 10px 0 30px; width:57%; height:80%;">
             <canvas id='one_tree' style="/*border:1.5px solid gray;*/ border-radius:5px; background:white; height:100%; width:100%; display:block; z-index:150;"></canvas>
@@ -274,7 +231,6 @@
                 <ul>
                     <li><a href="#data_table" style="height:24px; font-size:12px;">Table</a></li>
                     <!-- <li><a href="#data_chart" style="height:24px; font-size:12px;">Chart</a></li> -->
-                    <!-- <li><a href="#abt_tabs-3" style="height:24px; font-size:12;">View</a></li> -->
                 </ul>
                 <div id="data_table">
                     <table id="raw_data_table" style="width:100%"></table>
@@ -285,13 +241,17 @@
         </div>
     </div>
 
+    <!-- save buffer container -->
     <div id='save_container' class='left' style="position:absolute; overflow:hidden; height:50px; width:50px; left:50px; top:150px; display:none; z-index:-10;">
         <canvas id='save_tree' style="background:white;"></canvas>
         <a id="custom_download_link" download="mytree.png" href=""></a>
     </div>
 
+    
     <!-- popup window -->
+    <!-- mapping dialog -->
     <div id="sidekey_dialog" title="Customize Your Tree" class="popup_window_title">
+        <!-- default instructure page place in left -->
         <div id="sidekey_img" class="row text-center" style="float:left;  min-width:400px; width:55%; position: relative; border-right:1px solid gray; overflow-x:auto;">
             <img id="mapping_img" src="media/img/real_mix_tree.png" align="left" style="margin-left:20px; height:100%; padding-top:5px;"></img>
             <!-- <div id="stick_label" class="sidekey_label" style="left:3%; top:20%;">
@@ -332,6 +292,7 @@
             
             <span class="myfont3" style="position:absolute; right:3%; top:0%;"><b>*</b> is alter unique attributes</span>
 
+            <!-- save mapping button -->
             <div class="sidekey_label" style="left:3%; bottom:0;">
                 <button id="save_label" class="btn btn-default myfont3 left" style="padding:0 10px; height:30px;" disabled>Save</button>
                 <span class="myfont3 left" style="margin-top:1px; margin-left:5px;"><b>:</b></span>            
@@ -342,6 +303,7 @@
             </div>
         </div>
 
+        <!-- mapping operation container for different component  -->
         <div id="sidekey_selection" style="display:none; width:45%; float:left; margin-top:5px; position:relative; margin-left:20px;">
             <div id="sidekey_title" class="myfont3" style="font-weight:bold;"></div>
             <div id="sidekey_description" class="myfont4" style="display:none; width:100%; min-height:15%; background:rgba(128, 128, 128, 0.38); border-radius:5; margin-top:5px; text-align:justify"></div>
@@ -359,6 +321,7 @@
                 </div>
             </div>
             
+            <!-- each component has their own submit button -->
             <button class="btn btn-default right" id="sidekey_submit_trunk" style="width:100%; margin-top:10px; display:none;">Done</button>
             <button class="btn btn-default right" id="sidekey_submit_branch" style="width:100%; margin-top:10px; display:none;">Done</button>
             <button class="btn btn-default right" id="sidekey_submit_bside" style="width:100%; margin-top:10px; display:none;">Done</button>
@@ -367,17 +330,11 @@
             <button class="btn btn-default right" id="sidekey_submit_leaf_color" style="width:100%; margin-top:10px; display:none;">Done</button>
             <button class="btn btn-default right" id="sidekey_submit_leaf_highlight" style="width:100%; margin-top:10px; display:none;">Done</button>
             <button class="btn btn-default right" id="sidekey_submit_fruit_size" style="width:100%; margin-top:10px; display:none;">Done</button>
-            <!-- <div id="repeat_submit" style="width:100%; margin-bottom:5px; display:none;"> -->
-                <!-- <button class="btn btn-default right" id="sidekey_submit" style="width:100%; margin-bottom:5px; display:none;">Done</button> -->
-            <!-- </div> -->
         </div>
 
-
+        <!-- display selected user mapping on the right -->
         <div id="sidekey_save_img" class="row text-center" style="float:left;  min-width:400px; width:15%; position: relative; margin-left:10px; overflow-x:auto; display:none;">
             <img id="mapping_img" src="media/img/real_mix_tree.png" align="left" style="margin-left:20px; height:100%; padding-top:5px;"></img>
-            <!-- <div id="stick_label" class="sidekey_label" style="left:3%; top:20%;">
-                <span class="sidekey_cmpt">Stick</span>
-            </div> -->
             <div id="trunk_save_label" class="sidekey_label" style="left:48%; top:70%;">
                 <span class="sidekey_cmpt">Trunk Side</span>
                 <span id="trunk_save_map" class="sidekey_map">None</span>
@@ -415,101 +372,45 @@
             </div>
             <button id="use_label" class="btn btn-default myfont3 left">Used</button>
         </div>
-        <!-- <div id="warnig_div" class="row" style="margin:0 5px 5px 5px">
-            <span id="warnig" class="right myfont2" style="width: 270px; font-size:14; color:red; visibility:hidden;">Warning: You have duplicated mapping attribute!</span>
-        </div> -->
-        <!-- <p></p>
-        <div id="sidekey_button" class="row" style="margin-right:5px;"></div> -->
     </div>
 
-
+    <!-- import dialog -->
     <div id="import_dialog" title="Import Data File" class="popup_window_title" style="overflow:hidden;">
-        <!-- <span class="left myfont3 description_box" style="margin-top:3px;">
-            1. Choose a .csv file <br>
-            2. Data must contain egoid column as each tree represent one ego <br>
-            3. Data must contain alterid column as each stick in this tree is one alterid <br>
-            4. If you have multiple data, combine them and add an extra column "dataset" as different dataset <br>
-            5. If you have missing data, please fill it with a value or fill with -1 as missing <br>
-            6. Data inside should be a categorical data or we will automatically category the attribute as an id data if all the distinct data is > 15 <br>
-            7. Upload it or check the data format or cancel it <br>
-        </span> -->
-        <img src="media/img/upload_instructure.jpg" align="middle" style="width:100%; padding-top:5px;"></img>
+        <!-- instruction image -->
+        <img src="media/img/upload_instruction.jpg" align="middle" style="width:100%; padding-top:5px;"></img>
         <form id="upload_form" name="upload_form" class="left" style="width:60%; margin-top:5px;">
             <input type="file" name="usercsv2upload" id="filename"></input>
         </form>
+        <!-- error message container -->
         <span id="err_report" class="left myfont3" style="width:100%; display:none;"></span>
-        <!-- <div class="left" style="width:40%;">
-            <span class="left myfont3" style="margin-top:3px;">Table Name: </span>
-            <input id="database_table" class="left" style="margin:0 5;"></input>
-        </div> -->
+        
         <div id="import_button" class="right" style="display:none;">
             <button class="btn btn-default left" id="import_submit" style="margin-top:5px;">Done</button>
-            <!-- <button class="btn btn-default left" id="check_submit" style="margin-left:5px;">Check</button> -->
-            <!-- <button class="btn btn-default left" id="cancle_submit" style="margin-left:5px;">Cancel</button> -->
         </div>
-        <!-- <button class="btn btn-default right" id="import_submit" style="display:none; width:100;" disabled>Done</button> -->
-
-        <!-- <div id="data_information" style="display:none;">
-            <div id="data_convertor" class="left; width:100%;">
-                <span id="data_cnvt" class="left myfont3" style="width:100%;">Data Convertor:</span><br><p></p>
-                <span class="glyphicon glyphicon-minus-sign left" style="cursor:pointer; visibility:hidden;"></span>
-                <div id="column_row_name" class="ui-widget row left" style="width:99%; margin-left:auto;">
-                    <div class="col-md-2">
-                        <label class="myfont3">Column</label>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="myfont3" style="margin-left:-5px">Min</label>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="myfont3" style="margin-left:-5px">Max</label>
-                    </div>
-                    <div class="col-md-1">
-                        <label class="myfont3" style="margin-left:-5px">Range</label>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="myfont3" style="margin-left:30px">Type</label>
-                    </div>
-                    <div class="col-md-1">
-                        <label class="myfont3">Ego</label>
-                    </div>
-                    <div class="col-md-2">
-                        <label class="myfont3" style="margin-left:20px">Relation</label>
-                    </div>
-                    <div class="col-md-1">
-                        <label class="myfont3" style="margin-left:-15px">Action</label>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="myfont3">Change</label>
-                    </div>
-                </div>
-                <div id="cnvt_tool" style="width:100%; height:390px; overflow-y:auto; padding-right:20px;"></div>
-            </div>
-        </div>
-        <p></p> -->
     </div>
 
-
+    <!-- data dialog -->
     <div id="menu_dialog" title="Choose Display Data" class="popup_window_title" style="overflow:hidden;">
         <div id="ego_container" class="left" style="width:50%;">
+            <!-- dataset selector -->
             <span class="left myfont3">Dataset:</span>
             <select id="dataselect" style="width:70%; margin-left:5px;">
                 <!-- <option value="0">Dataset</option>
                 <option value="combine_diary">Combine_diary</option>
                 <option value="international">International</option> -->
-                <!-- <option value="1">International</option> -->
-                <!-- <option value="2">DBLP</option> -->
             </select>
         </div>
         <div id="group_container" class="left" style="margin-left:10px; width:45%; display:none;">
+            <!-- group selector -->
             <span class="left myfont3">Group:</span>
             <select id="egogroup" style="width:70%; margin-left:5px;">
                 <!-- <option value="0">Ego group</option>
                 <option value="all">All</option> -->
             </select>        
         </div>
-        <!-- <div id="sub_selection"></div> -->
-        <!-- <div id="divTable_menu" class="checkbox"></div> -->
+       
         <div id="main_selection" style="margin-top:5px;">
+            <!-- list all egos -->
             <div id="ego_menu" class="left" style="width:50%;">
                 <span id="main_title" class="left myfont3" style="display:none;">Select Ego:</span><p></p>
                 <!-- for diary -->
@@ -517,14 +418,10 @@
                 </div>
                                 
             </div>
-
-            <!-- why need all set class left -->
+            <!-- list waves or no display -->
             <div id="detail_menu" class="left" style="width:50%; display:none; height:300px; overflow-y:auto;">
                 <span id="sub_title" class="left myfont3">Sub Group:</span>
-                <!-- <div id="submit_button" class="right" >Done</div> -->
                 <button class="btn btn-default right" id="submit_ego" style="display:none;" disabled>Loading</button>
-                <!-- <button class="btn btn-default right" id="submit_dblp" style="margin-right:5px; display:none;" disabled>Loading</button>
-                <button class="btn btn-default right" id="submit_inter" style="display:none;">Done</button> -->
                 <div id="sub_selection" class="checkbox" style="margin-top:25px; display:none;"></div>
 
             </div>
@@ -532,6 +429,7 @@
         
     </div>
 
+    <!-- saving resolution dialog -->
     <div id="resolution_dialog" title="Choose Resolution of Saving" class="popup_window_title">
         <div id="res_option" class="row" style="margin:10px 20px;">
             <label style="margin-left:10px;" class="myfont3"><input type="radio" name="res_item" class="res_checkbox" value="low">Low</label>
@@ -541,17 +439,8 @@
         <button style="width:80px; position:absolute; left:35%" class="btn btn-default" id="res_submit">OK</button>
     </div>
 
-<!--     <div id="component_dialog" title="Choose Tree Component" class="popup_window_title">
-        <div id="component_top" class="row">
-            <div id="component_img" class="row left">
-                <canvas id='component_tree' width='500' height="460"></canvas>
-            </div>
-            <div id="component_selection" class="right" style="margin-top:10px;"></div>
-        </div>
-        <div id="component_button" class="row right"></div>
-    </div>
--->
 
+    <!-- for different stylr --><!-- not use -->
     <div id="style_dialog" title="Choose Tree Style" class="popup_window_title">
         <div id="style_option" class="row" style="display:none; margin-left:3px;">
             <div>
@@ -563,16 +452,10 @@
             <div>
                 <label><input class="myfont3 style_selection" name="style_selection" value="crooked" type="radio" id="style_3" style="margin-right:5px;">Crooked Style</label>
             <div>
-            <!-- <div>
-                <label><input class="myfont3 style_selection" name="style_selection" value="cartoon" type="radio" id="style_3" style="margin-right:5px;">Cartoon Style</label>
-            <div> -->
         </div>
         <p></p>
         <div><button class="btn btn-default right" id="style_submit" style="display:none; margin-right:10px;">Done</button></div>
     </div>
-
-    
-
 
     <!-- my custom js -->
     <script type="text/javascript" src="media/js/settings.js"></script>

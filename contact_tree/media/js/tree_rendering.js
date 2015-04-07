@@ -259,7 +259,6 @@ var RenderingView = Backbone.View.extend({
                 pos = [((this.start_x - ori_dl/t_scale - 50)+(this.start_x + ori_dr/t_scale + 50))/2-270, this.start_y + this.stick_length + 350];
                 info_pos = [this.start_x + ori_dr/t_scale + 100, this.start_y + this.stick_length + 50];
 
-                var bend_scale = self.model.get("abt_branch_curve");
                 for(var height = 0; height < self.total_layer; height++){                    
                     var num = parseInt("7D6041", 16); 
                     num += 6*(height-2);

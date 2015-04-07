@@ -16,7 +16,6 @@ var ControlView = Backbone.View.extend({
         this.model.bind('change:fruit_scale', this.update_tabs);
         this.model.bind('change:sub_leaf_len_scale', this.update_tabs);
         this.model.bind('change:dtl_branch_curve', this.update_tabs);
-        // this.model.bind('change:abt_branch_curve', this.update_tabs);
         
         $("#save").click(function(){
             window.location.href = drawing_canvas.main_canvas.toDataURL().replace('image/png','image/octet-stream');
@@ -54,7 +53,6 @@ var ControlView = Backbone.View.extend({
             self.model.set({"sub_leaf_len_scale":1});
             self.model.set({"dtl_branch_curve":1});
             self.model.set({"filter_contact":0});
-            // self.model.set({"abt_branch_curve":1});
             self.model.set({"root_curve":0});
             self.model.set({"root_len_scale":1});
             self.model.set({"canvas_translate":[0, 0]});
@@ -103,12 +101,11 @@ var ControlView = Backbone.View.extend({
         if(drawing == 0){
             $('#save').attr("disabled", true);
             $('#default_scale').attr("disabled", true);
-            // not sure......
+            
             self.model.set({"leaf_scale":3});
             self.model.set({"fruit_scale":3});
             self.model.set({"sub_leaf_len_scale":1});
             self.model.set({"dtl_branch_curve":1});
-            // self.model.set({"abt_branch_curve":1});
             self.model.set({"root_curve":0});
             self.model.set({"root_len_scale":1});
             self.model.set({"canvas_translate":[0, 0]});
@@ -152,25 +149,14 @@ var ControlView = Backbone.View.extend({
             var removeClass = "show";
             var addClass = "complete";
             var diff = "-=140";
-            // $('#detail_btn').attr("disabled", true);
-            // $('#abstract_btn').attr("disabled", true);
+            
             if($(anchor).hasClass("complete")){
                 diff = "+=140";
                 removeClass = "complete";
                 addClass="show";
-                // $('#abstract_btn').removeAttr("disabled");
-                // $('#detail_btn').removeAttr("disabled");
             }
             if(self.model.get("tree_style")[0] == "symmetry"){
                 $("#dtl_box").animate({
-                    top: diff
-                    }, 700, function() {
-                    // Animation complete.
-                    $(anchor).removeClass(removeClass).addClass(addClass);
-                });
-            }
-            else{
-                $("#abt_box").animate({
                     top: diff
                     }, 700, function() {
                     // Animation complete.
@@ -184,7 +170,6 @@ var ControlView = Backbone.View.extend({
     set_slider: function(){
         var self = this;
         $("#dtl_box").show();
-        // $("#abt_box").show();
         
         $("#dtl_length").ionRangeSlider({
             min: 0.5,
@@ -316,46 +301,7 @@ var ControlView = Backbone.View.extend({
             }
         });
 
-        /*
-        $("#abt_bend").ionRangeSlider({
-            min: 0, 
-            max: 2,
-            from: 1,
-            type: 'single',
-            step: 0.1,
-            onChange: function(obj) {
-                var val = obj.fromNumber;
-                self.model.set({"abt_branch_curve":val});
-            }
-
-        });
-
-        $("#abt_leaf_size").ionRangeSlider({
-            min: 0.3, 
-            max: 10,
-            from: 1,
-            type: 'single',
-            step: 0.1,
-            // onChange: function(obj) {
-            //     var val = obj.fromNumber;
-            //     console.log(val);
-            // }
-        });
-
-        $("#abt_fruit_size").ionRangeSlider({
-            min: 0, 
-            max: 3,
-            from: 1,
-            type: 'single',
-            step: 0.1,
-            // onChange: function(obj) {
-            //     var val = obj.fromNumber;
-            //     console.log(val);
-            // }
-        });
-        */
         $("#dtl_box").tabs();
-        // $("#abt_box").tabs();
     },
 
     update_tabs: function(){
@@ -364,7 +310,6 @@ var ControlView = Backbone.View.extend({
         var f_scale = self.model.get("fruit_scale");
         var len_scale = self.model.get("sub_leaf_len_scale");
         var dtl_b_curve = self.model.get("dtl_branch_curve");
-        // var abt_b_curve = self.model.get("abt_branch_curve");
         var r_curve = self.model.get("root_curve");
         var r_len = self.model.get("root_len_scale");
         $( "#dtl_box" ).tabs({ activate: function(event ,ui){
@@ -399,24 +344,6 @@ var ControlView = Backbone.View.extend({
             }
         } });
         
-        // not use
-        $( "#abt_box" ).tabs({ activate: function(event ,ui){
-            var index = ui.newTab.index();
-            switch (index) {
-                case 0:
-                    $("#abt_bend").ionRangeSlider("update", {
-                        from: Math.round(10*abt_b_curve)/10
-                    });
-                    console.log("in abt tab 1");
-                break;
-
-                case 1:
-                break;
-
-                case 2:
-                break;
-            }
-        } });
     }
 
 });
