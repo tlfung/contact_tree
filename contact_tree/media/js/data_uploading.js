@@ -6,11 +6,9 @@ var UploadView = Backbone.View.extend({
         // bind view with model
         console.log("in uploading initialize");
               
-        // this.model.bind('change:view_mode', this.change_mode);
         this.final_data_attr_info = {};
         
         this.missing_data = [];
-        // this.raw_data = [];
         this.raw_csvfile;
         
         this.step = 0;
@@ -33,8 +31,7 @@ var UploadView = Backbone.View.extend({
             $('#err_report').hide();
             $("#import_button").hide();
 
-            // $("#filename").text("No file chosen");
-           
+            // $("#filename").text("No file chosen");           
         });
 
         $("#filename").change(function(e) {
@@ -45,7 +42,6 @@ var UploadView = Backbone.View.extend({
                 return false;
             }
             else{
-                // console.log($("input#filename").val().split("\\").pop().split(".")[0]);
                 self.dataset = $("input#filename").val().split("\\").pop().split(".")[0];
             }
                 
@@ -54,8 +50,6 @@ var UploadView = Backbone.View.extend({
                 reader.onload = function(e) {
                     self.create_table();
                     var csvval = e.target.result.split("\n");
-                    // this.raw_data = csvval;
-                    // self.convertor_layout(csvval);
                 };
                 reader.readAsText(e.target.files.item(0));  
             }
@@ -63,6 +57,7 @@ var UploadView = Backbone.View.extend({
 
         });
 
+        // initial all the upload event
         this.submit_event();
 
     },
@@ -74,8 +69,6 @@ var UploadView = Backbone.View.extend({
         $("#import_button").show();
         $('#err_report').hide();
         $('#err_report').text("")
-
-        // this.submit_event();
     },
 
 
@@ -90,16 +83,7 @@ var UploadView = Backbone.View.extend({
                         for(var i = 1; i < err[obj].length; i ++)
                              error_text += ', "' + err[obj][i] + '"';
                     }
-                    // if(obj == "missing"){
-                    //     error_text += '<b>Missing value in column: </b><br>"' + err[obj][0][0] + '"';
-                    //     for(var i = 1; i < err[obj].length; i ++)
-                    //          error_text += ', "' + err[obj][i][0] + '"';
-                    // }
-                    // if(obj == "intext"){
-                    //     error_text += '<b>Contain text in column: </b><br>"' + err[obj][0] + '"';
-                    //     for(var i = 1; i < err[obj].length; i ++)
-                    //          error_text += ', "' + err[obj][i] + '"';
-                    // }
+                    
                     if(obj == "insert_error"){
                         error_text += 'Type and value not match...<br>';
                     }
@@ -117,6 +101,7 @@ var UploadView = Backbone.View.extend({
             }
             return error_text
         };
+        // check the data format
         var set_db = function(fn){
             self.session = fn;
 
@@ -125,9 +110,8 @@ var UploadView = Backbone.View.extend({
             console.log(request);
             $("#loading_process").html("<b>Analyzing...</b>");
             d3.json("collecting_data/?collection=" + request, function(result) {
-                // alert('success');
-                // console.log("wtf");
                 console.log(result);
+                // in correct format
                 if(result == self.dataset){
                     var container = document.getElementById("dataselect");
                     container.setAttribute("class", "dataset_selector");
@@ -137,17 +121,16 @@ var UploadView = Backbone.View.extend({
                     selection_opt.value = session_id + "_of_" + self.dataset;
                     selection_opt.innerHTML = self.dataset;
                     selection_opt.setAttribute("class", "myfont3");
-
+                    // add dataset into available dataset selection
                     container.appendChild(selection_opt);
                     all_mode.push(self.dataset);
-                    self.model.set({"dataset_mode": all_mode});
-                    // self.model.trigger('change:dataset_mode');   
+                    self.model.set({"dataset_mode": all_mode});  
                     // dataset_mode.push(result);
                     $("#block_page").hide();
                     $("#import_dialog").dialog( "close" );
                     
                 }
-                    
+                // set the error format
                 else{
                     var report_text = set_error(result);
                     // console.log(report_text);
@@ -163,10 +146,9 @@ var UploadView = Backbone.View.extend({
 
         $('#import_submit').click(function(){
             $("#import_button").hide();
-            // $('#err_report').text("Loading...");
-            // $('#err_report').show();
             $("#block_page").show();
             $("#loading_process").html("<b>Loading...</b>");
+            // upload the file
             self.raw_csvfile = new FormData($('#upload_form').get(0));
             $.ajax({
                 url: "upload_csv/",
@@ -180,27 +162,6 @@ var UploadView = Backbone.View.extend({
                 }
             });    
         });
-        /*
-        $('#check_submit').click(function(){
-            $("#import_button").hide();
-            $('#err_report').text("Checking...");
-            $('#err_report').show();
-            
-            self.raw_csvfile = new FormData($('#upload_form').get(0));
-            $.ajax({
-                url: "upload_csv/",
-                type: 'POST',
-                data: self.raw_csvfile,
-                cache: false,
-                processData: false,
-                contentType: false,
-                success: function(data) {
-                    set_db(data);
-                }
-            });
-            
-        });
-        */
 
     }
 
