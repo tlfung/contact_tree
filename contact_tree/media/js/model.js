@@ -1,7 +1,5 @@
 var Tree_Model = Backbone.Model.extend({
 	defaults: {
-	    // egos_data: {},
-	    // dblp_data: {},
 	    selected_egos: {},
 	    display_egos: {},
 	    tree_structure: {},
@@ -9,27 +7,21 @@ var Tree_Model = Backbone.Model.extend({
 	    canvas_translate: [0, 0],
 	    done_query: [],
 	    snapshot: [],
-	    // now_query: " ",
 	    done_query_list: 0, // use for query author
 
 	    done_table_loading: [],
 
 	    attr_option: [],
 	    attribute: {},
-	    // component: [],
-	    // attribute_info: {},
-	    // component_attribute: {},
 	    dataset_group: "",
 	    stick_unique: "",
 
 	    fruit_control: 1,
 	    tree_data: {},
 
-	    // tree_style:["symmetry"],
 	    tree_style:["symmetry"],
 
 	    view_mode: "",
-	    // folder:"",
 
 	    leaf_scale: 3,
 	    fruit_scale: 3,
@@ -57,17 +49,24 @@ var Tree_Model = Backbone.Model.extend({
 	    save_tree: [],
 	    dataset_mode: ["combine_diary", "international"],
 	    user_mapping: []
-	    // stick:"coauthor"
   	},
 
   	initialize: function(args) {
 	    var self = this;
 	    user_history = 0;
 	    console.log("in model initialize");
-	    // get all the values of model
-
+	    
+	    // dont do anythnig if it is a new user 
 	    if(first_use == 0)
 	    	return;
+
+	    // if(last_use != "none"){
+	    // 	// user_history = 1;
+	    // 	var view_mode = session_id.toString() + "_of_" + last_use;
+	    // 	self.set({"view_mode": view_mode}, {silent: true});
+	    // 	$("#dataselect").trigger('change');	    	
+	    // 	return;
+	    // }
 
 	    var request = session_id + ":-" + last_use;
 	    var request_url = "get_user_data/?user="+request;
@@ -116,76 +115,16 @@ var Tree_Model = Backbone.Model.extend({
 			mapping_color.render_leaf_color = restore_array[14]["render_leaf_color"];
 			mapping_color.render_roots_color = restore_array[14]["render_roots_color"];
 			$("#dataselect").trigger('change');
-
-			// self.trigger('change:attribute');
-			// self.trigger('change:view_mode');
-			// self.trigger('change:dataset_mode');
-			// self.trigger('change:selected_egos');
-			// self.trigger('change:canvas_scale'); 
 		};
 
+		// check if we found any user history
 	    d3.json(request_url, function(user_result){
-			// console.log(user_result);
-			
-			var restore_structure = function(){
-				var set_structure = function(data, all_ego){
-			        var ego_selections = self.get("selected_egos");
-			        if(jQuery.isEmptyObject(ego_selections)){
-			            $("#block_page").hide();
-			            return
-			        }
-			        var data_mode = self.get("view_mode");
-			        
-			        var tree_structure = self.get("tree_structure");
-			        tree_structure[data_mode] = {};
-			        for(var i = 0; i < all_ego.length; i++){
-			            for(var d in data){
-			                if(d in tree_structure[data_mode]){
-			                    tree_structure[data_mode][d][all_ego[i]] = data[d][all_ego[i]];            
-			                }
-			                else{
-			                    tree_structure[data_mode][d] = {};
-			                    tree_structure[data_mode][d][all_ego[i]] = data[d][all_ego[i]];
-			                }
-			            }
-			        }                
-			        self.set({"tree_structure": tree_structure}, {silent: true});
-			        $("#block_page").hide();   
-				};
-
-				var data_group = self.get("dataset_group");
-	            var now_attr = self.get("attribute");
-	            var now_mode = self.get("view_mode");;
-	            var all_ego = self.get("selected_egos");
-	            var ego_list = [];
-	            
-				for(var ego in all_ego){
-	                ego_list.push(ego);
-	            }
-	            var request = JSON.stringify(now_attr) + ":-" + JSON.stringify(ego_list) + ":-" + now_mode + ":-" + JSON.stringify(attribute_mapping) + ":-" + data_group + ":-" + JSON.stringify(all_ego);
-	            var request_url = "restore_data/?restore="+request;
-	            
-	            $("#block_page").show();
-
-	            d3.json(request_url, function(result) {
-	                set_structure(result, ego_list);
-	                self.trigger('change:tree_structure');
-	            }); 
-			};
-
 			if(!jQuery.isEmptyObject(user_result)){
 				get_auto_saving(user_result);
-		        // restore_structure();
 		        // user_history = 1;
 		    }
 
-			// self.trigger('change:attribute');
-			// self.trigger('change:view_mode');
-			// self.trigger('change:dataset_mode');
-			// self.trigger('change:selected_egos');
-			// self.trigger('change:canvas_scale');  
 		});
-	    // self.set({"view_mode": session_id + "_of_combine_diary"});
   	},
 
   	query_dataset: function(request){
@@ -217,14 +156,12 @@ var Tree_Model = Backbone.Model.extend({
 
   	query_ego_list: function(table, group){
 	    var self = this;
-	    // console.log(request);
 	    
+	    // set the result function
         var set_ego_list_json = function(data){
           	total_ego = data;
           	var sub_array = [];
           	for(var d in data){
-	            // var obj = {};
-	            // obj[d] = data[d].length;
 	            sub_array.push({sub: d, len: data[d].length});
           	}
           	sub_array.sort(function(obj1, obj2) {
@@ -257,7 +194,6 @@ var Tree_Model = Backbone.Model.extend({
         	}
         	component_attribute[mode]["none"] = [["none"], 0, 0, 0, 1, "none"];
         };
-
 	    	   
 	    var request = table + ":-" + group;
 	    var request_url = "datatable/?table="+request;
@@ -266,73 +202,45 @@ var Tree_Model = Backbone.Model.extend({
 	        
 	        in_change_mode = 0;
 	        set_ego_list_json(result[0]);
-	        // console.log(user_history);
+	        // only for the new dataset
 	        if(user_history == 0){
 	        	set_default_attr(result[1]);
 	        	set_attribute_info(result[2]);
+	        	user_history = 2;
 	        }
 	        else{
 	        	set_default_attr(self.get("attribute"));
 	        }
-	        // set_attribute_info(result[2]);
+	        
 	        var d = self.get("done_query_list");
 	        self.set({"done_query_list": d+1});
 	        self.trigger('change:attribute');        
-	        // dataset_mode
+	       	// label user as old user
 	        initial_user = 1;
 	        first_use = 1;
 	    });
 	   
 	},
 
-	// not use
-	update_data: function(request){
-	    var self = this;
-	    var mode = self.get("view_mode");
-	    $("#block_page").show();
-        $("#loading_process").html("<b>Loading...</b>");
-
-	    $("#submit_ego").attr("disabled", true);
-      	$("#submit_ego").text("Loading");
-      	$('.ego_checkbox').attr("disabled", true);
-	    var request_url = "get_update/?contact="+request;
-	    d3.json(request_url, function(result) {
-	      	// console.log("in model.update_one_contact");
-	      	// console.log(result);
-	      	
-	      	$("#submit_ego").removeAttr("disabled");
-	      	$("#submit_ego").text("Done");
-	      	$('.ego_checkbox').removeAttr("disabled");
-	      	$("#block_page").hide();
-	      	// self.trigger('change:tree_structure');
-
-	    });
-	    
-	},
-
+	// get the tree structure of selected ego
 	query_data: function(request){
 	    var self = this;
 	    var mode = self.get("view_mode");
-	    
 	    // var request_url = "get_contact/?contact="+request;
 	    var request_url = "get_update/?contact="+request;
-	    // console.log(request_url);
+	    
 	    $("#block_page").show();
         $("#loading_process").html("<b>Loading...</b>");
 	    $("#submit_ego").attr("disabled", true);
 	    $("#submit_ego").text("Loading");
 	    $('.ego_checkbox').attr("disabled", true);
 	    d3.json(request_url, function(result) {
-	      	// console.log("in model.query_one_contact");
-	      	// console.log(result);
-	      	// var egos_data = self.get("egos_data");
 	      	var tree_structure = self.get("tree_structure");
 	      	if(mode in tree_structure){}
 	      	else{
-		        // egos_data[mode] = {};
 		        tree_structure[mode] = {};
 	      	}
-	      	// var tree_structure = self.get("tree_structure");
+	    
 	      	var set_structure = function(data, sub){
 
 	        	for(var d in data){
@@ -344,12 +252,11 @@ var Tree_Model = Backbone.Model.extend({
 	            		tree_structure[mode][d][sub] = data[d][sub];
 	          		}
 	        	}
-		        // console.log("store", tree_structure);
+		        
 		        self.set({"tree_structure": tree_structure}, {silent: true});
 		        
-		        // console.log("lucky", tree_structure);
 	      	};
-	      	// var new_attr = JSON.parse(request.split(":-")[0]);
+	      	
 		    var sub_request = JSON.parse(request.split(":-")[5]);
 		    for(s in sub_request)
 		    	set_structure(result, s);
@@ -357,99 +264,11 @@ var Tree_Model = Backbone.Model.extend({
 	      	$("#submit_ego").removeAttr("disabled");
 	      	$("#submit_ego").text("Done");
 	      	$('.ego_checkbox').removeAttr("disabled");
-	      	$("#block_page").hide();
-
-	      	// self.trigger('change:tree_structure');
-	      	// $("#submit_ego").removeAttr("disabled");
-	      	// $("#block_page").hide();
-	      	// $( "#menu_dialog" ).dialog( "close" );
-	      	// self.trigger('change:selected_egos');
-	      	// self.trigger('change:display_egos');            
+	      	$("#block_page").hide();           
 
 	    });
 	    
-	},
-
-
-	/************************* old code *********************************/
-	update_query_data: function(request){
-	    var self = this;
-	    var mode = self.get("view_mode");
-	    var egos_data = self.get("egos_data");
-	    var tree_structure = self.get("tree_structure");
-	    
-	    if(mode == "diary"){
-	      	var new_attr = request.split(":")[0];
-	      	var sub_request = request.split(":")[1].split("/");
-	      	var request_url = "update_contact/?contacts="+request;
-	      	d3.json(request_url, function(result) {
-	          	console.log("in model.update_query_data");
-	          	// console.log(result);
-	          	var set_diary_json = function(data){
-	            	// egos_data[mode] = data;
-	            	tree_structure[mode] = data;
-	          	};
-	          	set_diary_json(result);
-	          	// self.trigger('change:egos_data');
-	          	self.trigger('change:tree_structure');
-	          	$("#sidekey_dialog").dialog( "close" );
-	          	self.set({"tree_structure": tree_structure});
-	      	});
-	    }
-	    else if(mode == "DBLP"){
-	      	var new_attr = request.split(":")[0];
-	      	var sub_request = request.split(":")[1].split("/");
-	      	var request_url = "update_author/?author="+request;
-	      	d3.json(request_url, function(result) {
-	          	console.log("in model.update_query_data");
-	          	// console.log(result);
-	          	var set_diary_json = function(data){
-	            	// egos_data[mode] = data;
-	            	tree_structure[mode] = data;
-	          	};
-	          	set_diary_json(result);
-	          	// self.trigger('change:egos_data');
-	          	$("#sidekey_dialog").dialog( "close" );
-	          	self.set({"tree_structure": tree_structure});
-	          	self.trigger('change:tree_structure');
-	      	});
-	    }
-	},
-
-	query_author_list: function(request0, request1, request2){
-	    var self = this;
-	    var request_url = "dblp_list/?list=a:"+ request0 + "_p:" + request1 + "_f:" + request2;
-	    var set_list = function(data){
-	      	for(var d = 0; d < data.length; d++){
-	        	total_ego["DBLP"].push(data[d]);
-	      	}
-	    };
-
-	    d3.json(request_url, function(result) {
-	        console.log("in model.query_author_list");
-	        set_list(result);
-
-	        $("#sub_selection").empty();
-	        if(total_ego["DBLP"].length == 0){
-	          	alert("Do not have enough information in database of this author!");
-	        }
-	        else{
-	          	for(var c = 0; c < total_ego["DBLP"].length; c++){
-	              	$("#sub_selection").append('<div><label><input class="myfont3 au_checkbox" name="author_selection" type="radio" id="' + c + '" value="' + total_ego["DBLP"][c] +'" style="margin-right:5px;">' + total_ego["DBLP"][c] + '</label></div>');
-	          	}
-	        }
-	        
-	        var d = self.get("done_query_list");
-	        self.set({"done_query_list": d+1});
-
-	    });
 	}
 
 });
 
-var Data_Model = Backbone.Model.extend({
-  	defaults: {
-    
-  	}
-
-});

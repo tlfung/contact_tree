@@ -7,20 +7,13 @@ var SelectingView = Backbone.View.extend({
         // bind view with model
         console.log("in selecting initialize");
         _.bindAll(this, 'change_mode');
-        // _.bindAll(this, 'set_dblp_label');
-        // _.bindAll(this, 'set_ego_label');
         _.bindAll(this, 'set_data_label');
         _.bindAll(this, 'set_dataset');
 
         this.model.bind('change:view_mode', this.change_mode);
         this.model.bind('change:dataset_group', this.change_mode);
         this.model.bind('change:dataset_mode', this.set_dataset);
-        // this.model.bind('change:folder', this.change_mode);
-        // this.model.bind('change:done_query_list', this.set_dblp_label);
-        // this.model.bind('change:done_query_list', this.set_ego_label);
-        // this.model.bind('change:done_query_list', this.set_label);
         this.model.bind('change:done_query_list', this.set_data_label);
-        
         
         this.my_ego_selected = {};
         this.my_ego_display = {};
@@ -43,11 +36,7 @@ var SelectingView = Backbone.View.extend({
 
         $( "#menu" ).click(function() {
             var mode = self.model.get("view_mode");
-            $( "#menu_dialog" ).dialog( "open" );
-            // self.model.set({"selected_egos":{}});
-            // this.my_ego_selected = self.model.get("selected_egos");
-            // this.my_ego_display = self.model.get("display_egos");
-            
+            $( "#menu_dialog" ).dialog( "open" );            
             // clean checked
             $("#sub_selection").empty();
             $('.ego_checkbox:checked').each(function(i, item){
@@ -61,6 +50,7 @@ var SelectingView = Backbone.View.extend({
         this.get_data_event();
     },
 
+    // reset if user add dataset
     set_dataset: function(){
         var self = this;
         var on_mode = self.model.get("view_mode");
@@ -90,6 +80,7 @@ var SelectingView = Backbone.View.extend({
 
     },
 
+    // get all the available dataset
     get_dataset: function(){
         var self = this;
         // var data_mode = self.model.get("dataset_mode");
@@ -106,6 +97,7 @@ var SelectingView = Backbone.View.extend({
     get_data_event: function(){
         var self = this;
 
+        // get user auto save information
         var set_user_history = function(result){
             if(!jQuery.isEmptyObject(result)){
                 user_history = 1;
@@ -115,7 +107,6 @@ var SelectingView = Backbone.View.extend({
                 return;
             }
             var restore_array = [];
-            // console.log(restore_array);
             var view_mode = session_id.toString() + "_of_" + result.mode;
             restore_array.push(view_mode); // mode
             restore_array.push(JSON.parse(result.display_egos)); // display_egos
@@ -159,14 +150,11 @@ var SelectingView = Backbone.View.extend({
 
         };
 
+        // set diaplay data and get structure
         var set_display_value = function(){
             in_change_mode = 0;
-            // set_ego_list_json
-            // set_value(result);
             var sub_array = [];
             for(var d in total_ego){
-                // var obj = {};
-                // obj[d] =total_ego[d].length;
                 sub_array.push({sub: d, len:total_ego[d].length});
             }
             sub_array.sort(function(obj1, obj2) {
@@ -180,7 +168,6 @@ var SelectingView = Backbone.View.extend({
             }
             sub_ego = temp_array;
 
-            // set_default_attr
             var single_attr = [];
           
             var attr = self.model.get("attribute");
@@ -188,7 +175,6 @@ var SelectingView = Backbone.View.extend({
                 single_attr.push(attr[a]);
             }
             self.model.set({"attr_option": single_attr}, {silent: true});
-
             
             var set_structure = function(data, all_ego){
                 var ego_selections = self.model.get("selected_egos");
@@ -232,23 +218,14 @@ var SelectingView = Backbone.View.extend({
 
             d3.json(request_url, function(result) {
                 set_structure(result, ego_list);
-                // self.model.trigger('change:tree_structure');
-                // $("#block_page").hide();
             }); 
-         
-
-            // set_attribute_info
-            // var mode = self.model.get("view_mode");
-            // component_attribute[mode] = {};
-            // for(a in data[2]){
-            //     component_attribute[mode][a] = data[2][a];
-            // }
-            // component_attribute[mode]["none"] = [["none"], 0, 0, 0, 1, "none"];
 
         };
         
+        // data selection on change event
         $("#dataselect").change(function(){
-            // default_component = ["stick", "trunk", "branch", "bside", "leaf_color", "leaf_size", "fruit"];
+            user_history = 0;
+            // if get the new dataset
             if(initial_user != 0){
                 in_change_mode = 1;
                 self.model.set({"moving": 0});
@@ -256,11 +233,6 @@ var SelectingView = Backbone.View.extend({
                 self.model.set({"display_egos": {}});
                 self.model.set({"tree_structure":{}});
                 
-                // self.my_ego_selected = {};
-                // self.my_ego_display = {};
-                // attribute_mapping = {};
-                // save_user_mapping = [];
-                // $("#save_mapping_container").empty();
                 self.model.set({"user_mapping": []});
                 self.model.trigger('change:user_mapping');
                 self.model.set({"attribute": {}});
@@ -292,7 +264,6 @@ var SelectingView = Backbone.View.extend({
             }
             // others data
             else{
-                // default_component.push("root");
                 var data_selected = $("#dataselect").val();
                 $("#divTable_menu").empty();
                 $("#main_title").hide();
@@ -301,30 +272,19 @@ var SelectingView = Backbone.View.extend({
                 $("#sub_title").hide();
                 $("#detail_menu").hide();
 
+                // if it is initial model trigger the change
                 if((data_selected == null || initial_user == 0) && first_use != 0)
                     data_selected = self.model.get("view_mode");
 
-
                 document.cookie = "mode=" + data_selected.split("_of_")[1] + ";";
-                
-                // add function to get the last infomation
-                // set evert model parameter silent
-                var pre_request_url = "restore_user_history/?user="+data_selected;
 
+                // if it is new user
                 if(first_use == 0){
                     var request_url = "dataset/?data="+data_selected;
                     d3.json(request_url, function(result){
-                        // console.log("in model.query_data_info");
-                        // console.log(result)
                         var set_dataset_group = function(data){
                             self.ego_cat = data;
-                            
-                            var on_group = self.model.get("dataset_group");
-                            if(user_history == 0)
-                                on_group = "";
-                            // for(var d = 0; d < data.length; d++){
-                            //   self.ego_cat.push(data[d]);
-                            // }
+                            var on_group = "";
                             var container = document.getElementById("egogroup");
                             // container.setAttribute("class", "dataset_selector");
                             for(var s = 0; s < self.ego_cat.length; s++){
@@ -342,34 +302,28 @@ var SelectingView = Backbone.View.extend({
                                 container.appendChild(selection_opt);
                             }
                             $("#group_container").show();
-                            if(user_history == 1)
-                                $("#egogroup").trigger('change');
                         };
                         set_dataset_group(result);
-                        // dataset_mode
                     });
                     return;
                 }
+
+                // find the user information
+                var pre_request_url = "restore_user_history/?user="+data_selected;
                     
                 d3.json(pre_request_url, function(result){
-                    // console.log(result);
-                    
-                    // if(!jQuery.isEmptyObject(result)){
+                    // check and set the result
                     set_user_history(result);
                     
                     var request_url = "dataset/?data="+data_selected;
                     d3.json(request_url, function(result){
-                        // console.log("in model.query_data_info");
-                        // console.log(result)
                         var set_dataset_group = function(data){
                             self.ego_cat = data;
                             
                             var on_group = self.model.get("dataset_group");
                             if(user_history == 0)
                                 on_group = "";
-                            // for(var d = 0; d < data.length; d++){
-                            //   self.ego_cat.push(data[d]);
-                            // }
+                            
                             var container = document.getElementById("egogroup");
                             // container.setAttribute("class", "dataset_selector");
                             for(var s = 0; s < self.ego_cat.length; s++){
@@ -390,7 +344,6 @@ var SelectingView = Backbone.View.extend({
                                 $("#egogroup").trigger('change');
                         };
                         set_dataset_group(result);
-                        // dataset_mode
                     });
                                         
                 });
@@ -403,7 +356,6 @@ var SelectingView = Backbone.View.extend({
             if(user_history == 0){
                 in_change_mode = 1;
                 self.model.set({"moving": 0});
-                // console.log("on menu dialog before:", self.model.get("display_egos"));
                 self.model.set({"selected_egos": {}});
                 self.model.set({"display_egos": {}});
                 self.model.set({"tree_structure":{}});
@@ -411,8 +363,6 @@ var SelectingView = Backbone.View.extend({
                 self.my_ego_selected = {};
                 self.my_ego_display = {};
                 attribute_mapping = {};
-                // save_user_mapping = [];
-                // $("#save_mapping_container").empty();
                 self.model.set({"user_mapping": []});
                 self.model.trigger('change:user_mapping');
 
@@ -427,11 +377,13 @@ var SelectingView = Backbone.View.extend({
                 self.model.set({"canvas_scale":0.15});
 
                 self.model.trigger('change:display_egos');
-                // user_history = 0;                
+
             }
+            // set user group found when dataset change
             else if(user_history == 1){
                 initial_user = 1;
                 in_change_mode = 1;
+                // set the display value
                 set_display_value();
                 
                 self.model.trigger('change:attribute');
@@ -439,30 +391,23 @@ var SelectingView = Backbone.View.extend({
                 self.model.trigger('change:dataset_mode');
                 self.model.trigger('change:selected_egos');
                 self.model.trigger('change:canvas_scale');
-                // $("#divTable_menu").empty();
-                // $("#main_title").hide();
-                // $("#divTable_menu").hide();
+                // set the UI
                 self.set_data_label();
+                // already set group for this mode
                 user_history = 2;
                 return;
             }
+            // same dataset only change view group
             else if(user_history == 2){
                 in_change_mode = 1;
                 self.model.set({"moving": 0});
-                // console.log("on menu dialog before:", self.model.get("display_egos"));
                 self.model.set({"selected_egos": {}});
                 self.model.set({"display_egos": {}});
                 self.model.set({"tree_structure":{}});
                 
                 self.my_ego_selected = {};
                 self.my_ego_display = {};
-                // attribute_mapping = {};
-               
-                // save_user_mapping = [];
-                // $("#save_mapping_container").empty();
-                // self.model.set({"user_mapping": []});
-                // self.model.trigger('change:user_mapping');
-
+                               
                 self.model.set({"leaf_scale":3});
                 self.model.set({"fruit_scale":3});
                 self.model.set({"sub_leaf_len_scale":1});
@@ -482,32 +427,22 @@ var SelectingView = Backbone.View.extend({
                 return
             }       
 
+            // reset every for new view group
             self.model.query_ego_list(data_selected, ego_group);
             
             self.model.set({"dataset_group": ego_group});
             self.model.set({"view_mode":data_selected});
-            // self.model.set({"tree_structure":{}});
+            
             $('#egogroup').attr("disabled", true);
             $("#block_page").show();
             $("#loading_process").html("<b>Fetching...</b>");
+            
+            // set the label title
             var label = document.getElementById("selecting_label");
-            // var all_tree_len = data_selected.toUpperCase().split("_");
             var all_tree = data_selected.split("_of_")[1].toUpperCase();
-            /*
-            if(all_tree_len.length > 2){
-                all_tree = data_selected.toUpperCase().split("_")[2];
-                // replace(/_/g, " ") + ":";
-                for( var a = 3; a < all_tree_len.length; a++){
-                    all_tree += " " + all_tree_len[a];
-                }
-            }
-            else{
-                all_tree = all_tree.replace(/_/g, " ")
-            }
-            */
+            
             label.innerHTML = all_tree + ":";
-            // label.innerHTML = "<b>" + all_tree + ":</b>";
-            // label.innerHTML = data_selected.toUpperCase().replace("_", " ");
+            
         });
     },
 
@@ -531,11 +466,9 @@ var SelectingView = Backbone.View.extend({
        
     },
 
+    // set the title of ego selection
     data_option: function(){
         var self = this;
-        // var name = "EGO ";
-        // var sub = "";
-        // var select_ego = [];
         $("#divTable_menu").empty();
         $("#detail_menu").hide();
         
@@ -545,6 +478,7 @@ var SelectingView = Backbone.View.extend({
         
     },
 
+    // if getting all the data then we set the UI
     set_data_label: function(){
         var self = this;
         var name = "EGO";
@@ -554,8 +488,6 @@ var SelectingView = Backbone.View.extend({
             $("#block_page").hide();
         $('#egogroup').removeAttr("disabled");
         function opt_change(ego){
-            // console.log("in opt_function", ego);
-            // console.log("in opt_function", self.my_ego_selected);
             var subset = self.model.get("dataset_group");
             if(subset != "all"){
                 $("#sub_title").show();
@@ -606,7 +538,7 @@ var SelectingView = Backbone.View.extend({
             var ego_group = JSON.stringify(ego_group);
 
             var requst = now_attr + ":-" + self.my_ego + ":-" + now_mode + ":-" + JSON.stringify(attribute_mapping) + ":-" + data_group + ":-" + ego_group;
-            // self.model.update_data(requst);
+            // get all the structure of this selected ego
             self.model.query_data(requst);
             
             // button click event
@@ -630,7 +562,6 @@ var SelectingView = Backbone.View.extend({
                 }
                 else{
                     $('.sub_option:checked').each(function(){
-                        //alert($(this).val());
                         select_ego.push($(this).val());
                         total++;
                     });
@@ -640,10 +571,6 @@ var SelectingView = Backbone.View.extend({
                 $("#loading_process").html("<b>Rendering...</b>");
                 $("#submit_ego").text("Rendering");
 
-                // now_ego[self.my_ego] = select_ego;
-                // now_ego = JSON.stringify(now_ego);
-                // console.log(">>>>", self.model.get("tree_structure"));
-
                 self.my_ego_selected[self.my_ego] = select_ego;
 
                 display.push(select_ego[total-1]);
@@ -651,7 +578,6 @@ var SelectingView = Backbone.View.extend({
                 
                 self.model.set({"display_egos":self.my_ego_display});
                 self.model.set({"selected_egos":self.my_ego_selected});
-                // console.log(">>>>", self.model.get("selected_egos"));
                 
                 self.model.set({"canvas_translate":[0, 0]});
                 self.model.set({"canvas_scale":0.15});
@@ -663,12 +589,6 @@ var SelectingView = Backbone.View.extend({
 
                 self.model.trigger('change:selected_egos');
                 self.model.trigger('change:display_egos');   
-                // var requst = now_attr + ":-" + now_ego + ":-" + now_subset + ":-" + now_mode;
-                // self.model.query_data(requst);
-
-                
-                // self.model.trigger('change:display_egos');
-                // self.model.trigger('change:selected_egos');
 
             });
         }
@@ -687,19 +607,12 @@ var SelectingView = Backbone.View.extend({
             $("#divTable_menu").append('<div><label><input class="myfont3 ego_checkbox" name="ego_selection" type="radio" id="' + total_ego[sub_ego[0]][c] + '" value="' + total_ego[sub_ego[0]][c] +'" style="margin-right:5px;">' + name + '_' + total_ego[sub_ego[0]][c].toUpperCase() + ' ('+ check_amont +')</label></div>');
         }
          
-        // sub = $('.sub_option:checked').val();
-        // single selection with same name
         $('.ego_checkbox').change(function() {
             var checked_ego = $('.ego_checkbox:checked').val();
-            // var instructure = checked_ego
-            // $("#sub_title").show();
-            // $("#sub_title").text("Sub Group:");
-            // $("#detail_menu").show();
             // querying
             self.my_ego = checked_ego;
             opt_change(checked_ego);
             
-            // $('.ego_checkbox:checked').prop('checked', false); // dont know
         });
     }
 
