@@ -149,7 +149,6 @@ var Tree_Model = Backbone.Model.extend({
             
             	container.appendChild(selection_opt);
           	}
-          	// dataset_mode
 		});
 
   	},

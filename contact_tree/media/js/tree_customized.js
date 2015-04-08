@@ -31,10 +31,11 @@ var CustomizedView = Backbone.View.extend({
         var save_array = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]; // save all the information needed into array
         // get all the information
         save_array[0] = self.model.get("view_mode");
+        // dont save while changing mode or not selecting a dataset
         if(save_array[0] == "" || save_array[0] == "0" || in_change_mode == 1)
             return;
 
-        // render parameters
+        // render parameters and push into save array
         save_array[1] = JSON.stringify(self.model.get("display_egos"));
         save_array[2] = JSON.stringify(self.model.get("selected_egos"));
         save_array[3] = self.model.get("leaf_scale");
@@ -51,43 +52,29 @@ var CustomizedView = Backbone.View.extend({
         save_array[14] = self.model.get("dataset_group");
         save_array[15] = JSON.stringify(component_attribute[save_array[0]]);
         
-        // mapping parameters
-        // var auto_map = {};
-        // var data_mode = self.model.get("view_mode");
-        // var attr_map = self.model.get("attribute");
-        // auto_map["mode"] = data_mode;
-        // auto_map["attr"] = JSON.parse(JSON.stringify(attr_map));
-        // auto_map["map_info"] = JSON.parse(JSON.stringify(attribute_mapping));
-        // auto_map["render_leaf_color"] = JSON.parse(JSON.stringify(mapping_color.render_leaf_color));
-        // auto_map["render_roots_color"] = JSON.parse(JSON.stringify(mapping_color.render_roots_color));
-        // auto_map["name"] = "auto_map";
-
-        // push into save array
-
         // generate the request link
         var request = JSON.stringify(save_array);
         var request_url = "auto_save/?save="+request;
-        // $("#block_page").show();
+        
         d3.json(request_url, function(result) {
-            // $("#block_page").hide();
-            // console.log(">>>>>>>>>", result);
-            
+            // console.log(">>>>>>>>>", result);            
         }); 
     },
 
     auto_save_mapping: function(){
         var self = this;
         var single_attr = [];
-        // self.set({"attr_option": data});
 
         // mapping parameters
         var auto_map = {};
         var data_mode = self.model.get("view_mode");
         var attr_map = self.model.get("attribute");
 
+        // dont save while changing mode or not selecting a dataset
         if(jQuery.isEmptyObject(attr_map) || data_mode == "0" || data_mode == "")
             return;
 
+        // set model attr_option whenever changing attribute
         for(a in attr_map){
             single_attr.push(attr_map[a]);
         }
@@ -105,9 +92,7 @@ var CustomizedView = Backbone.View.extend({
 
         var request_url = "save_mapping/?save="+request;
         
-        // $("#block_page").show();
         d3.json(request_url, function(result) {
-            // $("#block_page").hide();
             // console.log(">>>>>>>>>", result);            
         });          
 
@@ -115,21 +100,18 @@ var CustomizedView = Backbone.View.extend({
 
     user_mapping_restore: function(){
         var self = this;
-        // var save_user_mapping = self.model.get("user_mapping");
-        // var save_user_mapping = [];
         var request = self.model.get("view_mode"); 
         if(request == "0")
             return;
-
+        // get all the user saving mapping of this mode
         var request_url = "restore_user_mapping/?user="+request;
-        // $("#block_page").show();
+        
         d3.json(request_url, function(result) {
             // console.log(">>>>>>>>>", result);
             self.model.set({"user_mapping": result});
             self.model.trigger('change:user_mapping');
         }); 
        
-        // drawing_canvas.middle = (myCanvas.width/0.15)/2;
     }
 
 });
