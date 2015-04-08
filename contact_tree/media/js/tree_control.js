@@ -6,46 +6,18 @@ var ControlView = Backbone.View.extend({
         this.containerID = args.containerID;
         // bind view with model
         console.log("in controling initialize");
-        _.bindAll(this, 'view_canvas');
         _.bindAll(this, 'set_control_box');
         _.bindAll(this, 'update_tabs');
         
-        this.model.bind('change:display_egos', this.view_canvas);
         this.model.bind('change:tree_style', this.set_control_box);
         this.model.bind('change:leaf_scale', this.update_tabs);
         this.model.bind('change:fruit_scale', this.update_tabs);
         this.model.bind('change:sub_leaf_len_scale', this.update_tabs);
         this.model.bind('change:dtl_branch_curve', this.update_tabs);
         
-        $("#save").click(function(){
-            window.location.href = drawing_canvas.main_canvas.toDataURL().replace('image/png','image/octet-stream');
-        });
-
-        $("#default_scale").click(function(){
-            self.model.set({"canvas_translate": [0, 0]});
-            self.model.set({"canvas_scale": 0.15});
-            self.model.trigger('change:canvas_scale');
-        });
-
-        $("#detail_btn").click(function(){
-            var s_array = [];
-            s_array.push(this.value);
-            self.model.set({"tree_style":s_array});
-            self.model.set({"canvas_translate":[0, 0]});
-            self.model.set({"canvas_scale":0.15});
-            self.model.trigger('change:canvas_scale');
-            self.model.trigger('change:tree_style');
-        });
-
-        $("#abstract_btn").click(function(){
-            var s_array = [];
-            s_array.push(this.value);
-            self.model.set({"tree_style":s_array});
-            self.model.set({"canvas_translate":[0, 0]});
-            self.model.set({"canvas_scale":0.15});
-            self.model.trigger('change:canvas_scale');
-            self.model.trigger('change:tree_style');
-        });
+        // $("#save").click(function(){
+        //     window.location.href = drawing_canvas.main_canvas.toDataURL().replace('image/png','image/octet-stream');
+        // });
 
         $("#tree_restore").click(function(){
             self.model.set({"leaf_scale":3});
@@ -90,56 +62,8 @@ var ControlView = Backbone.View.extend({
         this.update_tabs();
     },
 
-    view_canvas: function(){
-        var self = this;
-        var items = self.model.get("display_egos");
-        // console.log("in save", items);
-        var drawing = 0;
-        for(var i in items){
-            drawing += items[i].length;
-        }
-        if(drawing == 0){
-            $('#save').attr("disabled", true);
-            $('#default_scale').attr("disabled", true);
-            
-            self.model.set({"leaf_scale":3});
-            self.model.set({"fruit_scale":3});
-            self.model.set({"sub_leaf_len_scale":1});
-            self.model.set({"dtl_branch_curve":1});
-            self.model.set({"root_curve":0});
-            self.model.set({"root_len_scale":1});
-            self.model.set({"canvas_translate":[0, 0]});
-            self.model.set({"canvas_scale":0.15});
-            self.model.trigger('change:canvas_scale');
-            self.model.trigger('change:tree_style');
-            $("#dtl_length").ionRangeSlider("update", {
-                from: 1
-            });
-            $("#dtl_bend").ionRangeSlider("update", {
-                from: 1
-            });
-            $("#dtl_leaf_size").ionRangeSlider("update", {
-                from: 3
-            });
-            $("#dtl_fruit_size").ionRangeSlider("update", {
-                from: 3
-            });
-            $("#root_length").ionRangeSlider("update", {
-                from: 1
-            });
-            $("#root_bend").ionRangeSlider("update", {
-                from: 0
-            });
-            $("#filter_contact").ionRangeSlider("update", {
-                from: 0
-            });
-        }
-        else{
-            $("#save").removeAttr("disabled");
-            $("#default_scale").removeAttr("disabled");
-        }
-    },
 
+    // animation of the tool box
     set_control_box: function(){
         var self = this;
         var sty = self.model.get("tree_style");
@@ -167,6 +91,7 @@ var ControlView = Backbone.View.extend({
 
     },
 
+    // initial the slider
     set_slider: function(){
         var self = this;
         $("#dtl_box").show();
@@ -253,7 +178,6 @@ var ControlView = Backbone.View.extend({
             width: 30, // default
             change: function(e) {
                 var v = $("#fruit_switcher").val();
-                // console.log("root_", v);
                 if(v == "on")
                     self.model.set({"fruit_switch":1});
                 else
@@ -267,7 +191,6 @@ var ControlView = Backbone.View.extend({
             width: 30, // default
             change: function(e) {
                 var v = $("#root_switcher").val();
-                // console.log("root_", v);
                 if(v == "on")
                     self.model.set({"leaf_switch":1});
                 else
@@ -282,7 +205,6 @@ var ControlView = Backbone.View.extend({
             type: 'single',
             step: 1,
             onChange: function(obj) {
-                // tree_size = {};
                 var val = obj.fromNumber;
                 self.model.set({"tree_boundary":{}});
                 self.model.set({"filter_contact":val});
@@ -297,7 +219,6 @@ var ControlView = Backbone.View.extend({
             step: 1,
             onChange: function(obj) {
                 var val = obj.fromNumber;
-                // self.model.set({"root_curve":val});
             }
         });
 
@@ -335,10 +256,10 @@ var ControlView = Backbone.View.extend({
 
                 case 2:
                     $("#root_length").ionRangeSlider("update", {
-                        from: 1
+                        from: r_len
                     });
                     $("#root_bend").ionRangeSlider("update", {
-                        from: 0
+                        from: r_curve
                     });
                 break;
             }
