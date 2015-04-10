@@ -868,7 +868,7 @@ def unique_stick(all_data, attr, branch_layer):
         if check_none > 0:
             # print meeting
             continue
-
+        
         # meeting = c
         if root != "none":
             if meeting[root_index] not in structure["root"][0]:
@@ -1191,7 +1191,7 @@ def set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gro
     dataset = "all"
     layer_count = []
     for d in all_data:  
-        if ego_group != "all" and "dataset" in d:
+        if ego_group != "all":
             dataset = d["dataset"]
         record_label = str(d['egoid']) + "_of_" + dataset
         if record_label not in user_ctree_data[session][data_table]:
@@ -1680,6 +1680,7 @@ def one_contact_structure(user_ctree_data, structure_request):
 
     
     return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
+    # print return_json
     # with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
     #    json_file.write(return_json)
     # print return_json
@@ -1762,6 +1763,7 @@ def restore_mapping_update(request):
             return HttpResponse(return_json)
 
         query_request = 'SELECT * FROM ' + data_table + ' WHERE egoid="' + ego_list[0] + '"' #!!!
+        
         for ego in ego_list[1:]:
             query_request += ' or egoid="' + ego + '"'
         query_request += " ORDER BY (e_id);"

@@ -363,7 +363,7 @@ var MappingView = Backbone.View.extend({
                 continue;
             }
             else{
-                if(component_attribute[data_mode][s][0].length == 0 || (s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["trunk"]))
+                if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["trunk"]))
                     continue;
             }
 
@@ -932,7 +932,7 @@ var MappingView = Backbone.View.extend({
                 continue;
             }
             else{
-                if(component_attribute[data_mode][s][0].length == 0 || (s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["branch"]))
+                if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["branch"]))
                     continue;
             }
             var selection_opt = document.createElement('option');
@@ -2815,7 +2815,7 @@ var MappingView = Backbone.View.extend({
                 continue;
             }
             else{
-                if(component_attribute[data_mode][s][0].length == 0 || (s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["bside"]))
+                if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["bside"]))
                     continue;
             }
             var selection_opt = document.createElement('option');
@@ -3364,7 +3364,7 @@ var MappingView = Backbone.View.extend({
         for(s in component_attribute[data_mode]){
             if(s == "none"){}
             else{
-                if(component_attribute[data_mode][s][0].length == 0)
+                if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["root"]))
                     continue;
             }
             var selection_opt = document.createElement('option');
@@ -4651,7 +4651,7 @@ var MappingView = Backbone.View.extend({
         for(s in component_attribute[data_mode]){
             if(s == "none"){}
             else{
-                if(component_attribute[data_mode][s][0].length == 0 || (s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["leaf_size"]))
+                if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["leaf_size"]))
                     continue;
             }
             var selection_opt = document.createElement('option');
@@ -6348,7 +6348,7 @@ var MappingView = Backbone.View.extend({
         for(s in component_attribute[data_mode]){
             if(s == "none"){}
             else{
-                if(component_attribute[data_mode][s][0].length == 0 || (s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["leaf_color"]))
+                if(component_attribute[data_mode][s][0].length == 0 || (attr_opt.indexOf(s) != -1 && s != attr_map["leaf_color"]))
                     continue;
             }
             var selection_opt = document.createElement('option');
