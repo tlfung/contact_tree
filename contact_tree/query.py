@@ -1027,6 +1027,21 @@ def set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gro
     data_table = table.split("_of_")[1]
     session = table.split("_of_")[0]
 
+    attr_idx = []
+    attr_name = []
+    index_found = 1
+    index_list = 10
+    # check to create data index
+    with open("./contact_tree/data/dataset_index.json", "rb") as json_file:
+        dataset_index = json.load(json_file)
+    if data_table not in dataset_index:
+        dataset_index[data_table] = {}
+        index_found = 0
+    else:
+        for col in dataset_index[data_table]:
+            attr_idx.append(dataset_index[data_table][col])
+            attr_name.append(col)
+        index_list += len(attr_idx)
 
     if data_table not in user_ctree_data[session]:
         user_ctree_data[session][data_table] = dict()
@@ -1041,10 +1056,20 @@ def set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gro
             attr_detail[compt] = cur.fetchone()
     
     # print mapping
-
+    
     dataset = "all"
     layer_count = []
     for d in all_data:
+        if index_found == 0:
+            for col in d:
+                if col == "e_id" or col == "dataset" or col == "egoid" or col == "alterid" or col == "ctree_branch" or col == "ctree_trunk" or col == "ctree_bside" or col == "ctree_leaf_color" or col == "ctree_leaf_size" or col == "ctree_fruit_size" or col == "ctree_root":
+                    continue
+                dataset_index[data_table][col] = index_list
+                attr_idx.append(index_list)
+                attr_name.append(col)
+                index_list += 1
+            index_found = 1
+
         if ego_group != "all":
             dataset = d["dataset"]
         record_label = str(d['egoid']) + "_of_" + dataset
@@ -1057,7 +1082,10 @@ def set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gro
             return
 
         # ctree_record = [-100 for i in range(10)]
-        ctree_record = [-100 for i in range(10)]
+        ctree_record = [-100 for i in range(index_list)]
+        for myindex in range(len(attr_idx)):
+            ctree_record[attr_idx[myindex]] = d[attr_name[myindex]]
+
         ctree_record[egoid_index] = d['egoid']
         ctree_record[alterid_index] = d['alterid']
         for compt in attr:
@@ -1141,9 +1169,6 @@ def set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gro
 
 
             elif compt == 'fruit_size' or compt == 'leaf_size' or compt == 'leaf_color' or compt == 'branch' or compt == 'root':
-                # cur1 = db.query('SELECT * FROM dataset_collection WHERE dataset="' + table + '" and attr="' + attr[compt] + '";')
-                # collecting_data = cur1.fetchone()
-
                 if attr[compt] == "none":
                     if compt == 'fruit_size':
                         ctree_record[fruit_size_index] = 0
@@ -1325,6 +1350,10 @@ def set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gro
     for label in user_ctree_data[session][data_table]:
         if label != "layer":
             user_ctree_data[session][data_table][label]["done"] = 1
+
+    index_json = simplejson.dumps(dataset_index, indent=4, use_decimal=True)
+    with open("./contact_tree/data/dataset_index.json", "wb") as json_file:
+       json_file.write(index_json)
 
 
 def update_default_mapping(user_ctree_data, select_ego, table, new_column, group):

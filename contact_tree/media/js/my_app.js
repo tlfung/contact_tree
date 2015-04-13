@@ -135,7 +135,8 @@ function event_setting(){
 var MyApp = function MyApp(){
     var self = this;
     // generate an unique session id for new user
-    document.cookie = "session_id=5407169205136597; mode=combine_diary";
+    // document.cookie = "session_id=5407169205136597; mode=combine_diary"; //get update from database 
+    document.cookie = "session_id=5134534609969705; mode=combine_diary"; // new testing
     session_id = Math.floor(Math.random() * 10000000000000001);
 
     // check cookie information
