@@ -1324,20 +1324,20 @@ def set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gro
                                     break
                         else:
                             if compt == 'branch' and mapping[attr[compt]][1] < mapping[attr[compt]][0]:
-                                if int(d[attr[compt]]) >= int(mapping[attr[compt]][0]):
+                                if float(d[attr[compt]]) >= float(mapping[attr[compt]][0]):
                                     ctree_record[branch_index] = 0
                                                                                                          
-                                elif int(d[attr[compt]]) <= int(mapping[attr[compt]][-1]):
+                                elif float(d[attr[compt]]) <= float(mapping[attr[compt]][-1]):
                                     ctree_record[branch_index] = len(mapping)
                                     layer_count.append(len(mapping))
                                     
                                 else:
                                     for order in range(len(mapping[attr[compt]])-2, -1, -1):
-                                        if int(d[attr[compt]]) <= int(mapping[attr[compt]][order]) and int(d[attr[compt]]) > int(mapping[attr[compt]][order+1]):
+                                        if float(d[attr[compt]]) <= float(mapping[attr[compt]][order]) and float(d[attr[compt]]) > float(mapping[attr[compt]][order+1]):
                                             ctree_record[branch_index] = (order+1)
                                             break
                             elif compt == 'branch' or compt == 'leaf_color' or compt == 'root':
-                                if int(d[attr[compt]]) <= int(mapping[attr[compt]][0]):
+                                if float(d[attr[compt]]) <= float(mapping[attr[compt]][0]):
                                     if compt == 'leaf_color':
                                         ctree_record[leaf_color_index] = 0
                                     elif compt == 'branch':
@@ -1345,7 +1345,7 @@ def set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gro
                                     elif compt == 'root':
                                         ctree_record[root_index] = 0
 
-                                elif int(d[attr[compt]]) >= int(mapping[attr[compt]][-1]):
+                                elif float(d[attr[compt]]) >= float(mapping[attr[compt]][-1]):
                                     if compt == 'leaf_color':
                                         ctree_record[leaf_color_index] = len(mapping)
                                     elif compt == 'branch':
@@ -1356,7 +1356,7 @@ def set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gro
                                 
                                 else:
                                     for order in range(1, len(mapping[attr[compt]])):
-                                        if int(d[attr[compt]]) > int(mapping[attr[compt]][order-1]) and int(d[attr[compt]]) <= int(mapping[attr[compt]][order]):
+                                        if float(d[attr[compt]]) > float(mapping[attr[compt]][order-1]) and float(d[attr[compt]]) <= float(mapping[attr[compt]][order]):
                                             if compt == 'leaf_color':
                                                 ctree_record[leaf_color_index] = order
                                             elif compt == 'branch':
@@ -1369,13 +1369,13 @@ def set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gro
                                 size_map = mapping[attr[compt]][1]
                                 val_map = mapping[attr[compt]][0]
 
-                                if int(d[attr[compt]]) <= int(val_map[0]):
+                                if float(d[attr[compt]]) <= float(val_map[0]):
                                     if compt == 'fruit_size':
                                         ctree_record[fruit_size_index] = size_map[0]
                                     elif compt == 'leaf_size':
                                         ctree_record[leaf_size_index] = size_map[0]
                                     
-                                elif int(d[attr[compt]]) >= int(val_map[-1]):
+                                elif float(d[attr[compt]]) >= float(val_map[-1]):
                                     if compt == 'fruit_size':
                                         ctree_record[fruit_size_index] = size_map[len(val_map)]
                                     elif compt == 'leaf_size':
@@ -1383,7 +1383,7 @@ def set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gro
                                     
                                 else:
                                     for order in range(1, len(val_map)):
-                                        if int(d[attr[compt]]) > int(val_map[order-1]) and int(d[attr[compt]]) <= int(val_map[order]):
+                                        if float(d[attr[compt]]) > float(val_map[order-1]) and float(d[attr[compt]]) <= int(val_map[order]):
                                             if compt == 'fruit_size':
                                                 ctree_record[fruit_size_index] = size_map[order]
                                             elif compt == 'leaf_size':
