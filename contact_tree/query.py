@@ -883,10 +883,7 @@ def duplicate_stick(all_data, attr, branch_layer):
             else:
                 structure["root"][0][meeting[root_index]]["length"] += 1
 
-        if leaf_id == "none":
-            leaf_highlights = "none"
-        else:
-            leaf_highlights = meeting[highlight_index]
+        leaf_highlights = meeting[highlight_index]
         # left
         if meeting[trunk_index] == 0:
             level = 0
@@ -1013,7 +1010,6 @@ def duplicate_stick(all_data, attr, branch_layer):
                                 
                     break
                 level += 1
-
 
     return structure
 
@@ -1450,10 +1446,6 @@ def one_contact_structure(user_ctree_data, structure_request):
     data_table = table.split("_of_")[1]
     session = table.split("_of_")[0]
 
-    # user_ctree_data = dict()
-    
-    # print request.GET['contact']
-    # print ego_info
     cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
     stick_unique = cur.fetchone()["alter_info"]
     if ego_group == "all":
@@ -1477,8 +1469,8 @@ def one_contact_structure(user_ctree_data, structure_request):
         for e in ego_info:
             for sub in ego_info[e]:
                 record_label = e + "_of_" + sub
-                # if record_label not in user_ctree_data[session][data_table]:
-                #     continue
+                if record_label not in user_ctree_data[session][data_table]:
+                    continue
                 all_data = user_ctree_data[session][data_table][record_label]["record"]
                 branch_layer = user_ctree_data[session][data_table]["layer"] + 1
 
@@ -1493,23 +1485,15 @@ def one_contact_structure(user_ctree_data, structure_request):
                     final_structure[sub] = dict()
                 final_structure[sub][e] = one_structure
 
-
-    
     return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
-    # print return_json
-    # with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
-    #    json_file.write(return_json)
-    # print return_json
+    
     return return_json
 
 
 def one_contact_update(request):
     db = DB()
-    # table = request.GET.get('contact')
-    # print request.GET['contact']
+   
     user_ctree_data = dict()
-
-    # check_file_exist = os.path.exists("./contact_tree/data/auto_save/" + session + ".json")
        
     if request.GET.get('contact'):
         list_request = request.GET['contact'].split(":-")
@@ -1521,9 +1505,7 @@ def one_contact_update(request):
         # ego_info = json.loads(list_request[5])
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0]
-        # print list_request
-        # print mapping
-        # attr['branch'] = 'age'
+        
         with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
             user_ctree_data = json.load(json_file)
         
@@ -1542,15 +1524,13 @@ def one_contact_update(request):
     user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
     with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
         json_file.write(user_ctree_data_json)
-    # return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
-    # print return_json
+    
     return HttpResponse(return_json)
 
 
 def restore_mapping_update(request):
     db = DB()
-    # table = request.GET.get('contact')
-    # print request.GET['contact']
+    
     user_ctree_data = dict()
 
     if request.GET.get('restore'):
@@ -1560,7 +1540,6 @@ def restore_mapping_update(request):
         table = list_request[2]
         mapping = json.loads(list_request[3])
         data_group = list_request[4]
-        # ego_info = json.loads(list_request[5])
 
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0]
@@ -1583,7 +1562,6 @@ def restore_mapping_update(request):
         for ego in ego_list[1:]:
             query_request += ' or egoid="' + ego + '"'
         query_request += " ORDER BY (e_id);"
-        # print query_request
         precur = db.query(query_request)
         all_data = precur.fetchall()
 
@@ -1600,8 +1578,6 @@ def restore_mapping_update(request):
     with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
         json_file.write(user_ctree_data_json)
     
-    # return_json = simplejson.dumps(table, indent=4, use_decimal=True)
-    # print return_json
     return HttpResponse(return_json)
 
 
@@ -1611,8 +1587,6 @@ def update_binary(request):
     db = DB()
     user_ctree_data = dict()
 
-    # table = request.GET.get('contact')
-    # print request.GET['contact']
     if request.GET.get('update'):
         list_request = request.GET['update'].split(":=")[0].split(":-")
         select_ego = request.GET['update'].split(":=")[1:]

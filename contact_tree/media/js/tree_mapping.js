@@ -382,14 +382,7 @@ var MappingView = Backbone.View.extend({
         var range_max = document.createElement("span");
         
         sep_title.id = "sep_group";
-        // if(one_attr in attribute_mapping){
-        //     sep_title.innerHTML = parseInt(attribute_mapping[one_attr][0]);
-        //     sep_title.value = parseInt(attribute_mapping[one_attr][0]);
-        // }
-        // else{
-        //     sep_title.innerHTML = Math.floor((attr_min + attr_max)/2);
-        //     sep_title.value = Math.floor((attr_min + attr_max)/2);
-        // }
+        
         group_slider.id = "binary_slider";
         sep_title.setAttribute("style", "position:absolute;");
         sep.setAttribute("style", "margin-top:10px; position:relative; width:100%; margin-left:5px; height:30px;");
@@ -418,6 +411,7 @@ var MappingView = Backbone.View.extend({
                 min: attr_min,
                 max: attr_max,
                 value: parseInt(attribute_mapping[one_attr][0]),
+                step: 0.1,
                 slide: function( event, ui ) {
                     $("#sep_group").text(ui.value);
                     $("#sep_group").val(ui.value);
@@ -439,6 +433,7 @@ var MappingView = Backbone.View.extend({
                 min: attr_min,
                 max: attr_max,
                 value: Math.floor((attr_min + attr_max)/2),
+                step: 0.1,
                 slide: function( event, ui ) {
                     $("#sep_group").text(ui.value);
                     $("#sep_group").val(ui.value);
