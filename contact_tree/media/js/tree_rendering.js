@@ -623,80 +623,67 @@ var RenderingView = Backbone.View.extend({
             var start_point = [ tree_rstpoint[begin_index[long_stick][0]]+extra_slope[long_stick][0], tree_rstpoint[begin_index[long_stick][1]]+extra_slope[long_stick][1] ];
             
 
-            if(!jQuery.isEmptyObject(alters[long_stick][n]) && alters[long_stick][n]["leaf"].length <= self.filter_cnt){
-                sub_total_leaf += alters[long_stick][n]["leaf"].length;
-                if(stick_pos[short_stick][count_short_stick] == n && !jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                    if(alters[short_stick][count_short_stick]["leaf"].length <= self.filter_cnt){
+            if((!jQuery.isEmptyObject(alters[long_stick][n]) && alters[long_stick][n]["leaf"].length <= self.filter_cnt) || jQuery.isEmptyObject(alters[long_stick][n])){
+                if(!jQuery.isEmptyObject(alters[long_stick][n]))
+                    sub_total_leaf += alters[long_stick][n]["leaf"].length;
+                if(stick_pos[short_stick][count_short_stick] == n){
+                    if(jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
+                        count_short_stick++;
+                        continue;
+                    }
+                    else if(alters[short_stick][count_short_stick]["leaf"].length <= self.filter_cnt){
                         sub_total_leaf += alters[short_stick][count_short_stick]["leaf"].length;
                         count_short_stick++;
                         continue;
                     }
                     else{
-                        // this.tree_fruit(this.context, fruit_pos[short_stick][0], fruit_pos[short_stick][1], alters[short_stick][count_short_stick]["fruit"]);
-                        //if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                            this.context.fillStyle = mapping_color.trunk;
-                            this.context.strokeStyle = mapping_color.trunk;
-                            // this.context.lineWidth = 15;
-                            this.context.lineCap = 'round';
-                            this.context.beginPath();
-                            this.context.moveTo(tree_rstpoint[begin_index[short_stick][0]], tree_rstpoint[begin_index[short_stick][1]]);
-                            this.context.lineTo(tree_rstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_rstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1]);
-                            
-                            this.context.stroke();//draw line
-                            this.context.fill();//fill color
-                        //}                        
-
+                        this.context.fillStyle = mapping_color.trunk;
+                        this.context.strokeStyle = mapping_color.trunk;
+                        // this.context.lineWidth = 15;
+                        this.context.lineCap = 'round';
+                        this.context.beginPath();
+                        this.context.moveTo(tree_rstpoint[begin_index[short_stick][0]], tree_rstpoint[begin_index[short_stick][1]]);
+                        this.context.lineTo(tree_rstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_rstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1]);
+                        
+                        this.context.stroke();//draw line
+                        this.context.fill();//fill color
+                        
                         var stick_len = Math.sqrt( Math.pow(extra_slope[short_stick][0],2) + Math.pow(extra_slope[short_stick][1],2) );
                         var point_in_canvas = [ (tree_rstpoint[begin_index[short_stick][0]]*this.scale) + this.translate_point[0], (tree_rstpoint[begin_index[short_stick][1]]*this.scale) + this.translate_point[1]];
                         var stick_vector = [extra_slope[short_stick][0]/stick_len, extra_slope[short_stick][1]/stick_len];
                         var set_alter_id = this.subyear + "_" + alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#r#" + layer;
                                                
                         if(this.snap == 0 && this.save_img == 0){
-                            //if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                                for(var i = 0; i < Math.round(stick_len*this.scale); i++){
-                                    var p_index = [Math.round((point_in_canvas[0]+stick_vector[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+stick_vector[1]*i)/self.c_detail)];
-                                    if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
-                                        this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
-                                    }
-                                } 
-                            //}
+                            for(var i = 0; i < Math.round(stick_len*this.scale); i++){
+                                var p_index = [Math.round((point_in_canvas[0]+stick_vector[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+stick_vector[1]*i)/self.c_detail)];
+                                if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
+                                    this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
+                                }
+                            }
                         }
                         else if(this.save_img == 0){
                             this.snap_info = alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#r#" + layer;
-                            //if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                                for(var i = 0; i < Math.round(stick_len*this.snap_scale); i++){
-                                    var p_index = [Math.round(tree_rstpoint[begin_index[short_stick][0]]*this.snap_scale), Math.round(tree_rstpoint[begin_index[short_stick][0]]*this.snap_scale)];
-                                    // if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
-                                    this.snaping_grid[p_index[0]][p_index[1]] = this.snap_info;
-                                    // }
-                                } 
-                            //}                    
+                            for(var i = 0; i < Math.round(stick_len*this.snap_scale); i++){
+                                var p_index = [Math.round(tree_rstpoint[begin_index[short_stick][0]]*this.snap_scale), Math.round(tree_rstpoint[begin_index[short_stick][0]]*this.snap_scale)];
+                                this.snaping_grid[p_index[0]][p_index[1]] = this.snap_info;
+                            }                    
                         }                        
 
                         start_point = [ tree_rstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_rstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1] ];
                         // sub_total_leaf += this.draw_right_leaf(short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
                         var stick_leaf = 0;
-                        //if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                           stick_leaf = this.draw_leaf(set_alter_id, short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]); 
-                        //}
+                        stick_leaf = this.draw_leaf(set_alter_id, short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]); 
+                        
                         sub_total_leaf += stick_leaf;
 
-                        //if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                            var hash_index_id = alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#r#" + layer;
-                            if(this.subyear in this.hash_table){
-                                this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
-                                
-                                // if(hash_index_id in this.hash_table[this.subyear]){}
-                                // else{
-                                //     this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
-                                // } 
-                            }
-                            else{
-                                this.hash_table[this.subyear] = {};
-                                this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
-                            }
-                        //}
-                        
+                        var hash_index_id = alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#r#" + layer;
+                        if(this.subyear in this.hash_table){
+                            this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
+                        }
+                        else{
+                            this.hash_table[this.subyear] = {};
+                            this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
+                        }                        
                         count_short_stick++;
 
                         if(total_draw_stick > 1){
@@ -776,10 +763,8 @@ var RenderingView = Backbone.View.extend({
                 if(!jQuery.isEmptyObject(alters[long_stick][n])){
                     for(var i = 0; i < Math.round(stick_len*this.snap_scale); i++){
                         var p_index = [Math.round(tree_rstpoint[begin_index[long_stick][0]]*this.snap_scale), Math.round(tree_rstpoint[begin_index[long_stick][1]]*this.snap_scale)];
-                        // if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
-                        //     // console.log(p_index[0], p_index[1])
+                        
                         this.snaping_grid[p_index[0]][p_index[1]] = this.snap_info;
-                        // }
                     }
                 }
                 
@@ -807,73 +792,63 @@ var RenderingView = Backbone.View.extend({
             }
             
             // short stick
-            if(stick_pos[short_stick][count_short_stick] == n && !jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                if(alters[short_stick][count_short_stick]["leaf"].length <= self.filter_cnt){
+            if(stick_pos[short_stick][count_short_stick] == n){
+                if(jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
+                    count_short_stick++;
+                }
+                else if(alters[short_stick][count_short_stick]["leaf"].length <= self.filter_cnt){
                     sub_total_leaf += alters[short_stick][count_short_stick]["leaf"].length;
                     count_short_stick++;
                 }
                 else{
                     // this.tree_fruit(this.context, fruit_pos[short_stick][0], fruit_pos[short_stick][1], alters[short_stick][count_short_stick]["fruit"]);
-                    //if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                        this.context.fillStyle = mapping_color.trunk;
-                        this.context.strokeStyle = mapping_color.trunk;
-                        // this.context.lineWidth = 15;
-                        this.context.lineCap = 'round';
-                        this.context.beginPath();
-                        this.context.moveTo(tree_rstpoint[begin_index[short_stick][0]], tree_rstpoint[begin_index[short_stick][1]]);
-                        this.context.lineTo(tree_rstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_rstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1]);
-                        
-                        this.context.stroke();//draw line
-                        this.context.fill();//fill color
-                    //}
+                    this.context.fillStyle = mapping_color.trunk;
+                    this.context.strokeStyle = mapping_color.trunk;
+                    this.context.lineCap = 'round';
+                    this.context.beginPath();
+                    this.context.moveTo(tree_rstpoint[begin_index[short_stick][0]], tree_rstpoint[begin_index[short_stick][1]]);
+                    this.context.lineTo(tree_rstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_rstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1]);
                     
-
+                    this.context.stroke();//draw line
+                    this.context.fill();//fill color
+                   
                     var stick_len = Math.sqrt( Math.pow(extra_slope[short_stick][0],2) + Math.pow(extra_slope[short_stick][1],2) );
                     var point_in_canvas = [ (tree_rstpoint[begin_index[short_stick][0]]*this.scale) + this.translate_point[0], (tree_rstpoint[begin_index[short_stick][1]]*this.scale) + this.translate_point[1]];
                     var stick_vector = [extra_slope[short_stick][0]/stick_len, extra_slope[short_stick][1]/stick_len];
                     var set_alter_id = this.subyear + "_" + alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#r#" + layer;
                                     
                     if(this.snap == 0 && this.save_img == 0){
-                        //if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                            for(var i = 0; i < Math.round(stick_len*this.scale); i++){
-                                var p_index = [Math.round((point_in_canvas[0]+stick_vector[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+stick_vector[1]*i)/self.c_detail)];
-                                if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
-                                    this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
-                                }
-                            } 
-                        //}
+                        for(var i = 0; i < Math.round(stick_len*this.scale); i++){
+                            var p_index = [Math.round((point_in_canvas[0]+stick_vector[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+stick_vector[1]*i)/self.c_detail)];
+                            if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
+                                this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
+                            }
+                        }
                     }
                     else if(this.save_img == 0){
                         this.snap_info = alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#r#" + layer;
-                        // if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                            for(var i = 0; i < Math.round(stick_len*this.snap_scale); i++){
-                                var p_index = [Math.round(tree_rstpoint[begin_index[short_stick][0]]*this.snap_scale), Math.round(tree_rstpoint[begin_index[short_stick][0]]*this.snap_scale)];
-                                // if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
-                                this.snaping_grid[p_index[0]][p_index[1]] = this.snap_info;
-                                // }
-                            } 
-                        //}                    
+                        for(var i = 0; i < Math.round(stick_len*this.snap_scale); i++){
+                            var p_index = [Math.round(tree_rstpoint[begin_index[short_stick][0]]*this.snap_scale), Math.round(tree_rstpoint[begin_index[short_stick][0]]*this.snap_scale)];
+                            this.snaping_grid[p_index[0]][p_index[1]] = this.snap_info;
+                        }                    
                     }
                     
 
                     start_point = [ tree_rstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_rstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1] ];
                     // sub_total_leaf += this.draw_right_leaf(short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
                     var stick_leaf = 0;
-                    // if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                       stick_leaf = this.draw_leaf(set_alter_id, short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]); 
-                    //}
+                    stick_leaf = this.draw_leaf(set_alter_id, short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]); 
+                    
                     sub_total_leaf += stick_leaf;
 
-                    //if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                        var hash_index_id = alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#r#" + layer;
-                        if(this.subyear in this.hash_table){
-                            this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
-                        }
-                        else{
-                            this.hash_table[this.subyear] = {};
-                            this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
-                        }
-                    //}
+                    var hash_index_id = alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#r#" + layer;
+                    if(this.subyear in this.hash_table){
+                        this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
+                    }
+                    else{
+                        this.hash_table[this.subyear] = {};
+                        this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
+                    }
                     
                     count_short_stick++;
                 }
@@ -1132,75 +1107,69 @@ var RenderingView = Backbone.View.extend({
            
             var sub_total_leaf = 0;
 
-            if(!jQuery.isEmptyObject(alters[long_stick][n]) && alters[long_stick][n]["leaf"].length <= self.filter_cnt){
-                sub_total_leaf += alters[long_stick][n]["leaf"].length;
-                if(stick_pos[short_stick][count_short_stick] == n && !jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                    if(alters[short_stick][count_short_stick]["leaf"].length <= self.filter_cnt){
+            if((!jQuery.isEmptyObject(alters[long_stick][n]) && alters[long_stick][n]["leaf"].length <= self.filter_cnt) || jQuery.isEmptyObject(alters[long_stick][n])){
+                if(!jQuery.isEmptyObject(alters[long_stick][n]))
+                    sub_total_leaf += alters[long_stick][n]["leaf"].length; 
+                if(stick_pos[short_stick][count_short_stick] == n){
+                    if(jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
+                        count_short_stick++;
+                        continue;
+                    }
+                    else if(alters[short_stick][count_short_stick]["leaf"].length <= self.filter_cnt){
                         sub_total_leaf += alters[short_stick][count_short_stick]["leaf"].length;
                         count_short_stick++;
                         continue;
                     }
                     else{
-                        //if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                            this.context.fillStyle = mapping_color.trunk;
-                            this.context.strokeStyle = mapping_color.trunk;
-                            this.context.lineCap = 'round';
-                            this.context.beginPath();
-                            this.context.moveTo(tree_lstpoint[begin_index[short_stick][0]], tree_lstpoint[begin_index[short_stick][1]]);
-                            this.context.lineTo(tree_lstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_lstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1]);
-                           
-                            this.context.stroke();//draw line
-                            // this.context.fill();//fill color
-                        //}
+                        this.context.fillStyle = mapping_color.trunk;
+                        this.context.strokeStyle = mapping_color.trunk;
+                        this.context.lineCap = 'round';
+                        this.context.beginPath();
+                        this.context.moveTo(tree_lstpoint[begin_index[short_stick][0]], tree_lstpoint[begin_index[short_stick][1]]);
+                        this.context.lineTo(tree_lstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_lstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1]);
+                       
+                        this.context.stroke();//draw line
+                        // this.context.fill();//fill color
                         
-
                         var stick_len = Math.sqrt( Math.pow(extra_slope[short_stick][0],2) + Math.pow(extra_slope[short_stick][1],2) );
                         var point_in_canvas = [ (tree_lstpoint[begin_index[short_stick][0]]*this.scale) + this.translate_point[0], (tree_lstpoint[begin_index[short_stick][1]]*this.scale) + this.translate_point[1]];
                         var stick_vector = [extra_slope[short_stick][0]/stick_len, extra_slope[short_stick][1]/stick_len];
                         var set_alter_id = this.subyear + "_" + alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#l#" + layer;
                         
                         if(this.snap == 0 && this.save_img == 0){
-                            //if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                                for(var i = 0; i < Math.round(stick_len*this.scale); i++){
-                                    var p_index = [Math.round((point_in_canvas[0]+stick_vector[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+stick_vector[1]*i)/self.c_detail)];
-                                    if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
-                                        this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
-                                    }
+                            for(var i = 0; i < Math.round(stick_len*this.scale); i++){
+                                var p_index = [Math.round((point_in_canvas[0]+stick_vector[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+stick_vector[1]*i)/self.c_detail)];
+                                if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
+                                    this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
                                 }
-                            //}
+                            }
                         }
 
                         else if(this.save_img == 0){
                             this.snap_info = alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#l#" + layer;
-                            //if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                                for(var i = 0; i < Math.round(stick_len*this.snap_scale); i++){
-                                    var p_index = [Math.round(tree_lstpoint[begin_index[short_stick][0]]*this.snap_scale), Math.round(tree_lstpoint[begin_index[short_stick][1]]*this.snap_scale)];
-                                    this.snaping_grid[p_index[0]][p_index[1]] = this.snap_info;
-                                   
-                                }
-                            //}                
+                            for(var i = 0; i < Math.round(stick_len*this.snap_scale); i++){
+                                var p_index = [Math.round(tree_lstpoint[begin_index[short_stick][0]]*this.snap_scale), Math.round(tree_lstpoint[begin_index[short_stick][1]]*this.snap_scale)];
+                                this.snaping_grid[p_index[0]][p_index[1]] = this.snap_info;
+                               
+                            }           
                         }
 
                         start_point = [ tree_lstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_lstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1] ];
                         stick_leaf = 0;
-                        //if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                            stick_leaf = this.draw_leaf(set_alter_id, short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
-                        //}
+                        stick_leaf = this.draw_leaf(set_alter_id, short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
                         
                         sub_total_leaf += stick_leaf;
 
-                        //if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                            var hash_index_id = alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#l#" + layer;                    
-                            if(this.subyear in this.hash_table){
-                                this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
-                               
-                            }
-                            else{
-                                this.hash_table[this.subyear] = {};
-                                this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
-                            }
+                        var hash_index_id = alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#l#" + layer;                    
+                        if(this.subyear in this.hash_table){
+                            this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
+                           
+                        }
+                        else{
+                            this.hash_table[this.subyear] = {};
+                            this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
+                        }
                         
-                        //}
                         count_short_stick++;                    
                     }
                     if(total_draw_stick > 1){
@@ -1299,74 +1268,64 @@ var RenderingView = Backbone.View.extend({
             }           
             
             // short stick
-            if(stick_pos[short_stick][count_short_stick] == n && !jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                if(alters[short_stick][count_short_stick]["leaf"].length <= self.filter_cnt){
+            if(stick_pos[short_stick][count_short_stick] == n){
+                if(jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
+                    count_short_stick++;
+                }
+                else if(alters[short_stick][count_short_stick]["leaf"].length <= self.filter_cnt){
                     sub_total_leaf += alters[short_stick][count_short_stick]["leaf"].length;
                     count_short_stick++;
                 }
                 else{
-                    //if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                        this.context.fillStyle = mapping_color.trunk;
-                        this.context.strokeStyle = mapping_color.trunk;
-                        // this.context.lineWidth = 15;
-                        this.context.lineCap = 'round';
-                        this.context.beginPath();
-                        this.context.moveTo(tree_lstpoint[begin_index[short_stick][0]], tree_lstpoint[begin_index[short_stick][1]]);
-                        this.context.lineTo(tree_lstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_lstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1]);
-                        
-                        this.context.stroke();//draw line
-                        // this.context.fill();//fill color
-                    //}
+                    this.context.fillStyle = mapping_color.trunk;
+                    this.context.strokeStyle = mapping_color.trunk;
+                    this.context.lineCap = 'round';
+                    this.context.beginPath();
+                    this.context.moveTo(tree_lstpoint[begin_index[short_stick][0]], tree_lstpoint[begin_index[short_stick][1]]);
+                    this.context.lineTo(tree_lstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_lstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1]);
                     
-
+                    this.context.stroke();//draw line
+                    // this.context.fill();//fill color
+                    
                     var stick_len = Math.sqrt( Math.pow(extra_slope[short_stick][0],2) + Math.pow(extra_slope[short_stick][1],2) );
                     var point_in_canvas = [ (tree_lstpoint[begin_index[short_stick][0]]*this.scale) + this.translate_point[0], (tree_lstpoint[begin_index[short_stick][1]]*this.scale) + this.translate_point[1]];
                     var stick_vector = [extra_slope[short_stick][0]/stick_len, extra_slope[short_stick][1]/stick_len];
                     var set_alter_id = this.subyear + "_" + alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#l#" + layer;
                     
                     if(this.snap == 0 && this.save_img == 0){
-                        //if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                            for(var i = 0; i < Math.round(stick_len*this.scale); i++){
-                                var p_index = [Math.round((point_in_canvas[0]+stick_vector[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+stick_vector[1]*i)/self.c_detail)];
-                                if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
-                                    this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
-                                }
+                        for(var i = 0; i < Math.round(stick_len*this.scale); i++){
+                            var p_index = [Math.round((point_in_canvas[0]+stick_vector[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+stick_vector[1]*i)/self.c_detail)];
+                            if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
+                                this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
                             }
-                        //}
+                        }
                     }
 
                     else if(this.save_img == 0){
                         this.snap_info = alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#l#" + layer;
-                        //if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                            for(var i = 0; i < Math.round(stick_len*this.snap_scale); i++){
-                                var p_index = [Math.round(tree_lstpoint[begin_index[short_stick][0]]*this.snap_scale), Math.round(tree_lstpoint[begin_index[short_stick][1]]*this.snap_scale)];
-                                
-                                this.snaping_grid[p_index[0]][p_index[1]] = this.snap_info;
-                                
-                            }
-                        //}                
+                        for(var i = 0; i < Math.round(stick_len*this.snap_scale); i++){
+                            var p_index = [Math.round(tree_lstpoint[begin_index[short_stick][0]]*this.snap_scale), Math.round(tree_lstpoint[begin_index[short_stick][1]]*this.snap_scale)];
+                            
+                            this.snaping_grid[p_index[0]][p_index[1]] = this.snap_info;    
+                        }
                     }               
                     
 
                     start_point = [ tree_lstpoint[begin_index[short_stick][0]]+extra_slope[short_stick][0], tree_lstpoint[begin_index[short_stick][1]]+extra_slope[short_stick][1] ];
                     // sub_total_leaf += this.draw_left_leaf(short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
                     stick_leaf = 0;
-                    //if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                        stick_leaf = this.draw_leaf(set_alter_id, short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
-                    //}
+                    stick_leaf = this.draw_leaf(set_alter_id, short_stick, alters[short_stick][count_short_stick], leaf_line[short_stick], stick_m[short_stick], start_point, stick_v[short_stick]);
+                    
                     sub_total_leaf += stick_leaf;
 
-                    //if(!jQuery.isEmptyObject(alters[short_stick][count_short_stick])){
-                        var hash_index_id = alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#l#" + layer;                    
-                        if(this.subyear in this.hash_table){
-                            this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
-                        }
-                        else{
-                            this.hash_table[this.subyear] = {};
-                            this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
-                        }
-                    
-                    //}
+                    var hash_index_id = alters[short_stick][count_short_stick]["id"] + "#" + short_stick + "#l#" + layer;                    
+                    if(this.subyear in this.hash_table){
+                        this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
+                    }
+                    else{
+                        this.hash_table[this.subyear] = {};
+                        this.hash_table[this.subyear][hash_index_id] = [alters[short_stick][count_short_stick]["id"], stick_leaf, alters[short_stick][count_short_stick]["fruit"], layer+1, short_stick];
+                    }
                     count_short_stick++;
                 }
                 
