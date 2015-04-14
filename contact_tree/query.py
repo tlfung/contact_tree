@@ -2167,7 +2167,7 @@ def update_binary(request):
         zero_val = list_request[5:]
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0]
-
+        
         ego_info = dict()
 
         with open("./contact_tree/data/dataset_index.json", "rb") as json_file:
@@ -2202,6 +2202,7 @@ def update_binary(request):
         mytype = typecur.fetchone()["type"]
 
         if mytype == "categorical" or mytype == "boolean":
+            zero_val = set(zero_val)
             for label in user_ctree_data[session][data_table]:
                 data_info = user_ctree_data[session][data_table][label]
                 if label == "layer":
@@ -2225,7 +2226,6 @@ def update_binary(request):
                     # update_ctree_data[session][data_table][label] = dict()
                     # if "record" not in update_ctree_data[session][data_table][label]: 
                     #     update_ctree_data[session][data_table][label]["record"] = []
-
                     for record in data_info["record"]:
                         if record[ori_col_index] == None:
                             record[new_col_index] = -100
@@ -2856,7 +2856,7 @@ def auto_save(request):
 
         update_query = waves + "," + group + "," + display_egos + "," + selected_egos + "," + leaf_scale + "," + fruit_scale + "," + sub_leaf_len_scale + "," + dtl_branch_curve + "," + root_curve + "," + root_len_scale + "," + filter_contact + "," + canvas_scale + "," + tree_boundary + "," + canvas_translate + "," + total_ego + "," + component_attribute
         # check_update = "UPDATE auto_save SET %s WHERE %s;" %(update_query, condition)
-        print "UPDATE auto_save SET %s WHERE %s;" %(update_query, condition)
+        # print "UPDATE auto_save SET %s WHERE %s;" %(update_query, condition)
         db.query("UPDATE auto_save SET %s WHERE %s;" %(update_query, condition))
 
 

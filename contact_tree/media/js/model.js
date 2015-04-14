@@ -60,14 +60,6 @@ var Tree_Model = Backbone.Model.extend({
 	    if(first_use == 0)
 	    	return;
 
-	    // if(last_use != "none"){
-	    // 	// user_history = 1;
-	    // 	var view_mode = session_id.toString() + "_of_" + last_use;
-	    // 	self.set({"view_mode": view_mode}, {silent: true});
-	    // 	$("#dataselect").trigger('change');	    	
-	    // 	return;
-	    // }
-
 	    var request = session_id + ":-" + last_use;
 	    var request_url = "get_user_data/?user="+request;
 	    var get_auto_saving = function(result){
@@ -122,6 +114,9 @@ var Tree_Model = Backbone.Model.extend({
 			if(!jQuery.isEmptyObject(user_result)){
 				get_auto_saving(user_result);
 		        // user_history = 1;
+		    }
+		    else{
+		    	first_use = 0;
 		    }
 
 		});
