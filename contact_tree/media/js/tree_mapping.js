@@ -299,7 +299,7 @@ var MappingView = Backbone.View.extend({
 
     },
 
-    binary_cat_operation: function(one_attr){
+    binary_cat_operation: function(one_attr, comp){
         var self = this;
         var data_mode = self.model.get("view_mode");
         var attr_container = document.getElementById("mark_group_select");
@@ -319,21 +319,21 @@ var MappingView = Backbone.View.extend({
         list1.setAttribute("style", "background-color:rgba(33, 178, 239, 0.5);");
         list2.setAttribute("style", "background-color:rgba(236, 91, 94, 0.5);");
 
-        if(one_attr in attribute_mapping){
-            for(var c0 = 0; c0 < attribute_mapping[one_attr][0].length; c0++){
+        if(comp in attribute_mapping){
+            for(var c0 = 0; c0 < attribute_mapping[comp][0].length; c0++){
                 var item = document.createElement("li");
                 item.setAttribute("class", "sortable-item");
-                item.innerHTML = attribute_mapping[one_attr][0][c0];
+                item.innerHTML = attribute_mapping[comp][0][c0];
                 // item.value = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
-                item.value = attribute_mapping[one_attr][0][c0];
+                item.value = attribute_mapping[comp][0][c0];
                 list1.appendChild(item);
             }
-            for(var c1 = 0; c1 < attribute_mapping[one_attr][1].length; c1++){
+            for(var c1 = 0; c1 < attribute_mapping[comp][1].length; c1++){
                 var item = document.createElement("li");
                 item.setAttribute("class", "sortable-item");
-                item.innerHTML = attribute_mapping[one_attr][1][c1];
+                item.innerHTML = attribute_mapping[comp][1][c1];
                 // item.value = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
-                item.value = attribute_mapping[one_attr][1][c1];;
+                item.value = attribute_mapping[comp][1][c1];;
                 list2.appendChild(item);
             }
 
@@ -366,7 +366,7 @@ var MappingView = Backbone.View.extend({
 
     },
 
-    binary_num_operation: function(one_attr){
+    binary_num_operation: function(one_attr, comp){
         var self = this;
         var data_mode = self.model.get("view_mode");
         var attr_container = document.getElementById("mark_group_select");
@@ -401,16 +401,16 @@ var MappingView = Backbone.View.extend({
         attr_container.appendChild(sep);
         attr_container.appendChild(range);
 
-        if(one_attr in attribute_mapping){
-            $("#sep_group").css({"left": 100*(parseInt(attribute_mapping[one_attr][0])-attr_min)/((attr_max-attr_min)+1) + "%"})
-            .html(parseInt(attribute_mapping[one_attr][0])).val(parseInt(attribute_mapping[one_attr][0]));
+        if(comp in attribute_mapping){
+            $("#sep_group").css({"left": 100*(parseInt(attribute_mapping[comp][0])-attr_min)/((attr_max-attr_min)+1) + "%"})
+            .html(parseInt(attribute_mapping[comp][0])).val(parseInt(attribute_mapping[comp][0]));
             
             $("#binary_slider").slider({
                 orientation: "horizontal",
                 range: "min",
                 min: attr_min,
                 max: attr_max,
-                value: parseInt(attribute_mapping[one_attr][0]),
+                value: parseInt(attribute_mapping[comp][0]),
                 step: 0.1,
                 slide: function( event, ui ) {
                     $("#sep_group").text(ui.value);
@@ -446,7 +446,7 @@ var MappingView = Backbone.View.extend({
 
     },
 
-    layer_cat_operation: function(one_attr){
+    layer_cat_operation: function(one_attr, comp){
         var self = this;
         var data_mode = self.model.get("view_mode");
         var attr_container = document.getElementById("mark_group_select");
@@ -460,9 +460,9 @@ var MappingView = Backbone.View.extend({
 
         list.setAttribute("style", "background-color:rgba(125, 96, 66, 0.7);");
 
-        if(one_attr in attribute_mapping){
-            var user_map = attribute_mapping[one_attr];
-            var total_items = component_attribute[data_mode][one_attr][0].map(function(d){return 0});
+        if(comp in attribute_mapping){
+            var user_map = attribute_mapping[comp];
+            var total_items = component_attribute[data_mode][comp][0].map(function(d){return 0});
             
             for(var real in user_map){
                 total_items[user_map[real]] = real;
@@ -498,7 +498,7 @@ var MappingView = Backbone.View.extend({
 
     },
 
-    layer_num_operation: function(one_attr){
+    layer_num_operation: function(one_attr, comp){
         var self = this;
         var data_mode = self.model.get("view_mode");
         var attr_container = document.getElementById("mark_group_select");
@@ -541,8 +541,8 @@ var MappingView = Backbone.View.extend({
         var total_gap = 20;
         if(attr_range < 10)
             total_gap = attr_range*2;
-        if(one_attr in attribute_mapping){
-            var user_map = attribute_mapping[one_attr];   
+        if(comp in attribute_mapping){
+            var user_map = attribute_mapping[comp];   
             group_slider.setAttribute("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (50*(user_map.length+1)) + ";");
         
             for(var s=4; s < total_gap; s++){
@@ -773,8 +773,8 @@ var MappingView = Backbone.View.extend({
         var color_table = [];
         var render_table = [];
         var used = 0;
-        if(one_attr in attribute_mapping){
-            total_items = component_attribute[data_mode][one_attr][0];
+        if(comp in attribute_mapping){
+            // total_items = component_attribute[data_mode][one_attr][0];
             used = 1;
             if(comp == "leaf_color")
                 render_table = mapping_color.render_leaf_color;
@@ -863,8 +863,8 @@ var MappingView = Backbone.View.extend({
         var total_gap = 0;
         var used = 0;
         var user_map = [];
-        if(one_attr in attribute_mapping){
-            user_map = attribute_mapping[one_attr];
+        if(comp in attribute_mapping){
+            user_map = attribute_mapping[comp];
             used = 1;
         }
         
@@ -1085,9 +1085,9 @@ var MappingView = Backbone.View.extend({
 
         var used = 0;
         var user_map;
-        if(one_attr in attribute_mapping){
+        if(comp in attribute_mapping){
             used = 1;
-            user_map = attribute_mapping[one_attr];
+            user_map = attribute_mapping[comp];
         }
 
         // var br = document.createElement("br");
@@ -1190,9 +1190,9 @@ var MappingView = Backbone.View.extend({
 
         var val_map = [];
         var size_map = [];
-        if(one_attr in attribute_mapping){
+        if(comp in attribute_mapping){
             used = 1;
-            var user_map = attribute_mapping[one_attr];
+            var user_map = attribute_mapping[comp];
             size_map = user_map[1];
             val_map = user_map[0];
             selected_gap = size_map.length;
@@ -1372,8 +1372,8 @@ var MappingView = Backbone.View.extend({
             // render_table = mapping_color.render_roots_color;
         }
 
-        if(ori_attr in attribute_mapping){
-            delete attribute_mapping[ori_attr];
+        if(comp in attribute_mapping){
+            delete attribute_mapping[comp];
         }
         attr_map[comp] = new_attr;
 
@@ -1420,12 +1420,12 @@ var MappingView = Backbone.View.extend({
             var update_info = data_mode + ":-ctree_" + comp + ":-" + new_attr;
             if(component_attribute[data_mode][new_attr][5] == "categorical" || component_attribute[data_mode][new_attr][5] == "boolean"){
                 var color_map = {};
-                attribute_mapping[new_attr] = {};
+                attribute_mapping[comp] = {};
                 var total_items = component_attribute[data_mode][new_attr][0]
                 for(var c = 0; c < total_items.length; c ++){
                     var item_id = "#ori_attr_val_" + c;
                     
-                    attribute_mapping[new_attr][total_items[c]] = c;
+                    attribute_mapping[comp][total_items[c]] = c;
                     color_map[total_items[c]] = c;
 
                     if(comp == "leaf_color"){
@@ -1442,7 +1442,7 @@ var MappingView = Backbone.View.extend({
             }
             else{
                 var layer_map = [];
-                attribute_mapping[new_attr] = []
+                attribute_mapping[comp] = []
                 for(var v = 0; v < $("#sep_gap").val(); v++){
                     var layer_id = "#layer_" + v;
                     var selector_id = "#title_" + v;
@@ -1457,7 +1457,7 @@ var MappingView = Backbone.View.extend({
                         break;
                     }
                     layer_map.push($(layer_id).val());
-                    attribute_mapping[new_attr].push($(layer_id).val());
+                    attribute_mapping[comp].push($(layer_id).val());
                     if(comp == "leaf_color"){
                         mapping_color.render_leaf_color.push(color_table[$(selector_id).val()]);
                     }
@@ -1504,8 +1504,8 @@ var MappingView = Backbone.View.extend({
 
         var submit_id = "#sidekey_submit_" + comp;
 
-        if(ori_attr in attribute_mapping){
-            delete attribute_mapping[ori_attr];
+        if(comp in attribute_mapping){
+            delete attribute_mapping[comp];
         }
 
         attr_map[comp] = new_attr;
@@ -1542,11 +1542,11 @@ var MappingView = Backbone.View.extend({
             var update_info = data_mode + ":-ctree_" + comp + ":-" + new_attr;             
             if(component_attribute[data_mode][new_attr][5] == "categorical" || component_attribute[data_mode][new_attr][5] == "boolean"){
                 var size_map = {};
-                attribute_mapping[new_attr] = {};
+                attribute_mapping[comp] = {};
                 var total_items = component_attribute[data_mode][new_attr][0]
                 for(var c = 0; c < total_items.length; c ++){
                     var item_id = "#slider_label_" + c;
-                    attribute_mapping[new_attr][total_items[c]] = $(item_id).val();
+                    attribute_mapping[comp][total_items[c]] = $(item_id).val();
                     size_map[total_items[c]] = $(item_id).val();
                 }
                 update_info += ":-" + JSON.stringify(size_map);
@@ -1555,7 +1555,7 @@ var MappingView = Backbone.View.extend({
             else{
                 var layer_map = [];
                 var size_map = [];
-                attribute_mapping[new_attr] = []
+                attribute_mapping[comp] = []
                 for(var v = 0; v < $("#sep_gap").val(); v++){
                     var item_id = "#slider_label_" + v;
                     var layer_id = "#layer_" + v;
@@ -1566,8 +1566,8 @@ var MappingView = Backbone.View.extend({
                     size_map.push($(item_id).val());
                     layer_map.push($(layer_id).val());
                 }
-                attribute_mapping[new_attr].push(layer_map);
-                attribute_mapping[new_attr].push(size_map);
+                attribute_mapping[comp].push(layer_map);
+                attribute_mapping[comp].push(size_map);
                 update_info += ":-" + JSON.stringify(layer_map) + ":-" + JSON.stringify(size_map);
             }
 
@@ -1615,8 +1615,8 @@ var MappingView = Backbone.View.extend({
         var ego_selections = self.model.get("selected_egos");
         var submit_id = "#sidekey_submit_" + comp;
 
-        if(ori_attr in attribute_mapping){
-            delete attribute_mapping[ori_attr];
+        if(comp in attribute_mapping){
+            delete attribute_mapping[comp];
         }
 
         attr_map[comp] = new_attr;
@@ -1626,14 +1626,14 @@ var MappingView = Backbone.View.extend({
         else{
             var update_info = data_mode + ":-ctree_" + comp + ":-" + new_attr;
             if(component_attribute[data_mode][new_attr][5] == "categorical" || component_attribute[data_mode][new_attr][5] == "boolean"){
-                attribute_mapping[new_attr] = {"0": [], "1": []};
+                attribute_mapping[comp] = {"0": [], "1": []};
                 
                 $('#mapping_group1').children().each(function(){
                     update_info += ":-" + component_attribute[data_mode][new_attr][0][$(this).val()];
-                    attribute_mapping[new_attr]["0"].push(component_attribute[data_mode][new_attr][0][$(this).val()]);
+                    attribute_mapping[comp]["0"].push(component_attribute[data_mode][new_attr][0][$(this).val()]);
                 });
                 $('#mapping_group2').children().each(function(){
-                    attribute_mapping[new_attr]["1"].push(component_attribute[data_mode][new_attr][0][$(this).val()]);
+                    attribute_mapping[comp]["1"].push(component_attribute[data_mode][new_attr][0][$(this).val()]);
                 });
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
@@ -1641,10 +1641,10 @@ var MappingView = Backbone.View.extend({
 
             }
             else{
-                attribute_mapping[new_attr] = {"0": [], "1": []};
+                attribute_mapping[comp] = {"0": [], "1": []};
                 update_info += ":-" + $("#sep_group").val();
-                attribute_mapping[new_attr]["0"].push($("#sep_group").val());
-                attribute_mapping[new_attr]["1"].push($("#sep_group").val());
+                attribute_mapping[comp]["0"].push($("#sep_group").val());
+                attribute_mapping[comp]["1"].push($("#sep_group").val());
                 
                 for(ego in ego_selections){
                     update_info += ":=" + ego;
@@ -2315,10 +2315,10 @@ var MappingView = Backbone.View.extend({
             $("#mark_group").show();
 
             if(component_attribute[data_mode][attr_map["trunk"]][5] == "categorical" || component_attribute[data_mode][attr_map["trunk"]][5] == "boolean"){
-                self.binary_cat_operation(attr_map["trunk"]);
+                self.binary_cat_operation(attr_map["trunk"], "trunk");
             }
             else{
-                self.binary_num_operation(attr_map["trunk"]);
+                self.binary_num_operation(attr_map["trunk"], "trunk");
             }
 
             $("#sidekey_submit_branch").hide();
@@ -2343,10 +2343,10 @@ var MappingView = Backbone.View.extend({
                 $("#mark_group").html("<b>NOTE: Blue</b> as left trunk | <b>Red</b> as right trunk");
                 $("#mark_group").show();
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
-                    self.binary_cat_operation($("#sidekeyselect").val());
+                    self.binary_cat_operation($("#sidekeyselect").val(), "trunk");
                 }
                 else{
-                    self.binary_num_operation($("#sidekeyselect").val());
+                    self.binary_num_operation($("#sidekeyselect").val(), "trunk");
                 }
                 
             }
@@ -2418,10 +2418,10 @@ var MappingView = Backbone.View.extend({
             $("#mark_group").html("<b>NOTE: Blue</b> as upper side | <b>Red</b> as lower side");
             $("#mark_group").show();
             if(component_attribute[data_mode][attr_map["bside"]][5] == "categorical" || component_attribute[data_mode][attr_map["bside"]][5] == "boolean"){
-                self.binary_cat_operation(attr_map["bside"]);
+                self.binary_cat_operation(attr_map["bside"], "bside");
             }
             else{
-                self.binary_num_operation(attr_map["bside"]);
+                self.binary_num_operation(attr_map["bside"], "bside");
             }                
 
             $("#sidekey_submit_branch").hide();
@@ -2446,10 +2446,10 @@ var MappingView = Backbone.View.extend({
                 $("#mark_group").html("<b>NOTE: Blue</b> as upper side | <b>Red</b> as lower side");
                 $("#mark_group").show();
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
-                    self.binary_cat_operation($("#sidekeyselect").val());
+                    self.binary_cat_operation($("#sidekeyselect").val(), "bside");
                 }
                 else{
-                    self.binary_num_operation($("#sidekeyselect").val());
+                    self.binary_num_operation($("#sidekeyselect").val(), "bside");
                 }
             }
 
@@ -2520,10 +2520,10 @@ var MappingView = Backbone.View.extend({
             $("#mark_group").html("<b>NOTE: Order</b> the attributes as the branch order</b>");
             $("#mark_group").show();
             if(component_attribute[data_mode][attr_map["branch"]][5] == "categorical" || component_attribute[data_mode][attr_map["branch"]][5] == "boolean"){
-                self.layer_cat_operation(attr_map["branch"]);
+                self.layer_cat_operation(attr_map["branch"], "branch");
             }
             else{
-                self.layer_num_operation(attr_map["branch"]);
+                self.layer_num_operation(attr_map["branch"], "branch");
             }
 
             $("#sidekey_submit_trunk").hide();
@@ -2552,14 +2552,13 @@ var MappingView = Backbone.View.extend({
                 $("#mark_group").html("<b>NOTE: Order</b> the attributes as the branch order</b>");
                 $("#mark_group").show();
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
-                    self.layer_cat_operation($("#sidekeyselect").val());
+                    self.layer_cat_operation($("#sidekeyselect").val(), "branch");
                 }
                 else{
-                    self.layer_num_operation($("#sidekeyselect").val());
+                    self.layer_num_operation($("#sidekeyselect").val(), "branch");
                 }
                 
-            }
-            
+            }           
 
             $("#sidekey_submit_trunk").hide();
             $("#sidekey_submit_bside").hide();
@@ -2584,8 +2583,8 @@ var MappingView = Backbone.View.extend({
             $("#sidekey_submit_branch").attr("disabled", true);
             $("#block_layer").show();
 
-            if(attr_map["branch"] in attribute_mapping){
-                delete attribute_mapping[attr_map["branch"]];
+            if("branch" in attribute_mapping){
+                delete attribute_mapping["branch"];
             }
             attr_map["branch"] = $("#sidekeyselect").val();
 
@@ -2595,11 +2594,11 @@ var MappingView = Backbone.View.extend({
                 var update_info = data_mode + ":-ctree_branch:-" + $("#sidekeyselect").val();
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
                     var layer_map = {};
-                    attribute_mapping[$("#sidekeyselect").val()] = {};
+                    attribute_mapping["branch"] = {};
                     count_layer = component_attribute[data_mode][$("#sidekeyselect").val()][0].length-1;
                     $('#mapping_group').children().each(function(){
                         
-                        attribute_mapping[$("#sidekeyselect").val()][$(this).val()] = count_layer;
+                        attribute_mapping["branch"][$(this).val()] = count_layer;
                         layer_map[$(this).val()] = count_layer;
                         count_layer--;
                     });
@@ -2607,11 +2606,11 @@ var MappingView = Backbone.View.extend({
                 }
                 else{
                     var layer_map = [];
-                    attribute_mapping[$("#sidekeyselect").val()] = []
+                    attribute_mapping["branch"] = []
                     for(var v = 0; v < $("#sep_gap").val()-1; v++){
                         var layer_id = "#layer_" + v;
                         layer_map.push($(layer_id).val());
-                        attribute_mapping[$("#sidekeyselect").val()].push($(layer_id).val());
+                        attribute_mapping["branch"].push($(layer_id).val());
                     }
                     update_info += ":-" + JSON.stringify(layer_map);
                 }

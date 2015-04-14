@@ -1959,15 +1959,15 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
                     record_index = trunk_index
                 else:
                     record_index = bside_index
-                if attr[compt] in mapping:
+                if compt in mapping:
                     if collecting_data["type"] == "numerical":
-                        if float(d[attr[compt]]) <= float(mapping[attr[compt]]["0"][0]):
+                        if float(d[attr[compt]]) <= float(mapping[compt]["0"][0]):
                             ctree_record[record_index] = 0
                         else:
                             ctree_record[record_index] = 1
                     
                     else:
-                        if str(d[attr[compt]]) in str(mapping[attr[compt]]["0"]):
+                        if str(d[attr[compt]]) in str(mapping[compt]["0"]):
                             ctree_record[record_index] = 0
                         else:
                             ctree_record[record_index] = 1       
@@ -2026,45 +2026,45 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
                     elif compt == 'root':
                         record_index = root_index
 
-                    if attr[compt] in mapping:
+                    if compt in mapping:
                         if collecting_data["type"] == "categorical" or collecting_data["type"] == "boolean":
-                            for cat in mapping[attr[compt]]:
+                            for cat in mapping[compt]:
                                 if d[attr[compt]] == cat:
-                                    ctree_record[record_index] = int(mapping[attr[compt]][cat])
+                                    ctree_record[record_index] = int(mapping[compt][cat])
                                     if compt == 'branch':
-                                        layer_count.append(mapping[attr[compt]][cat])                                    
+                                        layer_count.append(mapping[compt][cat])                                    
                                     break
                         else:
-                            if compt == 'branch' and mapping[attr[compt]][1] < mapping[attr[compt]][0]: # for the revert mapping
-                                if float(d[attr[compt]]) >= float(mapping[attr[compt]][0]):
+                            if compt == 'branch' and mapping[compt][1] < mapping[compt][0]: # for the revert mapping
+                                if float(d[attr[compt]]) >= float(mapping[compt][0]):
                                     ctree_record[record_index] = 0
                                                                                                          
-                                elif float(d[attr[compt]]) <= float(mapping[attr[compt]][-1]):
+                                elif float(d[attr[compt]]) <= float(mapping[compt][-1]):
                                     ctree_record[record_index] = len(mapping)
                                     layer_count.append(len(mapping))
                                     
                                 else:
-                                    for order in range(len(mapping[attr[compt]])-2, -1, -1):
-                                        if float(d[attr[compt]]) <= float(mapping[attr[compt]][order]) and float(d[attr[compt]]) > float(mapping[attr[compt]][order+1]):
+                                    for order in range(len(mapping[compt])-2, -1, -1):
+                                        if float(d[attr[compt]]) <= float(mapping[compt][order]) and float(d[attr[compt]]) > float(mapping[compt][order+1]):
                                             ctree_record[record_index] = (order+1)
                                             break
                             elif compt == 'branch' or compt == 'leaf_color' or compt == 'root': # for general mapping
-                                if float(d[attr[compt]]) <= float(mapping[attr[compt]][0]):
+                                if float(d[attr[compt]]) <= float(mapping[compt][0]):
                                     tree_record[record_index] = 0
 
-                                elif float(d[attr[compt]]) >= float(mapping[attr[compt]][-1]):
+                                elif float(d[attr[compt]]) >= float(mapping[compt][-1]):
                                     ctree_record[record_index] = len(mapping)
                                     if compt == 'branch':
                                         layer_count.append(len(mapping))
                                 
                                 else:
-                                    for order in range(1, len(mapping[attr[compt]])):
-                                        if float(d[attr[compt]]) > float(mapping[attr[compt]][order-1]) and float(d[attr[compt]]) <= float(mapping[attr[compt]][order]):
+                                    for order in range(1, len(mapping[compt])):
+                                        if float(d[attr[compt]]) > float(mapping[compt][order-1]) and float(d[attr[compt]]) <= float(mapping[compt][order]):
                                             ctree_record[record_index] = order
                                             break
                             else: # special for size mapping
-                                size_map = mapping[attr[compt]][1]
-                                val_map = mapping[attr[compt]][0]
+                                size_map = mapping[compt][1]
+                                val_map = mapping[compt][0]
 
                                 if float(d[attr[compt]]) <= float(val_map[0]):
                                     ctree_record[record_index] = int(size_map[0])
@@ -2750,7 +2750,8 @@ def one_contact_update(request):
         stick_unique = cur.fetchone()["alter_info"]
         precur = db.query('SELECT * FROM ' + data_table + ' WHERE egoid="' + ego + '" ORDER BY (e_id);')
         all_data = precur.fetchall()
-        set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_group) #!!!
+        # set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_group) #!!!
+        insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, data_group)
 
         structure_request = list_request[0] + ":-" + list_request[4] + ":-" + list_request[5] + ":-" + list_request[2]
         return_json = one_contact_structure(user_ctree_data, structure_request)
