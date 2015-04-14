@@ -17,9 +17,8 @@ var SelectingView = Backbone.View.extend({
         
         this.my_ego_selected = {};
         this.my_ego_display = {};
-        this.my_ego = 0;
-        this.ego_cat = ["", "all"],
-        // default setting??
+        this.my_ego = 0; // selected ego before done
+        // this.ego_cat = ["", "all"],
 
         // open the dialog
         $( "#menu_dialog" ).dialog({
@@ -125,6 +124,7 @@ var SelectingView = Backbone.View.extend({
             restore_array.push(JSON.parse(result.attr_info)); // attr_info
             restore_array.push(result.group); // group
             restore_array.push(JSON.parse(result.component_attr)); // component_attribute
+            restore_array.push(JSON.parse(result.waves)); // component_attribute
 
             self.model.set({"view_mode": restore_array[0]}, {silent: true});
             self.model.set({"display_egos": restore_array[1]}, {silent: true});
@@ -141,7 +141,8 @@ var SelectingView = Backbone.View.extend({
             self.model.set({"canvas_translate": restore_array[12]}, {silent: true});
             total_ego = restore_array[13];
             self.model.set({"dataset_group": restore_array[15]}, {silent: true});
-            component_attribute[view_mode] = restore_array[16]
+            component_attribute[view_mode] = restore_array[16];
+            waves = restore_array[17];
 
             self.model.set({"attribute": restore_array[14]["attr"]}, {silent: true});
             attribute_mapping = restore_array[14]["map_info"];
@@ -152,6 +153,7 @@ var SelectingView = Backbone.View.extend({
 
         // set diaplay data and get structure
         var set_display_value = function(){
+            $("#loading_process").html("<b>Fetching...</b>");
             in_change_mode = 0;
             var sub_array = [];
             for(var d in total_ego){
@@ -161,7 +163,7 @@ var SelectingView = Backbone.View.extend({
                 // Ascending: first age less than the previous
                 return obj2.len - obj1.len;
             });
-            // console.log(sub_array);
+            
             var temp_array = [];
             for(var t = 0; t < sub_array.length; t++){
                 temp_array.push(sub_array[t].sub);
@@ -199,7 +201,7 @@ var SelectingView = Backbone.View.extend({
                 }                
                 self.model.set({"tree_structure": tree_structure}, {silent: true});
                 self.model.trigger('change:tree_structure');
-                // $("#block_page").hide();   
+                
             };
 
             var data_group = self.model.get("dataset_group");
@@ -248,11 +250,11 @@ var SelectingView = Backbone.View.extend({
                 self.model.set({"canvas_scale":0.15});
 
                 self.model.trigger('change:display_egos');
-                self.ego_cat = ["", "all"];
+                // self.ego_cat = ["", "all"];
                 $("#egogroup").empty();
                 $("#group_container").hide();
                 user_history = 0;
-                // initial_user = 1;                
+                // initial_user = 1;
             }
             
             $("#egogroup").empty();
@@ -280,20 +282,22 @@ var SelectingView = Backbone.View.extend({
 
                 // if it is new user
                 if(first_use == 0){
+                    $("#block_page").show();
                     var request_url = "dataset/?data="+data_selected;
                     d3.json(request_url, function(result){
                         var set_dataset_group = function(data){
-                            self.ego_cat = data;
+                            waves = data;
+                            // self.ego_cat = data;
                             var on_group = "";
                             var container = document.getElementById("egogroup");
                             // container.setAttribute("class", "dataset_selector");
-                            for(var s = 0; s < self.ego_cat.length; s++){
+                            for(var s = 0; s < waves.length; s++){
                                 var selection_opt = document.createElement('option');
-                                selection_opt.value = self.ego_cat[s];
+                                selection_opt.value = waves[s];
                                 if(selection_opt.value == on_group)
                                     selection_opt.setAttribute("selected", true);
-                                selection_opt.innerHTML = self.ego_cat[s];
-                                if (self.ego_cat[s] == "dataset"){
+                                selection_opt.innerHTML = waves[s];
+                                if (waves[s] == "dataset"){
                                     selection_opt.innerHTML = "wave";
                                 }
                                 
@@ -304,6 +308,7 @@ var SelectingView = Backbone.View.extend({
                             $("#group_container").show();
                         };
                         set_dataset_group(result);
+                        $("#block_page").hide();
                     });
                     return;
                 }
@@ -314,37 +319,56 @@ var SelectingView = Backbone.View.extend({
                 d3.json(pre_request_url, function(result){
                     // check and set the result
                     set_user_history(result);
-                    
-                    var request_url = "dataset/?data="+data_selected;
-                    d3.json(request_url, function(result){
-                        var set_dataset_group = function(data){
-                            self.ego_cat = data;
-                            
-                            var on_group = self.model.get("dataset_group");
-                            if(user_history == 0)
-                                on_group = "";
-                            
-                            var container = document.getElementById("egogroup");
-                            // container.setAttribute("class", "dataset_selector");
-                            for(var s = 0; s < self.ego_cat.length; s++){
-                                var selection_opt = document.createElement('option');
-                                selection_opt.value = self.ego_cat[s];
-                                if(selection_opt.value == on_group)
-                                    selection_opt.setAttribute("selected", true);
-                                selection_opt.innerHTML = self.ego_cat[s];
-                                if (self.ego_cat[s] == "dataset"){
-                                    selection_opt.innerHTML = "wave";
-                                }
-                                selection_opt.setAttribute("class", "myfont3");
-                                
-                                container.appendChild(selection_opt);
+                    $("#block_page").show();
+                    if(user_history == 1){
+                        var container = document.getElementById("egogroup");
+                        var on_group = self.model.get("dataset_group");
+                        for(var s = 0; s < waves.length; s++){
+                            var selection_opt = document.createElement('option');
+                            selection_opt.value = waves[s];
+                            if(selection_opt.value == on_group)
+                                selection_opt.setAttribute("selected", true);
+                            selection_opt.innerHTML = waves[s];
+                            if (waves[s] == "dataset"){
+                                selection_opt.innerHTML = "wave";
                             }
-                            $("#group_container").show();
-                            if(user_history == 1)
-                                $("#egogroup").trigger('change');
-                        };
-                        set_dataset_group(result);
-                    });
+                            selection_opt.setAttribute("class", "myfont3");
+                            
+                            container.appendChild(selection_opt);
+                        }
+                        $("#group_container").show();
+                        $("#egogroup").trigger('change');
+                        // $("#block_page").hide();
+                    }
+                    else{
+                        var request_url = "dataset/?data="+data_selected;
+                        d3.json(request_url, function(result){
+                            var set_dataset_group = function(data){
+                                waves = data;                               
+                                // var on_group = self.model.get("dataset_group");
+                                var on_group = "";                                
+                                var container = document.getElementById("egogroup");
+                                // container.setAttribute("class", "dataset_selector");
+                                for(var s = 0; s < waves.length; s++){
+                                    var selection_opt = document.createElement('option');
+                                    selection_opt.value = waves[s];
+                                    if(selection_opt.value == on_group)
+                                        selection_opt.setAttribute("selected", true);
+                                    selection_opt.innerHTML = waves[s];
+                                    if (waves[s] == "dataset"){
+                                        selection_opt.innerHTML = "wave";
+                                    }
+                                    selection_opt.setAttribute("class", "myfont3");
+                                    
+                                    container.appendChild(selection_opt);
+                                }
+                                $("#group_container").show();
+                                $("#block_page").hide();
+                            };
+                            set_dataset_group(result);
+                        });
+                    }
+                    
                                         
                 });
                 
@@ -381,9 +405,9 @@ var SelectingView = Backbone.View.extend({
             }
             // set user group found when dataset change
             else if(user_history == 1){
+                $("#block_page").show();
                 initial_user = 1;
                 in_change_mode = 1;
-                // set the display value
                 set_display_value();
                 
                 self.model.trigger('change:attribute');
@@ -395,6 +419,7 @@ var SelectingView = Backbone.View.extend({
                 self.set_data_label();
                 // already set group for this mode
                 user_history = 2;
+                // $("#block_page").hide();
                 return;
             }
             // same dataset only change view group
@@ -497,22 +522,17 @@ var SelectingView = Backbone.View.extend({
                 $("#sub_selection").empty();
                 $("#sub_selection").show();
                 $("#submit_ego").show();
-                // $('.ego_checkbox').attr("disabled", true);
             }
             else{
                 $("#sub_title").hide();
-                // $("#sub_title").text("Sub Group:");
                 $("#detail_menu").show();
 
                 $("#sub_selection").empty();
                 $("#sub_selection").hide();
                 $("#submit_ego").show();
-                // $('.ego_checkbox').attr("disabled", true);
-
             }
             $("#submit_ego").removeAttr("disabled");
             $("#submit_ego").text("Done");
-            // $('.ego_checkbox').removeAttr("disabled");
             
             var ego_subgroup = [];
             for(var c = 0; c < sub_ego.length; c++){
@@ -607,6 +627,7 @@ var SelectingView = Backbone.View.extend({
             $("#divTable_menu").append('<div><label><input class="myfont3 ego_checkbox" name="ego_selection" type="radio" id="' + total_ego[sub_ego[0]][c] + '" value="' + total_ego[sub_ego[0]][c] +'" style="margin-right:5px;">' + name + '_' + total_ego[sub_ego[0]][c].toUpperCase() + ' ('+ check_amont +')</label></div>');
         }
          
+        $('.ego_checkbox').unbind();
         $('.ego_checkbox').change(function() {
             var checked_ego = $('.ego_checkbox:checked').val();
             // querying

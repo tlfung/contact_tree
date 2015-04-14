@@ -51,6 +51,7 @@ var CustomizedView = Backbone.View.extend({
         save_array[13] = JSON.stringify(total_ego);
         save_array[14] = self.model.get("dataset_group");
         save_array[15] = JSON.stringify(component_attribute[save_array[0]]);
+        save_array[16] = JSON.stringify(waves);
         
         // generate the request link
         var request = JSON.stringify(save_array);

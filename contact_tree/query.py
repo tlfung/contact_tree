@@ -2131,7 +2131,7 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
        json_file.write(index_json)
 
 def restore_ctree_mapping(user_ctree_data, ego_list, table, attr, mapping, group):
-    print "in restore_ctree_mapping"
+    # print "in restore_ctree_mapping"
     data_table = table.split("_of_")[1]
     session = table.split("_of_")[0]
     last_use_ego = {session: {data_table: {}}}
@@ -2266,7 +2266,7 @@ def update_binary(request):
                         if record[ori_col_index] == None:
                             record[new_col_index] = -100
                             continue
-                        if float(record[ori_col_index]) <= zero_val[0]:
+                        if float(record[ori_col_index]) <= float(zero_val[0]):
                             record[new_col_index] = 0
                         else:
                             record[new_col_index] = 1
@@ -2850,12 +2850,13 @@ def auto_save(request):
         total_ego = "total_ego='" + str(save_detail[13]) + "'"
         group = 'data_group="' + str(save_detail[14]) + '"'
         component_attribute = "component_attribute='" + str(save_detail[15]) + "'"
+        waves = "waves='" + str(save_detail[16]) + "'"
 
         condition = "session_id=" + session + " AND " + mode
 
-        update_query = group + "," + display_egos + "," + selected_egos + "," + leaf_scale + "," + fruit_scale + "," + sub_leaf_len_scale + "," + dtl_branch_curve + "," + root_curve + "," + root_len_scale + "," + filter_contact + "," + canvas_scale + "," + tree_boundary + "," + canvas_translate + "," + total_ego + "," + component_attribute
+        update_query = waves + "," + group + "," + display_egos + "," + selected_egos + "," + leaf_scale + "," + fruit_scale + "," + sub_leaf_len_scale + "," + dtl_branch_curve + "," + root_curve + "," + root_len_scale + "," + filter_contact + "," + canvas_scale + "," + tree_boundary + "," + canvas_translate + "," + total_ego + "," + component_attribute
         # check_update = "UPDATE auto_save SET %s WHERE %s;" %(update_query, condition)
-        # print check_update
+        print "UPDATE auto_save SET %s WHERE %s;" %(update_query, condition)
         db.query("UPDATE auto_save SET %s WHERE %s;" %(update_query, condition))
 
 
@@ -3040,6 +3041,8 @@ def restore_user_history(request):
             user_history["total_ego"] = saving_exist['total_ego']
             user_history["group"] = saving_exist['data_group']
             user_history["component_attr"] = saving_exist['component_attribute']
+            user_history["waves"] = saving_exist['waves']
+
 
             user_history["attr_info"] = mapping_exist['attr_info']
         

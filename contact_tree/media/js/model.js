@@ -126,7 +126,7 @@ var Tree_Model = Backbone.Model.extend({
 
 		});
   	},
-
+  	/*
   	query_dataset: function(request){
 	    var self = this;
 	    var request_url = "dataset/?data="+request;
@@ -152,6 +152,7 @@ var Tree_Model = Backbone.Model.extend({
 		});
 
   	},
+  	*/
 
   	query_ego_list: function(table, group){
 	    var self = this;
