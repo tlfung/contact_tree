@@ -83,7 +83,7 @@ var MappingView = Backbone.View.extend({
             mapping_color.render_leaf_color = JSON.parse(JSON.stringify(save_user_mapping[this.value]["render_leaf_color"]));
             mapping_color.render_roots_color = JSON.parse(JSON.stringify(save_user_mapping[this.value]["render_roots_color"]));
         
-            $("#sidekey_save_img").hide();
+            // $("#sidekey_save_img").hide();
             for(var ego in all_ego){
                 ego_list.push(ego);
             }
@@ -98,7 +98,6 @@ var MappingView = Backbone.View.extend({
                 self.model.set({"attribute": now_attr});
                 self.restructure(result);
                 // self.model.trigger('change:attribute');
-                $("#sidekey_save_img").hide();
             });            
             
         });       
@@ -1533,8 +1532,8 @@ var MappingView = Backbone.View.extend({
                     $(submit_id).text("Done");
                     $(submit_id).removeAttr("disabled");
 
-                    attr_opt[attr_opt.indexOf(attr_map["leaf_size"])] = new_attr;
-                    attr_map["leaf_size"] = new_attr;
+                    attr_opt[attr_opt.indexOf(attr_map[comp])] = new_attr;
+                    attr_map[comp] = new_attr;
                     
                     self.model.set({"attribute": attr_map});
                     self.model.set({"attr_option": attr_opt});
@@ -3166,7 +3165,8 @@ var MappingView = Backbone.View.extend({
 
     set_component: function(){
         var self = this;
-        var myattribute = JSON.parse(JSON.stringify(self.model.get("attribute")));
+        // var myattribute = JSON.parse(JSON.stringify(self.model.get("attribute")));
+        var myattribute = self.model.get("attribute");
         // $("#block_layer").hide();
         // $("#sidekey_submit_trunk").hide();
         // $("#sidekey_submit_branch").hide();

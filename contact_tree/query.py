@@ -2751,7 +2751,7 @@ def one_contact_update(request):
         precur = db.query('SELECT * FROM ' + data_table + ' WHERE egoid="' + ego + '" ORDER BY (e_id);')
         all_data = precur.fetchall()
         # set_default_mapping(user_ctree_data, all_data, table, attr, mapping, ego_group) #!!!
-        insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, data_group)
+        insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_group)
 
         structure_request = list_request[0] + ":-" + list_request[4] + ":-" + list_request[5] + ":-" + list_request[2]
         return_json = one_contact_structure(user_ctree_data, structure_request)
@@ -2766,6 +2766,56 @@ def one_contact_update(request):
     return HttpResponse(return_json)
 
 def restore_mapping_update(request):
+    db = DB()
+    
+    user_ctree_data = dict()
+
+    if request.GET.get('restore'):
+        list_request = request.GET['restore'].split(":-")
+        attr = json.loads(list_request[0])
+        ego_list = json.loads(list_request[1])
+        table = list_request[2]
+        mapping = json.loads(list_request[3])
+        data_group = list_request[4]
+
+        data_table = table.split("_of_")[1]
+        session = table.split("_of_")[0]
+        # print attr, ego_list, table, mapping
+        check_file_exist = os.path.exists("./contact_tree/data/auto_save/" + session + ".json")
+        if check_file_exist:
+            with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
+                user_ctree_data = json.load(json_file)
+
+        user_ctree_data[session] = dict()
+
+        if len(ego_list) == 0:
+            return_json = simplejson.dumps(table, indent=4, use_decimal=True)
+            return HttpResponse(return_json)
+
+        query_request = 'SELECT * FROM ' + data_table + ' WHERE egoid="' + ego_list[0] + '"' #!!!
+        
+        for ego in ego_list[1:]:
+            query_request += ' or egoid="' + ego + '"'
+        query_request += " ORDER BY (e_id);"
+        precur = db.query(query_request)
+        all_data = precur.fetchall()
+
+        insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, data_group)
+
+        # general tree structure
+        structure_request = list_request[0] + ":-" + list_request[4] + ":-" + list_request[5] + ":-" + list_request[2]
+        return_json = one_contact_structure(user_ctree_data, structure_request)
+        user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
+        with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
+            json_file.write(user_ctree_data_json)
+
+    else:
+        raise Http404
+    
+    return HttpResponse(return_json)
+
+
+def last_use_update(request):
     db = DB()
     
     user_ctree_data = dict()
@@ -2975,9 +3025,9 @@ def get_user_data(request):
             mapcur = db.query("SELECT * FROM attribute_mapping WHERE session_id=" + session + " AND mapping_name='auto_map' AND mode='" + saving_exist['mode'] + "';")
             mapping_exist = mapcur.fetchone()
 
-        if mapping_exist:
-            # last_used_info["mapping_name"] = mapping_exist['mapping_name']
-            last_used_info["attr_info"] = mapping_exist['attr_info']
+            if mapping_exist:
+                # last_used_info["mapping_name"] = mapping_exist['mapping_name']
+                last_used_info["attr_info"] = mapping_exist['attr_info']
 
     else:
         raise Http404

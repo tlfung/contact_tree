@@ -214,7 +214,7 @@ var SelectingView = Backbone.View.extend({
                 ego_list.push(ego);
             }
             var request = JSON.stringify(now_attr) + ":-" + JSON.stringify(ego_list) + ":-" + now_mode + ":-" + JSON.stringify(attribute_mapping) + ":-" + data_group + ":-" + JSON.stringify(all_ego);
-            var request_url = "restore_data/?restore="+request;
+            var request_url = "last_use_data/?restore="+request;
             
             $("#block_page").show();
 
