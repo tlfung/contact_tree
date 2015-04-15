@@ -16,13 +16,19 @@ var MappingView = Backbone.View.extend({
             height: $(window).width()*0.7*0.7,
             width: $(window).width()*0.7,
             modal: true,
-            resizable: false
+            resizable: false,
+            close: function(){
+                self.model.trigger('change:tree_structure');
+            }
         });
 
         $( "#map" ).click(function() {
             $('#mapping_img').attr('src', 'media/img/real_mix_tree.png');
             $("#sidekey_dialog").dialog( "open" );
             $("#sidekey_save_img").hide();
+            $("#sidekey_selection").hide();
+            $("#sidekey_operation").hide();
+            $("#mark_group").hide();
             self.set_component();
 
         });
@@ -299,7 +305,7 @@ var MappingView = Backbone.View.extend({
 
     },
 
-    binary_cat_operation: function(one_attr, comp){
+    binary_cat_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
         var attr_container = document.getElementById("mark_group_select");
@@ -319,7 +325,7 @@ var MappingView = Backbone.View.extend({
         list1.setAttribute("style", "background-color:rgba(33, 178, 239, 0.5);");
         list2.setAttribute("style", "background-color:rgba(236, 91, 94, 0.5);");
 
-        if(comp in attribute_mapping){
+        if(one_attr == ori_attr && comp in attribute_mapping){
             for(var c0 = 0; c0 < attribute_mapping[comp][0].length; c0++){
                 var item = document.createElement("li");
                 item.setAttribute("class", "sortable-item");
@@ -366,7 +372,7 @@ var MappingView = Backbone.View.extend({
 
     },
 
-    binary_num_operation: function(one_attr, comp){
+    binary_num_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
         var attr_container = document.getElementById("mark_group_select");
@@ -401,7 +407,7 @@ var MappingView = Backbone.View.extend({
         attr_container.appendChild(sep);
         attr_container.appendChild(range);
 
-        if(comp in attribute_mapping){
+        if(one_attr == ori_attr && comp in attribute_mapping){
             $("#sep_group").css({"left": 100*(parseInt(attribute_mapping[comp][0])-attr_min)/((attr_max-attr_min)+1) + "%"})
             .html(parseInt(attribute_mapping[comp][0])).val(parseInt(attribute_mapping[comp][0]));
             
@@ -446,7 +452,7 @@ var MappingView = Backbone.View.extend({
 
     },
 
-    layer_cat_operation: function(one_attr, comp){
+    layer_cat_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
         var attr_container = document.getElementById("mark_group_select");
@@ -460,7 +466,7 @@ var MappingView = Backbone.View.extend({
 
         list.setAttribute("style", "background-color:rgba(125, 96, 66, 0.7);");
 
-        if(comp in attribute_mapping){
+        if(one_attr == ori_attr && comp in attribute_mapping){
             var user_map = attribute_mapping[comp];
             var total_items = component_attribute[data_mode][comp][0].map(function(d){return 0});
             
@@ -498,7 +504,7 @@ var MappingView = Backbone.View.extend({
 
     },
 
-    layer_num_operation: function(one_attr, comp){
+    layer_num_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
         var attr_container = document.getElementById("mark_group_select");
@@ -541,7 +547,7 @@ var MappingView = Backbone.View.extend({
         var total_gap = 20;
         if(attr_range < 10)
             total_gap = attr_range*2;
-        if(comp in attribute_mapping){
+        if(one_attr == ori_attr && comp in attribute_mapping){
             var user_map = attribute_mapping[comp];   
             group_slider.setAttribute("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (50*(user_map.length+1)) + ";");
         
@@ -623,7 +629,7 @@ var MappingView = Backbone.View.extend({
                 step: 0.1,
                 slide: function( event, ui ) {
                     var v = parseInt(ui.handle.id.split("_").pop());
-                    self.set_revert_slide(v, ui.values, slider_val);
+                    return self.set_revert_slide(v, ui.values, slider_val);
                 }
             });
 
@@ -638,7 +644,7 @@ var MappingView = Backbone.View.extend({
                 step: 0.1,
                 slide: function( event, ui ) {
                     var v = parseInt(ui.handle.id.split("_").pop());
-                    self.set_general_slide(v, ui.values, slider_val);
+                    return self.set_general_slide(v, ui.values, slider_val);
                 }
             });
         }
@@ -691,7 +697,7 @@ var MappingView = Backbone.View.extend({
                     step: 0.1,
                     slide: function( event, ui ) {
                         var v = parseInt(ui.handle.id.split("_").pop());
-                        self.set_revert_slide(v, ui.values, new_slider_val);
+                        return self.set_revert_slide(v, ui.values, new_slider_val);
                     }
                 });
 
@@ -705,7 +711,7 @@ var MappingView = Backbone.View.extend({
                     step: 0.1,
                     slide: function( event, ui ) {
                         var v = parseInt(ui.handle.id.split("_").pop());
-                        self.set_general_slide(v, ui.values, new_slider_val);
+                        return self.set_general_slide(v, ui.values, new_slider_val);
                     }
                 });
             }
@@ -751,7 +757,7 @@ var MappingView = Backbone.View.extend({
                 step: 0.1,
                 slide: function( event, ui ) {
                     var v = parseInt(ui.handle.id.split("_").pop());
-                    self.set_general_slide(v, ui.values, new_slider_val);
+                    return self.set_general_slide(v, ui.values, new_slider_val);
                 }
                
             });
@@ -765,7 +771,7 @@ var MappingView = Backbone.View.extend({
 
     },
 
-    color_cat_operation: function(one_attr, comp){
+    color_cat_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
         var attr_container = document.getElementById("mark_group_select");
@@ -773,7 +779,7 @@ var MappingView = Backbone.View.extend({
         var color_table = [];
         var render_table = [];
         var used = 0;
-        if(comp in attribute_mapping){
+        if(one_attr == ori_attr && comp in attribute_mapping){
             // total_items = component_attribute[data_mode][one_attr][0];
             used = 1;
             if(comp == "leaf_color")
@@ -856,14 +862,14 @@ var MappingView = Backbone.View.extend({
 
     },
 
-    color_num_operation: function(one_attr, comp){
+    color_num_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
         var attr_container = document.getElementById("mark_group_select");
         var total_gap = 0;
         var used = 0;
         var user_map = [];
-        if(comp in attribute_mapping){
+        if(one_attr == ori_attr && comp in attribute_mapping){
             user_map = attribute_mapping[comp];
             used = 1;
         }
@@ -1008,7 +1014,7 @@ var MappingView = Backbone.View.extend({
             step: 0.1,            
             slide: function( event, ui ) {
                 var v = parseInt(ui.handle.id.split("_").pop());
-                self.set_general_slide(v, ui.values, slider_val);
+                return self.set_general_slide(v, ui.values, slider_val);
                 // var display = "#layer_" + v;
                 // var on_handle = "#layer_handle_"+ v;
                 // console.log("handle:", $(on_handle).position().top);
@@ -1057,7 +1063,7 @@ var MappingView = Backbone.View.extend({
                 step: 0.1,                
                 slide: function(event, ui) {
                     var v = parseInt(ui.handle.id.split("_").pop());
-                    self.set_general_slide(v, ui.values, new_slider_val);
+                    return self.set_general_slide(v, ui.values, new_slider_val);
                 }
             });
             $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
@@ -1072,7 +1078,7 @@ var MappingView = Backbone.View.extend({
 
     },
 
-    size_cat_operation: function(one_attr, comp){
+    size_cat_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
         var attr_container = document.getElementById("mark_group_select");
@@ -1085,7 +1091,7 @@ var MappingView = Backbone.View.extend({
 
         var used = 0;
         var user_map;
-        if(comp in attribute_mapping){
+        if(one_attr == ori_attr && comp in attribute_mapping){
             used = 1;
             user_map = attribute_mapping[comp];
         }
@@ -1180,7 +1186,7 @@ var MappingView = Backbone.View.extend({
         }
     },
 
-    size_num_operation: function(one_attr, comp){
+    size_num_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
         var attr_container = document.getElementById("mark_group_select");
@@ -1190,7 +1196,7 @@ var MappingView = Backbone.View.extend({
 
         var val_map = [];
         var size_map = [];
-        if(comp in attribute_mapping){
+        if(one_attr == ori_attr && comp in attribute_mapping){
             used = 1;
             var user_map = attribute_mapping[comp];
             size_map = user_map[1];
@@ -1226,8 +1232,8 @@ var MappingView = Backbone.View.extend({
         
         if(comp == "leaf_size")
             group_slider.setAttribute("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:" + 50*selected_gap + ";");
-        else // for background of fruit's slider bar
-            group_slider.setAttribute("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:" + 50*selected_gap + ";");
+        else
+            group_slider.setAttribute("style", "background:rgba(187, 7, 12, 0.7); margin-top:25px; margin-left:5px; height:" + 50*selected_gap + ";");
         
         group_slider.setAttribute("class", "left");
 
@@ -1295,7 +1301,7 @@ var MappingView = Backbone.View.extend({
             step: 0.1,
             slide: function( event, ui ) {
                 var v = parseInt(ui.handle.id.split("_").pop());
-                self.set_general_slide(v, ui.values, slider_val);
+                return self.set_general_slide(v, ui.values, slider_val);
             }
         });
 
@@ -1330,7 +1336,7 @@ var MappingView = Backbone.View.extend({
             if(comp == "leaf_size")
                 $("#layer_slider").attr("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:" + (50*$("#sep_gap").val()) + ";");
             else
-                $("#layer_slider").attr("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:" + (50*$("#sep_gap").val()) + ";");
+                $("#layer_slider").attr("style", "background:rgba(187, 7, 12, 0.7); margin-top:25px; margin-left:5px; height:" + (50*$("#sep_gap").val()) + ";");
             
             $("#layer_slider").slider({
                 orientation: "vertical",
@@ -1340,7 +1346,7 @@ var MappingView = Backbone.View.extend({
                 step: 0.1,
                 slide: function( event, ui ) {
                     var v = parseInt(ui.handle.id.split("_").pop());
-                    self.set_general_slide(v, ui.values, new_slider_val);
+                    return self.set_general_slide(v, ui.values, new_slider_val);
                 }
                 
             });
@@ -1681,14 +1687,14 @@ var MappingView = Backbone.View.extend({
         var on_handle = "#layer_handle_"+ v;
         if(v < slider_val.length-1 && all_value[v] > Math.round((all_value[v+1]-0.5)*100)/100){
             $("#layer_slider").slider('values', v, Math.round((all_value[v+1]-0.5)*100)/100); 
-            $(display).val(Math.round((0-(all_value[v+1]-0.5))*100)/100);
-            $(display).css({"top": $(on_handle).position().top});
+            // $(display).val(Math.round((0-(all_value[v+1]-0.5))*100)/100);
+            // $(display).css({"top": $(on_handle).position().top});
             return false;
         }
         if(v > 0 && all_value[v] < Math.round((all_value[v-1]+0.5)*100)/100){
             $("#layer_slider").slider('values', v, Math.round((all_value[v-1]+0.5)*100)/100); 
-            $(display).val(Math.round((0-(all_value[v-1]+0.5))*100)/100);
-            $(display).css({"top": $(on_handle).position().top});
+            // $(display).val(Math.round((0-(all_value[v-1]+0.5))*100)/100);
+            // $(display).css({"top": $(on_handle).position().top});
             // $(label).css({"top": $(on_handle).position().top});
             return false;
         }
@@ -1710,6 +1716,7 @@ var MappingView = Backbone.View.extend({
         }
         $(display).val(Math.round((0-all_value[v])*100)/100);
 
+        return true;
     },
 
     // for all the slide on change
@@ -1723,13 +1730,13 @@ var MappingView = Backbone.View.extend({
             $("#layer_slider").slider('values', v, Math.round((all_value[v+1]-0.5)*100)/100);
             // $(display).val(Math.round((all_value[v+1]-0.5)*100)/100);
             // $(display).css({"top": $(on_handle).position().top});
-            return;
+            return false;
         }
         if(v > 0 && all_value[v] < Math.round((all_value[v-1]+0.5)*100)/100){
             $("#layer_slider").slider('values', v, Math.round((all_value[v-1]+0.5)*100)/100); 
             // $(display).val(Math.round((all_value[v-1]+0.5)*100)/100);
             // $(display).css({"top": $(on_handle).position().top});
-            return;
+            return false;
         }
         $(display).css({"top": $(on_handle).position().top});
         if(slider_val.length > 1){
@@ -1749,7 +1756,8 @@ var MappingView = Backbone.View.extend({
             }
         }
         $(display).val(Math.round((all_value[v])*100)/100);
-        
+
+        return true;
     },
 
     set_layer_handle_id: function(my_revert, slider_val){
@@ -2521,10 +2529,10 @@ var MappingView = Backbone.View.extend({
             $("#mark_group").html("<b>NOTE: Order</b> the attributes as the branch order</b>");
             $("#mark_group").show();
             if(component_attribute[data_mode][attr_map["branch"]][5] == "categorical" || component_attribute[data_mode][attr_map["branch"]][5] == "boolean"){
-                self.layer_cat_operation(attr_map["branch"], "branch");
+                self.layer_cat_operation(attr_map["branch"], "branch", attr_map["branch"]);
             }
             else{
-                self.layer_num_operation(attr_map["branch"], "branch");
+                self.layer_num_operation(attr_map["branch"], "branch", attr_map["branch"]);
             }
 
             $("#sidekey_submit_trunk").hide();
@@ -2546,17 +2554,16 @@ var MappingView = Backbone.View.extend({
             var revert = "d";
             if( $("#sidekeyselect").val() != "none"){
                 var data_mode = self.model.get("view_mode");
-                var attr_map = self.model.get("attribute");
-                
+                var attr_map = self.model.get("attribute");                
                 $("#sidekey_operation").show();
                 // var attr_container = document.getElementById("mark_group_select");
                 $("#mark_group").html("<b>NOTE: Order</b> the attributes as the branch order</b>");
                 $("#mark_group").show();
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
-                    self.layer_cat_operation($("#sidekeyselect").val(), "branch");
+                    self.layer_cat_operation($("#sidekeyselect").val(), "branch", attr_map["branch"]);
                 }
                 else{
-                    self.layer_num_operation($("#sidekeyselect").val(), "branch");
+                    self.layer_num_operation($("#sidekeyselect").val(), "branch", attr_map["branch"]);
                 }
                 
             }           
@@ -2681,10 +2688,10 @@ var MappingView = Backbone.View.extend({
             var attr_container = document.getElementById("mark_group_select");
             var user_map = attribute_mapping[attr_map["root"]];
             if(component_attribute[data_mode][attr_map["root"]][5] == "categorical" || component_attribute[data_mode][attr_map["root"]][5] == "boolean"){
-                self.color_cat_operation(attr_map["root"], "root");
+                self.color_cat_operation(attr_map["root"], "root", attr_map["root"]);
             }
             else{
-                self.color_num_operation(attr_map["root"], "root");
+                self.color_num_operation(attr_map["root"], "root", attr_map["root"]);
             }
             
             $("#sidekey_submit_trunk").hide();
@@ -2701,6 +2708,7 @@ var MappingView = Backbone.View.extend({
 
         $("#sidekeyselect").unbind();
         $("#sidekeyselect").change(function(){
+            var attr_map = self.model.get("attribute");
             $("#mark_group_select").empty();
             if( $("#sidekeyselect").val() != "none"){
                 $("#sidekey_operation").show();
@@ -2708,10 +2716,10 @@ var MappingView = Backbone.View.extend({
                 $("#mark_group").show();
                 var attr_container = document.getElementById("mark_group_select");
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
-                    self.color_cat_operation($("#sidekeyselect").val(), "root");
+                    self.color_cat_operation($("#sidekeyselect").val(), "root", attr_map["root"]);
                 }
                 else{
-                    self.color_num_operation($("#sidekeyselect").val(), "root");
+                    self.color_num_operation($("#sidekeyselect").val(), "root", attr_map["root"]);
                 }
                 
             }
@@ -2788,10 +2796,10 @@ var MappingView = Backbone.View.extend({
             $("#mark_group").show();
 
             if(component_attribute[data_mode][attr_map["leaf_color"]][5] == "categorical" || component_attribute[data_mode][attr_map["leaf_color"]][5] == "boolean"){
-                self.color_cat_operation(attr_map["leaf_color"], "leaf_color");
+                self.color_cat_operation(attr_map["leaf_color"], "leaf_color", attr_map["leaf_color"]);
             }
             else{
-                self.color_num_operation(attr_map["leaf_color"], "leaf_color");
+                self.color_num_operation(attr_map["leaf_color"], "leaf_color", attr_map["leaf_color"]);
             }
                         
             $("#sidekey_submit_trunk").hide();
@@ -2814,10 +2822,10 @@ var MappingView = Backbone.View.extend({
                 $("#mark_group").html("<b>NOTE: Color</b> as different categories");
                 $("#mark_group").show();
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
-                    self.color_cat_operation($("#sidekeyselect").val(), "leaf_color");
+                    self.color_cat_operation($("#sidekeyselect").val(), "leaf_color", attr_map["leaf_color"]);
                 }
                 else{
-                    self.color_num_operation($("#sidekeyselect").val(), "leaf_color");
+                    self.color_num_operation($("#sidekeyselect").val(), "leaf_color", attr_map["leaf_color"]);
                 }
             }
             else{
@@ -2987,10 +2995,10 @@ var MappingView = Backbone.View.extend({
             $("#mark_group").show();
             // var attr_container = document.getElementById("mark_group_select");
             if(component_attribute[data_mode][attr_map["leaf_size"]][5] == "categorical" || component_attribute[data_mode][attr_map["leaf_size"]][5] == "boolean"){
-                self.size_cat_operation(attr_map["leaf_size"], "leaf_size");
+                self.size_cat_operation(attr_map["leaf_size"], "leaf_size", attr_map["leaf_size"]);
             }
             else{
-                self.size_num_operation(attr_map["leaf_size"], "leaf_size");
+                self.size_num_operation(attr_map["leaf_size"], "leaf_size", attr_map["leaf_size"]);
             }
 
             $("#sidekey_submit_trunk").hide();
@@ -3008,16 +3016,17 @@ var MappingView = Backbone.View.extend({
 
         $("#sidekeyselect").unbind();
         $("#sidekeyselect").change(function(){
+            var attr_map = self.model.get("attribute");
             $("#mark_group_select").empty();
             if( $("#sidekeyselect").val() != "none"){   
                 $("#sidekey_operation").show();
                 $("#mark_group").html("<b>NOTE: Leaf size scale</b> of the attributes mapping");
                 $("#mark_group").show();
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
-                    self.size_cat_operation($("#sidekeyselect").val(), "leaf_size");
+                    self.size_cat_operation($("#sidekeyselect").val(), "leaf_size", attr_map["leaf_size"]);
                 }
                 else{
-                    self.size_num_operation($("#sidekeyselect").val(), "leaf_size");
+                    self.size_num_operation($("#sidekeyselect").val(), "leaf_size", attr_map["leaf_size"]);
                 }
             }
             else{
@@ -3090,10 +3099,10 @@ var MappingView = Backbone.View.extend({
             // var attr_container = document.getElementById("mark_group_select");
             var user_map = attribute_mapping[attr_map["fruit_size"]];
             if(component_attribute[data_mode][attr_map["fruit_size"]][5] == "categorical" || component_attribute[data_mode][attr_map["fruit_size"]][5] == "boolean"){
-                self.size_cat_operation(attr_map["fruit_size"], "fruit_size");                
+                self.size_cat_operation(attr_map["fruit_size"], "fruit_size", attr_map["fruit_size"]);                
             }
             else{
-                self.size_num_operation(attr_map["fruit_size"], "fruit_size");
+                self.size_num_operation(attr_map["fruit_size"], "fruit_size", attr_map["fruit_size"]);
             }
             
             $("#sidekey_submit_trunk").hide();
@@ -3110,16 +3119,17 @@ var MappingView = Backbone.View.extend({
 
         $("#sidekeyselect").unbind();
         $("#sidekeyselect").change(function(){
+            var attr_map = self.model.get("attribute");
             $("#mark_group_select").empty();
             if( $("#sidekeyselect").val() != "none"){   
                 $("#sidekey_operation").show();
                 $("#mark_group").html("<b>NOTE: Fruit size scale</b> of the attributes mapping");
                 $("#mark_group").show();
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
-                    self.size_cat_operation($("#sidekeyselect").val(), "fruit_size");
+                    self.size_cat_operation($("#sidekeyselect").val(), "fruit_size", attr_map["fruit_size"]);
                 }
                 else{
-                    self.size_num_operation($("#sidekeyselect").val(), "fruit_size");
+                    self.size_num_operation($("#sidekeyselect").val(), "fruit_size", attr_map["fruit_size"]);
                 }
             }
             else{
@@ -3157,10 +3167,7 @@ var MappingView = Backbone.View.extend({
     set_component: function(){
         var self = this;
         var myattribute = JSON.parse(JSON.stringify(self.model.get("attribute")));
-        $("#sidekey_selection").hide();
         $("#block_layer").hide();
-        $("#sidekey_operation").hide();
-        $("#mark_group").hide();
         $("#sidekey_submit_trunk").hide();
         $("#sidekey_submit_branch").hide();
         $("#sidekey_submit_bside").hide();
@@ -3246,8 +3253,7 @@ var MappingView = Backbone.View.extend({
                 }
             }
         }                
-
-        self.model.trigger('change:tree_structure');  
+        // self.model.trigger('change:tree_structure');
         $("#block_page").hide();          
     }
 

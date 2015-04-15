@@ -102,7 +102,8 @@ var ControlView = Backbone.View.extend({
             from: 1,
             type: 'single',
             step: 0.1,
-            onChange: function(obj) {
+            // onChange: function(obj) {
+            onFinish: function(obj) {
                 var val = obj.fromNumber;
                 self.model.set({"sub_leaf_len_scale":val});
             }
@@ -113,7 +114,8 @@ var ControlView = Backbone.View.extend({
             from: 1,
             type: 'single',
             step: 0.1,
-            onChange: function(obj) {
+            // onChange: function(obj) {
+            onFinish: function(obj) {
                 var val = obj.fromNumber;
                 self.model.set({"dtl_branch_curve":val});
             }
@@ -125,7 +127,8 @@ var ControlView = Backbone.View.extend({
             from: 3,
             type: 'single',
             step: 0.1,
-            onChange: function(obj) {
+            // onChange: function(obj) {
+            onFinish: function(obj) {
                 var val = obj.fromNumber;
                 self.model.set({"leaf_scale":val});
             }
@@ -137,7 +140,8 @@ var ControlView = Backbone.View.extend({
             from: 3,
             type: 'single',
             step: 0.1,
-            onChange: function(obj) {
+            // onChange: function(obj) {
+            onFinish: function(obj) {
                 var val = obj.fromNumber;
                 if(val>8){
                     val = 8;
@@ -155,7 +159,8 @@ var ControlView = Backbone.View.extend({
             from: 1,
             type: 'single',
             step: 0.1,
-            onChange: function(obj) {
+            // onChange: function(obj) {
+            onFinish: function(obj) {
                 var val = obj.fromNumber;
                 self.model.set({"root_len_scale":val});
             }
@@ -167,7 +172,8 @@ var ControlView = Backbone.View.extend({
             from: 0,
             type: 'single',
             step: 0.1,
-            onChange: function(obj) {
+            // onChange: function(obj) {
+            onFinish: function(obj) {
                 var val = obj.fromNumber;
                 self.model.set({"root_curve":val});
             }
@@ -204,7 +210,8 @@ var ControlView = Backbone.View.extend({
             from: 0,
             type: 'single',
             step: 1,
-            onChange: function(obj) {
+            // onChange: function(obj) {
+            onFinish: function(obj) {
                 var val = obj.fromNumber;
                 self.model.set({"tree_boundary":{}});
                 self.model.set({"filter_contact":val});
@@ -217,7 +224,7 @@ var ControlView = Backbone.View.extend({
             from: 0,
             type: 'single',
             step: 1,
-            onChange: function(obj) {
+            onFinish: function(obj) {
                 var val = obj.fromNumber;
             }
         });

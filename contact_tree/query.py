@@ -2506,7 +2506,7 @@ def update_layer(request):
                         data_info["done"] = 0
 
             else: # for size mapping
-                size_map = json.loads(list_request[4])
+                size_map = json.loads(list_request[6])
                 for label in user_ctree_data[session][data_table]:
                     data_info = user_ctree_data[session][data_table][label]
                     if label == "layer":
