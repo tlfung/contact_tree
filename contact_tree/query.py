@@ -2202,7 +2202,10 @@ def update_binary(request):
         mytype = typecur.fetchone()["type"]
 
         if mytype == "categorical" or mytype == "boolean":
-            zero_val = set(zero_val)
+            # zero_val = set(zero_val)
+            hash_zero_table = dict()
+            for z_val in zero_val:
+                hash_zero_table[z_val] = 0
             for label in user_ctree_data[session][data_table]:
                 data_info = user_ctree_data[session][data_table][label]
                 if label == "layer":
@@ -2230,7 +2233,7 @@ def update_binary(request):
                         if record[ori_col_index] == None:
                             record[new_col_index] = -100
                             continue
-                        if record[ori_col_index] in zero_val:
+                        if record[ori_col_index] in hash_zero_table:
                             record[new_col_index] = 0
                         else:
                             record[new_col_index] = 1
@@ -2238,10 +2241,10 @@ def update_binary(request):
                 else:
                     data_info["done"] = 0            
         else:
+            z_val = zero_val[0]
             for label in user_ctree_data[session][data_table]:
                 data_info = user_ctree_data[session][data_table][label]
                 if label == "layer":
-                    # update_ctree_data[session][data_table][label] = data_info
                     continue
                 ego = label.split("_of_")[0]
                 dataset = label.split("_of_")[1]
@@ -2258,26 +2261,21 @@ def update_binary(request):
                     else:
                         if dataset not in ego_info[ego]:
                             ego_info[ego].append(dataset)
-                    # update_ctree_data[session][data_table][label] = dict()
-                    # if "record" not in update_ctree_data[session][data_table][label]: 
-                    #     update_ctree_data[session][data_table][label]["record"] = []
 
                     for record in data_info["record"]:
                         if record[ori_col_index] == None:
                             record[new_col_index] = -100
                             continue
-                        if float(record[ori_col_index]) <= float(zero_val[0]):
+                        if float(record[ori_col_index]) <= float(z_val):
                             record[new_col_index] = 0
                         else:
                             record[new_col_index] = 1
-                        # update_ctree_data[session][data_table][label]["record"].append(record) 
                 else:
                     data_info["done"] = 0
     else:
         raise Http404
     
     # restructure_info = update_default_mapping(user_ctree_data, select_ego, table, new_column, group)
-
 
     structure_request = attr + ":-" + group + ":-" + simplejson.dumps(ego_info, use_decimal=True) + ":-" + table
     return_json = one_contact_structure(user_ctree_data, structure_request)
@@ -2383,6 +2381,10 @@ def update_layer(request):
         myrange = myinfo["attr_range"]
 
         if mytype == "categorical" or mytype == "boolean":
+            hash_val_table = dict()
+            for ori_val in val_map:
+                hash_val_table[str(ori_val)] = int(val_map[ori_val])
+
             for label in user_ctree_data[session][data_table]:
                 data_info = user_ctree_data[session][data_table][label]
                 if label == "layer":
@@ -2409,10 +2411,9 @@ def update_layer(request):
                         if record[ori_col_index] == None:
                             record[new_col_index] = -100
                             continue
-                        for ori_val in val_map:
-                            if record[ori_col_index] == str(ori_val):
-                                record[new_col_index] = int(val_map[ori_val])
-                                break
+                        # if record[ori_col_index] in hash_val_table:
+                        record[new_col_index] = hash_val_table[record[ori_col_index]]
+                        
                 else:
                     data_info["done"] = 0
             structure_request = attr + ":-" + group + ":-" + simplejson.dumps(ego_info, use_decimal=True) + ":-" + table
@@ -2426,7 +2427,6 @@ def update_layer(request):
 
         else:
             if new_column == 'ctree_branch' and val_map[1] < val_map[0]:
-                # print "in revert"
                 for label in user_ctree_data[session][data_table]:
                     data_info = user_ctree_data[session][data_table][label]
                     if label == "layer":
@@ -2610,7 +2610,7 @@ def update_highlight(request):
                             ego_info[ego].append(dataset)
 
                     for record in data_info["record"]:
-                        record[highlight_index] = "none"    
+                        record[highlight_index] = "none"
                 else:
                     data_info["done"] = 0
 

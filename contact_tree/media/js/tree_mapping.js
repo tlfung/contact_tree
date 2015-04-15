@@ -468,7 +468,7 @@ var MappingView = Backbone.View.extend({
 
         if(one_attr == ori_attr && comp in attribute_mapping){
             var user_map = attribute_mapping[comp];
-            var total_items = component_attribute[data_mode][comp][0].map(function(d){return 0});
+            var total_items = component_attribute[data_mode][one_attr][0].map(function(d){return 0});
             
             for(var real in user_map){
                 total_items[user_map[real]] = real;
@@ -3167,15 +3167,15 @@ var MappingView = Backbone.View.extend({
     set_component: function(){
         var self = this;
         var myattribute = JSON.parse(JSON.stringify(self.model.get("attribute")));
-        $("#block_layer").hide();
-        $("#sidekey_submit_trunk").hide();
-        $("#sidekey_submit_branch").hide();
-        $("#sidekey_submit_bside").hide();
-        $("#sidekey_submit_root").hide();
-        $("#sidekey_submit_leaf_size").hide();
-        $("#sidekey_submit_leaf_color").hide();
-        $("#sidekey_submit_leaf_highlight").hide();
-        $("#sidekey_submit_fruit_size").hide();
+        // $("#block_layer").hide();
+        // $("#sidekey_submit_trunk").hide();
+        // $("#sidekey_submit_branch").hide();
+        // $("#sidekey_submit_bside").hide();
+        // $("#sidekey_submit_root").hide();
+        // $("#sidekey_submit_leaf_size").hide();
+        // $("#sidekey_submit_leaf_color").hide();
+        // $("#sidekey_submit_leaf_highlight").hide();
+        // $("#sidekey_submit_fruit_size").hide();
         if(jQuery.isEmptyObject(myattribute)){
             $(".sidekey_map").css('visibility', 'hidden');
             $('#save_label').attr("disabled", true);
