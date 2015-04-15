@@ -1395,20 +1395,18 @@ var MappingView = Backbone.View.extend({
                 update_info += ":=" + ego;
             }
             var request_url = "update_layer/?update=" + self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
-            
+            // ok to use
             d3.json(request_url, function(result){
                 var set_update_info = function(data){
                     var attr_map = self.model.get("attribute");
-                    var attr_opt = self.model.get("attr_option");
                     $("#block_layer").hide();
                     $(submit_id).text("Done");
                     $(submit_id).removeAttr("disabled");
 
-                    attr_opt[attr_opt.indexOf(attr_map[comp])] = new_attr;
                     attr_map[comp] = new_attr;
                     
                     self.model.set({"attribute": attr_map});
-                    self.model.set({"attr_option": attr_opt});
+                    
                     self.restructure(data);
                 };
                 set_update_info(result);
@@ -1483,15 +1481,13 @@ var MappingView = Backbone.View.extend({
             d3.json(request_url, function(result){
                 var set_update_info = function(data){
                     var attr_map = self.model.get("attribute");
-                    var attr_opt = self.model.get("attr_option");
                     $("#block_layer").hide();
                     $(submit_id).text("Done");
                     $(submit_id).removeAttr("disabled");
 
-                    attr_opt[attr_opt.indexOf(attr_map[comp])] = new_attr;
                     attr_map[comp] = new_attr;
                     self.model.set({"attribute": attr_map});
-                    self.model.set({"attr_option": attr_opt});
+                    
                     self.restructure(data);
                 };
                 set_update_info(result);
@@ -1526,17 +1522,15 @@ var MappingView = Backbone.View.extend({
             d3.json(request_url, function(result){
                 var set_update_info = function(data){
                     var attr_map = self.model.get("attribute");
-                    var attr_opt = self.model.get("attr_option");
-                    // console.log(data)
+                    
                     $("#block_layer").hide();
                     $(submit_id).text("Done");
                     $(submit_id).removeAttr("disabled");
 
-                    attr_opt[attr_opt.indexOf(attr_map[comp])] = new_attr;
                     attr_map[comp] = new_attr;
                     
                     self.model.set({"attribute": attr_map});
-                    self.model.set({"attr_option": attr_opt});
+                    
                     self.restructure(data);
                     
                 };
@@ -1585,15 +1579,13 @@ var MappingView = Backbone.View.extend({
             d3.json(request_url, function(result){
                 var set_update_info = function(data){
                     var attr_map = self.model.get("attribute");
-                    var attr_opt = self.model.get("attr_option");
                     $("#block_layer").hide();
                     $(submit_id).text("Done");
                     $(submit_id).removeAttr("disabled");
 
-                    attr_opt[attr_opt.indexOf(attr_map[comp])] = new_attr;
                     attr_map[comp] = new_attr;
                     self.model.set({"attribute": attr_map});
-                    self.model.set({"attr_option": attr_opt});
+                    
                     self.restructure(data);
                 };
                 set_update_info(result);
@@ -1660,17 +1652,15 @@ var MappingView = Backbone.View.extend({
             // console.log(request_url);
             d3.json(request_url, function(result){
                 var set_update_info = function(data){
-                    var attr_map = self.model.get("attribute");
-                    var attr_opt = self.model.get("attr_option");
-                    
+                    var attr_map = self.model.get("attribute");                    
                     $("#block_layer").hide();
                     $(submit_id).text("Done");
                     $(submit_id).removeAttr("disabled");
-                    attr_opt[attr_opt.indexOf(attr_map[comp])] = new_attr;
+
                     attr_map[comp] = new_attr;
 
                     self.model.set({"attribute": attr_map});
-                    self.model.set({"attr_option": attr_opt});
+                    
                     self.restructure(data);
                 };
                 set_update_info(result);
@@ -2630,15 +2620,14 @@ var MappingView = Backbone.View.extend({
                 d3.json(request_url, function(result){
                     var set_update_info = function(data){
                         var attr_map = self.model.get("attribute");
-                        var attr_opt = self.model.get("attr_option");
                         $("#block_layer").hide();
                         $("#sidekey_submit_branch").text("Done");
                         $("#sidekey_submit_branch").removeAttr("disabled");
-                        attr_opt[attr_opt.indexOf(attr_map["branch"])] = $("#sidekeyselect").val();
+                        
                         attr_map["branch"] = $("#sidekeyselect").val();
                         
                         self.model.set({"attribute": attr_map});
-                        self.model.set({"attr_option": attr_opt});
+                        
                         self.restructure(data);
                     };
                     set_update_info(result);
@@ -2935,17 +2924,13 @@ var MappingView = Backbone.View.extend({
                 // console.log("finish update");
                 var set_update_info = function(data){
                     var attr_map = self.model.get("attribute");
-                    var attr_opt = self.model.get("attr_option");
                     // console.log(data)
                     $("#block_layer").hide();
                     $("#sidekey_submit_leaf_highlight").text("Done");
                     $("#sidekey_submit_leaf_highlight").removeAttr("disabled");
 
-                    attr_opt[attr_opt.indexOf(attr_map["highlight"])] = $("#sidekeyselect").val();
-                    attr_map["highlight"] = $("#sidekeyselect").val();
-                    
                     self.model.set({"attribute": attr_map});
-                    self.model.set({"attr_option": attr_opt});
+                    
                     self.restructure(data);
                     // self.model.trigger('change:attribute');
                 };

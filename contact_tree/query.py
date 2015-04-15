@@ -2836,9 +2836,9 @@ def last_use_update(request):
             with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
                 user_ctree_data = json.load(json_file)
         else:
-           user_ctree_data[session] = dict()
+            user_ctree_data = {session: {data_table: {}}}
 
-        if user_ctree_data[session]:
+        if data_table in user_ctree_data[session] and user_ctree_data[session][data_table]:
             print "using local cache"            
             last_ctree_data = restore_ctree_mapping(user_ctree_data, ego_list, table, attr, mapping, data_group)
             # general tree structure
@@ -2847,7 +2847,7 @@ def last_use_update(request):
             # user_ctree_data[session][data_table] = dict()
             # user_ctree_data[session][data_table]["layer"] = -1
         else:
-            user_ctree_data[session] = dict()
+            user_ctree_data = {session: {data_table: {"layer":-1}}}
 
             if len(ego_list) == 0:
                 return_json = simplejson.dumps(table, indent=4, use_decimal=True)
