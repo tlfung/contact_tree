@@ -76,9 +76,11 @@ function event_setting(){
     // for help link
     $("#help_link").click(function(){ 
         $("#help_page").show();
-         
+        $("#slide_next").show();
+        $("#slide_previous").show();
+        $("#data_slide").hide();
+        $("#help_slide").show();
         if($("#help_slide").height() > $(window).height()){
-            // console.log("ttttt");
             $("#help_slide").removeAttr("width");
             $("#help_slide").attr("height", "90%");
         }  
@@ -103,6 +105,20 @@ function event_setting(){
             $("#help_slide").attr('value', (num_slide-1)); 
         }
         return false;
+    });
+
+    $("#data_help").click(function(){ 
+        $("#help_page").show();
+        $("#slide_next").hide();
+        $("#slide_previous").hide();
+        $("#data_slide").show();     
+        $("#help_slide").hide();     
+        if($("#data_slide").height() > $(window).height()){
+            $("#data_slide").removeAttr("width");
+            $("#data_slide").attr("height", "90%");
+        }  
+        $("#data_slide").center();
+
     });
 
     $("#help_page").click(function(){
@@ -135,8 +151,8 @@ function event_setting(){
 var MyApp = function MyApp(){
     var self = this;
     // generate an unique session id for new user
-    document.cookie = "session_id=5407169205136597;";
-    document.cookie = "mode=combine_diary;"; //get update from database 
+    // document.cookie = "session_id=5407169205136597;";
+    // document.cookie = "mode=combine_diary;"; //get update from database 
     // document.cookie = "session_id=5134534609969705; mode=combine_diary"; // new testing
     session_id = Math.floor(Math.random() * 10000000000000001);
 

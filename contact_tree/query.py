@@ -2007,9 +2007,6 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
                         ctree_record[leaf_size_index] = 3
                     elif compt == 'leaf_color':
                         ctree_record[leaf_color_index] = 3
-                    elif compt == 'branch':
-                        ctree_record[branch_index] = 3
-                        layer_count = [3]
                     elif compt == 'root':
                         ctree_record[root_index] = 3
                     
@@ -2035,14 +2032,15 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
                                         layer_count.append(mapping[compt][cat])                                    
                                     break
                         else:
+                            if compt == 'branch' and layer_count == []:
+                                layer_count.append(len(mapping[compt])+1)
                             if compt == 'branch' and mapping[compt][1] < mapping[compt][0]: # for the revert mapping
                                 if float(d[attr[compt]]) >= float(mapping[compt][0]):
                                     ctree_record[record_index] = 0
                                                                                                          
                                 elif float(d[attr[compt]]) <= float(mapping[compt][-1]):
                                     ctree_record[record_index] = len(mapping)
-                                    layer_count.append(len(mapping))
-                                    
+                                                                        
                                 else:
                                     for order in range(len(mapping[compt])-2, -1, -1):
                                         if float(d[attr[compt]]) <= float(mapping[compt][order]) and float(d[attr[compt]]) > float(mapping[compt][order+1]):
@@ -2054,8 +2052,6 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
 
                                 elif float(d[attr[compt]]) >= float(mapping[compt][-1]):
                                     ctree_record[record_index] = len(mapping)
-                                    if compt == 'branch':
-                                        layer_count.append(len(mapping))
                                 
                                 else:
                                     for order in range(1, len(mapping[compt])):
@@ -2074,7 +2070,7 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
                                     
                                 else:
                                     for order in range(1, len(val_map)):
-                                        if float(d[attr[compt]]) > float(val_map[order-1]) and float(d[attr[compt]]) <= int(val_map[order]):
+                                        if float(d[attr[compt]]) > float(val_map[order-1]) and float(d[attr[compt]]) <= float(val_map[order]):
                                             ctree_record[record_index] = int(size_map[order])
                                             break
   
@@ -2389,7 +2385,7 @@ def update_layer(request):
                 data_info = user_ctree_data[session][data_table][label]
                 if label == "layer":
                     if new_column == "ctree_branch":
-                        data_info = len(val_map)
+                        user_ctree_data[session][data_table][label] = len(val_map)
                     continue
                 ego = label.split("_of_")[0]
                 dataset = label.split("_of_")[1]
@@ -2430,7 +2426,7 @@ def update_layer(request):
                 for label in user_ctree_data[session][data_table]:
                     data_info = user_ctree_data[session][data_table][label]
                     if label == "layer":
-                        data_info = len(val_map)+1
+                        user_ctree_data[session][data_table][label] = len(val_map)+1
                         continue
                     ego = label.split("_of_")[0]
                     dataset = label.split("_of_")[1]
@@ -2470,7 +2466,7 @@ def update_layer(request):
                     data_info = user_ctree_data[session][data_table][label]
                     if label == "layer":
                         if new_column == 'ctree_branch':
-                            data_info = len(val_map)+1
+                            user_ctree_data[session][data_table][label] = len(val_map)+1
                         continue
                     ego = label.split("_of_")[0]
                     dataset = label.split("_of_")[1]
@@ -2847,7 +2843,10 @@ def last_use_update(request):
             # user_ctree_data[session][data_table] = dict()
             # user_ctree_data[session][data_table]["layer"] = -1
         else:
-            user_ctree_data = {session: {data_table: {"layer":-1}}}
+            # if data_table in user_ctree_data[session]:
+            #     user_ctree_data[session][data_table]["layer"] = -1
+            # else
+            user_ctree_data[session][data_table] = {"layer": -1}
 
             if len(ego_list) == 0:
                 return_json = simplejson.dumps(table, indent=4, use_decimal=True)

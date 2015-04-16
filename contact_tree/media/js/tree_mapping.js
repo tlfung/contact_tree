@@ -555,7 +555,7 @@ var MappingView = Backbone.View.extend({
                 opt.value = s;
                 opt.innerHTML = s;
                 opt.setAttribute("class", "myfont3");
-                if(s == user_map.length)
+                if(s == user_map.length+1)
                     opt.setAttribute("selected", true);
                 
                 gap_input.appendChild(opt);
@@ -2313,10 +2313,10 @@ var MappingView = Backbone.View.extend({
             $("#mark_group").show();
 
             if(component_attribute[data_mode][attr_map["trunk"]][5] == "categorical" || component_attribute[data_mode][attr_map["trunk"]][5] == "boolean"){
-                self.binary_cat_operation(attr_map["trunk"], "trunk");
+                self.binary_cat_operation(attr_map["trunk"], "trunk", attr_map["trunk"]);
             }
             else{
-                self.binary_num_operation(attr_map["trunk"], "trunk");
+                self.binary_num_operation(attr_map["trunk"], "trunk", attr_map["trunk"]);
             }
 
             $("#sidekey_submit_branch").hide();
@@ -2341,10 +2341,10 @@ var MappingView = Backbone.View.extend({
                 $("#mark_group").html("<b>NOTE: Blue</b> as left trunk | <b>Red</b> as right trunk");
                 $("#mark_group").show();
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
-                    self.binary_cat_operation($("#sidekeyselect").val(), "trunk");
+                    self.binary_cat_operation($("#sidekeyselect").val(), "trunk", attr_map["trunk"]);
                 }
                 else{
-                    self.binary_num_operation($("#sidekeyselect").val(), "trunk");
+                    self.binary_num_operation($("#sidekeyselect").val(), "trunk", attr_map["trunk"]);
                 }
                 
             }
@@ -2416,10 +2416,10 @@ var MappingView = Backbone.View.extend({
             $("#mark_group").html("<b>NOTE: Blue</b> as upper side | <b>Red</b> as lower side");
             $("#mark_group").show();
             if(component_attribute[data_mode][attr_map["bside"]][5] == "categorical" || component_attribute[data_mode][attr_map["bside"]][5] == "boolean"){
-                self.binary_cat_operation(attr_map["bside"], "bside");
+                self.binary_cat_operation(attr_map["bside"], "bside", attr_map["bside"]);
             }
             else{
-                self.binary_num_operation(attr_map["bside"], "bside");
+                self.binary_num_operation(attr_map["bside"], "bside", attr_map["bside"]);
             }                
 
             $("#sidekey_submit_branch").hide();
@@ -2444,10 +2444,10 @@ var MappingView = Backbone.View.extend({
                 $("#mark_group").html("<b>NOTE: Blue</b> as upper side | <b>Red</b> as lower side");
                 $("#mark_group").show();
                 if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
-                    self.binary_cat_operation($("#sidekeyselect").val(), "bside");
+                    self.binary_cat_operation($("#sidekeyselect").val(), "bside", attr_map["bside"]);
                 }
                 else{
-                    self.binary_num_operation($("#sidekeyselect").val(), "bside");
+                    self.binary_num_operation($("#sidekeyselect").val(), "bside", attr_map["bside"]);
                 }
             }
 
