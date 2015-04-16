@@ -33,6 +33,7 @@ var ControlView = Backbone.View.extend({
             
             self.model.trigger('change:canvas_scale');
             self.model.trigger('change:tree_style');
+            self.model.set({"tree_boundary":{}});
             $("#dtl_length").ionRangeSlider("update", {
                 from: 1
             });
@@ -104,6 +105,7 @@ var ControlView = Backbone.View.extend({
             step: 0.1,
             // onChange: function(obj) {
             onFinish: function(obj) {
+                self.model.set({"tree_boundary":{}});
                 var val = obj.fromNumber;
                 self.model.set({"sub_leaf_len_scale":val});
             }
@@ -116,6 +118,7 @@ var ControlView = Backbone.View.extend({
             step: 0.1,
             // onChange: function(obj) {
             onFinish: function(obj) {
+                self.model.set({"tree_boundary":{}});
                 var val = obj.fromNumber;
                 self.model.set({"dtl_branch_curve":val});
             }
@@ -161,6 +164,7 @@ var ControlView = Backbone.View.extend({
             step: 0.1,
             // onChange: function(obj) {
             onFinish: function(obj) {
+                self.model.set({"tree_boundary":{}});
                 var val = obj.fromNumber;
                 self.model.set({"root_len_scale":val});
             }
@@ -174,6 +178,7 @@ var ControlView = Backbone.View.extend({
             step: 0.1,
             // onChange: function(obj) {
             onFinish: function(obj) {
+                self.model.set({"tree_boundary":{}});
                 var val = obj.fromNumber;
                 self.model.set({"root_curve":val});
             }
@@ -197,6 +202,7 @@ var ControlView = Backbone.View.extend({
             width: 30, // default
             change: function(e) {
                 var v = $("#root_switcher").val();
+                self.model.set({"tree_boundary":{}});
                 if(v == "on")
                     self.model.set({"leaf_switch":1});
                 else

@@ -9,6 +9,7 @@ var MappingView = Backbone.View.extend({
         _.bindAll(this, 'set_component');
         _.bindAll(this, 'set_user_mapping');
         
+        this.change_mapping = 0;
         $( "#sidekey_dialog" ).dialog({
             autoOpen: false,
             // height: 600,
@@ -18,7 +19,8 @@ var MappingView = Backbone.View.extend({
             modal: true,
             resizable: false,
             close: function(){
-                self.model.trigger('change:tree_structure');
+                if(self.change_mapping != 0)
+                    self.model.trigger('change:tree_structure');
             }
         });
 
@@ -29,6 +31,7 @@ var MappingView = Backbone.View.extend({
             $("#sidekey_selection").hide();
             $("#sidekey_operation").hide();
             $("#mark_group").hide();
+            self.change_mapping = 0;
             self.set_component();
 
         });
@@ -101,7 +104,7 @@ var MappingView = Backbone.View.extend({
             });            
             
         });       
-
+        
         this.model.bind('change:attribute', this.set_component);
         this.model.bind('change:user_mapping', this.set_user_mapping);  
         
@@ -3207,6 +3210,7 @@ var MappingView = Backbone.View.extend({
 
     restructure: function(data){
         var self = this;
+        self.change_mapping += 1;
         tree_size = {};
         self.model.set({"tree_boundary":{}});
         self.model.trigger('change:attribute');

@@ -51,7 +51,6 @@ var ZoomView = Backbone.View.extend({
 
         self.myCanvas.addEventListener('mousewheel', function(evt) {
             self.grid = self.model.get("canvas_grid");
-            self.model.set({"moving": 1});
             self.translate = self.model.get("canvas_translate");
             self.scale = self.model.get("canvas_scale");
             var leaf_scale = self.model.get("leaf_scale");
@@ -67,7 +66,8 @@ var ZoomView = Backbone.View.extend({
             var delta_scale = Math.round(evt.wheelDelta*3*10/100)/10; //for mac
         
             var factor = Math.pow(scaleFactor, delta);
-                        
+            
+
             var nx = mousePos.x - (tx * factor * self.scale);
             var ny = mousePos.y - (ty * factor * self.scale);
             leaf_scale -= (delta/3)*0.2;
@@ -82,21 +82,21 @@ var ZoomView = Backbone.View.extend({
             if(factor*self.scale < 0.03 || factor*self.scale > 3.5){
             }
             else{
-                self.model.set({"leaf_scale":leaf_scale});
-                self.model.trigger('change:leaf_scale');
+                self.model.set({"leaf_scale":leaf_scale}, {silent: true});
+                // self.model.trigger('change:leaf_scale');
+
                 $("#dtl_leaf_size").ionRangeSlider("update", {
                     from: Math.round(10*leaf_scale)/10
                 });
-                self.model.set({"sub_leaf_len_scale":length_scale});
-                self.model.trigger('change:sub_leaf_len_scale');
+                self.model.set({"sub_leaf_len_scale":length_scale}, {silent: true});
+                // self.model.trigger('change:sub_leaf_len_scale');
                 $("#dtl_length").ionRangeSlider("update", {
                     from: Math.round(10*length_scale)/10
-                });           
-                
-                self.model.set({"canvas_translate":[nx, ny]});
-                self.model.set({"canvas_scale":factor*self.scale});
-            }
+                });      
 
+                self.model.set({"canvas_translate":[nx, ny]});
+                self.model.set({"canvas_scale":factor*self.scale});     
+            }
         }, false);
 
         self.myCanvas.addEventListener('mousemove',function(evt){
@@ -234,7 +234,7 @@ var ZoomView = Backbone.View.extend({
             if(self.dragged){
                 self.model.set({"moving": 1});
             }
-            self.model.trigger('change:canvas_scale');
+            // self.model.trigger('change:canvas_scale');
         }, false);
 
     },
