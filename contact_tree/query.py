@@ -497,7 +497,7 @@ def get_list_ego(request):
         myego = "egoid"
         
         if column == "all":
-            cur = db.query("SELECT DISTINCT(" + myego + ") FROM " + data_table + ";")
+            cur = db.query("SELECT DISTINCT(" + myego + ") FROM " + data_table + " ORDER BY cast(`egoid` as unsigned);")
             allego = cur.fetchall()
             e_list["all"] = []
             for e in allego:

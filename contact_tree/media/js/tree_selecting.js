@@ -18,6 +18,7 @@ var SelectingView = Backbone.View.extend({
         this.my_ego_selected = {};
         this.my_ego_display = {};
         this.my_ego = 0; // selected ego before done
+        this.ego_subgroup = [];
         // this.ego_cat = ["", "all"],
 
         // open the dialog
@@ -534,22 +535,22 @@ var SelectingView = Backbone.View.extend({
             $("#submit_ego").removeAttr("disabled");
             $("#submit_ego").text("Done");
             
-            var ego_subgroup = [];
+            self.ego_subgroup = [];
             for(var c = 0; c < sub_ego.length; c++){
                 for(var v = 0; v < total_ego[sub_ego[c]].length; v++){
                     if(total_ego[sub_ego[c]][v] == ego){
-                        ego_subgroup.push(sub_ego[c]);
+                        self.ego_subgroup.push(sub_ego[c]);
                         break;
                     }
                }
             }
             var ego_group = {};
-            ego_group[self.my_ego] = ego_subgroup;
-            for(var s = 0; s < ego_subgroup.length; s++){
-                if(s == ego_subgroup.length-1)
-                    $("#sub_selection").append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + ego_subgroup[s] + '" id="' + ego_subgroup[s] + '" checked>' + ego_subgroup[s] + '</label>');            
+            ego_group[self.my_ego] = self.ego_subgroup;
+            for(var s = 0; s < self.ego_subgroup.length; s++){
+                if(s == self.ego_subgroup.length-1)
+                    $("#sub_selection").append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + self.ego_subgroup[s] + '" id="' + self.ego_subgroup[s] + '" checked>' + self.ego_subgroup[s] + '</label>');            
                 else
-                    $("#sub_selection").append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + ego_subgroup[s] + '" id="' + ego_subgroup[s] + '">' + ego_subgroup[s] + '</label>');            
+                    $("#sub_selection").append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + self.ego_subgroup[s] + '" id="' + self.ego_subgroup[s] + '">' + self.ego_subgroup[s] + '</label>');            
                 $("#sub_selection").append("<p></p>");
             }
             var data_group = self.model.get("dataset_group");
@@ -558,6 +559,7 @@ var SelectingView = Backbone.View.extend({
             var ego_group = JSON.stringify(ego_group);
 
             var requst = now_attr + ":-" + self.my_ego + ":-" + now_mode + ":-" + JSON.stringify(attribute_mapping) + ":-" + data_group + ":-" + ego_group;
+        
             // get all the structure of this selected ego
             self.model.query_data(requst);
             
@@ -573,8 +575,8 @@ var SelectingView = Backbone.View.extend({
 
                 // store last page's selections
                 var display = [];
-                select_ego = [];
-                var total = 0;
+                var select_ego = [];
+                var total = 0;                
                 var data_group = self.model.get("dataset_group");
                 if(data_group == "all"){
                     select_ego.push("all");
@@ -591,10 +593,11 @@ var SelectingView = Backbone.View.extend({
                 $("#loading_process").html("<b>Rendering...</b>");
                 $("#submit_ego").text("Rendering");
 
-                self.my_ego_selected[self.my_ego] = select_ego;
+                self.my_ego_selected[self.my_ego] = self.ego_subgroup;
+                self.my_ego_display[self.my_ego] = select_ego;
 
-                display.push(select_ego[total-1]);
-                self.my_ego_display[self.my_ego] = display;
+                // display.push(select_ego[total-1]);
+                // self.my_ego_display[self.my_ego] = display;
                 
                 self.model.set({"display_egos":self.my_ego_display});
                 self.model.set({"selected_egos":self.my_ego_selected});
@@ -612,7 +615,7 @@ var SelectingView = Backbone.View.extend({
 
             });
         }
-
+        var data_group = self.model.get("dataset_group");
         // all ego selections
         for(var c = 0; c < total_ego[sub_ego[0]].length; c++){
             var check_amont = 0;
@@ -624,7 +627,10 @@ var SelectingView = Backbone.View.extend({
                     }
                }
             }
-            $("#divTable_menu").append('<div><label><input class="myfont3 ego_checkbox" name="ego_selection" type="radio" id="' + total_ego[sub_ego[0]][c] + '" value="' + total_ego[sub_ego[0]][c] +'" style="margin-right:5px;">' + name + '_' + total_ego[sub_ego[0]][c].toUpperCase() + ' ('+ check_amont +')</label></div>');
+            if(data_group != "all")
+                $("#divTable_menu").append('<div><label><input class="myfont3 ego_checkbox" name="ego_selection" type="radio" id="' + total_ego[sub_ego[0]][c] + '" value="' + total_ego[sub_ego[0]][c] +'" style="margin-right:5px;">' + name + '_' + total_ego[sub_ego[0]][c].toUpperCase() + ' ('+ check_amont +')</label></div>');
+            else
+                $("#divTable_menu").append('<div><label><input class="myfont3 ego_checkbox" name="ego_selection" type="radio" id="' + total_ego[sub_ego[0]][c] + '" value="' + total_ego[sub_ego[0]][c] +'" style="margin-right:5px;">' + name + '_' + total_ego[sub_ego[0]][c].toUpperCase() + '</label></div>');
         }
          
         $('.ego_checkbox').unbind();
