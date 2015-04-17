@@ -3418,6 +3418,7 @@ var MappingView = Backbone.View.extend({
     set_component: function(){
         var self = this;
         // var myattribute = JSON.parse(JSON.stringify(self.model.get("attribute")));
+        var data_mode = self.model.get("view_mode");
         var myattribute = self.model.get("attribute");
         // $("#block_layer").hide();
         // $("#sidekey_submit_trunk").hide();
@@ -3439,8 +3440,10 @@ var MappingView = Backbone.View.extend({
                 if(cmpt == "stick")
                     continue;
                 cmpt_id += cmpt + "_map";
-                
-                $(cmpt_id).text(myattribute[cmpt]);
+                if(component_attribute[data_mode][myattribute[cmpt]][4] != "1" || myattribute[cmpt] == "none")                
+                    $(cmpt_id).text(myattribute[cmpt]);
+                else
+                    $(cmpt_id).text(myattribute[cmpt] + "*");
                 if(myattribute[cmpt] == "none"){
                     $(cmpt_id).attr('style', 'background: rgb(252, 180, 183);');
                 }
@@ -3455,14 +3458,18 @@ var MappingView = Backbone.View.extend({
 
     set_save_component: function(myattribute){
         var self = this;
-        
+        var data_mode = self.model.get("view_mode");
         for(cmpt in myattribute){
             var cmpt_id = "#";
             if(cmpt == "stick")
                 continue;
             cmpt_id += cmpt + "_save_map";
             // console.log(cmpt_id);
-            $(cmpt_id).text(myattribute[cmpt]);
+            // $(cmpt_id).text(myattribute[cmpt]);
+            if(component_attribute[data_mode][myattribute[cmpt]][4] != "1" || myattribute[cmpt] == "none")                
+                $(cmpt_id).text(myattribute[cmpt]);
+            else
+                $(cmpt_id).text(myattribute[cmpt] + "*");
             if(myattribute[cmpt] == "none")
                 $(cmpt_id).attr('style', 'background: rgb(252, 180, 183);');
             else

@@ -116,6 +116,7 @@ var Tree_Model = Backbone.Model.extend({
 		        // user_history = 1;
 		    }
 		    else{
+		    	document.cookie = "mode=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
 		    	first_use = 0;
 		    }
 
@@ -174,7 +175,7 @@ var Tree_Model = Backbone.Model.extend({
         var set_default_attr = function(data){
           	var single_attr = [];
           	// self.set({"attr_option": data});
-          	self.set({"attribute": data});
+          	self.set({"attribute": data}, {silent: true});
           	for(a in data){
             	single_attr.push(data[a]);
           	}
@@ -193,8 +194,7 @@ var Tree_Model = Backbone.Model.extend({
 	    var request = table + ":-" + group;
 	    var request_url = "datatable/?table="+request;
 	    d3.json(request_url, function(result){
-	        console.log(result);
-	        
+	        console.log(result);	        
 	        in_change_mode = 0;
 	        set_ego_list_json(result[0]);
 	        // only for the new dataset
@@ -206,10 +206,9 @@ var Tree_Model = Backbone.Model.extend({
 	        else{
 	        	set_default_attr(self.get("attribute"));
 	        }
-	        
+	        self.trigger('change:attribute');
 	        var d = self.get("done_query_list");
-	        self.set({"done_query_list": d+1});
-	        self.trigger('change:attribute');        
+	        self.set({"done_query_list": d+1});        
 	       	// label user as old user
 	        initial_user = 1;
 	        first_use = 1;
