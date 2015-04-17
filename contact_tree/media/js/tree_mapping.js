@@ -814,6 +814,60 @@ var MappingView = Backbone.View.extend({
                 attr_container.appendChild(br1);
                 attr_container.appendChild(p1);
             }
+
+
+            var label_container = document.createElement("span"); // attribute data
+            label_container.innerHTML = total_items[c];
+            label_container.setAttribute("style", "position:absolute; left:125px;");
+
+            var select_container = $('<div class="dropdown"></div>');
+            select_container.val(c.toString()).attr('id', "ori_attr_val_" + c);
+            var select_button = $('<button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:15px;"></button>');
+            select_button.attr('id', "dLabel_" + c);
+            var select_span = $('<span class="caret"></span>');
+            select_button.append(select_span);
+            select_container.append(select_button);
+            
+            var selection_ul = $('<ul class="dropdown-menu" role="menu" style="padding:0;"></ul>');
+            selection_ul.attr('aria-labelledby', "dLabel_" + c);     
+            
+            for(var l_color = 0; l_color < color_table.length; l_color++){                
+                var selection_opt_container = $('<li></li>');
+                var selection_opt = $('<a></a>');
+                selection_opt.val(l_color.toString()).attr('name', c).attr('style', "height:15px; width:100px; background-color:" + color_table[l_color] + ";");
+                
+                if(used == 1){
+                    if(color_table[l_color] == render_table[c]){
+                        // select_container.setAttribute("style", "background-color:" + color_table[l_color] + ";");
+                        select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; background-color:" + color_table[l_color] + ";");
+                    }
+                }
+                else{
+                    if(l_color == c){
+                        select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; background-color:" + color_table[l_color] + ";");
+                    }
+                        
+                    else if(color_table.length < c && l_color == color_table.length-1){
+                        select_container.val((color_table.length-1).toString()).attr('style', "height:15px; width:100px; position:absolute; background-color:" + color_table[color_table.length-1] + ";");
+                    }
+                }
+                selection_opt.unbind();
+                selection_opt.click(function(){
+                    var select_container_id = "#ori_attr_val_" + this.name;
+                    $(select_container_id).val((this.value).toString()).attr('style', "height:15px; width:100px; position:absolute; background-color:" + color_table[this.value] + ";");
+                });
+                selection_opt_container.append(selection_opt)
+                selection_ul.append(selection_opt_container);
+                
+            }
+            select_container.append(selection_ul);
+            $("#mark_group_select").append(select_container);
+            attr_container.appendChild(label_container);
+            
+            attr_container.appendChild(br);
+            attr_container.appendChild(p);
+
+            /*
             var select_container = document.createElement("select");
             var label_container = document.createElement("span");
             select_container.value = c;
@@ -828,7 +882,6 @@ var MappingView = Backbone.View.extend({
                 selection_opt.value = l_color;
                 selection_opt.setAttribute("class", "myfont3");
                 selection_opt.setAttribute("style", "background-color:" + color_table[l_color] + ";");
-
                 if(used == 1){
                     if(color_table[l_color] == render_table[c]){
                         selection_opt.setAttribute("selected", true);
@@ -850,17 +903,19 @@ var MappingView = Backbone.View.extend({
                 select_container.appendChild(selection_opt);
                 
             }
+            
             attr_container.appendChild(select_container);
             attr_container.appendChild(label_container);
             
             attr_container.appendChild(br);
             attr_container.appendChild(p);
+            */
         }
 
-        $(".mapping_selection").unbind();
-        $(".mapping_selection").change(function(){
-            this.style.background = color_table[this.value];
-        });
+        // $(".mapping_selection").unbind();
+        // $(".mapping_selection").change(function(){
+        //     this.style.background = color_table[this.value];
+        // });
 
     },
 
@@ -1435,10 +1490,10 @@ var MappingView = Backbone.View.extend({
                     color_map[total_items[c]] = c;
 
                     if(comp == "leaf_color"){
-                        mapping_color.render_leaf_color.push(color_table[$(item_id).val()]);
+                        mapping_color.render_leaf_color.push(color_table[parseInt($(item_id).val())]);
                     }
                     else if(comp == "root"){
-                        mapping_color.render_roots_color.push(color_table[$(item_id).val()]);
+                        mapping_color.render_roots_color.push(color_table[parseInt($(item_id).val())]);
                     }
                     // mapping_color.render_roots_color.push(color_table[$(item_id).val()]);
                 }
@@ -1454,10 +1509,10 @@ var MappingView = Backbone.View.extend({
                     var selector_id = "#title_" + v;
                     if(v == $("#sep_gap").val()-1){
                         if(comp == "leaf_color"){
-                            mapping_color.render_leaf_color.push(color_table[$(selector_id).val()]);
+                            mapping_color.render_leaf_color.push(color_table[parseInt($(selector_id).val())]);
                         }
                         else if(comp == "root"){
-                            mapping_color.render_roots_color.push(color_table[$(selector_id).val()]);
+                            mapping_color.render_roots_color.push(color_table[parseInt($(selector_id).val())]);
                         }
                         // mapping_color.render_roots_color.push(color_table[$(selector_id).val()]);
                         break;
@@ -1465,10 +1520,10 @@ var MappingView = Backbone.View.extend({
                     layer_map.push($(layer_id).val());
                     attribute_mapping[comp].push($(layer_id).val());
                     if(comp == "leaf_color"){
-                        mapping_color.render_leaf_color.push(color_table[$(selector_id).val()]);
+                        mapping_color.render_leaf_color.push(color_table[parseInt($(selector_id).val())]);
                     }
                     else if(comp == "root"){
-                        mapping_color.render_roots_color.push(color_table[$(selector_id).val()]);
+                        mapping_color.render_roots_color.push(color_table[parseInt($(selector_id).val())]);
                     }
                     
                 }
@@ -1800,7 +1855,7 @@ var MappingView = Backbone.View.extend({
         }
     },
 
-    set_color_handle_id: function(slider_val, comp, used){
+    set_color_handle_id_old: function(slider_val, comp, used){
         var self = this;
         var sep_container = document.getElementById("sep_group");
         var handle = $('#layer_slider A.ui-slider-handle');
@@ -1967,6 +2022,215 @@ var MappingView = Backbone.View.extend({
                     }
                     
                     range_container.appendChild(color_container);
+                }
+            }                 
+            var sep_layer_input = document.createElement("input");
+
+            sep_layer_input.setAttribute("class", "layer_order");
+            sep_layer_input.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; width:100px; position:absolute; background:none; border:0;");
+            sep_layer_input.setAttribute("readonly", "readonly");
+            sep_layer_input.value = slider_val[v];
+            sep_layer_input.id = "layer_" + v;
+
+            sep_container.appendChild(sep_layer_input);
+            
+        }
+
+        $(".mapping_selection").unbind();
+        $(".mapping_selection").change(function(){
+            this.style.background = color_table[this.value];
+        });
+    },
+
+    set_color_handle_id: function(slider_val, comp, used){
+        var self = this;
+        var sep_container = document.getElementById("sep_group");
+        var handle = $('#layer_slider A.ui-slider-handle');
+        var range_container = $("#sep_range");
+
+        var color_table = [];
+        var render_table = [];
+        
+        if(used == 1){
+            if(comp == "leaf_color")
+                render_table = mapping_color.render_leaf_color;
+            else if(comp == "root")
+                render_table = mapping_color.render_roots_color;
+        }
+
+        if(comp == "leaf_color")
+            color_table = mapping_color.leaf_color;
+        else if(comp == "root")
+            color_table = mapping_color.roots_color;
+
+        for(var v = slider_val.length-1; v >= 0; v--){
+            handle.eq(v).attr('id', "layer_handle_" + v);
+            var select_container = $('<div class="dropdown"></div>');            
+            var select_button = $('<button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:15px;"></button>');
+            var select_span = $('<span class="caret"></span>');
+            select_button.append(select_span);
+            select_container.append(select_button);
+            
+            var selection_ul = $('<ul class="dropdown-menu" role="menu" style="padding:0;"></ul>');
+            
+            if(v == 0){
+                select_container.val(v.toString()).attr('id', "title_" + v);
+                select_button.attr('id', "dLabel_" + v);
+                selection_ul.attr('aria-labelledby', "dLabel_" + v);
+
+                for(var l_color = 0; l_color < color_table.length; l_color++){
+                    var selection_opt_container = $('<li></li>');
+                    var selection_opt = $('<a></a>');
+                    selection_opt.val(l_color.toString()).attr('name', v).attr('style', "height:15px; width:100px; background-color:" + color_table[l_color] + ";");
+                    
+                    if(used == 1){
+                        if(color_table[l_color] == render_table[v]){
+                            select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.roots_color[l_color] + ";");
+                        }
+                    }
+                    else{
+                        if(l_color == v){
+                            select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + color_table[l_color] + ";");
+                        }
+                            
+                        else if(color_table.length < v && l_color == color_table.length-1){
+                            select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + color_table[color_table.length-1] + ";");
+                        }
+                    }  
+                        
+                    selection_opt.unbind();
+                    selection_opt.click(function(){
+                        var select_container_id = "#title_" + this.name;
+                        $(select_container_id).val((this.value).toString()).css('background-color', color_table[this.value]);
+                    });
+                    selection_opt_container.append(selection_opt)
+                    selection_ul.append(selection_opt_container);
+                    
+                }
+                select_container.append(selection_ul);
+                range_container.append(select_container);
+                
+                if(slider_val.length == 1){
+                    var select_container = $('<div class="dropdown"></div>');            
+                    var select_button = $('<button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:15px;"></button>');
+                    var select_span = $('<span class="caret"></span>');
+                    select_button.append(select_span);
+                    select_container.append(select_button);
+                    
+                    var selection_ul = $('<ul class="dropdown-menu" role="menu" style="padding:0;"></ul>');
+                    select_container.val((v+1).toString()).attr('id', "title_" + (v+1));
+                    select_button.attr('id', "dLabel_" + (v+1));
+                    selection_ul.attr('aria-labelledby', "dLabel_" + (v+1));
+
+                    for(var l_color = 0; l_color < color_table.length; l_color++){
+                        var selection_opt_container = $('<li></li>');
+                        var selection_opt = $('<a></a>');
+                        selection_opt.val(l_color.toString()).attr('name', (v+1)).attr('style', "height:15px; width:100px; background-color:" + color_table[l_color] + ";");
+                        
+                        if(used == 1){
+                            if(color_table[l_color] == render_table[(v+1)]){
+                                select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; top:-15; background-color:" + mapping_color.roots_color[l_color] + ";");
+                            }
+                        }
+                        else{
+                            if(l_color == (v+1)){
+                                select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; top:-15; background-color:" + color_table[l_color] + ";");
+                            }
+                        }  
+                            
+                        selection_opt.unbind();
+                        selection_opt.click(function(){
+                            var select_container_id = "#title_" + this.name;
+                            $(select_container_id).val((this.value).toString()).css('background-color', color_table[this.value]);
+                        });
+                        selection_opt_container.append(selection_opt)
+                        selection_ul.append(selection_opt_container);
+                        
+                    }
+                    select_container.append(selection_ul);
+                    range_container.append(select_container);
+                }
+            }   
+            else{
+                select_container.val(v.toString()).attr('id', "title_" + v);
+                select_button.attr('id', "dLabel_" + v);
+                selection_ul.attr('aria-labelledby', "dLabel_" + v);
+
+                for(var l_color = 0; l_color < color_table.length; l_color++){
+                    var selection_opt_container = $('<li></li>');
+                    var selection_opt = $('<a></a>');
+                    selection_opt.val(l_color.toString()).attr('name', v).attr('style', "height:15px; width:100px; background-color:" + color_table[l_color] + ";");
+                                        
+                    if(used == 1){
+                        if(color_table[l_color] == render_table[v]){
+                            select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.roots_color[l_color] + ";");
+                        }
+                    }
+                    else{
+                        if(l_color == v){
+                            select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + color_table[l_color] + ";");
+                        }
+                            
+                        else if(color_table.length < v && l_color == color_table.length-1){
+                            select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + color_table[color_table.length-1] + ";");
+                        }
+                    } 
+                        
+                    selection_opt.unbind();
+                    selection_opt.click(function(){
+                        var select_container_id = "#title_" + this.name;
+                        $(select_container_id).val((this.value).toString()).css('background-color', color_table[this.value]);
+                    });
+                    selection_opt_container.append(selection_opt)
+                    selection_ul.append(selection_opt_container);
+                    
+                }
+                select_container.append(selection_ul);
+                range_container.append(select_container);
+
+                if(v == slider_val.length-1){
+                    var select_container = $('<div class="dropdown"></div>');            
+                    var select_button = $('<button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:15px;"></button>');
+                    var select_span = $('<span class="caret"></span>');
+                    select_button.append(select_span);
+                    select_container.append(select_button);
+                    
+                    var selection_ul = $('<ul class="dropdown-menu" role="menu" style="padding:0;"></ul>');
+                    select_container.val((v+1).toString()).attr('id', "title_" + (v+1));
+                    select_button.attr('id', "dLabel_" + (v+1));
+                    selection_ul.attr('aria-labelledby', "dLabel_" + (v+1));
+
+                    for(var l_color = 0; l_color < color_table.length; l_color++){
+                        var selection_opt_container = $('<li></li>');
+                        var selection_opt = $('<a></a>');
+                        selection_opt.val(l_color.toString()).attr('name', (v+1)).attr('style', "height:15px; width:100px; background-color:" + color_table[l_color] + ";");
+                    
+                        if(used == 1){
+                            if(color_table[l_color] == render_table[(v+1)]){
+                                select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; top:-15; background-color:" + mapping_color.roots_color[l_color] + ";");
+                            }
+                        }
+                        else{
+                            if(l_color == (v+1)){
+                                select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; top:-15; background-color:" + color_table[l_color] + ";");
+                            }
+                                
+                            else if(color_table.length < v && l_color == color_table.length-1){
+                                select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; top:-15; background-color:" + color_table[color_table.length-1] + ";");
+                            }
+                        }                         
+                            
+                        selection_opt.unbind();
+                        selection_opt.click(function(){
+                            var select_container_id = "#title_" + this.name;
+                            $(select_container_id).val((this.value).toString()).css('background-color', color_table[this.value]);
+                        });
+                        selection_opt_container.append(selection_opt)
+                        selection_ul.append(selection_opt_container);
+                        
+                    }
+                    select_container.append(selection_ul);
+                    range_container.append(select_container);
                 }
             }                 
             var sep_layer_input = document.createElement("input");
