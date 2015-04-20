@@ -2048,7 +2048,7 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
                                             break
                             elif compt == 'branch' or compt == 'leaf_color' or compt == 'root': # for general mapping
                                 if float(d[attr[compt]]) <= float(mapping[compt][0]):
-                                    tree_record[record_index] = 0
+                                    ctree_record[record_index] = 0
 
                                 elif float(d[attr[compt]]) >= float(mapping[compt][-1]):
                                     ctree_record[record_index] = len(mapping)
@@ -2127,7 +2127,7 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
        json_file.write(index_json)
 
 def restore_ctree_mapping(user_ctree_data, ego_list, table, attr, mapping, group):
-    # print "in restore_ctree_mapping"
+    print "=======in restore_ctree_mapping"
     data_table = table.split("_of_")[1]
     session = table.split("_of_")[0]
     last_use_ego = {session: {data_table: {}}}
@@ -2682,6 +2682,7 @@ def one_contact_structure(user_ctree_data, structure_request):
     cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
     stick_unique = cur.fetchone()["alter_info"]
     if ego_group == "all":
+        final_structure["all"] = dict()
         for e in ego_info:
             record_label = e + "_of_" + ego_group
             all_data = user_ctree_data[session][data_table][record_label]["record"]
@@ -2695,7 +2696,6 @@ def one_contact_structure(user_ctree_data, structure_request):
                 # print "in_duplicate"
                 one_structure = duplicate_stick(all_data, attr, branch_layer)
 
-            final_structure["all"] = dict()
             final_structure["all"][e] = one_structure
 
     else:

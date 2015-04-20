@@ -298,10 +298,13 @@ var SelectingView = Backbone.View.extend({
                                 if(selection_opt.value == on_group)
                                     selection_opt.setAttribute("selected", true);
                                 selection_opt.innerHTML = waves[s];
-                                if (waves[s] == "dataset"){
-                                    selection_opt.innerHTML = "wave";
+                                if(waves[s] == "dataset"){
+                                    selection_opt.innerHTML = "individual waves";
                                 }
-                                
+                                else if(waves[s] == "all"){
+                                    selection_opt.innerHTML = "combined waves";
+                                }
+
                                 selection_opt.setAttribute("class", "myfont3");
                                 
                                 container.appendChild(selection_opt);
@@ -330,8 +333,12 @@ var SelectingView = Backbone.View.extend({
                             if(selection_opt.value == on_group)
                                 selection_opt.setAttribute("selected", true);
                             selection_opt.innerHTML = waves[s];
-                            if (waves[s] == "dataset"){
-                                selection_opt.innerHTML = "wave";
+                            
+                            if(waves[s] == "dataset"){
+                                selection_opt.innerHTML = "individual waves";
+                            }
+                            else if(waves[s] == "all"){
+                                selection_opt.innerHTML = "combined waves";
                             }
                             selection_opt.setAttribute("class", "myfont3");
                             
@@ -339,7 +346,6 @@ var SelectingView = Backbone.View.extend({
                         }
                         $("#group_container").show();
                         $("#egogroup").trigger('change');
-                        // $("#block_page").hide();
                     }
                     else{
                         var request_url = "dataset/?data="+data_selected;
@@ -356,8 +362,12 @@ var SelectingView = Backbone.View.extend({
                                     if(selection_opt.value == on_group)
                                         selection_opt.setAttribute("selected", true);
                                     selection_opt.innerHTML = waves[s];
-                                    if (waves[s] == "dataset"){
-                                        selection_opt.innerHTML = "wave";
+                                    
+                                    if(waves[s] == "dataset"){
+                                        selection_opt.innerHTML = "individual waves";
+                                    }
+                                    else if(waves[s] == "all"){
+                                        selection_opt.innerHTML = "combined waves";
                                     }
                                     selection_opt.setAttribute("class", "myfont3");
                                     
