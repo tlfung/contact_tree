@@ -152,7 +152,7 @@ var MyApp = function MyApp(){
     var self = this;
     // generate an unique session id for new user
     session_id = Math.floor(Math.random() * 10000000000000001);
-
+    document.cookie = "session_id=9735970357432962; mode=contact_diary_taiwan";
     // check cookie information
     var cookie = document.cookie.split(';');
     if(document.cookie == ""){

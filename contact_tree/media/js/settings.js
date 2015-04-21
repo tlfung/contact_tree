@@ -48,7 +48,6 @@ var attribute_mapping = {};
 var initial_grid = [];
 
 // ego information
-var sub_ego = [];
 var total_ego = {};
 var waves = [];
 

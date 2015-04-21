@@ -116,60 +116,19 @@ var Tree_Model = Backbone.Model.extend({
 		        // user_history = 1;
 		    }
 		    else{
-		    	document.cookie = "mode=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
 		    	first_use = 0;
+		    	document.cookie = "mode=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
 		    }
 
 		});
   	},
-  	/*
-  	query_dataset: function(request){
-	    var self = this;
-	    var request_url = "dataset/?data="+request;
-	    d3.json(request_url, function(result){
-			console.log("in model.query_dataset");
-			// console.log(result)
-			var set_dataset_json = function(data){
-				for(var d = 0; d < data.length; d++){
-			  		dataset_mode.push(data[d]);
-				}
-			};
-          	set_dataset_json(result);
-          	var container = document.getElementById("dataselect");
-          	container.setAttribute("class", "dataset_selector");
-          	for(var s = 0; s < dataset_mode.length; s++){
-	            var selection_opt = document.createElement('option');
-	            selection_opt.value = dataset_mode[s];
-	            selection_opt.innerHTML = dataset_mode[s];
-	            selection_opt.setAttribute("class", "myfont3");
-            
-            	container.appendChild(selection_opt);
-          	}
-		});
-
-  	},
-  	*/
-
+  	
   	query_ego_list: function(table, group){
 	    var self = this;
 	    
 	    // set the result function
         var set_ego_list_json = function(data){
           	total_ego = data;
-          	var sub_array = [];
-          	for(var d in data){
-	            sub_array.push({sub: d, len: data[d].length});
-          	}
-          	sub_array.sort(function(obj1, obj2) {
-	            // Ascending: first age less than the previous
-	            return obj2.len - obj1.len;
-          	});
-          	// console.log(sub_array);
-          	var temp_array = [];
-          	for(var t = 0; t < sub_array.length; t++){
-            	temp_array.push(sub_array[t].sub);
-          	}
-          	sub_ego = temp_array;
         };
 
         var set_default_attr = function(data){
@@ -184,10 +143,20 @@ var Tree_Model = Backbone.Model.extend({
 
         var set_attribute_info = function(data){
         	var mode = self.get("view_mode");
+        	var group = self.get("dataset_group");
         	component_attribute[mode] = {};
-        	for(a in data){
-        		component_attribute[mode][a] = data[a];
+        	if(group == "dataset"){
+        		for(a in data){
+        			if(a != "dataset")
+	        			component_attribute[mode][a] = data[a];
+	        	}
         	}
+        	else{
+        		for(a in data){
+	        		component_attribute[mode][a] = data[a];
+	        	}
+        	}
+        	
         	component_attribute[mode]["none"] = [["none"], 0, 0, 0, 1, "none"];
         };
 	    	   
@@ -197,15 +166,10 @@ var Tree_Model = Backbone.Model.extend({
 	        console.log(result);	        
 	        in_change_mode = 0;
 	        set_ego_list_json(result[0]);
-	        // only for the new dataset
-	        if(user_history == 0){
-	        	set_default_attr(result[1]);
-	        	set_attribute_info(result[2]);
-	        	user_history = 2;
-	        }
-	        else{
-	        	set_default_attr(self.get("attribute"));
-	        }
+	        set_default_attr(result[1]);
+        	set_attribute_info(result[2]);
+        	user_history = 2;
+	        
 	        self.trigger('change:attribute');
 	        var d = self.get("done_query_list");
 	        self.set({"done_query_list": d+1});        

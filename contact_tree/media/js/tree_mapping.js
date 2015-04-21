@@ -38,7 +38,6 @@ var MappingView = Backbone.View.extend({
 
         $("#save_label").click(function() {
             var save_user_mapping = self.model.get("user_mapping");
-            console.log(save_user_mapping);
             if(save_user_mapping.length >= 5){
                 alert("Can only save 5 mapping at most!");
                 return 0;
@@ -59,7 +58,7 @@ var MappingView = Backbone.View.extend({
                 user_map["name"] = map_name;
                 save_user_mapping.push(user_map);
 
-                var request = self.model.get("view_mode") + ":-" + encodeURIComponent(JSON.stringify(user_map)) + ":-" + map_name;
+                var request = self.model.get("view_mode") + ":-" + encodeURIComponent(JSON.stringify(user_map)) + ":-" + map_name + ":-" +  self.model.get("dataset_group");
                 var request_url = "save_mapping/?save="+request;
         
                 d3.json(request_url, function(result) {

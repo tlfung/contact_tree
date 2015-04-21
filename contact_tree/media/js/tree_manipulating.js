@@ -63,7 +63,7 @@ var ZoomView = Backbone.View.extend({
 
             var delta = evt.wheelDelta ? evt.wheelDelta/40 : evt.detail ? - evt.detail : 0;
            
-            var delta_scale = Math.round(evt.wheelDelta*3*10/100)/10; //for mac
+            var delta_scale = Math.floor(evt.wheelDelta*3*10/100)/10; //for mac
         
             var factor = Math.pow(scaleFactor, delta);
             
@@ -86,12 +86,12 @@ var ZoomView = Backbone.View.extend({
                 // self.model.trigger('change:leaf_scale');
 
                 $("#dtl_leaf_size").ionRangeSlider("update", {
-                    from: Math.round(10*leaf_scale)/10
+                    from: Math.floor(10*leaf_scale)/10
                 });
                 self.model.set({"sub_leaf_len_scale":length_scale}, {silent: true});
                 // self.model.trigger('change:sub_leaf_len_scale');
                 $("#dtl_length").ionRangeSlider("update", {
-                    from: Math.round(10*length_scale)/10
+                    from: Math.floor(10*length_scale)/10
                 });      
 
                 self.model.set({"canvas_translate":[nx, ny]});
@@ -124,7 +124,7 @@ var ZoomView = Backbone.View.extend({
                 self.dragStart = self.getMousePos(self.myCanvas, evt);//mousePos.x,mousePos.y
             }
             else{
-                var point_info = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)];
+                var point_info = self.grid[Math.floor(mousePos.x/c_detail)][Math.floor(mousePos.y/c_detail)];
                 if(point_info != -1){
                     var parse_grid = point_info.split("*+");
                     if(parse_grid.length == 1 || parse_grid[0] == "saveIMG" || parse_grid[0] == "popup" || parse_grid[0] == "root"){
@@ -134,7 +134,7 @@ var ZoomView = Backbone.View.extend({
                         $("#c").css("cursor", "");
                         if(parse_grid[0] == "leaf"){
                             self.model.set({"clicking_leaf":parse_grid[1]});
-                            self.writeNote(Math.round(mousePos.x), Math.round(mousePos.y), parse_grid[1]);
+                            self.writeNote(Math.floor(mousePos.x), Math.floor(mousePos.y), parse_grid[1]);
                         }
                     }
                 }
@@ -153,13 +153,13 @@ var ZoomView = Backbone.View.extend({
 
             var c_detail = self.model.get("canvas_detail");
             if (!self.dragged && !self.click){
-                var point_info = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)];
+                var point_info = self.grid[Math.floor(mousePos.x/c_detail)][Math.floor(mousePos.y/c_detail)];
                 if(point_info != -1){    
                     var parse_grid = point_info.split("*+");                
                     if(parse_grid[0] == "leaf"){
                     }
                     else if(parse_grid[0] == "root"){
-                        self.writeNote(Math.round(mousePos.x), Math.round(mousePos.y), parse_grid[1]);
+                        self.writeNote(Math.floor(mousePos.x), Math.floor(mousePos.y), parse_grid[1]);
                     }
                     else if(parse_grid[0] == "popup"){
                         var table = self.model.get("view_mode");
@@ -217,8 +217,8 @@ var ZoomView = Backbone.View.extend({
                         self.saving_info = [ego, sub];                        
                     }
                     else{
-                        var index = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("_");
-                        self.writeMessage(Math.round(mousePos.x), Math.round(mousePos.y), alter_info[index[0]][index[1]]);
+                        var index = self.grid[Math.floor(mousePos.x/c_detail)][Math.floor(mousePos.y/c_detail)].split("_");
+                        self.writeMessage(Math.floor(mousePos.x), Math.floor(mousePos.y), alter_info[index[0]][index[1]]);
                     }
                 }
             }
@@ -288,7 +288,7 @@ var ZoomView = Backbone.View.extend({
             var ego = snap_ego[0];
             var sub = snap_ego[1];
 
-            var snap_point_info = grid[Math.round(mousePos.x)][Math.round(mousePos.y)];
+            var snap_point_info = grid[Math.floor(mousePos.x)][Math.floor(mousePos.y)];
             if(snap_point_info != -1){
                 var detail = snap_point_info.split("#");
                 var g = snap_point_info;
@@ -370,7 +370,7 @@ var ZoomView = Backbone.View.extend({
         self.snapCanvas.addEventListener('mousemove',function(evt){
             var mousePos = self.getMousePos(self.snapCanvas, evt);
             var grid = self.model.get("snap_grid");
-            var snap_point_info = grid[Math.round(mousePos.x)][Math.round(mousePos.y)];
+            var snap_point_info = grid[Math.floor(mousePos.x)][Math.floor(mousePos.y)];
             // console.log("snap_grid:", grid);
             if(snap_point_info != -1){
                 $("#one_tree").css("cursor", "pointer");

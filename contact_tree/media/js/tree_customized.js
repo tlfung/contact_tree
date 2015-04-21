@@ -89,7 +89,7 @@ var CustomizedView = Backbone.View.extend({
         auto_map["name"] = "auto_map";
         
         // generate the request link
-        var request = self.model.get("view_mode") + ":-" + encodeURIComponent(JSON.stringify(auto_map)) + ":-" + auto_map["name"];
+        var request = self.model.get("view_mode") + ":-" + encodeURIComponent(JSON.stringify(auto_map)) + ":-" + auto_map["name"] + ":-" +  self.model.get("dataset_group");
 
         var request_url = "save_mapping/?save="+request;
         
@@ -101,8 +101,10 @@ var CustomizedView = Backbone.View.extend({
 
     user_mapping_restore: function(){
         var self = this;
-        var request = self.model.get("view_mode"); 
-        if(request == "0")
+        var mode = self.model.get("view_mode");
+        var group = self.model.get("dataset_group")
+        var request = mode + "_of_" + group; 
+        if(mode == "0" || group == "")
             return;
         // get all the user saving mapping of this mode
         var request_url = "restore_user_mapping/?user="+request;

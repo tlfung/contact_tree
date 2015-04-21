@@ -126,9 +126,9 @@ var RenderingView = Backbone.View.extend({
             return 0;
         }
         // for the size of clicking grid
-        for(var x = 0; x <= this.myCanvas.width/this.c_detail; x++){
+        for(var x = 0; x <= Math.round(this.myCanvas.width/this.c_detail); x++){
             this.clicking_grid[x] = [];
-            for(var y = 0; y <= this.myCanvas.height/this.c_detail; y++){
+            for(var y = 0; y <= Math.round(this.myCanvas.height/this.c_detail); y++){
                 this.clicking_grid[x][y] = -1;
             }
         }

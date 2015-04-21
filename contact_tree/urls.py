@@ -25,6 +25,7 @@ urlpatterns = patterns('',
     (r'^update_highlight/$', query.update_highlight),
     (r'^restore_user_mapping/$', query.restore_user_mapping),
     (r'^restore_user_history/$', query.restore_user_history),
+    (r'^restore_user_group_history/$', query.restore_user_group_history),
     (r'^del_mapping/$', query.del_mapping)
 )
 
