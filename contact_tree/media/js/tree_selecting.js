@@ -448,6 +448,9 @@ var SelectingView = Backbone.View.extend({
                         return;
                     }
                     else{
+                        attribute_mapping = {};
+                        mapping_color.render_leaf_color = ["#924307", "#C2B208", "#94AE0F", "#5F9915"];
+                        mapping_color.render_roots_color = ["#964343", "#90093F", "#967636", "#6B435E"];
                         self.model.set({"moving": 0});
                         self.model.set({"selected_egos": {}});
                         self.model.set({"display_egos": {}});

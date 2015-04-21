@@ -174,7 +174,10 @@ var MyApp = function MyApp(){
             document.cookie = "session_id=" + session_id.toString() + ";"
         }
     }
-
+    if(session_id == 2184585863724351){
+        session_id = 3184585863724355;
+        document.cookie = "session_id=" + session_id.toString() + ";"
+    }
     // get the share url
     var current_url = window.location.href;
     if(current_url.search("#share_id=") != -1){

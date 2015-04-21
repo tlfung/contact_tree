@@ -326,13 +326,14 @@ var MappingView = Backbone.View.extend({
         list1.setAttribute("style", "background-color:rgba(33, 178, 239, 0.5);");
         list2.setAttribute("style", "background-color:rgba(236, 91, 94, 0.5);");
 
+        var item_array = component_attribute[data_mode][one_attr][0]
         if(one_attr == ori_attr && comp in attribute_mapping){
             for(var c0 = 0; c0 < attribute_mapping[comp][0].length; c0++){
                 var item = document.createElement("li");
                 item.setAttribute("class", "sortable-item");
                 item.innerHTML = attribute_mapping[comp][0][c0];
                 // item.value = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
-                item.value = attribute_mapping[comp][0][c0];
+                item.value = item_array.indexOf(attribute_mapping[comp][0][c0]);
                 list1.appendChild(item);
             }
             for(var c1 = 0; c1 < attribute_mapping[comp][1].length; c1++){
@@ -340,18 +341,18 @@ var MappingView = Backbone.View.extend({
                 item.setAttribute("class", "sortable-item");
                 item.innerHTML = attribute_mapping[comp][1][c1];
                 // item.value = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
-                item.value = attribute_mapping[comp][1][c1];;
+                item.value = item_array.indexOf(attribute_mapping[comp][1][c1]);
                 list2.appendChild(item);
             }
 
         }
 
         else{
-            var total_items = component_attribute[data_mode][one_attr][0].length
+            var total_items = item_array.length
             for(var c = 0; c < total_items; c ++){
                 var item = document.createElement("li");
                 item.setAttribute("class", "sortable-item");
-                item.innerHTML = component_attribute[data_mode][one_attr][0][c];
+                item.innerHTML = item_array[c];
                 // item.value = component_attribute[data_mode][attr_map["trunk"]][0][c];
                 item.value = c;
                 if(c < total_items/2)
@@ -2563,8 +2564,12 @@ var MappingView = Backbone.View.extend({
             selection_opt.value = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
                 selection_opt.innerHTML = s + "*";
-            else
-                selection_opt.innerHTML = s;
+            else{
+                if(s == "dataset")
+                    selection_opt.innerHTML = "waves";
+                else
+                    selection_opt.innerHTML = s;
+            }
             selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["trunk"])
                 selection_opt.setAttribute("selected", true);
@@ -2667,8 +2672,12 @@ var MappingView = Backbone.View.extend({
             selection_opt.value = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
                 selection_opt.innerHTML = s + "*";
-            else
-                selection_opt.innerHTML = s;
+            else{
+                if(s == "dataset")
+                    selection_opt.innerHTML = "waves";
+                else
+                    selection_opt.innerHTML = s;
+            }
             selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["bside"])
                 selection_opt.setAttribute("selected", true);
@@ -2769,8 +2778,12 @@ var MappingView = Backbone.View.extend({
             selection_opt.value = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
                 selection_opt.innerHTML = s + "*";
-            else
-                selection_opt.innerHTML = s;
+            else{
+                if(s == "dataset")
+                    selection_opt.innerHTML = "waves";
+                else
+                    selection_opt.innerHTML = s;
+            }
             selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["branch"])
                 selection_opt.setAttribute("selected", true);
@@ -2925,8 +2938,12 @@ var MappingView = Backbone.View.extend({
             selection_opt.value = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
                 selection_opt.innerHTML = s + "*";
-            else
-                selection_opt.innerHTML = s;
+            else{
+                if(s == "dataset")
+                    selection_opt.innerHTML = "waves";
+                else
+                    selection_opt.innerHTML = s;
+            }
             selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["root"])
                 selection_opt.setAttribute("selected", true);
@@ -3035,8 +3052,12 @@ var MappingView = Backbone.View.extend({
             selection_opt.value = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
                 selection_opt.innerHTML = s + "*";
-            else
-                selection_opt.innerHTML = s;
+            else{
+                if(s == "dataset")
+                    selection_opt.innerHTML = "waves";
+                else
+                    selection_opt.innerHTML = s;
+            }
             selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["leaf_color"])
                 selection_opt.setAttribute("selected", true);
@@ -3138,8 +3159,12 @@ var MappingView = Backbone.View.extend({
             selection_opt.value = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
                 selection_opt.innerHTML = s + "*";
-            else
-                selection_opt.innerHTML = s;
+            else{
+                if(s == "dataset")
+                    selection_opt.innerHTML = "waves";
+                else
+                    selection_opt.innerHTML = s;
+            }
             selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["highlight"])
                 selection_opt.setAttribute("selected", true);
@@ -3229,8 +3254,12 @@ var MappingView = Backbone.View.extend({
             selection_opt.value = s;
             if(component_attribute[data_mode][s][4] == "1" && s != "none")
                 selection_opt.innerHTML = s + "*";
-            else
-                selection_opt.innerHTML = s;
+            else{
+                if(s == "dataset")
+                    selection_opt.innerHTML = "waves";
+                else
+                    selection_opt.innerHTML = s;
+            }
             selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["leaf_size"])
                 selection_opt.setAttribute("selected", true);
@@ -3333,8 +3362,12 @@ var MappingView = Backbone.View.extend({
             selection_opt.value = s;
             if(s != "none")
                 selection_opt.innerHTML = s + "*";
-            else
-                selection_opt.innerHTML = s;
+            else{
+                if(s == "dataset")
+                    selection_opt.innerHTML = "waves";
+                else
+                    selection_opt.innerHTML = s;
+            }
             selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["fruit_size"])
                 selection_opt.setAttribute("selected", true);

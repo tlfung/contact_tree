@@ -229,3 +229,7 @@ table, th, td {
   width: 100%;
 }
 
+.dropdown-menu>li>a:hover, .dropdown-menu>li>a:focus {
+  background: none;
+  border: 2px solid;
+}

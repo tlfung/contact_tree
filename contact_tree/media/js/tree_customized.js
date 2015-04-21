@@ -72,7 +72,7 @@ var CustomizedView = Backbone.View.extend({
         var attr_map = self.model.get("attribute");
 
         // dont save while changing mode or not selecting a dataset
-        if(jQuery.isEmptyObject(attr_map) || data_mode == "0" || data_mode == "")
+        if(jQuery.isEmptyObject(attr_map) || data_mode == "0" || data_mode == "" || in_change_mode == 1)
             return;
 
         // set model attr_option whenever changing attribute
