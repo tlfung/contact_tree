@@ -7,15 +7,13 @@ var ZoomView = Backbone.View.extend({
         // bind view with model
         console.log("in zooming initialize");
 
+        // set the resolution dialog
         $("#resolution_dialog").dialog({
             autoOpen: false,
             height: 150,
             modal: true,
             resizable: false
         });
-
-        // _.bindAll(this, 'get_grid');
-        // this.model.bind('change:canvas_grid', this.get_grid);
 
         this.myCanvas = drawing_canvas.main_canvas;
         this.snapCanvas = drawing_canvas.snap_canvas;
@@ -34,12 +32,11 @@ var ZoomView = Backbone.View.extend({
         this.set_snap_event();
         this.saving_info = [];
 
+        // submit the resolution and trigger the drawing buffer
         $("#res_submit").click(function(){
             self.saving_info.push($('.res_checkbox:checked').val());
-            // console.log(self.saving_info);
             $( "#resolution_dialog" ).dialog( "close" );
-            self.model.set({"save_tree": self.saving_info});
-            // self.model.trigger('change:save_tree');                        
+            self.model.set({"save_tree": self.saving_info});               
         });
        
     },
@@ -54,7 +51,6 @@ var ZoomView = Backbone.View.extend({
 
         self.myCanvas.addEventListener('mousewheel', function(evt) {
             self.grid = self.model.get("canvas_grid");
-            self.model.set({"moving": 1});
             self.translate = self.model.get("canvas_translate");
             self.scale = self.model.get("canvas_scale");
             var leaf_scale = self.model.get("leaf_scale");
@@ -66,26 +62,16 @@ var ZoomView = Backbone.View.extend({
             var ty = (mousePos.y - self.translate[1]) / self.scale;
 
             var delta = evt.wheelDelta ? evt.wheelDelta/40 : evt.detail ? - evt.detail : 0;
-            // console.log("delta", Math.round(evt.wheelDelta*10/1000)/10);
-            var delta_scale = Math.round(evt.wheelDelta*3*10/100)/10; //for mac
-            // var delta_scale = Math.round(evt.wheelDelta*10/1000)/10;
+           
+            var delta_scale = Math.floor(evt.wheelDelta*3*10/100)/10; //for mac
+        
             var factor = Math.pow(scaleFactor, delta);
-            // console.log("delta_scale, factor, delta: ", delta_scale, factor, delta);
             
+
             var nx = mousePos.x - (tx * factor * self.scale);
             var ny = mousePos.y - (ty * factor * self.scale);
             leaf_scale -= (delta/3)*0.2;
             length_scale += (delta/3)*0.2;
-            /*
-            if(evt.wheelDelta > 0){
-                leaf_scale -= 0.2;
-                length_scale += 0.2;
-            }
-            else if(evt.wheelDelta < 0){
-                leaf_scale += 0.2;
-                length_scale -= 0.2;
-            }
-            */            
             
             if(leaf_scale < 1) leaf_scale = 1;
             else if(leaf_scale > 3) leaf_scale = 3;
@@ -94,30 +80,26 @@ var ZoomView = Backbone.View.extend({
             else if(length_scale > 2) length_scale = 2;
 
             if(factor*self.scale < 0.03 || factor*self.scale > 3.5){
-                // alert("This is the smallest size!");
             }
             else{
-                // if(delta_scale < 1 && delta_scale > -1){
-                    self.model.set({"leaf_scale":leaf_scale});
-                    self.model.trigger('change:leaf_scale');
-                    $("#dtl_leaf_size").ionRangeSlider("update", {
-                        from: Math.round(10*leaf_scale)/10
-                    });
-                    self.model.set({"sub_leaf_len_scale":length_scale});
-                    self.model.trigger('change:sub_leaf_len_scale');
-                    $("#dtl_length").ionRangeSlider("update", {
-                        from: Math.round(10*length_scale)/10
-                    });
-                // }
-                
-                self.model.set({"canvas_translate":[nx, ny]});
-                self.model.set({"canvas_scale":factor*self.scale});
-            }
+                self.model.set({"leaf_scale":leaf_scale}, {silent: true});
+                // self.model.trigger('change:leaf_scale');
 
+                $("#dtl_leaf_size").ionRangeSlider("update", {
+                    from: Math.floor(10*leaf_scale)/10
+                });
+                self.model.set({"sub_leaf_len_scale":length_scale}, {silent: true});
+                // self.model.trigger('change:sub_leaf_len_scale');
+                $("#dtl_length").ionRangeSlider("update", {
+                    from: Math.floor(10*length_scale)/10
+                });      
+
+                self.model.set({"canvas_translate":[nx, ny]});
+                self.model.set({"canvas_scale":factor*self.scale});     
+            }
         }, false);
 
         self.myCanvas.addEventListener('mousemove',function(evt){
-            // self.model.set({"moving": 0});
             self.grid = self.model.get("canvas_grid");
             self.translate = self.model.get("canvas_translate");
             self.scale = self.model.get("canvas_scale");
@@ -125,11 +107,9 @@ var ZoomView = Backbone.View.extend({
             // var grid = self.model.get("canvas_grid");
             var c_detail = self.model.get("canvas_detail");
             var mousePos = self.getMousePos(self.myCanvas, evt);
-            // var Pos = self.getMousePos(self.myCanvas, evt);
-            // var mes = Pos.x +','+Pos.y;
-            // self.writeMessage(self.myCanvas, mes);
             
             
+            $("#c").css("cursor", "");
             if (self.dragStart && Math.abs(mousePos.x-self.dragStart.x)>0.1){
                 self.dragged = true;
                 // console.log("mousemove");
@@ -144,13 +124,18 @@ var ZoomView = Backbone.View.extend({
                 self.dragStart = self.getMousePos(self.myCanvas, evt);//mousePos.x,mousePos.y
             }
             else{
-                // self.model.set({"moving": 0});
-                if(self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)] != -1){
-                    // console.log("Display Info:", self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)]);
-                    var point_info = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)]
-                    if(point_info.split("*+")[0] == "leaf"){
-                        self.model.set({"clicking_leaf":point_info.split("*+")[1]});
-                        self.writeNote(Math.round(mousePos.x), Math.round(mousePos.y), self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1]);
+                var point_info = self.grid[Math.floor(mousePos.x/c_detail)][Math.floor(mousePos.y/c_detail)];
+                if(point_info != -1){
+                    var parse_grid = point_info.split("*+");
+                    if(parse_grid.length == 1 || parse_grid[0] == "saveIMG" || parse_grid[0] == "popup" || parse_grid[0] == "root"){
+                        $("#c").css("cursor", "pointer");
+                    }
+                    else{ 
+                        $("#c").css("cursor", "");
+                        if(parse_grid[0] == "leaf"){
+                            self.model.set({"clicking_leaf":parse_grid[1]});
+                            self.writeNote(Math.floor(mousePos.x), Math.floor(mousePos.y), parse_grid[1]);
+                        }
                     }
                 }
             }
@@ -164,35 +149,22 @@ var ZoomView = Backbone.View.extend({
             self.translate = self.model.get("canvas_translate");
             self.scale = self.model.get("canvas_scale");
             var mousePos = self.getMousePos(self.myCanvas, evt);
-            // var grid = self.model.get("canvas_grid");
             var alter_info = self.model.get("info_table");
-            //var s = (canvas.width/Math.abs(dragStart.x-mousePos.x))/10
-            //console.log("myscale", s)
 
             var c_detail = self.model.get("canvas_detail");
             if (!self.dragged && !self.click){
-                // var tx = (mousePos.x-self.translate[0])/self.scale;
-                // var ty = (mousePos.y-self.translate[1])/self.scale;
-                // self.model.set({"canvas_translate":[-tx*1.3+self.myCanvas.width/2, -ty*1.3+self.myCanvas.height/2]});
-                // self.model.set({"canvas_scale":1.3});
-                // self.model.trigger('change:canvas_scale');
-                // console.log("##########(", mousePos.x, mousePos.y, ")############", self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)]);
-                if(self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)] != -1){
-                    var g = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)];
-                    // console.log("Display Info:", self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)]);
-                    
-                    if(self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[0] == "leaf"){
-                        // console.log("-----leaf id:", self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("+").pop());
-                        // self.writeNote(Math.round(mousePos.x), Math.round(mousePos.y), self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1]);
+                var point_info = self.grid[Math.floor(mousePos.x/c_detail)][Math.floor(mousePos.y/c_detail)];
+                if(point_info != -1){    
+                    var parse_grid = point_info.split("*+");                
+                    if(parse_grid[0] == "leaf"){
                     }
-                    else if(self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[0] == "root"){
-                        // console.log("-----leaf id:", self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("+").pop());
-                        self.writeNote(Math.round(mousePos.x), Math.round(mousePos.y), self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1]);
+                    else if(parse_grid[0] == "root"){
+                        self.writeNote(Math.floor(mousePos.x), Math.floor(mousePos.y), parse_grid[1]);
                     }
-                    else if(self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[0] == "popup"){
+                    else if(parse_grid[0] == "popup"){
                         var table = self.model.get("view_mode");
-                        var ego = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1].split(":-")[0]
-                        var sub = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1].split(":-")[1]
+                        var ego = parse_grid[1].split(":-")[0]
+                        var sub = parse_grid[1].split(":-")[1]
                         var attr_map = self.model.get("attribute");
                         $("#information_page").show();
                         $("#block_page").show();
@@ -236,25 +208,18 @@ var ZoomView = Backbone.View.extend({
                         });
                         
                     }
-                    else if(self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[0] == "saveIMG"){
+                    else if(parse_grid[0] == "saveIMG"){
                         var table = self.model.get("view_mode");
-                        var ego = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1].split(":-")[0]
-                        var sub = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("*+")[1].split(":-")[1]
+                        var ego = parse_grid[1].split(":-")[0]
+                        var sub = parse_grid[1].split(":-")[1]
                         
                         $( "#resolution_dialog" ).dialog( "open" );
-                        self.saving_info = [ego, sub];
-                        // self.model.set({"save_tree": [ego, sub]});
-                        // self.model.trigger('change:save_tree');
-                        
+                        self.saving_info = [ego, sub];                        
                     }
                     else{
-                        var index = self.grid[Math.round(mousePos.x/c_detail)][Math.round(mousePos.y/c_detail)].split("_"); // some problem
-                        self.writeMessage(Math.round(mousePos.x), Math.round(mousePos.y), alter_info[index[0]][index[1]]);
-                        self.draw_textbox(mousePos.x, mousePos.y, alter_info[index[0]][index[1]]);
-                        // console.log("-----alter id:", alter_info[index[0]][index[1]][0], "--------total contact:", alter_info[index[0]][index[1]][1]);
+                        var index = self.grid[Math.floor(mousePos.x/c_detail)][Math.floor(mousePos.y/c_detail)].split("_");
+                        self.writeMessage(Math.floor(mousePos.x), Math.floor(mousePos.y), alter_info[index[0]][index[1]]);
                     }
-                    
-                    // console.log("-----alter id:", alter_info[index[0]][index[1]][0], "--------total contact:", alter_info[index[0]][index[1]][1]);
                 }
             }
             self.dragStart = null;
@@ -265,13 +230,11 @@ var ZoomView = Backbone.View.extend({
             self.model.set({"moving": 0});
             
             self.dragStart = self.getMousePos(self.myCanvas, evt);//mousePos.x,mousePos.y
-            //drawDetail(getid(), mousePos.x, mousePos.y )
             self.dragged = false;
             if(self.dragged){
                 self.model.set({"moving": 1});
             }
-            // d3.select("svg").remove();
-            self.model.trigger('change:canvas_scale');
+            // self.model.trigger('change:canvas_scale');
         }, false);
 
     },
@@ -314,55 +277,6 @@ var ZoomView = Backbone.View.extend({
         context.fillText(info, px+15, py+15); //pos
     },
 
-    // not be used
-    draw_textbox: function(px, py, info){
-        // var svg = d3.select("body").append("svg:svg")
-        //     .attr("width", 200)
-        //     .attr("height", 200);
-        var svg = d3.select("#canvas_container").append("svg")
-            .attr("width", drawing_canvas.main_canvas.width)
-            .attr("height", drawing_canvas.main_canvas.height)
-            .style("position", "absolute")
-            .style("right", 0)
-            .style("top", 0)
-            .style("z-index", -10)
-            .style("opacity", 0);
-            // .attr("style", "position:absolute; right:0px; top:0px; opacity: 0; z-index:-10");
-            // .attr("x", 0)
-            // .attr("y", 0)
-            // .attr("z-index", 150);
-
-        // var svg = d3.select("svg")
-        //     .attr("width", myCanvas.width)
-        //     .attr("height", myCanvas.height);
-
-        var text = svg.append("text")
-            .attr("x", px)
-            .attr("y", py)
-            .style("z-index", 1000)
-            .style("color", "black")
-            // .style("display", "none")
-            // .attr("style", "z-index:150; color:#0B173B")
-            // .attr("dy", ".35em")
-            // .attr("text-anchor", "middle")
-            // .style("font", "100 48px Helvetica Neue")
-            .style("background", "black")
-            .text(info[0]);
-
-        var bbox = text.node().getBBox();
-
-        // var rect = svg.append("rect")
-        //     .attr("x", px)
-        //     .attr("y", py)
-        //     .attr("width", bbox.width)
-        //     .attr("height", bbox.height)
-        //     .style("fill", "#ccc")
-        //     .style("fill-opacity", ".3")
-        //     .style("stroke", "#666")
-        //     .style("stroke-width", "1.5px");
-
-    },
-
     set_snap_event: function(){
         var self = this;
         self.snapCanvas.addEventListener('mouseup',function(evt){
@@ -374,11 +288,10 @@ var ZoomView = Backbone.View.extend({
             var ego = snap_ego[0];
             var sub = snap_ego[1];
 
-            // console.log("snap_grid:", grid);
-            if(grid[Math.round(mousePos.x)][Math.round(mousePos.y)] != -1){
-                // console.log(grid[Math.round(mousePos.x)][Math.round(mousePos.y)])
-                var detail = grid[Math.round(mousePos.x)][Math.round(mousePos.y)].split("#");
-                var g = grid[Math.round(mousePos.x)][Math.round(mousePos.y)];
+            var snap_point_info = grid[Math.floor(mousePos.x)][Math.floor(mousePos.y)];
+            if(snap_point_info != -1){
+                var detail = snap_point_info.split("#");
+                var g = snap_point_info;
                 // 10009#up#r#0
                 $("#raw_data_table").empty();
                 $("#info_title").html("EGO " + ego.toUpperCase() + "(" + sub.toUpperCase() + "):" + detail[0].toUpperCase());
@@ -416,7 +329,7 @@ var ZoomView = Backbone.View.extend({
                 });
             }
             else{
-                $("#info_title").html("EGO" + ego + "(" + sub + ")");
+                $("#info_title").html("EGO" + ego + "(" + sub.toUpperCase() + ")");
                 $("#raw_data_table").empty();
                 $("#loading_table").show();
                 var list_table = function(data){
@@ -451,41 +364,20 @@ var ZoomView = Backbone.View.extend({
                 });
 
             }
-            /*
-            $("#info_title").html("EGO" + ego + "(" + sub + "):");;
-            var list_table = function(data){
-                // console.log("table:", data);
-                $("#raw_data_table").empty();
-                var table_container = document.getElementById("raw_data_table");
-                for(var r = 0; r < data.length; r++){
-                    var row = document.createElement("tr");
-                    row.id = data[r][0];
-                    if(r == 0){
-                        row.setAttribute('style', 'background:rgb(175, 175, 175)');
-                    }
-                    if(r == 1){
-                        row.setAttribute('style', 'background:rgb(205, 205, 205)');
-                    }
-                    for(var c = 1; c < data[r].length; c++){
-                        var column = document.createElement("td");
-                        if(r < 2)
-                            column.innerHTML = "<b>" + data[r][c] + "</b>";
-                        else
-                            column.innerHTML = data[r][c];
-                        row.appendChild(column);
-                    }
-                    table_container.appendChild(row);
-                }
-               
-            };
             
-            var request_url = "fetch_data/?ego="+table+":-"+ego+":-"+sub+":="+JSON.stringify(attr_map);
-            
-            d3.json(request_url, function(result) {
-                list_table(result);
-            });
-            */
+        },false);
 
+        self.snapCanvas.addEventListener('mousemove',function(evt){
+            var mousePos = self.getMousePos(self.snapCanvas, evt);
+            var grid = self.model.get("snap_grid");
+            var snap_point_info = grid[Math.floor(mousePos.x)][Math.floor(mousePos.y)];
+            // console.log("snap_grid:", grid);
+            if(snap_point_info != -1){
+                $("#one_tree").css("cursor", "pointer");
+            }
+            else{
+               $("#one_tree").css("cursor", "");
+            }
             
         },false);
     }
