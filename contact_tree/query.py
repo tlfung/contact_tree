@@ -1059,8 +1059,6 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
     #     user_ctree_data[session][data_table]["layer_" + ego_group] = -1
     if data_table not in user_ctree_data[session]:
         user_ctree_data[session][data_table] = {"layer_" + ego_group: -1}
-    else:
-        user_ctree_data[session][data_table]["layer_" + ego_group] = -1
 
     # pre store dataset_collection query
     attr_detail = dict()
@@ -1088,6 +1086,7 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
         record_label = str(d['egoid']) + "_of_" + dataset
 
         if record_label not in user_ctree_data[session][data_table]:
+            user_ctree_data[session][data_table]["layer_" + ego_group] = -1
             user_ctree_data[session][data_table][record_label] = dict() 
             user_ctree_data[session][data_table][record_label]["record"] = []
             user_ctree_data[session][data_table][record_label]["done"] = -1
@@ -1096,6 +1095,7 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
             return
         
         elif user_ctree_data[session][data_table][record_label]["done"] == 0: # has record but not being updated yet
+            user_ctree_data[session][data_table]["layer_" + ego_group] = -1
             user_ctree_data[session][data_table][record_label]["record"] = []
             user_ctree_data[session][data_table][record_label]["done"] = -1
 
@@ -1272,8 +1272,8 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
             
         user_ctree_data[session][data_table][record_label]["record"].append(ctree_record)
 
-    if user_ctree_data[session][data_table]["layer_" + ego_group] == -1:
-        user_ctree_data[session][data_table]["layer_" + ego_group] = max(layer_count)
+    # if user_ctree_data[session][data_table]["layer_" + ego_group] == -1:
+    user_ctree_data[session][data_table]["layer_" + ego_group] = max(layer_count)
 
     for label in user_ctree_data[session][data_table]:
         if "layer" not in label and user_ctree_data[session][data_table][label]["done"] == -1:
@@ -2062,7 +2062,7 @@ def auto_save(request):
 
         update_query = waves + "," + group + "," + display_egos + "," + selected_egos + "," + leaf_scale + "," + fruit_scale + "," + sub_leaf_len_scale + "," + dtl_branch_curve + "," + root_curve + "," + root_len_scale + "," + filter_contact + "," + canvas_scale + "," + tree_boundary + "," + canvas_translate + "," + total_ego + "," + component_attribute
         # check_update = "UPDATE auto_save SET %s WHERE %s;" %(update_query, condition)
-        print "UPDATE auto_save SET %s WHERE %s;" %(update_query, condition)
+        # print "UPDATE auto_save SET %s WHERE %s;" %(update_query, condition)
         db.query("UPDATE auto_save SET %s WHERE %s;" %(update_query, condition))
 
 
@@ -2122,12 +2122,13 @@ def del_mapping(request):
     db.conn.commit()
     if request.GET.get('save'):
         save_detail = request.GET.get('save').split(":-")
-        print save_detail
+        # print save_detail
         session = str(save_detail[0].split("_of_")[0])
         mode = str(save_detail[0].split("_of_")[1])
         name = save_detail[1]
+        group = save_detail[2]
         
-        mapcur = db.query("DELETE FROM attribute_mapping WHERE session_id=" + session + " AND mapping_name='" + name + "' AND mode='" + mode + "';")
+        mapcur = db.query("DELETE FROM attribute_mapping WHERE session_id=" + session + " AND mapping_name='" + name + "' AND mode='" + mode + "' AND `group`='" + group + "';")
         # mapping_exist = mapcur.fetchone()
         # mapping saving info
         # attr_info = "attr_info='" + map_detail + "'"

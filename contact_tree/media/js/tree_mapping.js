@@ -174,7 +174,7 @@ var MappingView = Backbone.View.extend({
                     return false;
                 };
 
-                var request = self.model.get("view_mode") + ":-" + save_user_mapping[this.value-1]["name"];
+                var request = self.model.get("view_mode") + ":-" + save_user_mapping[this.value-1]["name"] + ":-" + self.model.get("dataset_group");
                 var request_url = "del_mapping/?save="+request;
                 
                 d3.json(request_url, function(result) {
