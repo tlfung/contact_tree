@@ -53,15 +53,20 @@ function resize_dialog(h, w){
     var sidekey_container = (w*0.7*0.7) - 150 - $("#sidekey_title").height() - $("#attribute_candidate").height() - $("#sidekey_submit_trunk").height() - $("#mark_group").height();
     $("#mark_group_select").css({'max-height': sidekey_container});
 
-    $("#block_page").css({'height': h});
-    $("#block_page").css({'width': w});  
-    $("#help_page").css({'height': h});
-    $("#help_page").css({'width': w});
+    $("#block_page").css({'height': h, 'width': w});
+    $("#help_page").css({'height': h, 'width': w});
 
 };
 
 // for general event trigger
 function event_setting(){
+    var el_slide = $('#help_slide');
+    var el_slide_next = $('#slide_next');
+    var el_slide_previous = $('#slide_previous');
+    var el_data_slide = $('#data_slide');
+    var el_help_page = $('#help_page');
+    var el_close_info = $("#close_info");
+
     // for share link
     $("#share_link").click(function(){ 
         var share_link = window.location.href;
@@ -75,72 +80,74 @@ function event_setting(){
     
     // for help link
     $("#help_link").click(function(){ 
-        $("#help_page").show();
-        $("#slide_next").show();
-        $("#slide_previous").show();
-        $("#data_slide").hide();
-        $("#help_slide").show();
-        if($("#help_slide").height() > $(window).height()){
-            $("#help_slide").removeAttr("width");
-            $("#help_slide").attr("height", "90%");
+        el_help_page.show();
+        el_slide_next.show();
+        el_slide_previous.show();
+        el_data_slide.hide();
+        el_slide.show();
+        if(el_slide.height() > $(window).height()){
+            el_slide.removeAttr("width");
+            el_slide.attr("height", "90%");
         }  
-        $("#help_slide").center();
+        el_slide.center();
 
     });
 
     // for slides
-    $("#slide_next").click(function(){
-        var num_slide =  parseInt($('#help_slide').attr('value'));
+    el_slide_next.click(function(){
+        var num_slide =  parseInt(el_slide.attr('value'));
         if(num_slide < 10){
-            $('#help_slide').attr('src', 'media/img/new_help/slide' + (num_slide+1) +'.jpg');
-            $("#help_slide").attr('value', (num_slide+1)); 
+            el_slide.attr('src', 'media/img/new_help/slide' + (num_slide+1) +'.jpg');
+            el_slide.attr('value', (num_slide+1)); 
         }
         return false;
     });
 
-    $("#slide_previous").click(function(){
-        var num_slide =  parseInt($('#help_slide').attr('value'));
+    el_slide_previous.click(function(){
+        var num_slide =  parseInt(el_slide.attr('value'));
         if(num_slide > 1){
-            $('#help_slide').attr('src', 'media/img/new_help/slide' + (num_slide-1) +'.jpg');
-            $("#help_slide").attr('value', (num_slide-1)); 
+            el_slide.attr('src', 'media/img/new_help/slide' + (num_slide-1) +'.jpg');
+            el_slide.attr('value', (num_slide-1)); 
         }
         return false;
     });
 
+    // for dialog help slide
     $("#data_help").click(function(){ 
-        $("#help_page").show();
-        $("#slide_next").hide();
-        $("#slide_previous").hide();
-        $("#data_slide").show();     
-        $("#help_slide").hide();     
-        if($("#data_slide").height() > $(window).height()){
-            $("#data_slide").removeAttr("width");
-            $("#data_slide").attr("height", "90%");
+        el_help_page.show();
+        el_slide_next.hide();
+        el_slide_previous.hide();
+        el_data_slide.show();     
+        el_slide.hide();     
+        if(el_data_slide.height() > $(window).height()){
+            el_data_slide.removeAttr("width");
+            el_data_slide.attr("height", "90%");
         }  
-        $("#data_slide").center();
+        el_data_slide.center();
 
     });
 
-    $("#help_page").click(function(){
-        $("#help_page").hide();
+    el_help_page.click(function(){
+        el_help_page.hide();
     }); 
-    $("#help_slide").click(function(){
+
+    el_slide.click(function(){
         return false;
     });
 
     // for snap information
-    $("#close_info").click(function(){
+    el_close_info.click(function(){
         $("#information_page").hide();
         $("#block_page").hide();
         return false;
     });  
 
-    $("#close_info").hover(function(){
-        $("#close_info").css({'color': 'rgb(75, 75, 75)'});
+    el_close_info.hover(function(){
+        el_close_info.css({'color': 'rgb(75, 75, 75)'});
         return false;     
     });  
-    $("#close_info").mouseout(function(){
-        $("#close_info").css({'color': 'rgb(105, 105, 105)'});
+    el_close_info.mouseout(function(){
+        el_close_info.css({'color': 'rgb(105, 105, 105)'});
         return false;     
     });
 
@@ -152,7 +159,7 @@ var MyApp = function MyApp(){
     var self = this;
     // generate an unique session id for new user
     session_id = Math.floor(Math.random() * 10000000000000001);
-    // check cookie information
+    // check cookie information and parse it
     var cookie = document.cookie.split(';');
     if(document.cookie == ""){
         document.cookie = "session_id=" + session_id.toString() + ";"
@@ -193,9 +200,12 @@ var MyApp = function MyApp(){
     // init models
     this.model = new Tree_Model();
     
+    // create all the element container
+    var el_canvas_container = $("#canvas_container");
+
     // initial drawing canvas
     var myCanvas = drawing_canvas.main_canvas;
-    
+
     // set drawing canvas size
     myCanvas.height = $(window).height()-$("#header").height()-$("#top_list").height()-$("#footer").height()-$("#history").height()-45;
     myCanvas.width = $("#canvas_container").width();
@@ -218,21 +228,17 @@ var MyApp = function MyApp(){
    
     // adjust when resize
     window.onresize = function(event) {
-        // var myCanvas = drawing_canvas.main_canvas;
-        // $("#canvas_container").css({'width': "101%"});
+        var myCanvas = drawing_canvas.main_canvas;
         myCanvas.height = window.innerHeight-$("#header").height()-$("#top_list").height()-$("#footer").height()-$("#history").height()-45;
         myCanvas.width = $("#canvas_container").width();
         $("#canvas_container").css({'height': myCanvas.height});
         $("#c").css({'height': "100%"});
         $("#c").css({'width': "101%"});
-        
-        var a_grid = self.model.get("canvas_grid");
-        var c_detail = self.model.get("canvas_detail");
 
         self.model.set({"canvas_height": myCanvas.height});
         self.model.set({"canvas_width": myCanvas.width});
         self.model.trigger('change:canvas_width');
-        self.model.set({"canvas_grid": a_grid});
+        
         $("#information_page").css({'height': myCanvas.height+5});
         $("#information_page").css({'width': $(window).width()});
         
@@ -243,25 +249,11 @@ var MyApp = function MyApp(){
         self.model.trigger('change:snapshot');
     };
 
-    // initial clicking grid of canvas
-    var arr_grid = self.model.get("canvas_grid");
-    var c_detail = self.model.get("canvas_detail");
-    for(var x = 0; x <= myCanvas.width/c_detail; x++){
-        arr_grid[x] = [];
-        initial_grid[x] = [];
-        for(var y = 0; y <= myCanvas.height/c_detail; y++){
-            arr_grid[x][y] = -1;
-            initial_grid[x][y] = -1;
-        }
-    }
-
     // for general event trigger
     event_setting();
 
     self.model.set({"canvas_height": myCanvas.height});
-    self.model.set({"canvas_width": myCanvas.width});
-
-    self.model.set({"canvas_grid": arr_grid});
+    self.model.set({"canvas_width": myCanvas.width});    
         
     // bind with view
     this.uploading = new UploadView({model: this.model, containerID: "#uploading"});

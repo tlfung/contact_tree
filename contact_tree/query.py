@@ -1043,7 +1043,7 @@ def duplicate_stick(all_data, attr, branch_layer):
     return structure
 
 
-############################## local cache #######################################
+################################### local cache #######################################
 def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_group):
     # print "insert_default_mapping"    
     db = DB()
@@ -1075,7 +1075,7 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
     #     user_ctree_data[session][data_table]["layer_" + ego_group] = -1
     if data_table not in user_ctree_data[session]:
         user_ctree_data[session][data_table] = {"layer_" + ego_group: -1}
-    start_time = time.time()
+    
     # pre store dataset_collection query
     attr_detail = dict()
     for compt in attr: 
@@ -1083,9 +1083,6 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
         if attr[compt] != 'none':
             cur = db.query('SELECT * FROM dataset_collection WHERE dataset="' + data_table + '" and attr="' + attr[compt] + '";')
             attr_detail[compt] = cur.fetchone()
-
-    elapsed_time = time.time() - start_time
-    print "***************** insert_ctree_mapping: get data information: ", elapsed_time
     
     dataset = "all"
     layer_count = []
@@ -1094,7 +1091,7 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
     else:
         user_ctree_data[session][data_table]["layer_" + ego_group] = -1
         last_layer = -1
-    start_time = time.time()
+    
     for d in all_data:
         if index_found == 0:
             for col in d:
@@ -1298,8 +1295,6 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
             
         user_ctree_data[session][data_table][record_label]["record"].append(ctree_record)
 
-    elapsed_time = time.time() - start_time
-    print "************* insert_ctree_mapping: insert data: ", elapsed_time
     # if user_ctree_data[session][data_table]["layer_" + ego_group] == -1:
     if len(layer_count) != 0 and max(layer_count) != last_layer:
         user_ctree_data[session][data_table]["layer_" + ego_group] = max(layer_count)
@@ -1866,12 +1861,9 @@ def one_contact_structure(user_ctree_data, structure_request):
     data_table = table.split("_of_")[1]
     session = table.split("_of_")[0]
 
-    start_time = time.time()
     cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
     stick_unique = cur.fetchone()["alter_info"]
-    elapsed_time = time.time() - start_time
-    print "************* one_contact_structure: get bside:", elapsed_time
-
+    
     if ego_group == "all":
         final_structure["all"] = dict()
         branch_layer = user_ctree_data[session][data_table]["layer_"+ego_group] + 1
@@ -1881,10 +1873,7 @@ def one_contact_structure(user_ctree_data, structure_request):
             
             if stick_unique == '1':
                 # print "in_unique"
-                start_time = time.time()
                 one_structure = unique_stick(all_data, attr, branch_layer)
-                elapsed_time = time.time() - start_time
-                print "*****************unique_stick: gen structre:", elapsed_time
 
             else:
                 # print "in_duplicate"
@@ -1903,10 +1892,7 @@ def one_contact_structure(user_ctree_data, structure_request):
 
                 if stick_unique == '1':
                     # print "in_unique"
-                    start_time = time.time()
                     one_structure = unique_stick(all_data, attr, branch_layer)
-                    elapsed_time = time.time() - start_time
-                    print "*****************unique_stick: gen structre:", elapsed_time
 
                 else:
                     # print "in_duplicate"
@@ -1938,7 +1924,7 @@ def one_contact_update(request):
         
         # with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
         #     user_ctree_data = json.load(json_file)
-        start_time = time.time()
+        
         check_file_exist = os.path.exists("./contact_tree/data/auto_save/" + session + ".json")
         if check_file_exist:
             with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
@@ -1946,17 +1932,11 @@ def one_contact_update(request):
         else:
             user_ctree_data[session] = dict()
 
-        elapsed_time = time.time() - start_time
-        print "*****************read file:", elapsed_time
-
-        start_time = time.time()
         cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
         stick_unique = cur.fetchone()["alter_info"]
         precur = db.query('SELECT * FROM ' + data_table + ' WHERE egoid="' + ego + '" ORDER BY (e_id);')
         all_data = precur.fetchall()
     
-        elapsed_time = time.time() - start_time
-        print "************************ get all data:", elapsed_time, 
         insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_group)
 
         structure_request = list_request[0] + ":-" + list_request[4] + ":-" + list_request[5] + ":-" + list_request[2]
@@ -1965,13 +1945,10 @@ def one_contact_update(request):
     else:
         raise Http404
 
-    start_time = time.time()
     user_ctree_data_json = simplejson.dumps(user_ctree_data, use_decimal=True)
     with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
         json_file.write(user_ctree_data_json)
 
-    elapsed_time = time.time() - start_time
-    print "*****************write file:", elapsed_time
     
     return HttpResponse(return_json)
 

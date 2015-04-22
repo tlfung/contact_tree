@@ -2511,10 +2511,8 @@ var MappingView = Backbone.View.extend({
                     $(s_container).css({"position": "absolute"});
                     $(s_container).css({"top": -15});
                     
-                    $(slider_id).css({'top':'8px'});
-                    $(size_handle).css({'width':'0.7em'});
-                    $(size_handle).css({'height':'1em'});
-                    $(slider_id).css({'height':'8px'});
+                    $(slider_id).css({'top':'8px', 'height':'8px'});
+                    $(size_handle).css({'width':'0.7em', 'height':'1em'});
                    
                     $(s_label).text(size_val);
                     $(s_label).val(size_val);
