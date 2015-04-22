@@ -2188,33 +2188,10 @@ def get_user_data(request):
         else:
             auto_save_cur = db.query("SELECT * FROM auto_save WHERE session_id=" + session + " AND mode='" + data_table + "';")
         
-        # auto_save_cur = db.query("SELECT * FROM auto_save WHERE session_id=" + session + " AND mode='" + data_table + "';")
-        
         saving_exist = auto_save_cur.fetchone()
 
         if saving_exist:
             last_used_info["mode"] = saving_exist['mode']
-            last_used_info["display_egos"] = saving_exist['display_egos']
-            last_used_info["selected_egos"] = saving_exist['selected_egos']
-            last_used_info["leaf_scale"] = saving_exist['leaf_scale']
-            last_used_info["fruit_scale"] = saving_exist['fruit_scale']
-            last_used_info["leaf_len_scale"] = saving_exist['leaf_len_scale']
-            last_used_info["branch_curve"] = saving_exist['branch_curve']
-            last_used_info["root_curve"] = saving_exist['root_curve']
-            last_used_info["root_len_scale"] = saving_exist['root_len_scale']
-            last_used_info["canvas_scale"] = saving_exist['canvas_scale']
-            last_used_info["filter_contact"] = saving_exist['filter_contact']
-            last_used_info["tree_boundary"] = saving_exist['tree_boundary']
-            last_used_info["canvas_translate"] = saving_exist['canvas_translate']
-            last_used_info["total_ego"] = saving_exist['total_ego']
-            last_used_info["group"] = saving_exist['data_group']
-            last_used_info["component_attribute"] = saving_exist['component_attribute']
-            mapcur = db.query("SELECT * FROM attribute_mapping WHERE session_id=" + session + " AND mapping_name='auto_map' AND mode='" + saving_exist['mode'] + "';")
-            mapping_exist = mapcur.fetchone()
-
-            if mapping_exist:
-                # last_used_info["mapping_name"] = mapping_exist['mapping_name']
-                last_used_info["attr_info"] = mapping_exist['attr_info']
 
     else:
         raise Http404
