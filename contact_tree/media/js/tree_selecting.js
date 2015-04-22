@@ -19,13 +19,10 @@ var SelectingView = Backbone.View.extend({
         this.my_ego_display = {};
         this.my_ego = 0; // selected ego before done
         this.ego_subgroup = [];
-        // this.ego_cat = ["", "all"],
 
         // open the dialog
         $( "#menu_dialog" ).dialog({
             autoOpen: false,
-            // height: 400,
-            // width: 550,
             height: $(window).width()*0.4*0.7,
             width: $(window).width()*0.4,
             modal: true,

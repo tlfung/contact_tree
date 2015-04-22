@@ -22,8 +22,6 @@ window.cancelRequestAnimFrame = ( function() {
 function resize_dialog(h, w){
     $( "#import_dialog" ).dialog({
         autoOpen: false,
-        // height: 600,
-        // width: 600,
         height: w*0.5*0.9,
         width: w*0.5,
         modal: true,
@@ -31,8 +29,6 @@ function resize_dialog(h, w){
     });
     $( "#sidekey_dialog" ).dialog({
         autoOpen: false,
-        // height: 600,
-        // width: 800,
         height: w*0.7*0.7,
         width: w*0.7,
         modal: true,
@@ -238,7 +234,7 @@ var MyApp = function MyApp(){
         self.model.set({"canvas_height": myCanvas.height});
         self.model.set({"canvas_width": myCanvas.width});
         self.model.trigger('change:canvas_width');
-        
+
         $("#information_page").css({'height': myCanvas.height+5});
         $("#information_page").css({'width': $(window).width()});
         
