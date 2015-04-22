@@ -18,6 +18,7 @@ import json
 import math
 import copy
 import time
+import chardet
 
 warnings.filterwarnings(action='ignore', category=MySQLdb.Warning)
 
@@ -98,10 +99,13 @@ def test_type(table, attr_type):
                 f_val = a_cur.fetchone()
                 # attr_info[field] = dict()
                 for ff in f_val:
-                    attr_info[field][ff.split("(")[0]] = f_val[ff]
+                    col_val = f_val[ff]
+                    attr_info[field][ff.split("(")[0]] = col_val
                 # if attr_info[f]["COUNT"] > 20:
                 #     final_attr_info["incat"].append(f)
                 attr_info[field]["RANGE"] = attr_info[field]["COUNT"]
+                # attr_info[field]["MIN"] = attr_info[field]["MIN"].decode('utf-8')
+                # attr_info[field]["MAX"] = attr_info[field]["MAX"].decode('utf-8')
                 useful_data += 1
 
             elif attr_type[field] == 'numerical':
@@ -118,9 +122,12 @@ def test_type(table, attr_type):
                 f_val = a_cur.fetchone()
                 # attr_info[field] = dict()
                 for ff in f_val:
-                    attr_info[field][ff.split("(")[0]] = f_val[ff]
+                    col_val = f_val[ff]
+                    attr_info[field][ff.split("(")[0]] = col_val
                 if attr_info[field]["COUNT"] > 2:
                     final_attr_info["inbool"].append(field)
+                # attr_info[field]["MIN"] = attr_info[field]["MIN"].decode('utf-8')
+                # attr_info[field]["MAX"] = attr_info[field]["MAX"].decode('utf-8')
                 attr_info[field]["RANGE"] = attr_info[field]["COUNT"]
                 useful_data += 1
             else:
@@ -167,7 +174,8 @@ def create_csv2database(request):
     database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
     clause = database.cursor()
     tree_cmpt = ["trunk", "branch", "bside", "leaf_color", "leaf_size", "fruit_size", "root"]
-
+    clause.execute('SET SQL_SAFE_UPDATES = 0;')
+    database.commit()
     if request.GET.get('collection'):
         table = request.GET.get('collection').split(":-")[1]
         csvfile = request.GET.get('collection').split(":-")[0]
@@ -197,6 +205,8 @@ def create_csv2database(request):
     else:
         raise Http404
 
+    clause.execute('SET SQL_SAFE_UPDATES = 1;')
+    database.commit()
     jsondata = simplejson.dumps(final_attr_info[0], indent=4, use_decimal=True)
     # print jsondata
     return HttpResponse(jsondata)
@@ -211,14 +221,32 @@ def update_collection_data(data_table, attr_json):
 
     clause.execute('DELETE FROM dataset_collection WHERE dataset = "' + data_table + '";')
     a_index = 0
+    insert_collection_sql = 'INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, type) VALUES ("%s", "%s", "%s", "%s", "%s", "%s")'
     for a in attr_json:
+        print "+++++", a
         print a, attr_json[a]
+        row = [data_table, a, attr_json[a]["MIN"], attr_json[a]["MAX"], attr_json[a]["RANGE"], attr_json[a]["TYPE"]]
+        clause.execute(insert_collection_sql, row)
+        # if attr_json[a]["TYPE"] == "numerical":
+        #     attr_json[a]["MIN"] = str(attr_json[a]["MIN"])
+        #     attr_json[a]["MAX"] = str(attr_json[a]["MAX"])
+        # else:
+        #     encoding = chardet.detect(attr_json[a]["MIN"])
+        #     if encoding['encoding'] == 'windows-1252':
+        #         # attr_json[a]["MIN"] = unicode(attr_json[a]["MIN"], 'utf-8')
+        #         attr_json[a]["MIN"] = attr_json[a]["MIN"].decode('cp1252')
+        #     encoding = chardet.detect(attr_json[a]["MAX"])
+        #     print "max::", encoding
+        #     if encoding['encoding'] == 'windows-1252':
+        #         print "in decode max::", encoding
+        #         print "=====", attr_json[a]["MAX"].decode('cp1252')
+        #         # attr_json[a]["MIN"] = unicode(attr_json[a]["MIN"], 'utf-8')
+        #         attr_json[a]["MAX"] = attr_json[a]["MAX"].decode('cp1252')
         # my_attr = '"' + table + '", "' + a + '", "' + str(attr_json[a]["MIN"]) + '", "' + str(attr_json[a]["MAX"]) + '", "' + str(attr_json[a]["RANGE"]) + '", "' + str(attr_json[a]["TYPE"]) + '", "' + str(attr_json[a]["RANGE"]) + '"'
-        my_attr = '"' + data_table + '", "' + a + '", "' + str(attr_json[a]["MIN"]) + '", "' + str(attr_json[a]["MAX"]) + '", "' + str(attr_json[a]["RANGE"]) + '", "' + str(attr_json[a]["TYPE"]) + '", "' + str(a_index) + '"' 
         
-        # print my_attr
-        # clause.execute('INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, type, branch_range) VALUES (%s);' %my_attr)
-        clause.execute('INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, type, a_index) VALUES (%s);' %my_attr)
+        # my_attr = '"' + data_table + '", "' + a + '", "' + str(attr_json[a]["MIN"]) + '", "' + str(attr_json[a]["MAX"]) + '", "' + str(attr_json[a]["RANGE"]) + '", "' + str(attr_json[a]["TYPE"]) + '", "' + str(a_index) + '"' 
+        # # clause.execute('INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, type, branch_range) VALUES (%s);' %my_attr)
+        # clause.execute('INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, type, a_index) VALUES (%s);' %my_attr)
         a_index += 1
     database.commit()
 
@@ -668,7 +696,7 @@ def get_list_ego(request):
         default_attr["root"] = "none"
         default_attr["highlight"] = "none"
 
-        # print "======", default_attr
+        print "======", default_attr
         final_return.append(default_attr)
 
         # get all the information for the attributes
