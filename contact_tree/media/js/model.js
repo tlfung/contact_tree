@@ -62,7 +62,7 @@ var Tree_Model = Backbone.Model.extend({
 	    	return;
 
 	    var request = session_id + ":-" + last_use;
-	    var request_url = "get_user_data/?user="+request;
+	    var request_url = "get_user_data/?user="+encodeURIComponent(request);
 	    var get_auto_saving = function(result){
 			// var restore_array = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; // total = 15
 			var restore_array = [];
@@ -151,7 +151,8 @@ var Tree_Model = Backbone.Model.extend({
 	    var self = this;
 	    var mode = self.get("view_mode");
 	    // var request_url = "get_contact/?contact="+request;
-	    var request_url = "get_update/?contact="+request;
+
+	    var request_url = "get_update/?contact="+encodeURIComponent(request);
 	    
 	    var el_block_page= $("#block_page");
 	    var el_submit_ego = $("#submit_ego");

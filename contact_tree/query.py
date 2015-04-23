@@ -221,29 +221,12 @@ def update_collection_data(data_table, attr_json):
 
     clause.execute('DELETE FROM dataset_collection WHERE dataset = "' + data_table + '";')
     a_index = 0
-    insert_collection_sql = 'INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, type) VALUES ("%s", "%s", "%s", "%s", "%s", "%s")'
+    insert_collection_sql = "INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, type) VALUES (%s, %s, %s, %s, %s, %s)"
     for a in attr_json:
-        print "+++++", a
-        print a, attr_json[a]
         row = [data_table, a, attr_json[a]["MIN"], attr_json[a]["MAX"], attr_json[a]["RANGE"], attr_json[a]["TYPE"]]
-        clause.execute(insert_collection_sql, row)
-        # if attr_json[a]["TYPE"] == "numerical":
-        #     attr_json[a]["MIN"] = str(attr_json[a]["MIN"])
-        #     attr_json[a]["MAX"] = str(attr_json[a]["MAX"])
-        # else:
-        #     encoding = chardet.detect(attr_json[a]["MIN"])
-        #     if encoding['encoding'] == 'windows-1252':
-        #         # attr_json[a]["MIN"] = unicode(attr_json[a]["MIN"], 'utf-8')
-        #         attr_json[a]["MIN"] = attr_json[a]["MIN"].decode('cp1252')
-        #     encoding = chardet.detect(attr_json[a]["MAX"])
-        #     print "max::", encoding
-        #     if encoding['encoding'] == 'windows-1252':
-        #         print "in decode max::", encoding
-        #         print "=====", attr_json[a]["MAX"].decode('cp1252')
-        #         # attr_json[a]["MIN"] = unicode(attr_json[a]["MIN"], 'utf-8')
-        #         attr_json[a]["MAX"] = attr_json[a]["MAX"].decode('cp1252')
-        # my_attr = '"' + table + '", "' + a + '", "' + str(attr_json[a]["MIN"]) + '", "' + str(attr_json[a]["MAX"]) + '", "' + str(attr_json[a]["RANGE"]) + '", "' + str(attr_json[a]["TYPE"]) + '", "' + str(attr_json[a]["RANGE"]) + '"'
         
+        clause.execute(insert_collection_sql, row)
+       
         # my_attr = '"' + data_table + '", "' + a + '", "' + str(attr_json[a]["MIN"]) + '", "' + str(attr_json[a]["MAX"]) + '", "' + str(attr_json[a]["RANGE"]) + '", "' + str(attr_json[a]["TYPE"]) + '", "' + str(a_index) + '"' 
         # # clause.execute('INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, type, branch_range) VALUES (%s);' %my_attr)
         # clause.execute('INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, type, a_index) VALUES (%s);' %my_attr)
@@ -390,6 +373,7 @@ def csv2mysql(fn, table):
         if col_types:
             # clause.execute(insert_sql, row)
             for x in range(len(row)):
+                row[x] = row[x].decode('big5').encode('utf-8')
                 if row[x] == '':
                     row[x] = None
                 # attribute_info[header[count_col].replace('`', '')] = col
@@ -563,8 +547,9 @@ def get_list_ego(request):
         # get the default mapping
         default_attr["stick"] = "alterid"
 
-        cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range < 20 and `type`="categorical" and dataset="' + data_table + '" and `alter_info`="1" ORDER BY attr_range;')
+        cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range > 1 and attr_range < 20 and `type`="categorical" and dataset="' + data_table + '" and `alter_info`="1" ORDER BY attr_range;')
         all_attr = cur.fetchall()
+
         
         candidate1 = []
         for relate in all_attr:
@@ -1119,10 +1104,11 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
     else:
         user_ctree_data[session][data_table]["layer_" + ego_group] = -1
         last_layer = -1
-    
+
     for d in all_data:
         if index_found == 0:
             for col in d:
+                print col
                 # if col == "e_id" or col == "egoid" or col == "alterid" or col == "ctree_branch" or col == "ctree_trunk" or col == "ctree_bside" or col == "ctree_leaf_color" or col == "ctree_leaf_size" or col == "ctree_fruit_size" or col == "ctree_root":
                 if col in unused_col:
                     continue
@@ -1930,7 +1916,7 @@ def one_contact_structure(user_ctree_data, structure_request):
                 final_structure[sub][e] = one_structure
 
     return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
-    
+        
     return return_json
 
 
@@ -1960,6 +1946,7 @@ def one_contact_update(request):
         else:
             user_ctree_data[session] = dict()
 
+        print 'SELECT * FROM ' + data_table + ' WHERE egoid="' + ego + '" ORDER BY (e_id);'
         cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
         stick_unique = cur.fetchone()["alter_info"]
         precur = db.query('SELECT * FROM ' + data_table + ' WHERE egoid="' + ego + '" ORDER BY (e_id);')
@@ -2096,7 +2083,7 @@ def auto_save(request):
     db.query('SET SQL_SAFE_UPDATES = 0;')
     db.conn.commit()
     if request.GET.get('save'):
-        save_detail = json.loads(request.GET.get('save'))
+        save_detail = json.loads(request.GET.get('save'), encoding='unicode')
         
         #general saving info
         session = str(save_detail[0].split("_of_")[0])
@@ -2116,7 +2103,8 @@ def auto_save(request):
         canvas_translate = "canvas_translate='" + str(save_detail[12]) + "'"
         total_ego = "total_ego='" + str(save_detail[13]) + "'"
         group = 'data_group="' + str(save_detail[14]) + '"'
-        component_attribute = "component_attribute='" + str(save_detail[15]) + "'"
+        component_attribute = "component_attribute='" + save_detail[15].encode('utf-8') + "'"
+        # component_attribute = "component_attribute='" + str(1) + "'"
         waves = "waves='" + str(save_detail[16]) + "'"
 
         condition = "session_id=" + session + " AND " + mode + " AND " + group
@@ -2124,6 +2112,7 @@ def auto_save(request):
         update_query = waves + "," + group + "," + display_egos + "," + selected_egos + "," + leaf_scale + "," + fruit_scale + "," + sub_leaf_len_scale + "," + dtl_branch_curve + "," + root_curve + "," + root_len_scale + "," + filter_contact + "," + canvas_scale + "," + tree_boundary + "," + canvas_translate + "," + total_ego + "," + component_attribute
         # check_update = "UPDATE auto_save SET %s WHERE %s;" %(update_query, condition)
         # print "UPDATE auto_save SET %s WHERE %s;" %(update_query, condition)
+
         db.query("UPDATE auto_save SET %s WHERE %s;" %(update_query, condition))
 
 

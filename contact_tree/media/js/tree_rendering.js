@@ -164,7 +164,8 @@ var RenderingView = Backbone.View.extend({
         // console.log("in redraw");
         var display_ego = self.model.get("display_egos");
         var structure = self.model.get("tree_structure");
-        
+        var attr_map = self.model.get("attribute");
+
         this.context.lineWidth = 5; // set the style
 
         this.context.setTransform(1, 0, 0, 1, 0, 0);
@@ -180,6 +181,7 @@ var RenderingView = Backbone.View.extend({
         // for each ego tree
         var total_distance = 0;
         var total_tree = 0;
+        var two_trees = 0;
         for(var e in display_ego){
             for(var t = 0; t < display_ego[e].length; t++){ // all the ego
                 var sub = display_ego[e][t];
@@ -197,9 +199,16 @@ var RenderingView = Backbone.View.extend({
                 this.start_y = (this.myCanvas.height/0.15)-this.stick_length-380; //_gly
 
                 for(var s = 0; s < self.total_layer; s++){
+                    // if("id" in ego["left"][s]["level"]["down"])
+                    //     l += ego["left"][s]["level"]["down"].length;
+                    // if("id" in ego["left"][s]["level"]["up"])
+                    //     l += ego["left"][s]["level"]["up"].length;
+                    // if("id" in ego["right"][s]["level"]["down"])
+                    //     r += ego["right"][s]["level"]["down"].length;
+                    // if("id" in ego["right"][s]["level"]["up"])
+                    //     r += ego["right"][s]["level"]["up"].length;
                     var l = ego["left"][s]["level"]["down"].length + ego["left"][s]["level"]["up"].length;
                     var r = ego["right"][s]["level"]["down"].length + ego["right"][s]["level"]["up"].length;
-
                     layer_total_alter["right"].push(r);
                     layer_total_alter["left"].push(l);
                     left_side += l;
@@ -266,7 +275,12 @@ var RenderingView = Backbone.View.extend({
                     this.start_x += (self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0]) + 150;
                     if(total_tree == 0 && this.start_x > canvas_x_boundary[1])
                         this.start_x = drawing_canvas.middle;
-
+                    else if(total_tree > 0){
+                        if(1000 > two_trees + (self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0]) + 150){
+                            this.start_x -= (self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0]) + 150;
+                            this.start_x += 1000;
+                        }
+                    }
                     if(this.start_x + (self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0]) + 150 < canvas_x_boundary[0]){
                         // console.log("less left", msg);
                         this.start_x += (self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0]) + 150;
@@ -399,8 +413,8 @@ var RenderingView = Backbone.View.extend({
                 this.set_tree_info(this.context, info_box, info_pos);
                 
                 // this.start_x += ((stick_length)*this.sub_stick_length + this.x_dist); //_glx
-                this.start_x += (self.tree_size[this.ego_label][1] - self.tree_size[this.ego_label][4]) + 100
-                
+                this.start_x += (self.tree_size[this.ego_label][1] - self.tree_size[this.ego_label][4]) + 100;
+                two_trees = (self.tree_size[this.ego_label][1] - self.tree_size[this.ego_label][4]) + 100;
                 this.start_y = (this.myCanvas.height/0.15)-this.stick_length-380; //_gly
                 total_tree++;
             }

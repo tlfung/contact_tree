@@ -34,14 +34,15 @@ var LabelView = Backbone.View.extend({
         
         if(group != "all"){
             for(s in self.label_selected){
+                var gen_id = s.replace(/[^a-zA-Z1234567890 ]/g, "").replace(/ /g, "");
                 var opt = document.createElement("div");
                 opt.setAttribute('class', 'dropdown');
                 opt.setAttribute('class', 'left');
                 opt.setAttribute('style', 'margin-left:10px; position:relative');
 
                 var remove_btn = document.createElement("span");
-                remove_btn.id = "delect_ego_" + s;
-                remove_btn.value = s;
+                remove_btn.id = "delect_ego_" + gen_id;
+                remove_btn.value = gen_id;
                 remove_btn.name = s;
                 remove_btn.setAttribute('style', 'position: absolute; top:-4px; right:-4px; display:none;');
                 remove_btn.setAttribute("class", "glyphicon glyphicon-remove-circle");
@@ -52,8 +53,8 @@ var LabelView = Backbone.View.extend({
                 opt_btn.setAttribute('class', 'ego_label');
                 opt_btn.setAttribute('class', 'btn');
                 opt_btn.setAttribute('data-toggle', 'dropdown'); //??
-                opt_btn.id = "label_" + s;
-                opt_btn.value = s;
+                opt_btn.id = "label_" + gen_id;
+                opt_btn.value = gen_id;
                 opt_btn.name = s;
                 opt_btn.innerHTML = "EGO " + s.toUpperCase();
                 
@@ -74,8 +75,9 @@ var LabelView = Backbone.View.extend({
                     var ip = document.createElement("input");
                     ip.setAttribute('type', 'checkbox');
                     ip.setAttribute('class', 'label_checkbox');
-                    ip.value = s + "_" + self.label_selected[s][c];
-                    ip.id = 'sub_'+s;
+                    ip.value = gen_id + "_" + self.label_selected[s][c];
+                    ip.name = s;
+                    ip.id = 'sub_'+gen_id;
 
                     if(count_checked < self.label_display[s].length && self.label_display[s][count_checked] == self.label_selected[s][c]){
                         ip.setAttribute('checked', true);
@@ -103,18 +105,8 @@ var LabelView = Backbone.View.extend({
         // no need to have dropdown menu
         else{
             for(s in self.label_selected){
-                var gen_id = "";
-                var name_array = s.split(" ");
-                for(var w = 0; w < name_array.length; w++){
-                    latter = name_array[w].split(".")[0];
-                    if(w < name_array.length-1){
-                        gen_id += latter + "_";
-                    }
-                    else{
-                        gen_id += latter;
-                    }
-                }
-                
+                var gen_id = s.replace(/[^a-zA-Z1234567890 ]/g, "").replace(/ /g, "");
+                                
                 var opt = document.createElement("div");
                 opt.setAttribute('class', 'left');
                 opt.setAttribute('style', 'margin-left:10px; position:relative');
@@ -157,7 +149,7 @@ var LabelView = Backbone.View.extend({
         
         // delete one ego event
         for(s_store in self.label_selected){
-            var s = s_store;
+            var s = s_store.replace(/[^a-zA-Z1234567890 ]/g, "").replace(/ /g, "");;
             var label_id = "#label_" + s;
             
             $(label_id).hover(function(){
@@ -213,7 +205,7 @@ var LabelView = Backbone.View.extend({
                 $(label_class_checked).each(function(){
                     var e = this.value.split("_")[0];
                     var c = this.value.split("_")[1];
-                    on_ego = e;
+                    on_ego = this.name;
                     self.temp_selecting.push(c);
                 });
                 self.label_display[on_ego] = self.temp_selecting;

@@ -201,8 +201,8 @@ var ZoomView = Backbone.View.extend({
                            
                         };
                         
-                        var request_url = "fetch_data/?ego="+table+":-"+ego+":-"+sub+":="+JSON.stringify(attr_map);
-                        
+                        var request = table+":-"+ego+":-"+sub+":="+JSON.stringify(attr_map);
+                        var request_url = "fetch_data/?ego="+encodeURIComponent(request);
                         d3.json(request_url, function(result) {
                             list_table(result);
                         });
@@ -322,8 +322,8 @@ var ZoomView = Backbone.View.extend({
                    
                 };
                 
-                var request_url = "fetch_data/?ego="+table+":-"+ego+":-"+sub+":="+JSON.stringify(attr_map)+":="+JSON.stringify(detail);
-                
+                var request = table+":-"+ego+":-"+sub+":="+JSON.stringify(attr_map)+":="+JSON.stringify(detail);
+                var request_url = "fetch_data/?ego="+encodeURIComponent(request);
                 d3.json(request_url, function(result) {
                     list_table(result);
                 });
@@ -357,7 +357,8 @@ var ZoomView = Backbone.View.extend({
                     $("#loading_table").hide();
                 };
                 
-                var request_url = "fetch_data/?ego="+table+":-"+ego+":-"+sub+":="+JSON.stringify(attr_map);
+                var request = table+":-"+ego+":-"+sub+":="+JSON.stringify(attr_map);
+                var request_url = "fetch_data/?ego="+encodeURIComponent(request);
                 
                 d3.json(request_url, function(result) {
                     list_table(result);

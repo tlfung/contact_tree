@@ -81,8 +81,9 @@ var SelectingView = Backbone.View.extend({
     get_dataset: function(){
         var self = this;
         // var data_mode = self.model.get("dataset_mode");
-        var request_url = "dataset_mode/?mode=" + session_id;
+        var request_url = "dataset_mode/?mode=" + encodeURIComponent(session_id);
         var data_selection = [""]
+
         d3.json(request_url, function(result){
             data_selection = data_selection.concat(result);
             self.model.set({"dataset_mode": data_selection});
@@ -198,10 +199,9 @@ var SelectingView = Backbone.View.extend({
             ego_list.push(ego);
         }
         var request = JSON.stringify(now_attr) + ":-" + JSON.stringify(ego_list) + ":-" + now_mode + ":-" + JSON.stringify(attribute_mapping) + ":-" + data_group + ":-" + JSON.stringify(all_ego);
-        var request_url = "last_use_data/?restore="+request;
+        var request_url = "last_use_data/?restore="+encodeURIComponent(request);
         
         $("#block_page").show();
-
         d3.json(request_url, function(result) {
             set_structure(result, ego_list);
         }); 
@@ -269,7 +269,8 @@ var SelectingView = Backbone.View.extend({
                 // if it is new user
                 if(first_use == 0){
                     $("#block_page").show();
-                    var request_url = "dataset/?data="+data_selected; // !!!query select last=1
+                    var request_url = "dataset/?data="+encodeURIComponent(data_selected); // !!!query select last=1
+                    
                     d3.json(request_url, function(result){
                         var set_dataset_group = function(data){
                             waves = data;
@@ -333,7 +334,8 @@ var SelectingView = Backbone.View.extend({
                         $("#egogroup").trigger('change');
                     }
                     else{
-                        var request_url = "dataset/?data="+data_selected;
+                        var request_url = "dataset/?data="+encodeURIComponent(data_selected);
+                        
                         d3.json(request_url, function(result){
                             var set_dataset_group = function(data){
                                 waves = data;                               
@@ -646,6 +648,8 @@ var SelectingView = Backbone.View.extend({
                 }
             }
             if(data_group == "all"){
+                $("#ego_menu").css({'width': '80%'});
+                $("#detail_menu").css({'width': '20%'});
                 if(detail_amont == "")
                     $("#divTable_menu").append('<div><label><input class="myfont3 ego_checkbox" name="ego_selection" type="radio" id="' + c + '" value="' + c +'" style="margin-right:5px;">' + name + '_' + c.toUpperCase() + '</label></div>');
                 else{
@@ -654,10 +658,11 @@ var SelectingView = Backbone.View.extend({
                 }
             }
             else{
+                $("#ego_menu").css({'width': '55%'});
+                $("#detail_menu").css({'width': '45%'});
                 var check_amont = total_ego[c].length;
                 $("#divTable_menu").append('<div><label><input class="myfont3 ego_checkbox" name="ego_selection" type="radio" id="' + c + '" value="' + c +'" style="margin-right:5px;">' + name + '_' + c.toUpperCase() + ' ('+ check_amont +')</label></div>');
             }
-            
         }
          
         $('.ego_checkbox').unbind();
