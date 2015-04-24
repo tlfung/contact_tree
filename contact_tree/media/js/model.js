@@ -127,9 +127,8 @@ var Tree_Model = Backbone.Model.extend({
         };
 	    	   
 	    var request = table + ":-" + group;
-	    var request_url = "datatable/?table="+request;
+	    var request_url = "datatable/?table="+encodeURIComponent(request);
 	    d3.json(request_url, function(result){
-	        console.log(result);	        
 	        in_change_mode = 0;
 	        set_ego_list_json(result[0]);
 	        set_default_attr(result[1]);
