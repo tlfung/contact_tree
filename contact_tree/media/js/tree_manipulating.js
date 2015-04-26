@@ -32,10 +32,20 @@ var ZoomView = Backbone.View.extend({
         this.set_snap_event();
         this.saving_info = [];
 
+        this.el_block_page = $("#block_page");
+        this.el_raw_data_table = $("#raw_data_table");
+        this.el_information_page = $("#information_page");
+        this.el_loading_table = $("#loading_table");
+        this.el_info_title = $("#info_title");
+        this.el_one_tree = $("#one_tree");
+        this.el_main_canvas = $("#c");
+        this.el_dtl_leaf_size = $("#dtl_leaf_size");
+        this.el_dtl_length = $("#dtl_length");
+
         // submit the resolution and trigger the drawing buffer
         $("#res_submit").click(function(){
             self.saving_info.push($('.res_checkbox:checked').val());
-            $( "#resolution_dialog" ).dialog( "close" );
+            $("#resolution_dialog").dialog("close");
             self.model.set({"save_tree": self.saving_info});               
         });
        
@@ -85,14 +95,14 @@ var ZoomView = Backbone.View.extend({
                 self.model.set({"leaf_scale":leaf_scale}, {silent: true});
                 // self.model.trigger('change:leaf_scale');
 
-                $("#dtl_leaf_size").ionRangeSlider("update", {
+                self.el_dtl_leaf_size.ionRangeSlider("update", {
                     from: Math.floor(10*leaf_scale)/10
                 });
                 self.model.set({"sub_leaf_len_scale":length_scale}, {silent: true});
-                // self.model.trigger('change:sub_leaf_len_scale');
-                $("#dtl_length").ionRangeSlider("update", {
+
+                self.el_dtl_length.ionRangeSlider("update", {
                     from: Math.floor(10*length_scale)/10
-                });      
+                });
 
                 self.model.set({"canvas_translate":[nx, ny]});
                 self.model.set({"canvas_scale":factor*self.scale});     
@@ -108,8 +118,7 @@ var ZoomView = Backbone.View.extend({
             var c_detail = self.model.get("canvas_detail");
             var mousePos = self.getMousePos(self.myCanvas, evt);
             
-            
-            $("#c").css("cursor", "");
+            self.el_main_canvas.css("cursor", "");
             if (self.dragStart && Math.abs(mousePos.x-self.dragStart.x)>0.1){
                 self.dragged = true;
                 // console.log("mousemove");
@@ -128,10 +137,10 @@ var ZoomView = Backbone.View.extend({
                 if(point_info != -1){
                     var parse_grid = point_info.split("*+");
                     if(parse_grid.length == 1 || parse_grid[0] == "saveIMG" || parse_grid[0] == "popup" || parse_grid[0] == "root"){
-                        $("#c").css("cursor", "pointer");
+                        self.el_main_canvas.css("cursor", "pointer");
                     }
                     else{ 
-                        $("#c").css("cursor", "");
+                        self.el_main_canvas.css("cursor", "");
                         if(parse_grid[0] == "leaf"){
                             self.model.set({"clicking_leaf":parse_grid[1]});
                             self.writeNote(Math.floor(mousePos.x), Math.floor(mousePos.y), parse_grid[1]);
@@ -166,38 +175,35 @@ var ZoomView = Backbone.View.extend({
                         var ego = parse_grid[1].split(":-")[0]
                         var sub = parse_grid[1].split(":-")[1]
                         var attr_map = self.model.get("attribute");
-                        $("#information_page").show();
-                        $("#block_page").show();
-                        $("#raw_data_table").empty();
+                        self.el_information_page.show();
+                        self.el_block_page.show();
+                        self.el_raw_data_table.empty();
 
                         self.model.set({"snapshot": [ego, sub]});
                         self.model.trigger('change:snapshot');
                         
-                        $("#info_title").html("EGO " + ego.toUpperCase() + "(" + sub.toUpperCase() + ")");
-                        $("#loading_table").show();
+                        self.el_info_title.html("EGO " + ego.toUpperCase() + "(" + sub.toUpperCase() + ")");
+                        self.el_loading_table.show();
                         var list_table = function(data){
-                            // console.log("table:", data);
-                            var table_container = document.getElementById("raw_data_table");
                             for(var r = 0; r < data.length; r++){
-                                var row = document.createElement("tr");
-                                row.id = data[r][0];
+                                var row = $('<tr id="' + data[r][0] + '"></tr>');
                                 if(r == 0){
-                                    row.setAttribute('style', 'background:rgb(175, 175, 175)');
+                                    row.attr('style', 'background:rgb(175, 175, 175)');
                                 }
                                 if(r == 1){
-                                    row.setAttribute('style', 'background:rgb(205, 205, 205)');
+                                    row.attr('style', 'background:rgb(205, 205, 205)');
                                 }
                                 for(var c = 1; c < data[r].length; c++){
-                                    var column = document.createElement("td");
+                                    var column = $('<td></td>');
                                     if(r < 2)
-                                        column.innerHTML = "<b>" + data[r][c] + "</b>";
+                                        column.html("<b>" + data[r][c] + "</b>");
                                     else
-                                        column.innerHTML = data[r][c];
-                                    row.appendChild(column);
+                                        column.html(data[r][c]);
+                                    row.append(column);
                                 }
-                                table_container.appendChild(row);
+                                self.el_raw_data_table.append(row);
                             }
-                            $("#loading_table").hide();
+                            self.el_loading_table.hide();
                            
                         };
                         
@@ -293,32 +299,29 @@ var ZoomView = Backbone.View.extend({
                 var detail = snap_point_info.split("#");
                 var g = snap_point_info;
                 // 10009#up#r#0
-                $("#raw_data_table").empty();
-                $("#info_title").html("EGO " + ego.toUpperCase() + "(" + sub.toUpperCase() + "):" + detail[0].toUpperCase());
-                $("#loading_table").show();
-                var list_table = function(data){
-                    // console.log("table:", data);
-                    var table_container = document.getElementById("raw_data_table");
+                self.el_raw_data_table.empty();
+                self.el_info_title.html("EGO " + ego.toUpperCase() + "(" + sub.toUpperCase() + "):" + detail[0].toUpperCase());
+                self.el_loading_table.show();
+                var list_table = function(data){                    
                     for(var r = 0; r < data.length; r++){
-                        var row = document.createElement("tr");
-                        row.id = data[r][0];
+                        var row = $('<tr id="' + data[r][0] + '"></tr>');
                         if(r == 0){
-                            row.setAttribute('style', 'background:rgb(175, 175, 175)');
+                            row.attr('style', 'background:rgb(175, 175, 175)');
                         }
                         if(r == 1){
-                            row.setAttribute('style', 'background:rgb(205, 205, 205)');
+                            row.attr('style', 'background:rgb(205, 205, 205)');
                         }
                         for(var c = 1; c < data[r].length; c++){
-                            var column = document.createElement("td");
+                            var column = $('<td></td>');
                             if(r < 2)
-                                column.innerHTML = "<b>" + data[r][c] + "</b>";
+                                column.html("<b>" + data[r][c] + "</b>");
                             else
-                                column.innerHTML = data[r][c];
-                            row.appendChild(column);
+                                column.html(data[r][c]);
+                            row.append(column);
                         }
-                        table_container.appendChild(row);
-                    }
-                    $("#loading_table").hide();
+                        self.el_raw_data_table.append(row);
+                    }                    
+                    self.el_loading_table.hide();
                    
                 };
                 
@@ -329,32 +332,29 @@ var ZoomView = Backbone.View.extend({
                 });
             }
             else{
-                $("#info_title").html("EGO" + ego + "(" + sub.toUpperCase() + ")");
-                $("#raw_data_table").empty();
-                $("#loading_table").show();
+                self.el_info_title.html("EGO" + ego + "(" + sub.toUpperCase() + ")");
+                self.el_raw_data_table.empty();
+                self.el_loading_table.show();
                 var list_table = function(data){
-                    var table_container = document.getElementById("raw_data_table");
                     for(var r = 0; r < data.length; r++){
-                        var row = document.createElement("tr");
-                        row.id = data[r][0];
+                        var row = $('<tr id="' + data[r][0] + '"></tr>');
                         if(r == 0){
-                            row.setAttribute('style', 'background:rgb(175, 175, 175)');
+                            row.attr('style', 'background:rgb(175, 175, 175)');
                         }
                         if(r == 1){
-                            row.setAttribute('style', 'background:rgb(205, 205, 205)');
+                            row.attr('style', 'background:rgb(205, 205, 205)');
                         }
                         for(var c = 1; c < data[r].length; c++){
-                            var column = document.createElement("td");
+                            var column = $('<td></td>');
                             if(r < 2)
-                                column.innerHTML = "<b>" + data[r][c] + "</b>";
+                                column.html("<b>" + data[r][c] + "</b>");
                             else
-                                column.innerHTML = data[r][c];
-                            row.appendChild(column);
+                                column.html(data[r][c]);
+                            row.append(column);
                         }
-                        table_container.appendChild(row);
-                    }
-                    
-                    $("#loading_table").hide();
+                        self.el_raw_data_table.append(row);
+                    }                    
+                    self.el_loading_table.hide();
                 };
                 
                 var request = table+":-"+ego+":-"+sub+":="+JSON.stringify(attr_map);
@@ -372,12 +372,12 @@ var ZoomView = Backbone.View.extend({
             var mousePos = self.getMousePos(self.snapCanvas, evt);
             var grid = self.model.get("snap_grid");
             var snap_point_info = grid[Math.floor(mousePos.x)][Math.floor(mousePos.y)];
-            // console.log("snap_grid:", grid);
+
             if(snap_point_info != -1){
-                $("#one_tree").css("cursor", "pointer");
+                self.el_one_tree.css("cursor", "pointer");
             }
             else{
-               $("#one_tree").css("cursor", "");
+               self.el_one_tree.css("cursor", "");
             }
             
         },false);
