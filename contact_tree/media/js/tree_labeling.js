@@ -10,6 +10,9 @@ var LabelView = Backbone.View.extend({
         this.label_selected = self.model.get("selected_egos");
         this.label_display = self.model.get("display_egos");
         
+        this.el_selecting_label = $("#selecting_label");
+        this.el_selecting_ego = $("#selecting_ego");
+
         this.model.bind('change:selected_egos', this.set_label);
 
         this.temp_selecting = [];
@@ -25,74 +28,53 @@ var LabelView = Backbone.View.extend({
         var my_mode = self.model.get("view_mode");
         var all_tree = my_mode.split("_of_")[1].toUpperCase();
         
-        $("#selecting_ego").empty();
+        self.el_selecting_ego.empty();
 
         // set the label
-        var label = document.getElementById("selecting_label");
-        label.innerHTML = all_tree + ":";
+        // var label = document.getElementById("selecting_label");
+        // label.innerHTML = all_tree + ":";
+        self.el_selecting_label.html(all_tree + ":");
         var label_btn = document.getElementById("selecting_ego");
         
         if(group != "all"){
             for(s in self.label_selected){
                 var gen_id = s.replace(/[^a-zA-Z1234567890 ]/g, "").replace(/ /g, "");
-                var opt = document.createElement("div");
-                opt.setAttribute('class', 'dropdown');
-                opt.setAttribute('class', 'left');
-                opt.setAttribute('style', 'margin-left:10px; position:relative');
+                var opt = $('<div class="dropdown left" style="margin-left:10px; position:relative"></div>');
 
-                var remove_btn = document.createElement("span");
-                remove_btn.id = "delect_ego_" + gen_id;
-                remove_btn.value = gen_id;
-                remove_btn.name = s;
-                remove_btn.setAttribute('style', 'position: absolute; top:-4px; right:-4px; display:none;');
-                remove_btn.setAttribute("class", "glyphicon glyphicon-remove-circle");
+                var remove_btn = $('<span class="glyphicon glyphicon-remove-circle" style="position: absolute; top:-4px; right:-4px; display:none;"></span>');
+                remove_btn.val(gen_id).attr('id', "delect_ego_" + gen_id).attr('name', s);
                 
+                var opt_btn = $('<button class="dropdown-toggle ego_label btn" data-toggle="dropdown"></button>');
+                opt_btn.val(gen_id).attr('id', "label_" + gen_id).attr('name', s).html("EGO " + s.toUpperCase());
                 
-                var opt_btn = document.createElement("button");
-                opt_btn.setAttribute('class', 'dropdown-toggle');
-                opt_btn.setAttribute('class', 'ego_label');
-                opt_btn.setAttribute('class', 'btn');
-                opt_btn.setAttribute('data-toggle', 'dropdown'); //??
-                opt_btn.id = "label_" + gen_id;
-                opt_btn.value = gen_id;
-                opt_btn.name = s;
-                opt_btn.innerHTML = "EGO " + s.toUpperCase();
-                
-               
-                var opt_menu = document.createElement("ul");
-                opt_menu.setAttribute('class', 'dropdown-menu');
-                opt_menu.setAttribute('role', 'menu');
+                var opt_menu = $('<ul class="dropdown-menu" role="menu"></ul>');
                 
                 var count_checked = 0;
                 for(var c = 0; c < self.label_selected[s].length; c++){
                     var id = "#selected_ego_" + self.label_selected[s][c];
-                    var opt_row = document.createElement("li");
-                    opt_row.id = "selected_ego_" + self.label_selected[s][c];
-
-                    var lb = document.createElement("label");
-                    lb.setAttribute('class', 'checkbox');
-                    lb.innerHTML = self.label_selected[s][c];
-                    var ip = document.createElement("input");
-                    ip.setAttribute('type', 'checkbox');
-                    ip.setAttribute('class', 'label_checkbox');
-                    ip.value = gen_id + "_" + self.label_selected[s][c];
-                    ip.name = s;
-                    ip.id = 'sub_'+gen_id;
+                    var opt_row = $('<li></li>');
+                    opt_row.attr("id", "selected_ego_" + self.label_selected[s][c]);
+                    
+                    var lb = $('<label class="checkbox"></label>');
+                    lb.html(self.label_selected[s][c]);
+                    
+                    var ip = $('<input class="label_checkbox" type="checkbox"></input>');
+                    ip.val(gen_id + "_" + self.label_selected[s][c]).attr('name', s).attr('id', 'sub_'+gen_id)
 
                     if(count_checked < self.label_display[s].length && self.label_display[s][count_checked] == self.label_selected[s][c]){
-                        ip.setAttribute('checked', true);
+                        ip.prop('checked', true);
                         count_checked++;
                     }
                                                   
-                    lb.appendChild(ip);
-                    opt_row.appendChild(lb);
-                    opt_menu.appendChild(opt_row);
+                    lb.append(ip);
+                    opt_row.append(lb);
+                    opt_menu.append(opt_row);
                 }
-                opt.appendChild(opt_btn);
-                opt.appendChild(opt_menu);
-                
-                opt.appendChild(remove_btn);
-                label_btn.appendChild(opt);
+                opt.append(opt_btn);
+                opt.append(opt_menu);                
+                opt.append(remove_btn);
+
+                self.el_selecting_ego.append(opt);
 
             }
             $('.dropdown-menu').on('click', function (e) { // e?? on vs click??
@@ -106,32 +88,18 @@ var LabelView = Backbone.View.extend({
         else{
             for(s in self.label_selected){
                 var gen_id = s.replace(/[^a-zA-Z1234567890 ]/g, "").replace(/ /g, "");
-                                
-                var opt = document.createElement("div");
-                opt.setAttribute('class', 'left');
-                opt.setAttribute('style', 'margin-left:10px; position:relative');
-
-                var remove_btn = document.createElement("span");
-                remove_btn.id = "delect_ego_" + gen_id;
-                remove_btn.value = gen_id;
-                remove_btn.name = s;
-                remove_btn.setAttribute('style', 'position: absolute; top:-4px; right:-4px; display:none;');
-                remove_btn.setAttribute("class", "glyphicon glyphicon-remove-circle");
-
-                var opt_btn = document.createElement("button");
-                // opt_btn.setAttribute('class', 'dropdown-toggle');
-                opt_btn.setAttribute('class', 'ego_label');
-                opt_btn.setAttribute('class', 'btn');
-                // opt_btn.setAttribute('data-toggle', 'dropdown'); //??
-                opt_btn.id = "label_" + gen_id;
-                opt_btn.value = gen_id;
-                opt_btn.name = s;
-                opt_btn.innerHTML = "EGO " + s.toUpperCase();
-
-                opt.appendChild(opt_btn);
+                var opt = $('<div class="left" style="margin-left:10px; position:relative"></div>');
                 
-                opt.appendChild(remove_btn);
-                label_btn.appendChild(opt);
+                var remove_btn = $('<span class="glyphicon glyphicon-remove-circle" style="position: absolute; top:-4px; right:-4px; display:none;"></span>');
+                remove_btn.val(gen_id).attr('id', "delect_ego_" + gen_id).attr('name', s);
+                
+                var opt_btn = $('<button class="ego_label btn"></button>');
+                opt_btn.val(gen_id).attr('id', "label_" + gen_id).attr('name', s).html("EGO " + s.toUpperCase());
+
+                opt.append(opt_btn);
+                
+                opt.append(remove_btn);
+                self.el_selecting_ego.append(opt);
             }
             this.set_label_event(my_mode);
 
@@ -172,8 +140,8 @@ var LabelView = Backbone.View.extend({
             });
             
             $(delete_ego_id).click(function(){
-                delete self.label_selected[this.name];
-                delete self.label_display[this.name];
+                delete self.label_selected[this.attributes["name"].value];
+                delete self.label_display[this.attributes["name"].value];
                 console.log("after ", self.label_display);
                 self.model.set({"selected_egos":self.label_selected});
                 self.model.set({"display_egos":self.label_display});
@@ -193,6 +161,7 @@ var LabelView = Backbone.View.extend({
                 // self.model.set({"canvas_scale":0.15});
                 self.model.trigger('change:selected_egos');
                 self.model.trigger('change:display_egos');
+                return false;                
             });
             
         }
@@ -205,7 +174,7 @@ var LabelView = Backbone.View.extend({
                 $(label_class_checked).each(function(){
                     var e = this.value.split("_")[0];
                     var c = this.value.split("_")[1];
-                    on_ego = this.name;
+                    on_ego = this.attributes["name"].value;
                     self.temp_selecting.push(c);
                 });
                 self.label_display[on_ego] = self.temp_selecting;

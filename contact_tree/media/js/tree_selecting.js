@@ -80,7 +80,7 @@ var SelectingView = Backbone.View.extend({
             else{
                 selection_opt.val(session_id + "_of_" + data_mode[s]).html(data_mode[s]).attr("class", "myfont3");
                 
-                if(selection_opt.value == on_mode)
+                if(selection_opt.val() == on_mode)
                     selection_opt.prop("selected", true);
             }
             
