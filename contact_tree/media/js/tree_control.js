@@ -19,6 +19,18 @@ var ControlView = Backbone.View.extend({
         //     window.location.href = drawing_canvas.main_canvas.toDataURL().replace('image/png','image/octet-stream');
         // });
 
+        this.el_dtl_length = $("#dtl_length");
+        this.el_dtl_bend = $("#dtl_bend");
+        this.el_dtl_leaf_size = $("#dtl_leaf_size");
+        this.el_dtl_fruit_size = $("#dtl_fruit_size");
+        this.el_root_length = $("#root_length");
+        this.el_root_bend = $("#root_bend");
+        this.el_filter_contact = $("#filter_contact");
+        this.el_tree_drawer = $("#tree_drawer");
+        this.el_dtl_box = $("#dtl_box");
+        this.el_fruit_switcher = $("#fruit_switcher");
+        this.el_root_switcher = $("#root_switcher");
+
         $("#tree_restore").click(function(){
             self.model.set({"leaf_scale":3});
             self.model.set({"fruit_scale":3});
@@ -34,25 +46,25 @@ var ControlView = Backbone.View.extend({
             self.model.trigger('change:canvas_scale');
             self.model.trigger('change:tree_style');
             self.model.set({"tree_boundary":{}});
-            $("#dtl_length").ionRangeSlider("update", {
+            self.el_dtl_length.ionRangeSlider("update", {
                 from: 1
             });
-            $("#dtl_bend").ionRangeSlider("update", {
+            self.el_dtl_bend.ionRangeSlider("update", {
                 from: 1
             });
-            $("#dtl_leaf_size").ionRangeSlider("update", {
+            self.el_dtl_leaf_size.ionRangeSlider("update", {
                 from: 3
             });
-            $("#dtl_fruit_size").ionRangeSlider("update", {
+            self.el_dtl_fruit_size.ionRangeSlider("update", {
                 from: 3
             });
-            $("#root_length").ionRangeSlider("update", {
+            self.el_root_length.ionRangeSlider("update", {
                 from: 1
             });
-            $("#root_bend").ionRangeSlider("update", {
+            self.el_root_bend.ionRangeSlider("update", {
                 from: 0
             });
-            $("#filter_contact").ionRangeSlider("update", {
+            self.el_filter_contact.ionRangeSlider("update", {
                 from: 0
             });
         });
@@ -68,8 +80,8 @@ var ControlView = Backbone.View.extend({
     set_control_box: function(){
         var self = this;
         var sty = self.model.get("tree_style");
-        $("#tree_drawer").off("click");
-        $("#tree_drawer").click(function(){
+        self.el_tree_drawer.off("click");
+        self.el_tree_drawer.click(function(){
             var anchor = this;
             var removeClass = "show";
             var addClass = "complete";
@@ -81,7 +93,7 @@ var ControlView = Backbone.View.extend({
                 addClass="show";
             }
             if(self.model.get("tree_style")[0] == "symmetry"){
-                $("#dtl_box").animate({
+                self.el_dtl_box.animate({
                     top: diff
                     }, 700, function() {
                     // Animation complete.
@@ -95,9 +107,9 @@ var ControlView = Backbone.View.extend({
     // initial the slider
     set_slider: function(){
         var self = this;
-        $("#dtl_box").show();
+        self.el_dtl_box.show();
         
-        $("#dtl_length").ionRangeSlider({
+        self.el_dtl_length.ionRangeSlider({
             min: 0.5,
             max: 3,
             from: 1,
@@ -110,7 +122,7 @@ var ControlView = Backbone.View.extend({
                 self.model.set({"sub_leaf_len_scale":val});
             }
         });
-        $("#dtl_bend").ionRangeSlider({
+        self.el_dtl_bend.ionRangeSlider({
             min: 0,
             max: 2,
             from: 1,
@@ -124,7 +136,7 @@ var ControlView = Backbone.View.extend({
             }
         });
 
-        $("#dtl_leaf_size").ionRangeSlider({
+        self.el_dtl_leaf_size.ionRangeSlider({
             min: 0.3,
             max: 8,
             from: 3,
@@ -137,7 +149,7 @@ var ControlView = Backbone.View.extend({
             }
         });
 
-        $("#dtl_fruit_size").ionRangeSlider({
+        self.el_dtl_fruit_size.ionRangeSlider({
             min: 0,
             max: 8,
             from: 3,
@@ -148,7 +160,7 @@ var ControlView = Backbone.View.extend({
                 var val = obj.fromNumber;
                 if(val>8){
                     val = 8;
-                    $("#dtl_fruit_size").ionRangeSlider("update", {
+                    self.el_dtl_fruit_size.ionRangeSlider("update", {
                         from: 8
                     });
                 }
@@ -156,7 +168,7 @@ var ControlView = Backbone.View.extend({
             }
         });
 
-        $("#root_length").ionRangeSlider({
+        self.el_root_length.ionRangeSlider({
             min: 0.5,
             max: 2.5,
             from: 1,
@@ -170,7 +182,7 @@ var ControlView = Backbone.View.extend({
             }
         });
 
-        $("#root_bend").ionRangeSlider({
+        self.el_root_bend.ionRangeSlider({
             min: -2,
             max: 1.5,
             from: 0,
@@ -184,11 +196,11 @@ var ControlView = Backbone.View.extend({
             }
         });
 
-        $("#fruit_switcher").toggleSwitch({
+        self.el_fruit_switcher.toggleSwitch({
             highlight: true, // default
             width: 30, // default
             change: function(e) {
-                var v = $("#fruit_switcher").val();
+                var v = self.el_fruit_switcher.val();
                 if(v == "on")
                     self.model.set({"fruit_switch":1});
                 else
@@ -197,11 +209,11 @@ var ControlView = Backbone.View.extend({
 
         });
 
-        $("#root_switcher").toggleSwitch({
+        self.el_root_switcher.toggleSwitch({
             highlight: true, // default
             width: 30, // default
             change: function(e) {
-                var v = $("#root_switcher").val();
+                var v = self.el_root_switcher.val();
                 self.model.set({"tree_boundary":{}});
                 if(v == "on")
                     self.model.set({"leaf_switch":1});
@@ -210,7 +222,7 @@ var ControlView = Backbone.View.extend({
             }
         });
 
-        $("#filter_contact").ionRangeSlider({
+        self.el_filter_contact.ionRangeSlider({
             min: 0,
             max: 15,
             from: 0,
@@ -235,7 +247,7 @@ var ControlView = Backbone.View.extend({
             }
         });
 
-        $("#dtl_box").tabs();
+        self.el_dtl_box.tabs();
     },
 
     update_tabs: function(){
@@ -246,34 +258,42 @@ var ControlView = Backbone.View.extend({
         var dtl_b_curve = self.model.get("dtl_branch_curve");
         var r_curve = self.model.get("root_curve");
         var r_len = self.model.get("root_len_scale");
-        $( "#dtl_box" ).tabs({ activate: function(event ,ui){
+        var c_filter = self.model.get("filter_contact");
+        self.el_dtl_box.tabs({ activate: function(event ,ui){
             var index = ui.newTab.index();
             switch (index) {
                 case 0:
-                    $("#dtl_length").ionRangeSlider("update", {
+                    self.el_dtl_length.ionRangeSlider("update", {
                         from: Math.round(10*len_scale)/10
                     });
-                    $("#dtl_bend").ionRangeSlider("update", {
+                    self.el_dtl_bend.ionRangeSlider("update", {
                         from: Math.round(10*dtl_b_curve)/10
                     });
                 break;
 
                 case 1:
-                    $("#dtl_leaf_size").ionRangeSlider("update", {
+                    self.el_dtl_leaf_size.ionRangeSlider("update", {
                         from: Math.round(10*l_scale)/10
                     });
-                    $("#dtl_fruit_size").ionRangeSlider("update", {
+                    self.el_dtl_fruit_size.ionRangeSlider("update", {
                         from: Math.round(10*f_scale)/10
                     });
                 break;
 
                 case 2:
-                    $("#root_length").ionRangeSlider("update", {
+                    self.el_root_length.ionRangeSlider("update", {
                         from: r_len
                     });
-                    $("#root_bend").ionRangeSlider("update", {
+                    self.el_root_bend.ionRangeSlider("update", {
                         from: r_curve
                     });
+                break;
+
+                case 3:
+                    self.el_filter_contact.ionRangeSlider("update", {
+                        from: c_filter
+                    });
+                    
                 break;
             }
         } });
