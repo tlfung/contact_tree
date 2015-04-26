@@ -20,6 +20,19 @@ var SelectingView = Backbone.View.extend({
         this.my_ego = 0; // selected ego before done
         this.ego_subgroup = [];
 
+        // define element container
+        this.el_sub_selection = $("#sub_selection");
+        this.el_dataselect = $("#dataselect");
+        this.el_block_page = $("#block_page");
+        this.el_loading = $("#loading_process");
+        this.el_detail_menu = $("#detail_menu");
+        this.el_egogroup = $("#egogroup");
+        this.el_divTable_menu = $("#divTable_menu");
+        this.el_main_title = $("#main_title");
+        this.el_submit_ego = $("#submit_ego");
+        this.el_sub_title = $("#sub_title");
+        this.el_group_container = $("#group_container");
+
         // open the dialog
         $( "#menu_dialog" ).dialog({
             autoOpen: false,
@@ -29,7 +42,7 @@ var SelectingView = Backbone.View.extend({
             resizable: false
         });
 
-        $("#divTable_menu").css({'height': ($(window).width()*0.4*0.7) - $("ego_container").height() - $("main_title").height() - 100}); // - $("ui-id-2").height() 
+        self.el_divTable_menu.css({'height': ($(window).width()*0.4*0.7) - $("ego_container").height() - $("main_title").height() - 100}); // - $("ui-id-2").height() 
 
         $( "#menu" ).click(function() {
             var mode = self.model.get("view_mode");
@@ -51,43 +64,41 @@ var SelectingView = Backbone.View.extend({
     set_dataset: function(){
         var self = this;
         var on_mode = self.model.get("view_mode");
-        var container = document.getElementById("dataselect");
-        $("#dataselect").empty();
+        self.el_dataselect.empty();
         var data_mode = self.model.get("dataset_mode");
-        container.setAttribute("class", "dataset_selector");
+
+        self.el_dataselect.attr('class', 'dataset_selector');
         for(var s = 0; s < data_mode.length; s++){
-            var selection_opt = document.createElement('option');
+            var selection_opt = $('<option></option>');
             if(data_mode[s] == ""){
-                selection_opt.value = "0";
-                selection_opt.innerHTML = "dataset";
+                selection_opt.val("0").html("dataset").attr("class", "myfont3");
+
                 if(data_mode[s] == on_mode)
-                    selection_opt.setAttribute("selected", true);
-                // selection_opt.setAttribute("class", "myfont3");
+                    selection_opt.prop("selected", true);
+    
             }
             else{
-                selection_opt.value = session_id + "_of_" + data_mode[s];
-                selection_opt.innerHTML = data_mode[s];
+                selection_opt.val(session_id + "_of_" + data_mode[s]).html(data_mode[s]).attr("class", "myfont3");
+                
                 if(selection_opt.value == on_mode)
-                    selection_opt.setAttribute("selected", true);
+                    selection_opt.prop("selected", true);
             }
             
-            selection_opt.setAttribute("class", "myfont3");
-            container.appendChild(selection_opt);
+            self.el_dataselect.append(selection_opt);
         }
+
 
     },
 
     // get all the available dataset
     get_dataset: function(){
         var self = this;
-        // var data_mode = self.model.get("dataset_mode");
         var request_url = "dataset_mode/?mode=" + encodeURIComponent(session_id);
         var data_selection = [""]
 
         d3.json(request_url, function(result){
             data_selection = data_selection.concat(result);
-            self.model.set({"dataset_mode": data_selection});
-            // self.model.trigger('change:dataset_mode');          
+            self.model.set({"dataset_mode": data_selection});     
         });
 
     },
@@ -121,7 +132,7 @@ var SelectingView = Backbone.View.extend({
         restore_array.push(JSON.parse(result.attr_info)); // attr_info
         restore_array.push(result.group); // group
         restore_array.push(JSON.parse(result.component_attr)); // component_attribute
-        restore_array.push(JSON.parse(result.waves)); // component_attribute
+        restore_array.push(JSON.parse(result.waves)); // how many group can be selected
 
         self.model.set({"view_mode": restore_array[0]}, {silent: true});
         self.model.set({"display_egos": restore_array[1]}, {silent: true});
@@ -151,7 +162,7 @@ var SelectingView = Backbone.View.extend({
     // set diaplay data and get structure
     set_display_value: function(){
         var self = this;
-        $("#loading_process").html("<b>Fetching...</b>");
+        self.el_loading.html("<b>Fetching...</b>");
         in_change_mode = 0;
         
         var single_attr = [];
@@ -166,7 +177,7 @@ var SelectingView = Backbone.View.extend({
             user_history = 2;
             var ego_selections = self.model.get("selected_egos");
             if(jQuery.isEmptyObject(ego_selections)){
-                $("#block_page").hide();
+                self.el_block_page.hide();
                 return
             }
             var data_mode = self.model.get("view_mode");
@@ -201,7 +212,7 @@ var SelectingView = Backbone.View.extend({
         var request = JSON.stringify(now_attr) + ":-" + JSON.stringify(ego_list) + ":-" + now_mode + ":-" + JSON.stringify(attribute_mapping) + ":-" + data_group + ":-" + JSON.stringify(all_ego);
         var request_url = "last_use_data/?restore="+encodeURIComponent(request);
         
-        $("#block_page").show();
+        self.el_block_page.show();
         d3.json(request_url, function(result) {
             set_structure(result, ego_list);
         }); 
@@ -209,12 +220,13 @@ var SelectingView = Backbone.View.extend({
     },
 
     get_data_event: function(){
-        var self = this;        
+        var self = this;
         // data selection on change event
-        $("#dataselect").change(function(){
+        // on dataset change
+        self.el_dataselect.change(function(){
             user_history = 0;
             // if get the new dataset
-            if(initial_user != 0){
+            if(initial_user != 0){ // not the first to triggrt change effect
                 in_change_mode = 1;
                 self.model.set({"moving": 0});
                 self.model.set({"selected_egos": {}});
@@ -236,29 +248,28 @@ var SelectingView = Backbone.View.extend({
                 self.model.set({"canvas_scale":0.15});
 
                 self.model.trigger('change:display_egos');
-                // self.ego_cat = ["", "all"];
-                $("#egogroup").empty();
-                $("#group_container").hide();
+                self.el_egogroup.empty();
+                self.el_group_container.hide();
                 user_history = 0;
                 // initial_user = 1;
             }
             
-            $("#egogroup").empty();
-            if($("#dataselect").val() == "0" && initial_user != 0){
+            self.el_egogroup.empty();
+            if(self.el_dataselect.val() == "0" && initial_user != 0){
                 self.model.set({"egos_data": {}});
                 self.model.set({"view_mode":"0"});
-                $("#group_container").hide();
+                self.el_group_container.hide();
                 document.cookie = "mode=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
             }
             // others data
             else{
-                var data_selected = $("#dataselect").val();
-                $("#divTable_menu").empty();
-                $("#main_title").hide();
-                $("#divTable_menu").hide();
-                $("#submit_ego").hide();
-                $("#sub_title").hide();
-                $("#detail_menu").hide();
+                var data_selected = self.el_dataselect.val();
+                self.el_divTable_menu.empty();
+                self.el_main_title.hide();
+                self.el_divTable_menu.hide();
+                self.el_submit_ego.hide();
+                self.el_sub_title.hide();
+                self.el_detail_menu.hide();
 
                 // if it is initial model trigger the change
                 if((data_selected == null || initial_user == 0) && first_use != 0)
@@ -268,37 +279,26 @@ var SelectingView = Backbone.View.extend({
 
                 // if it is new user
                 if(first_use == 0){
-                    $("#block_page").show();
+                    self.el_block_page.show();
                     var request_url = "dataset/?data="+encodeURIComponent(data_selected); // !!!query select last=1
                     
                     d3.json(request_url, function(result){
                         var set_dataset_group = function(data){
                             waves = data;
-                            // self.ego_cat = data;
                             var on_group = "";
-                            var container = document.getElementById("egogroup");
-                            // container.setAttribute("class", "dataset_selector");
                             for(var s = 0; s < waves.length; s++){
-                                var selection_opt = document.createElement('option');
-                                selection_opt.value = waves[s];
-                                if(selection_opt.value == on_group)
-                                    selection_opt.setAttribute("selected", true);
-                                selection_opt.innerHTML = waves[s];
-                                if(waves[s] == "dataset"){
-                                    selection_opt.innerHTML = "individual waves";
-                                }
-                                else if(waves[s] == "all"){
-                                    selection_opt.innerHTML = "combined waves";
-                                }
+                                var selection_opt = $('<option></option>');
+                                selection_opt.val(waves[s]).html(display_group[waves[s]]).attr("class", "myfont3");
 
-                                selection_opt.setAttribute("class", "myfont3");
+                                if(waves[s] == on_group)
+                                    selection_opt.prop("selected", true);
                                 
-                                container.appendChild(selection_opt);
+                                self.el_egogroup.append(selection_opt);
                             }
-                            $("#group_container").show();
+                            self.el_group_container.show();
                         };
                         set_dataset_group(result);
-                        $("#block_page").hide();
+                        self.el_block_page.hide();
                     });
                     return;
                 }
@@ -309,59 +309,39 @@ var SelectingView = Backbone.View.extend({
                 d3.json(pre_request_url, function(result){
                     // check and set the result
                     self.set_user_history(result);
-                    $("#block_page").show();
+                    self.el_block_page.show();
                     if(user_history == 1){
-                        var container = document.getElementById("egogroup");
-                        var on_group = self.model.get("dataset_group");
+                        var on_group = self.model.get("dataset_group"); // has a chosen group
                         for(var s = 0; s < waves.length; s++){
-                            var selection_opt = document.createElement('option');
-                            selection_opt.value = waves[s];
-                            if(selection_opt.value == on_group)
-                                selection_opt.setAttribute("selected", true);
-                            selection_opt.innerHTML = waves[s];
+                            var selection_opt = $('<option></option>');
+                            selection_opt.val(waves[s]).html(display_group[waves[s]]).attr("class", "myfont3");
+
+                            if(waves[s] == on_group)
+                                selection_opt.prop("selected", true);
                             
-                            if(waves[s] == "dataset"){
-                                selection_opt.innerHTML = "individual waves";
-                            }
-                            else if(waves[s] == "all"){
-                                selection_opt.innerHTML = "combined waves";
-                            }
-                            selection_opt.setAttribute("class", "myfont3");
-                            
-                            container.appendChild(selection_opt);
+                            self.el_egogroup.append(selection_opt);
                         }
-                        $("#group_container").show();
-                        $("#egogroup").trigger('change');
+                        self.el_group_container.show();
+                        self.el_egogroup.trigger('change');
                     }
                     else{
                         var request_url = "dataset/?data="+encodeURIComponent(data_selected);
                         
                         d3.json(request_url, function(result){
                             var set_dataset_group = function(data){
-                                waves = data;                               
-                                // var on_group = self.model.get("dataset_group");
-                                var on_group = "";                                
-                                var container = document.getElementById("egogroup");
-                                // container.setAttribute("class", "dataset_selector");
+                                waves = data;
+                                var on_group = ""; // no chosen group                            
                                 for(var s = 0; s < waves.length; s++){
-                                    var selection_opt = document.createElement('option');
-                                    selection_opt.value = waves[s];
-                                    if(selection_opt.value == on_group)
-                                        selection_opt.setAttribute("selected", true);
-                                    selection_opt.innerHTML = waves[s];
+                                    var selection_opt = $('<option></option>');
+                                    selection_opt.val(waves[s]).html(display_group[waves[s]]).attr("class", "myfont3");
+
+                                    if(waves[s] == on_group)
+                                        selection_opt.prop("selected", true);
                                     
-                                    if(waves[s] == "dataset"){
-                                        selection_opt.innerHTML = "individual waves";
-                                    }
-                                    else if(waves[s] == "all"){
-                                        selection_opt.innerHTML = "combined waves";
-                                    }
-                                    selection_opt.setAttribute("class", "myfont3");
-                                    
-                                    container.appendChild(selection_opt);
+                                    self.el_egogroup.append(selection_opt);
                                 }
-                                $("#group_container").show();
-                                $("#block_page").hide();
+                                self.el_group_container.show();
+                                self.el_block_page.hide();
                             };
                             set_dataset_group(result);
                         });
@@ -374,10 +354,11 @@ var SelectingView = Backbone.View.extend({
 
         });
 
-        $("#egogroup").change(function(){
+        // on group change
+        self.el_egogroup.change(function(){
             // set user group found when dataset change
             if(user_history == 1){
-                $("#block_page").show();
+                self.el_block_page.show();
                 initial_user = 1;
                 in_change_mode = 1;
                 self.set_display_value();
@@ -391,15 +372,15 @@ var SelectingView = Backbone.View.extend({
                 self.set_data_label();
                 // already set group for this mode
                 user_history = 2;
-                // $("#block_page").hide();
+                // self.el_block_page.hide();
                 return;
             }
-            // same dataset only change view group
+            // only change view group
             else{
                 in_change_mode = 1;
                 
-                var data_selected = $("#dataselect").val();
-                var data_group = $("#egogroup").val();
+                var data_selected = self.el_dataselect.val();
+                var data_group = self.el_egogroup.val();
                 if(data_group == ""){
                     in_change_mode = 1;
                     self.model.set({"moving": 0});
@@ -422,16 +403,16 @@ var SelectingView = Backbone.View.extend({
                     self.model.set({"canvas_scale":0.15});
 
                     self.model.trigger('change:display_egos');
-                    $("#egogroup").empty();
-                    $("#group_container").hide();
+                    self.el_egogroup.empty();
+                    self.el_group_container.hide();
                     user_history = 2;
                     return
                 }
                 var pre_request_url = "restore_user_group_history/?user="+data_selected + "_of_" + data_group;
                 d3.json(pre_request_url, function(result){
                     self.set_user_history(result);
-                    $("#block_page").show();
-                    if(user_history == 1){
+                    self.el_block_page.show();
+                    if(user_history == 1){ // has history
                         initial_user = 1;
                         self.set_display_value();
                         
@@ -446,7 +427,7 @@ var SelectingView = Backbone.View.extend({
                         user_history = 2;
                         return;
                     }
-                    else{
+                    else{ // no history
                         attribute_mapping = {};
                         mapping_color.render_leaf_color = ["#924307", "#C2B208", "#94AE0F", "#5F9915"];
                         mapping_color.render_roots_color = ["#964343", "#90093F", "#967636", "#6B435E"];
@@ -469,7 +450,7 @@ var SelectingView = Backbone.View.extend({
                         self.model.set({"canvas_scale":0.15});
 
                         self.model.trigger('change:display_egos');
-                        var data_selected = $("#dataselect").val();
+                        var data_selected = self.el_dataselect.val();
                         
                         // reset every for new view group
                         self.model.query_ego_list(data_selected, data_group);
@@ -477,15 +458,15 @@ var SelectingView = Backbone.View.extend({
                         self.model.set({"dataset_group": data_group});
                         self.model.set({"view_mode":data_selected});
                         
-                        $('#egogroup').attr("disabled", true);
-                        $("#block_page").show();
-                        $("#loading_process").html("<b>Fetching...</b>");
+                        self.el_egogroup.attr("disabled", true);
+                        self.el_block_page.show();
+                        self.el_loading.html("<b>Fetching...</b>");
                         
                         // set the label title
-                        var label = document.getElementById("selecting_label");
+                        var label = $("#selecting_label");
                         var all_tree = data_selected.split("_of_")[1].toUpperCase();
                         
-                        label.innerHTML = all_tree + ":";
+                        label.html(all_tree + ":");
                         user_history = 2;
                     }
                                                             
@@ -499,16 +480,16 @@ var SelectingView = Backbone.View.extend({
     change_mode: function(){
         var self = this;
         var mode = self.model.get("view_mode");
-        $("#main_title").show();
-        $("#main_title").text("Select Ego:");
-        $("#divTable_menu").show();
+        self.el_main_title.show();
+        self.el_main_title.text("Select Ego:");
+        self.el_divTable_menu.show();
         if(mode == "0"){
-            $("#divTable_menu").empty();
-            $("#main_title").hide();
-            $("#divTable_menu").hide();
-            $("#submit_ego").hide();
-            $("#sub_title").hide();
-            $("#detail_menu").hide();
+            self.el_divTable_menu.empty();
+            self.el_main_title.hide();
+            self.el_divTable_menu.hide();
+            self.el_submit_ego.hide();
+            self.el_sub_title.hide();
+            self.el_detail_menu.hide();
         }
         else if(user_history != 1){
             this.data_option();
@@ -519,12 +500,12 @@ var SelectingView = Backbone.View.extend({
     // set the title of ego selection
     data_option: function(){
         var self = this;
-        $("#divTable_menu").empty();
-        $("#detail_menu").hide();
+        self.el_divTable_menu.empty();
+        self.el_detail_menu.hide();
         
-        $("#main_title").show();
-        $("#main_title").text("Select Ego:");
-        $("#divTable_menu").show();
+        self.el_main_title.show();
+        self.el_main_title.text("Select Ego:");
+        self.el_divTable_menu.show();
         
     },
 
@@ -535,44 +516,42 @@ var SelectingView = Backbone.View.extend({
         var sub = "";
         var select_ego = [];
         if(user_history != 1)
-            $("#block_page").hide();
-        $('#egogroup').removeAttr("disabled");
+            self.el_block_page.hide();
+        self.el_egogroup.removeAttr("disabled");
         function opt_change(ego){
             var subset = self.model.get("dataset_group");
-            $("#sub_selection").empty();
+            self.el_sub_selection.empty();
             self.ego_subgroup = [];
             if(subset != "all"){
-                $("#sub_title").show();
-                $("#sub_title").text("Sub Group:");
-                $("#detail_menu").show();
+                self.el_sub_title.show();
+                self.el_sub_title.text("Sub Group:");
+                self.el_detail_menu.show();
 
-                // $("#sub_selection").empty();
-                $("#sub_selection").show();
-                $("#submit_ego").show();
+                self.el_sub_selection.show();
+                self.el_submit_ego.show();
                 for(var c = 0; c < total_ego[ego].length; c++){
                     self.ego_subgroup.push(total_ego[ego][c]);
                 }
             }
             else{
-                $("#sub_title").hide();
-                $("#detail_menu").show();
+                self.el_sub_title.hide();
+                self.el_detail_menu.show();
 
-                // $("#sub_selection").empty();
-                $("#sub_selection").hide();
-                $("#submit_ego").show();
+                self.el_sub_selection.hide();
+                self.el_submit_ego.show();
                 self.ego_subgroup.push("all");
             }
-            $("#submit_ego").removeAttr("disabled");
-            $("#submit_ego").text("Done");
+            self.el_submit_ego.removeAttr("disabled");
+            self.el_submit_ego.text("Done");
             
             var ego_group = {};
             ego_group[self.my_ego] = self.ego_subgroup;
             for(var s = 0; s < self.ego_subgroup.length; s++){
                 if(s == self.ego_subgroup.length-1)
-                    $("#sub_selection").append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + self.ego_subgroup[s] + '" id="' + self.ego_subgroup[s] + '" checked>' + self.ego_subgroup[s] + '</label>');            
+                    self.el_sub_selection.append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + self.ego_subgroup[s] + '" id="' + self.ego_subgroup[s] + '" checked>' + self.ego_subgroup[s] + '</label>');            
                 else
-                    $("#sub_selection").append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + self.ego_subgroup[s] + '" id="' + self.ego_subgroup[s] + '">' + self.ego_subgroup[s] + '</label>');            
-                $("#sub_selection").append("<p></p>");
+                    self.el_sub_selection.append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + self.ego_subgroup[s] + '" id="' + self.ego_subgroup[s] + '">' + self.ego_subgroup[s] + '</label>');            
+                self.el_sub_selection.append("<p></p>");
             }
             var data_group = self.model.get("dataset_group");
             var now_attr = JSON.stringify(self.model.get("attribute"));
@@ -585,8 +564,8 @@ var SelectingView = Backbone.View.extend({
             self.model.query_data(requst);
             
             // button click event
-            $("#submit_ego").unbind();
-            $("#submit_ego").click(function(){ // store selecting data
+            self.el_submit_ego.unbind();
+            self.el_submit_ego.click(function(){ // store selecting data
                 self.my_ego_selected = self.model.get("selected_egos");
                 self.my_ego_display = self.model.get("display_egos");
                 var now_attr = JSON.stringify(self.model.get("attribute"));
@@ -597,28 +576,23 @@ var SelectingView = Backbone.View.extend({
                 // store last page's selections
                 var display = [];
                 var select_ego = [];
-                var total = 0;                
+                
                 var data_group = self.model.get("dataset_group");
                 if(data_group == "all"){
                     select_ego.push("all");
-                    total++;
                 }
                 else{
                     $('.sub_option:checked').each(function(){
                         select_ego.push($(this).val());
-                        total++;
                     });
                 }
-                $("#submit_ego").attr("disabled", true);
-                $("#block_page").show();
-                $("#loading_process").html("<b>Rendering...</b>");
-                $("#submit_ego").text("Rendering");
+                self.el_submit_ego.attr("disabled", true);
+                self.el_block_page.show();
+                self.el_loading.html("<b>Rendering...</b>");
+                self.el_submit_ego.text("Rendering");
 
                 self.my_ego_selected[self.my_ego] = self.ego_subgroup;
                 self.my_ego_display[self.my_ego] = select_ego;
-
-                // display.push(select_ego[total-1]);
-                // self.my_ego_display[self.my_ego] = display;
                 
                 self.model.set({"display_egos":self.my_ego_display});
                 self.model.set({"selected_egos":self.my_ego_selected});
@@ -627,8 +601,8 @@ var SelectingView = Backbone.View.extend({
                 self.model.set({"canvas_scale":0.15});
                 
                 self.model.trigger('change:tree_structure');
-                $("#submit_ego").removeAttr("disabled");
-                $("#block_page").hide();
+                self.el_submit_ego.removeAttr("disabled");
+                self.el_block_page.hide();
                 $( "#menu_dialog" ).dialog( "close" );
 
                 self.model.trigger('change:selected_egos');
@@ -637,8 +611,8 @@ var SelectingView = Backbone.View.extend({
             });
         }
         var data_group = self.model.get("dataset_group");
-        $("#divTable_menu").empty();
-        $("#detail_menu").hide();
+        self.el_divTable_menu.empty();
+        self.el_detail_menu.hide();
         // all ego selections
         for(var c in total_ego){
             var detail_amont = "";
@@ -649,19 +623,19 @@ var SelectingView = Backbone.View.extend({
             }
             if(data_group == "all"){
                 $("#ego_menu").css({'width': '80%'});
-                $("#detail_menu").css({'width': '20%'});
+                self.el_detail_menu.css({'width': '20%'});
                 if(detail_amont == "")
-                    $("#divTable_menu").append('<div><label><input class="myfont3 ego_checkbox" name="ego_selection" type="radio" id="' + c + '" value="' + c +'" style="margin-right:5px;">' + name + '_' + c.toUpperCase() + '</label></div>');
+                    self.el_divTable_menu.append('<div><label><input class="myfont3 ego_checkbox" name="ego_selection" type="radio" id="' + c + '" value="' + c +'" style="margin-right:5px;">' + name + '_' + c.toUpperCase() + '</label></div>');
                 else{
                     detail_amont = detail_amont.slice(0, detail_amont.length-1);
-                    $("#divTable_menu").append('<div><label><input class="myfont3 ego_checkbox" name="ego_selection" type="radio" id="' + c + '" value="' + c +'" style="margin-right:5px;">' + name + '_' + c.toUpperCase() + ' ('+ detail_amont +')</label></div>');
+                    self.el_divTable_menu.append('<div><label><input class="myfont3 ego_checkbox" name="ego_selection" type="radio" id="' + c + '" value="' + c +'" style="margin-right:5px;">' + name + '_' + c.toUpperCase() + ' ('+ detail_amont +')</label></div>');
                 }
             }
             else{
                 $("#ego_menu").css({'width': '55%'});
-                $("#detail_menu").css({'width': '45%'});
+                self.el_detail_menu.css({'width': '45%'});
                 var check_amont = total_ego[c].length;
-                $("#divTable_menu").append('<div><label><input class="myfont3 ego_checkbox" name="ego_selection" type="radio" id="' + c + '" value="' + c +'" style="margin-right:5px;">' + name + '_' + c.toUpperCase() + ' ('+ check_amont +')</label></div>');
+                self.el_divTable_menu.append('<div><label><input class="myfont3 ego_checkbox" name="ego_selection" type="radio" id="' + c + '" value="' + c +'" style="margin-right:5px;">' + name + '_' + c.toUpperCase() + ' ('+ check_amont +')</label></div>');
             }
         }
          

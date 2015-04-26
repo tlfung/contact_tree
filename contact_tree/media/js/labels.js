@@ -1,3 +1,9 @@
+var display_group = {
+    "dataset": "individual waves",
+    "all": "combined waves",
+    "": ""
+};
+
 var diary_label = {
     month: "Month",
     day: "Day",
