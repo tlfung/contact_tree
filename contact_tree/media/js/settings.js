@@ -45,7 +45,6 @@ var mapping_size = {
 // about the contact tree
 var component_attribute = {};
 var attribute_mapping = {};
-var initial_grid = [];
 
 // ego information
 var total_ego = {};

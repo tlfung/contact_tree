@@ -81,8 +81,8 @@ var RenderingView = Backbone.View.extend({
         this.last_dr = 0;
         this.last_dl = 0;
 
-        this.clicking_grid = initial_grid;
-        this.snaping_grid = initial_grid;
+        this.clicking_grid = [];
+        this.snaping_grid = [];
         this.subyear = 2014;
         this.hash_table = self.model.get("info_table");
         this.leaf_hovor = self.model.get("clicking_leaf");
@@ -95,6 +95,13 @@ var RenderingView = Backbone.View.extend({
         this.tree_size = {};
         this.approx_size = 0;
         this.save_img = 0;
+
+        // element container
+        this.el_block_page = $("#block_page");
+        this.el_fruit_size = $("#dtl_fruit_size");
+        this.el_snap_container = $("#snap_container");
+        this.el_one_tree = $("#one_tree");
+        this.el_custom_download_link = $("#custom_download_link");
     },
 
     redraw: function(){
@@ -110,8 +117,7 @@ var RenderingView = Backbone.View.extend({
         var display_style = self.model.get("tree_style");
         this.view = self.model.get("view_mode");
         this.group = self.model.get("dataset_group");
-        this.clicking_grid = initial_grid;
-
+        
         this.filter_cnt = self.model.get("filter_contact");        
         self.tree_size = self.model.get("tree_boundary");
         this.translate_point = self.model.get("canvas_translate");
@@ -151,7 +157,7 @@ var RenderingView = Backbone.View.extend({
         
         self.model.set({"moving": 0});
         self.model.trigger('change:canvas_grid');
-        $("#block_page").hide();
+        self.el_block_page.hide();
     },
 
 
@@ -2382,7 +2388,7 @@ var RenderingView = Backbone.View.extend({
     update_fruit_size: function(){
         var self = this;
         var fruit_scale = Math.round(self.model.get("fruit_scale")*self.model.get("leaf_scale")*10/3)/10;
-        $("#dtl_fruit_size").ionRangeSlider("update", {
+        self.el_fruit_size.ionRangeSlider("update", {
             from: fruit_scale
         });
 
@@ -2391,21 +2397,20 @@ var RenderingView = Backbone.View.extend({
     draw4snapshot:function(){
         var self = this;
         this.context =  this.snapCanvas.getContext('2d');
-        this.snapCanvas.height = $("#snap_container").height();
-        this.snapCanvas.width = $("#snap_container").width();
+        this.snapCanvas.height = self.el_snap_container.height();
+        this.snapCanvas.width = self.el_snap_container.width();
         this.snap = 1;
         this.save_img = 0;
         this.stick_dx = 50;
         this.stick_dy = 50;
         this.sub_stick_length = 55;
         this.sub_slop = 0;
-        this.snaping_grid = initial_grid;
-
+        
         var structure = self.model.get("tree_structure");
         var snap_tree = self.model.get("snapshot");
         this.ego_label = snap_tree[0] + "_" + snap_tree[1];
         var snap_width = self.tree_size[this.ego_label][1] - self.tree_size[this.ego_label][0] + 300;
-        var snap_height = self.tree_size[this.ego_label][3] - self.tree_size[this.ego_label][2] + 300;
+        var snap_height = self.tree_size[this.ego_label][3] - self.tree_size[this.ego_label][2] + 500;
         
         this.context.lineWidth = 5; // set the style
 
@@ -2418,20 +2423,20 @@ var RenderingView = Backbone.View.extend({
             this.snap_scale = Math.round((this.snap_scale-0.01)*100)/100;
         }
 
-        $("#one_tree").css({'width': '100%'});
+        self.el_one_tree.css({'width': '100%'});
         if(snap_width*this.snap_scale + 10 < this.snapCanvas.width){
             this.snapCanvas.width = snap_width*this.snap_scale + 10;
-            $("#one_tree").css({'width': snap_width*this.snap_scale + 10});
+            self.el_one_tree.css({'width': snap_width*this.snap_scale + 10});
         }        
 
         for(var x = 0; x <= this.snapCanvas.width; x++){
-            this.snaping_grid[x] = [];
+            this.snaping_grid.push([]);
             for(var y = 0; y <= this.snapCanvas.height; y++){
                 this.snaping_grid[x][y] = -1;
             }
         }
 
-        $("#one_tree").addClass("auto_center");
+        self.el_one_tree.addClass("auto_center");
     
         this.context.translate(0.5, 0.5);
         this.context.scale(this.snap_scale, this.snap_scale);
@@ -2551,8 +2556,8 @@ var RenderingView = Backbone.View.extend({
         var structure = self.model.get("tree_structure");
         var saving_tree = self.model.get("save_tree");
         this.ego_label = saving_tree[0] + "_" + saving_tree[1];
-        var tree_width = self.tree_size[this.ego_label][1] - self.tree_size[this.ego_label][0] + 300;
-        var tree_height = self.tree_size[this.ego_label][3] - self.tree_size[this.ego_label][2] + 300;
+        var tree_width = self.tree_size[this.ego_label][1] - self.tree_size[this.ego_label][0] + 500;
+        var tree_height = self.tree_size[this.ego_label][3] - self.tree_size[this.ego_label][2] + 500;
        
         this.context.lineWidth = 5; // set the style
 
@@ -2689,9 +2694,9 @@ var RenderingView = Backbone.View.extend({
         // console.log("finish draw4save");
         // window.location.href = drawing_canvas.save_canvas.toDataURL().replace('image/png','image/octet-stream');
         var pic_url = drawing_canvas.save_canvas.toDataURL().replace('image/png','image/octet-stream');
-        $("#custom_download_link").attr('download', "myctree_" + this.ego_label + ".png");
-        $("#custom_download_link").attr('href', pic_url);
-        $("#custom_download_link")[0].click();      
+        self.el_custom_download_link.attr('download', "myctree_" + this.ego_label + ".png");
+        self.el_custom_download_link.attr('href', pic_url);
+        self.el_custom_download_link[0].click();      
         
     }
 
