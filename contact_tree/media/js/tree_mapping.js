@@ -9,7 +9,7 @@ var MappingView = Backbone.View.extend({
         _.bindAll(this, 'set_component');
         _.bindAll(this, 'set_user_mapping');
 
-        this.el_mark_group_select = ("mark_group_select");
+        this.el_mark_group_select = $("#mark_group_select");
         this.el_sidekeyselect = $("#sidekeyselect");
         this.el_mapping_img = $("#mapping_img");
         this.el_sidekey_selection = $("#sidekey_selection");
@@ -96,7 +96,7 @@ var MappingView = Backbone.View.extend({
             mapping_color.render_leaf_color = JSON.parse(JSON.stringify(save_user_mapping[this.value]["render_leaf_color"]));
             mapping_color.render_roots_color = JSON.parse(JSON.stringify(save_user_mapping[this.value]["render_roots_color"]));
         
-            // $("#sidekey_save_img").hide();
+            // self.el_sidekey_save_img.hide();
             for(var ego in all_ego){
                 ego_list.push(ego);
             }
@@ -140,18 +140,16 @@ var MappingView = Backbone.View.extend({
 
             save_item.hover(function(){
                 var delete_id = "#dlt_mapping_" + this.value;
-                // $(delete_id).css('visibility', 'visible');
                 $(delete_id).show();
             });
             save_item.mouseout(function(){
                 var delete_id = "#dlt_mapping_" + this.value;
-                // $(delete_id).css('visibility', 'hidden');
                 $(delete_id).hide();
             });
 
             save_item.click(function(){
                 self.el_sidekey_selection.hide();
-                $("#sidekey_save_img").show();
+                self.el_sidekey_save_img.show();
                 self.set_save_component(save_user_mapping[this.value-1]["attr"]);
                 $("#use_label").val(this.value-1);
             });    
@@ -199,58 +197,58 @@ var MappingView = Backbone.View.extend({
         var self = this;
 
         $("#trunk_label").click(function() {
-            $("#sidekey_save_img").hide();
-            $("#sidekey_operation").hide();
+            self.el_sidekey_save_img.hide();
+            self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
             self.trunk_map();
 
         });
 
         $("#branch_label").click(function() {
-            $("#sidekey_save_img").hide();
-            $("#sidekey_operation").hide();
+            self.el_sidekey_save_img.hide();
+            self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
             self.branch_map();
         });
 
         $("#bside_label").click(function() {
-            $("#sidekey_save_img").hide();
-            $("#sidekey_operation").hide();
+            self.el_sidekey_save_img.hide();
+            self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
             self.bside_map();
         });
 
         $("#root_label").click(function() {
-            $("#sidekey_save_img").hide();
-            $("#sidekey_operation").hide();
+            self.el_sidekey_save_img.hide();
+            self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
             self.root_map();
         });
 
         $("#leaf_size_label").click(function() {
-            $("#sidekey_save_img").hide();
-            $("#sidekey_operation").hide();
+            self.el_sidekey_save_img.hide();
+            self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
             self.leaf_size_map();
         });
 
         $("#leaf_color_label").click(function() {
-            $("#sidekey_save_img").hide();
-            $("#sidekey_operation").hide();
+            self.el_sidekey_save_img.hide();
+            self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
             self.leaf_color_map();
         });
 
         $("#leaf_highlight_label").click(function() {
-            $("#sidekey_save_img").hide();
-            $("#sidekey_operation").hide();
+            self.el_sidekey_save_img.hide();
+            self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
             self.leaf_highlight_map();
         });
 
         $("#fruit_size_label").click(function() {
-            $("#sidekey_save_img").hide();
-            $("#sidekey_operation").hide();
+            self.el_sidekey_save_img.hide();
+            self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
             self.fruit_size_map();
         });        
@@ -259,9 +257,7 @@ var MappingView = Backbone.View.extend({
 
     binary_cat_operation: function(one_attr, comp, ori_attr){
         var self = this;
-        var data_mode = self.model.get("view_mode");
-        // var attr_container = document.getElementById("mark_group_select");
-            
+        var data_mode = self.model.get("view_mode");            
         var group1 = $('<div class="column left first"></div>');
         var group2 = $('<div class="column left"></div>');
         var list1 = $('<ul id="mapping_group1" class="sortable-list" style="background-color:rgba(33, 178, 239, 0.5);"></ul>');
@@ -300,8 +296,8 @@ var MappingView = Backbone.View.extend({
 
         group1.append(list1);
         group2.append(list2);
-        $("#mark_group_select").append(group1);
-        $("#mark_group_select").append(group2);
+        self.el_mark_group_select.append(group1);
+        self.el_mark_group_select.append(group2);
 
         $('#mark_group_select .sortable-list').sortable({
             connectWith: '#mark_group_select .sortable-list'
@@ -312,7 +308,6 @@ var MappingView = Backbone.View.extend({
     binary_num_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
-        // var attr_container = document.getElementById("mark_group_select");
             
         var attr_min = parseInt(component_attribute[data_mode][one_attr][1]);
         var attr_max = parseInt(component_attribute[data_mode][one_attr][2]);
@@ -331,14 +326,14 @@ var MappingView = Backbone.View.extend({
         sep.append(group_slider);
         range.append(range_min);
         range.append(range_max);
-        $("#mark_group_select").append(sep);
-        $("#mark_group_select").append(range);
+        self.el_mark_group_select.append(sep);
+        self.el_mark_group_select.append(range);
 
         if(one_attr == ori_attr && comp in attribute_mapping){
             sep_title.css({"left": 100*(parseInt(attribute_mapping[comp][0])-attr_min)/((attr_max-attr_min)+1) + "%"})
             .html(parseInt(attribute_mapping[comp][0])).val(parseInt(attribute_mapping[comp][0]));
             
-            $("#binary_slider").slider({
+            group_slider.slider({
                 orientation: "horizontal",
                 range: "min",
                 min: attr_min,
@@ -360,7 +355,7 @@ var MappingView = Backbone.View.extend({
             sep_title.css({"left": 100*(Math.floor((attr_min + attr_max)/2)-attr_min)/((attr_max-attr_min)+1) + "%"})
             .html(Math.floor((attr_min + attr_max)/2)).val(Math.floor((attr_min + attr_max)/2));
             
-            $("#binary_slider").slider({
+            group_slider.slider({
                 orientation: "horizontal",
                 range: "min",
                 min: attr_min,
@@ -382,8 +377,7 @@ var MappingView = Backbone.View.extend({
     layer_cat_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
-        // var attr_container = document.getElementById("mark_group_select");
-
+        
         var group = $('<div class="column left first"></div>');
         var list = $('<ul id="mapping_group" class="sortable-list" style="background-color:rgba(125, 96, 66, 0.7);"></ul>');
 
@@ -410,7 +404,7 @@ var MappingView = Backbone.View.extend({
             }
         }
         group.append(list);
-        $("#mark_group_select").append(group);
+        self.el_mark_group_select.append(group);
 
         $('#mark_group_select .sortable-list').sortable({
             connectWith: '#mark_group_select .sortable-list'
@@ -421,7 +415,7 @@ var MappingView = Backbone.View.extend({
     layer_num_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
-        // var attr_container = document.getElementById("mark_group_select");
+        
         var revert = "d";
         var attr_min = parseInt(component_attribute[data_mode][one_attr][1]);
         var attr_max = parseInt(component_attribute[data_mode][one_attr][2]);
@@ -458,10 +452,10 @@ var MappingView = Backbone.View.extend({
             gap.append(gap_input);
             gap.append(revert_button);
 
-            $("#mark_group_select").append(gap);
-            $("#mark_group_select").append(range);
-            $("#mark_group_select").append(group_slider);
-            $("#mark_group_select").append(sep);
+            self.el_mark_group_select.append(gap);
+            self.el_mark_group_select.append(range);
+            self.el_mark_group_select.append(group_slider);
+            self.el_mark_group_select.append(sep);
 
             // mapping_gap = attr_range/user_map.length;
             if(parseFloat(user_map[1],10) < parseFloat(user_map[0],10))
@@ -492,10 +486,10 @@ var MappingView = Backbone.View.extend({
             gap.append(gap_input);
             gap.append(revert_button);
 
-            $("#mark_group_select").append(gap);
-            $("#mark_group_select").append(range);
-            $("#mark_group_select").append(group_slider);
-            $("#mark_group_select").append(sep);
+            self.el_mark_group_select.append(gap);
+            self.el_mark_group_select.append(range);
+            self.el_mark_group_select.append(group_slider);
+            self.el_mark_group_select.append(sep);
 
             
             for(var g = attr_min; g <= attr_max; g+=mapping_gap){
@@ -511,7 +505,7 @@ var MappingView = Backbone.View.extend({
             slider_val = slider_val.reverse();
         
         if(revert == "a"){
-            $("#layer_slider").slider({
+            group_slider.slider({
                 orientation: "vertical",
                 // range: "min",
                 min: 0-attr_max,
@@ -526,7 +520,7 @@ var MappingView = Backbone.View.extend({
 
         }
         else{
-            $("#layer_slider").slider({
+            group_slider.slider({
                 orientation: "vertical",
                 // range: "min",
                 min: attr_min,
@@ -577,7 +571,7 @@ var MappingView = Backbone.View.extend({
             if(my_revert == "a")
                 new_slider_val = new_slider_val.reverse();
             
-            $("#layer_slider").slider( "destroy" );
+            $("#layer_slider").slider( "destroy" ); //!!!
             $("#layer_slider").attr("class", "left layer_slider");
             $("#layer_slider").attr("style", "height:" + (50*$("#sep_gap").val()) + ";");
             if(my_revert == "a"){
@@ -667,7 +661,7 @@ var MappingView = Backbone.View.extend({
     color_cat_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
-        // var attr_container = document.getElementById("mark_group_select");
+        
         var total_items = component_attribute[data_mode][one_attr][0];
         var color_table = [];
         var render_table = [];
@@ -689,9 +683,9 @@ var MappingView = Backbone.View.extend({
             if(c == 0){
                 var c1 = $('<span class="myfont3">Color Map</span>');
                 var c2 = $('<span class="myfont3" style="position:absolute; left:125px;">Attribute Data</span>');
-                $("#mark_group_select").append(c1);
-                $("#mark_group_select").append(c2);                
-                $("#mark_group_select").append('<br><p>');
+                self.el_mark_group_select.append(c1);
+                self.el_mark_group_select.append(c2);                
+                self.el_mark_group_select.append('<br><p>');
             }
 
             var label_container =$('<span style="position:absolute; left:125px;"></span>'); // attribute data
@@ -715,7 +709,6 @@ var MappingView = Backbone.View.extend({
                 
                 if(used == 1){
                     if(color_table[l_color] == render_table[c]){
-                        // select_container.setAttribute("style", "background-color:" + color_table[l_color] + ";");
                         select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; background-color:" + color_table[l_color] + ";");
                     }
                 }
@@ -738,9 +731,9 @@ var MappingView = Backbone.View.extend({
                 
             }
             select_container.append(selection_ul);
-            $("#mark_group_select").append(select_container);
-            $("#mark_group_select").append(label_container);
-            $("#mark_group_select").append('<br><p>');
+            self.el_mark_group_select.append(select_container);
+            self.el_mark_group_select.append(label_container);
+            self.el_mark_group_select.append('<br><p>');
         }
 
 
@@ -749,7 +742,7 @@ var MappingView = Backbone.View.extend({
     color_num_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
-        // var attr_container = document.getElementById("mark_group_select");
+        
         var total_gap = 0;
         var used = 0;
         var user_map = [];
@@ -793,18 +786,18 @@ var MappingView = Backbone.View.extend({
             }
             gap.append(gap_title);
             gap.append(gap_input);
-            $("#mark_group_select").append(gap);
+            self.el_mark_group_select.append(gap);
 
             var c1 = $('<span class="myfont3">Color Map</span>');
             var c2 = $('<span class="myfont3" style="margin-left:50px;">Attribute Data</span>');
                 
-            $("#mark_group_select").append(c1);
-            $("#mark_group_select").append(c2);
-            $("#mark_group_select").append('<br><p>');
+            self.el_mark_group_select.append(c1);
+            self.el_mark_group_select.append(c2);
+            self.el_mark_group_select.append('<br><p>');
 
-            $("#mark_group_select").append(range);
-            $("#mark_group_select").append(group_slider);
-            $("#mark_group_select").append(sep);
+            self.el_mark_group_select.append(range);
+            self.el_mark_group_select.append(group_slider);
+            self.el_mark_group_select.append(sep);
 
             var slider_val = [];
 
@@ -828,18 +821,18 @@ var MappingView = Backbone.View.extend({
 
             gap.append(gap_title);
             gap.append(gap_input);
-            $("#mark_group_select").append(gap);
+            self.el_mark_group_select.append(gap);
 
             var c1 = $('<span class="myfont3">Color Map</span>');
             var c2 = $('<span class="myfont3" style="margin-left:50px;">Attribute Data</span>');
 
-            $("#mark_group_select").append(c1);
-            $("#mark_group_select").append(c2);
-            $("#mark_group_select").append('<br><p>');
+            self.el_mark_group_select.append(c1);
+            self.el_mark_group_select.append(c2);
+            self.el_mark_group_select.append('<br><p>');
 
-            $("#mark_group_select").append(range);
-            $("#mark_group_select").append(group_slider);
-            $("#mark_group_select").append(sep);
+            self.el_mark_group_select.append(range);
+            self.el_mark_group_select.append(group_slider);
+            self.el_mark_group_select.append(sep);
             
             for(var g = attr_min; g <= attr_max; g+=mapping_gap){
                 slider_val.push(Math.round(g*100)/100);
@@ -920,7 +913,7 @@ var MappingView = Backbone.View.extend({
     size_cat_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
-        // var attr_container = document.getElementById("mark_group_select");
+        
         var total_items = component_attribute[data_mode][one_attr][0];
         var img_src;
         if(comp == "leaf_size")
@@ -942,9 +935,9 @@ var MappingView = Backbone.View.extend({
             if(c == 0){
                 var c1 = $('<span class="myfont3">Size Scale</span>');
                 var c2 = $('<span class="myfont3" style="margin-left: 60px;">Attribute Data</span>');
-                $("#mark_group_select").append(c1);
-                $("#mark_group_select").append(c2);                
-                $("#mark_group_select").append('<br><p>');
+                self.el_mark_group_select.append(c1);
+                self.el_mark_group_select.append(c2);                
+                self.el_mark_group_select.append('<br><p>');
             }                    
             var select_container = $('<div class="size_cat_select_container"></div>');
             var oneitem = $('<img></img>');
@@ -966,7 +959,7 @@ var MappingView = Backbone.View.extend({
             select_container.append(slider_label);
             select_container.append(label_container);
                         
-            $("#mark_group_select").append(select_container);
+            self.el_mark_group_select.append(select_container);
 
             var handle = "#ori_attr_val_" + c + " .ui-slider-handle";
 
@@ -1003,7 +996,7 @@ var MappingView = Backbone.View.extend({
     size_num_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
-        // var attr_container = document.getElementById("mark_group_select");
+        
         var total_items = component_attribute[data_mode][one_attr][0];
         var used = 0;
         var selected_gap = 6;
@@ -1047,18 +1040,18 @@ var MappingView = Backbone.View.extend({
 
         gap.append(gap_title);
         gap.append(gap_input);
-        $("#mark_group_select").append(gap);
+        self.el_mark_group_select.append(gap);
 
         var c1 = $('<span class="myfont3">Size Scale</span>');
         var c2 = $('<span class="myfont3" style="margin-left:90px;">Attribute Data</span>');
                 
-        $("#mark_group_select").append(c1);
-        $("#mark_group_select").append(c2);
-        $("#mark_group_select").append('<br><p>');
+        self.el_mark_group_select.append(c1);
+        self.el_mark_group_select.append(c2);
+        self.el_mark_group_select.append('<br><p>');
 
-        $("#mark_group_select").append(range);
-        $("#mark_group_select").append(group_slider);                    
-        $("#mark_group_select").append(sep);
+        self.el_mark_group_select.append(range);
+        self.el_mark_group_select.append(group_slider);                    
+        self.el_mark_group_select.append(sep);
 
         var slider_val = [];
 
@@ -1118,7 +1111,7 @@ var MappingView = Backbone.View.extend({
                 new_slider_val.push(attr_max);
             }
             
-            $("#layer_slider").slider( "destroy" );     
+            $("#layer_slider").slider( "destroy" ); //!!!     
             if(comp == "leaf_size")
                 $("#layer_slider").attr("class", "left leaf_size_slider").attr("style", "height:" + (50*$("#sep_gap").val()) + ";");
             else
@@ -2055,8 +2048,8 @@ var MappingView = Backbone.View.extend({
 
         // set user's map
         if(attr_map["trunk"] != "none"){
-            $("#mark_group_select").empty();
-            $("#sidekey_operation").show();
+            self.el_mark_group_select.empty();
+            self.el_sidekey_operation.show();
             self.el_mark_group.html("<b>NOTE: Blue</b> as left trunk | <b>Red</b> as right trunk");
             self.el_mark_group.show();
 
@@ -2073,11 +2066,11 @@ var MappingView = Backbone.View.extend({
 
         self.el_sidekeyselect.unbind();
         self.el_sidekeyselect.change(function(){
-            $("#mark_group_select").empty();
+            self.el_mark_group_select.empty();
             if( self.el_sidekeyselect.val() != "none"){
                 var data_mode = self.model.get("view_mode");
                 var attr_map = self.model.get("attribute");
-                $("#sidekey_operation").show();
+                self.el_sidekey_operation.show();
                 // self.el_mark_group.text("✔ as Left Side of Trunk: 【NOTE】");
                 self.el_mark_group.html("<b>NOTE: Blue</b> as left trunk | <b>Red</b> as right trunk");
                 self.el_mark_group.show();
@@ -2149,8 +2142,8 @@ var MappingView = Backbone.View.extend({
         }
 
         if(attr_map["bside"] != "none"){
-            $("#mark_group_select").empty();
-            $("#sidekey_operation").show();
+            self.el_mark_group_select.empty();
+            self.el_sidekey_operation.show();
             // self.el_mark_group.text("✔ as Left Side of bside: 【NOTE】");
             self.el_mark_group.html("<b>NOTE: Blue</b> as upper side | <b>Red</b> as lower side");
             self.el_mark_group.show();
@@ -2167,12 +2160,12 @@ var MappingView = Backbone.View.extend({
 
         self.el_sidekeyselect.unbind();
         self.el_sidekeyselect.change(function(){
-            $("#mark_group_select").empty();
+            self.el_mark_group_select.empty();
             if( self.el_sidekeyselect.val() != "none"){
                 var data_mode = self.model.get("view_mode");
                 var attr_map = self.model.get("attribute");
-                $("#sidekey_operation").show();
-                // var attr_container = document.getElementById("mark_group_select");
+                self.el_sidekey_operation.show();
+                
                 self.el_mark_group.html("<b>NOTE: Blue</b> as upper side | <b>Red</b> as lower side");
                 self.el_mark_group.show();
                 if(component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "categorical" || component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "boolean"){
@@ -2239,11 +2232,11 @@ var MappingView = Backbone.View.extend({
                 selection_opt.prop("selected", true);
             self.el_sidekeyselect.append(selection_opt);
         }
-        $("#mark_group_select").empty();
+        self.el_mark_group_select.empty();
 
         if(attr_map["branch"] != "none"){
-            $("#sidekey_operation").show();
-            // var attr_container = document.getElementById("mark_group_select");
+            self.el_sidekey_operation.show();
+            
             self.el_mark_group.html("<b>NOTE: Order</b> the attributes as the branch order</b>");
             self.el_mark_group.show();
             if(component_attribute[data_mode][attr_map["branch"]][5] == "categorical" || component_attribute[data_mode][attr_map["branch"]][5] == "boolean"){
@@ -2260,13 +2253,13 @@ var MappingView = Backbone.View.extend({
 
         self.el_sidekeyselect.unbind();
         self.el_sidekeyselect.change(function(){
-            $("#mark_group_select").empty();
+            self.el_mark_group_select.empty();
             var revert = "d";
             if( self.el_sidekeyselect.val() != "none"){
                 var data_mode = self.model.get("view_mode");
                 var attr_map = self.model.get("attribute");                
-                $("#sidekey_operation").show();
-                // var attr_container = document.getElementById("mark_group_select");
+                self.el_sidekey_operation.show();
+                
                 self.el_mark_group.html("<b>NOTE: Order</b> the attributes as the branch order</b>");
                 self.el_mark_group.show();
                 if(component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "categorical" || component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "boolean"){
@@ -2388,11 +2381,11 @@ var MappingView = Backbone.View.extend({
 
         // set user mapping
         if(attr_map["root"] != "none"){
-            $("#mark_group_select").empty();
-            $("#sidekey_operation").show();
+            self.el_mark_group_select.empty();
+            self.el_sidekey_operation.show();
             self.el_mark_group.html("<b>NOTE: Color</b> as different categories");
             self.el_mark_group.show();
-            // var attr_container = document.getElementById("mark_group_select");
+            
             var user_map = attribute_mapping[attr_map["root"]];
             if(component_attribute[data_mode][attr_map["root"]][5] == "categorical" || component_attribute[data_mode][attr_map["root"]][5] == "boolean"){
                 self.color_cat_operation(attr_map["root"], "root", attr_map["root"]);
@@ -2408,12 +2401,12 @@ var MappingView = Backbone.View.extend({
         self.el_sidekeyselect.unbind();
         self.el_sidekeyselect.change(function(){
             var attr_map = self.model.get("attribute");
-            $("#mark_group_select").empty();
+            self.el_mark_group_select.empty();
             if( self.el_sidekeyselect.val() != "none"){
-                $("#sidekey_operation").show();
+                self.el_sidekey_operation.show();
                 self.el_mark_group.html("<b>NOTE: Color</b> as different categories");
                 self.el_mark_group.show();
-                // var attr_container = document.getElementById("mark_group_select");
+                
                 if(component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "categorical" || component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "boolean"){
                     self.color_cat_operation(self.el_sidekeyselect.val(), "root", attr_map["root"]);
                 }
@@ -2423,7 +2416,7 @@ var MappingView = Backbone.View.extend({
                 
             }
             else{
-                $("#sidekey_operation").show();
+                self.el_sidekey_operation.show();
                 self.el_mark_group.html("<b>NOTE:</b> Map <b>nothing</b> to root");
                 self.el_mark_group.show();
             }
@@ -2486,8 +2479,8 @@ var MappingView = Backbone.View.extend({
         }
 
         if(attr_map["leaf_color"] != "none"){
-            $("#mark_group_select").empty();
-            $("#sidekey_operation").show();
+            self.el_mark_group_select.empty();
+            self.el_sidekey_operation.show();
             self.el_mark_group.html("<b>NOTE: Color</b> as different categories");
             self.el_mark_group.show();
 
@@ -2504,9 +2497,9 @@ var MappingView = Backbone.View.extend({
 
         self.el_sidekeyselect.unbind();
         self.el_sidekeyselect.change(function(){
-            $("#mark_group_select").empty();
+            self.el_mark_group_select.empty();
             if( self.el_sidekeyselect.val() != "none"){
-                $("#sidekey_operation").show();
+                self.el_sidekey_operation.show();
                 self.el_mark_group.html("<b>NOTE: Color</b> as different categories");
                 self.el_mark_group.show();
                 if(component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "categorical" || component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "boolean"){
@@ -2517,7 +2510,7 @@ var MappingView = Backbone.View.extend({
                 }
             }
             else{
-                $("#sidekey_operation").show();
+                self.el_sidekey_operation.show();
                 self.el_mark_group.html("<b>NOTE:</b> Map <b>nothing</b> to leaf color");
                 self.el_mark_group.show();
             }
@@ -2573,14 +2566,14 @@ var MappingView = Backbone.View.extend({
 
         self.el_sidekeyselect.unbind();
         self.el_sidekeyselect.change(function(){
-            $("#mark_group_select").empty();
+            self.el_mark_group_select.empty();
             if( self.el_sidekeyselect.val() != "none"){
-                $("#sidekey_operation").show();
+                self.el_sidekey_operation.show();
                 self.el_mark_group.html("<b>NOTE: Highlight \"" + self.el_sidekeyselect.val() + "\"</b> information on leaf<br><b>");
                 self.el_mark_group.show();         
             }
             else{
-                $("#sidekey_operation").show();
+                self.el_sidekey_operation.show();
                 self.el_mark_group.html("<b>NOTE:</b> Map <b>nothing</b> to leaf highlight");
                 self.el_mark_group.show();
             }
@@ -2659,11 +2652,11 @@ var MappingView = Backbone.View.extend({
 
         if(attr_map["leaf_size"] != "none"){
             var user_map = attribute_mapping[attr_map["leaf_size"]];
-            $("#mark_group_select").empty();
-            $("#sidekey_operation").show();
+            self.el_mark_group_select.empty();
+            self.el_sidekey_operation.show();
             self.el_mark_group.html("<b>NOTE: Leaf size scale</b> of the attributes mapping");
             self.el_mark_group.show();
-            // var attr_container = document.getElementById("mark_group_select");
+            
             if(component_attribute[data_mode][attr_map["leaf_size"]][5] == "categorical" || component_attribute[data_mode][attr_map["leaf_size"]][5] == "boolean"){
                 self.size_cat_operation(attr_map["leaf_size"], "leaf_size", attr_map["leaf_size"]);
             }
@@ -2679,9 +2672,9 @@ var MappingView = Backbone.View.extend({
         self.el_sidekeyselect.unbind();
         self.el_sidekeyselect.change(function(){
             var attr_map = self.model.get("attribute");
-            $("#mark_group_select").empty();
+            self.el_mark_group_select.empty();
             if( self.el_sidekeyselect.val() != "none"){   
-                $("#sidekey_operation").show();
+                self.el_sidekey_operation.show();
                 self.el_mark_group.html("<b>NOTE: Leaf size scale</b> of the attributes mapping");
                 self.el_mark_group.show();
                 if(component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "categorical" || component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "boolean"){
@@ -2692,7 +2685,7 @@ var MappingView = Backbone.View.extend({
                 }
             }
             else{
-                $("#sidekey_operation").show();
+                self.el_sidekey_operation.show();
                 self.el_mark_group.html("<b>NOTE:</b> Map <b>nothing</b> to leaf size");
                 self.el_mark_group.show();
             }
@@ -2752,11 +2745,11 @@ var MappingView = Backbone.View.extend({
         }
 
         if(attr_map["fruit_size"] != "none"){
-            $("#mark_group_select").empty();
-            $("#sidekey_operation").show();
+            self.el_mark_group_select.empty();
+            self.el_sidekey_operation.show();
             self.el_mark_group.html("<b>NOTE: Fruit size scale</b> of the attributes mapping");
             self.el_mark_group.show();
-            // var attr_container = document.getElementById("mark_group_select");
+            
             var user_map = attribute_mapping[attr_map["fruit_size"]];
             if(component_attribute[data_mode][attr_map["fruit_size"]][5] == "categorical" || component_attribute[data_mode][attr_map["fruit_size"]][5] == "boolean"){
                 self.size_cat_operation(attr_map["fruit_size"], "fruit_size", attr_map["fruit_size"]);                
@@ -2772,9 +2765,9 @@ var MappingView = Backbone.View.extend({
         self.el_sidekeyselect.unbind();
         self.el_sidekeyselect.change(function(){
             var attr_map = self.model.get("attribute");
-            $("#mark_group_select").empty();
+            self.el_mark_group_select.empty();
             if( self.el_sidekeyselect.val() != "none"){   
-                $("#sidekey_operation").show();
+                self.el_sidekey_operation.show();
                 self.el_mark_group.html("<b>NOTE: Fruit size scale</b> of the attributes mapping");
                 self.el_mark_group.show();
                 if(component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "categorical" || component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "boolean"){
@@ -2785,7 +2778,7 @@ var MappingView = Backbone.View.extend({
                 }
             }
             else{
-                $("#sidekey_operation").show();
+                self.el_sidekey_operation.show();
                 self.el_mark_group.html("<b>NOTE:</b> Map <b>nothing</b> to fruit size");
                 self.el_mark_group.show();
             }
