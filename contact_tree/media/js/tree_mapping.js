@@ -8,6 +8,19 @@ var MappingView = Backbone.View.extend({
         console.log("in mapping initialize");
         _.bindAll(this, 'set_component');
         _.bindAll(this, 'set_user_mapping');
+
+        this.el_mark_group_select = ("mark_group_select");
+        this.el_sidekeyselect = $("#sidekeyselect");
+        this.el_mapping_img = $("#mapping_img");
+        this.el_sidekey_selection = $("#sidekey_selection");
+        this.el_sidekey_operation = $("#sidekey_operation");
+        this.el_mark_group = $("#mark_group");
+        this.el_sidekey_save_img = $("#sidekey_save_img");
+        this.el_loading_process = $("#loading_process");
+        this.el_block_layer = $("#block_layer");
+        this.el_sidekey_title = $("#sidekey_title");
+        this.el_block_page = $("#block_page");
+        this.el_sidekey_submit = $("#sidekey_submit");
         
         this.change_mapping = 0;
         $( "#sidekey_dialog" ).dialog({
@@ -24,13 +37,13 @@ var MappingView = Backbone.View.extend({
             }
         });
 
-        $( "#map" ).click(function() {
-            $('#mapping_img').attr('src', 'media/img/real_mix_tree.png');
+        $("#map").click(function() {
+            self.el_mapping_img.attr('src', 'media/img/real_mix_tree.png');
             $("#sidekey_dialog").dialog( "open" );
-            $("#sidekey_save_img").hide();
-            $("#sidekey_selection").hide();
-            $("#sidekey_operation").hide();
-            $("#mark_group").hide();
+            self.el_sidekey_save_img.hide();
+            self.el_sidekey_selection.hide();
+            self.el_sidekey_operation.hide();
+            self.el_mark_group.hide();
             self.change_mapping = 0;
             self.set_component();
 
@@ -92,10 +105,10 @@ var MappingView = Backbone.View.extend({
             var request = JSON.stringify(now_attr) + ":-" + JSON.stringify(ego_list) + ":-" + now_mode + ":-" + JSON.stringify(now_attr_map) + ":-" + data_group + ":-" + JSON.stringify(all_ego);
             var request_url = "restore_data/?restore="+encodeURIComponent(request);
             
-            $("#block_page").show();
+            self.el_block_page.show();
 
             d3.json(request_url, function(result) {
-                $("#block_page").hide();
+                self.el_block_page.hide();
                 attribute_mapping = now_attr_map;
                 self.model.set({"attribute": now_attr});
                 self.restructure(result);
@@ -129,7 +142,6 @@ var MappingView = Backbone.View.extend({
             save_item_container.append(save_item_dlt);
             save_container.append(save_item_container);
 
-
             save_item.hover(function(){
                 var delete_id = "#dlt_mapping_" + this.value;
                 // $(delete_id).css('visibility', 'visible');
@@ -142,7 +154,7 @@ var MappingView = Backbone.View.extend({
             });
 
             save_item.click(function(){
-                $("#sidekey_selection").hide();
+                self.el_sidekey_selection.hide();
                 $("#sidekey_save_img").show();
                 self.set_save_component(save_user_mapping[this.value-1]["attr"]);
                 $("#use_label").val(this.value-1);
@@ -194,14 +206,7 @@ var MappingView = Backbone.View.extend({
         $("#trunk_label").click(function() {
             $("#sidekey_save_img").hide();
             $("#sidekey_operation").hide();
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
+            self.el_sidekey_submit.hide();
             self.trunk_map();
 
         });
@@ -209,98 +214,49 @@ var MappingView = Backbone.View.extend({
         $("#branch_label").click(function() {
             $("#sidekey_save_img").hide();
             $("#sidekey_operation").hide();
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
+            self.el_sidekey_submit.hide();
             self.branch_map();
         });
 
         $("#bside_label").click(function() {
             $("#sidekey_save_img").hide();
             $("#sidekey_operation").hide();
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
+            self.el_sidekey_submit.hide();
             self.bside_map();
         });
 
         $("#root_label").click(function() {
             $("#sidekey_save_img").hide();
             $("#sidekey_operation").hide();
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
+            self.el_sidekey_submit.hide();
             self.root_map();
         });
 
         $("#leaf_size_label").click(function() {
             $("#sidekey_save_img").hide();
             $("#sidekey_operation").hide();
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
+            self.el_sidekey_submit.hide();
             self.leaf_size_map();
         });
 
         $("#leaf_color_label").click(function() {
             $("#sidekey_save_img").hide();
             $("#sidekey_operation").hide();
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
+            self.el_sidekey_submit.hide();
             self.leaf_color_map();
         });
 
         $("#leaf_highlight_label").click(function() {
             $("#sidekey_save_img").hide();
             $("#sidekey_operation").hide();
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
+            self.el_sidekey_submit.hide();
             self.leaf_highlight_map();
         });
 
         $("#fruit_size_label").click(function() {
             $("#sidekey_save_img").hide();
             $("#sidekey_operation").hide();
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
+            self.el_sidekey_submit.hide();
             self.fruit_size_map();
         });        
 
@@ -309,40 +265,26 @@ var MappingView = Backbone.View.extend({
     binary_cat_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
-        var attr_container = document.getElementById("mark_group_select");
+        // var attr_container = document.getElementById("mark_group_select");
             
-        var group1 = document.createElement("div");
-        var group2 = document.createElement("div");
-        var list1 = document.createElement("ul");
-        var list2 = document.createElement("ul");
-        group1.setAttribute("class", "column left first");
-        group2.setAttribute("class", "column left");
-
-        list1.id = "mapping_group1";
-        list2.id = "mapping_group2";
-        list1.setAttribute("class", "sortable-list");
-        list2.setAttribute("class", "sortable-list");
-
-        list1.setAttribute("style", "background-color:rgba(33, 178, 239, 0.5);");
-        list2.setAttribute("style", "background-color:rgba(236, 91, 94, 0.5);");
-
+        var group1 = $('<div class="column left first"></div>');
+        var group2 = $('<div class="column left"></div>');
+        var list1 = $('<ul id="mapping_group1" class="sortable-list" style="background-color:rgba(33, 178, 239, 0.5);"></ul>');
+        var list2 = $('<ul id="mapping_group2" class="sortable-list" style="background-color:rgba(236, 91, 94, 0.5);"></ul>');
+        
         var item_array = component_attribute[data_mode][one_attr][0]
         if(one_attr == ori_attr && comp in attribute_mapping){
             for(var c0 = 0; c0 < attribute_mapping[comp][0].length; c0++){
-                var item = document.createElement("li");
-                item.setAttribute("class", "sortable-item");
-                item.innerHTML = attribute_mapping[comp][0][c0];
-                // item.value = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
-                item.value = item_array.indexOf(attribute_mapping[comp][0][c0]);
-                list1.appendChild(item);
+                var item = $('<li class="sortable-item"></li>');
+                item.html(attribute_mapping[comp][0][c0]);
+                item.val(item_array.indexOf(attribute_mapping[comp][0][c0]));
+                list1.append(item);
             }
             for(var c1 = 0; c1 < attribute_mapping[comp][1].length; c1++){
-                var item = document.createElement("li");
-                item.setAttribute("class", "sortable-item");
-                item.innerHTML = attribute_mapping[comp][1][c1];
-                // item.value = component_attribute[data_mode][$("#sidekeyselect").val()][0][c];
-                item.value = item_array.indexOf(attribute_mapping[comp][1][c1]);
-                list2.appendChild(item);
+                var item = $('<li class="sortable-item"></li>');
+                item.html(attribute_mapping[comp][1][c1]);
+                item.val(item_array.indexOf(attribute_mapping[comp][1][c1]));
+                list2.append(item);
             }
 
         }
@@ -350,23 +292,21 @@ var MappingView = Backbone.View.extend({
         else{
             var total_items = item_array.length
             for(var c = 0; c < total_items; c ++){
-                var item = document.createElement("li");
-                item.setAttribute("class", "sortable-item");
-                item.innerHTML = item_array[c];
-                // item.value = component_attribute[data_mode][attr_map["trunk"]][0][c];
-                item.value = c;
+                var item = $('<li class="sortable-item"></li>');
+                item.html(item_array[c]).val(c);
+                
                 if(c < total_items/2)
-                    list1.appendChild(item);
+                    list1.append(item);
                 else
-                    list2.appendChild(item);
+                    list2.append(item);
             }
             
         }
 
-        group1.appendChild(list1);
-        group2.appendChild(list2);
-        attr_container.appendChild(group1);
-        attr_container.appendChild(group2);
+        group1.append(list1);
+        group2.append(list2);
+        $("#mark_group_select").append(group1);
+        $("#mark_group_select").append(group2);
 
         $('#mark_group_select .sortable-list').sortable({
             connectWith: '#mark_group_select .sortable-list'
@@ -377,40 +317,30 @@ var MappingView = Backbone.View.extend({
     binary_num_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
-        var attr_container = document.getElementById("mark_group_select");
+        // var attr_container = document.getElementById("mark_group_select");
             
         var attr_min = parseInt(component_attribute[data_mode][one_attr][1]);
         var attr_max = parseInt(component_attribute[data_mode][one_attr][2]);
         
-        var sep = document.createElement("div");
-        var sep_title = document.createElement("span");
-        var group_slider = document.createElement("div");
-        var range = document.createElement("div");
-        var range_min = document.createElement("span");
-        var range_max = document.createElement("span");
+        var sep = $('<div class="binary_sep"></div>');
+        var sep_title = $('<span id="sep_group" style="position:absolute;"></span>');
+        var group_slider = $('<div id="binary_slider" class="binary_group_slider"></div>');
+        var range = $('<div style="width:100%; margin-top:10px;"></div>');
+        var range_min = $('<span class="left"></span>');
+        var range_max = $('<span class="right"></span>');
         
-        sep_title.id = "sep_group";
-        
-        group_slider.id = "binary_slider";
-        sep_title.setAttribute("style", "position:absolute;");
-        sep.setAttribute("style", "margin-top:10px; position:relative; width:100%; margin-left:5px; height:30px;");
-        group_slider.setAttribute("style", "background:rgba(236, 91, 94, 0.5); position:absolute; top:25px; width:100%;");
+        range_min.html(attr_min);
+        range_max.html(attr_max);
 
-        range.setAttribute("style", " width:100%; margin-top:10px;");
-        range_min.innerHTML = attr_min;
-        range_max.innerHTML = attr_max;
-        range_min.setAttribute("class", "left");
-        range_max.setAttribute("class", "right");
-
-        sep.appendChild(sep_title);
-        sep.appendChild(group_slider);
-        range.appendChild(range_min);
-        range.appendChild(range_max);
-        attr_container.appendChild(sep);
-        attr_container.appendChild(range);
+        sep.append(sep_title);
+        sep.append(group_slider);
+        range.append(range_min);
+        range.append(range_max);
+        $("#mark_group_select").append(sep);
+        $("#mark_group_select").append(range);
 
         if(one_attr == ori_attr && comp in attribute_mapping){
-            $("#sep_group").css({"left": 100*(parseInt(attribute_mapping[comp][0])-attr_min)/((attr_max-attr_min)+1) + "%"})
+            sep_title.css({"left": 100*(parseInt(attribute_mapping[comp][0])-attr_min)/((attr_max-attr_min)+1) + "%"})
             .html(parseInt(attribute_mapping[comp][0])).val(parseInt(attribute_mapping[comp][0]));
             
             $("#binary_slider").slider({
@@ -419,11 +349,11 @@ var MappingView = Backbone.View.extend({
                 min: attr_min,
                 max: attr_max,
                 value: parseInt(attribute_mapping[comp][0]),
-                step: 0.1,
+                step: 1,
                 slide: function( event, ui ) {
-                    $("#sep_group").text(ui.value);
-                    $("#sep_group").val(ui.value);
-                    $("#sep_group").css({"left": 100*(ui.value-attr_min)/((attr_max-attr_min)+1) + "%"});
+                    sep_title.text(ui.value);
+                    sep_title.val(ui.value);
+                    sep_title.css({"left": 100*(ui.value-attr_min)/((attr_max-attr_min)+1) + "%"});
                 }
             });
             
@@ -432,7 +362,7 @@ var MappingView = Backbone.View.extend({
         }
 
         else{
-            $("#sep_group").css({"left": 100*(Math.floor((attr_min + attr_max)/2)-attr_min)/((attr_max-attr_min)+1) + "%"})
+            sep_title.css({"left": 100*(Math.floor((attr_min + attr_max)/2)-attr_min)/((attr_max-attr_min)+1) + "%"})
             .html(Math.floor((attr_min + attr_max)/2)).val(Math.floor((attr_min + attr_max)/2));
             
             $("#binary_slider").slider({
@@ -441,11 +371,11 @@ var MappingView = Backbone.View.extend({
                 min: attr_min,
                 max: attr_max,
                 value: Math.floor((attr_min + attr_max)/2),
-                step: 0.1,
+                step: 1,
                 slide: function( event, ui ) {
-                    $("#sep_group").text(ui.value);
-                    $("#sep_group").val(ui.value);
-                    $("#sep_group").css({"left": 100*(ui.value-attr_min)/((attr_max-attr_min)+1) + "%"});
+                    sep_title.text(ui.value);
+                    sep_title.val(ui.value);
+                    sep_title.css({"left": 100*(ui.value-attr_min)/((attr_max-attr_min)+1) + "%"});
                 }
             });                    
 
@@ -457,16 +387,10 @@ var MappingView = Backbone.View.extend({
     layer_cat_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
-        var attr_container = document.getElementById("mark_group_select");
+        // var attr_container = document.getElementById("mark_group_select");
 
-        var group = document.createElement("div");
-        var list = document.createElement("ul");
-        group.setAttribute("class", "column left first");
-
-        list.id = "mapping_group";
-        list.setAttribute("class", "sortable-list");
-
-        list.setAttribute("style", "background-color:rgba(125, 96, 66, 0.7);");
+        var group = $('<div class="column left first"></div>');
+        var list = $('<ul id="mapping_group" class="sortable-list" style="background-color:rgba(125, 96, 66, 0.7);"></ul>');
 
         if(one_attr == ori_attr && comp in attribute_mapping){
             var user_map = attribute_mapping[comp];
@@ -477,28 +401,21 @@ var MappingView = Backbone.View.extend({
             }
             
             for(var c = total_items.length-1; c >= 0 ; c--){
-                var item = document.createElement("li");
-                item.setAttribute("class", "sortable-item");
-                item.innerHTML = total_items[c];
-                item.value = total_items[c];
-                list.appendChild(item);
+                var item = $('<li class="sortable-item"></li>');
+                item.html(total_items[c]).val(total_items[c]);
+                list.append(item);
             }
-
         }
-
         else{            
             var total_items = component_attribute[data_mode][one_attr][0].length;
             for(var c = total_items-1; c >= 0; c--){
-                var item = document.createElement("li");
-                item.setAttribute("class", "sortable-item");
-                item.innerHTML = component_attribute[data_mode][one_attr][0][c];
-                item.value = component_attribute[data_mode][one_attr][0][c];
-                list.appendChild(item);
+                var item = $('<li class="sortable-item"></li>');
+                item.html(component_attribute[data_mode][one_attr][0][c]).val(component_attribute[data_mode][one_attr][0][c]);
+                list.append(item);
             }
         }
-
-        group.appendChild(list);
-        attr_container.appendChild(group);
+        group.append(list);
+        $("#mark_group_select").append(group);
 
         $('#mark_group_select .sortable-list').sortable({
             connectWith: '#mark_group_select .sortable-list'
@@ -509,40 +426,20 @@ var MappingView = Backbone.View.extend({
     layer_num_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
-        var attr_container = document.getElementById("mark_group_select");
+        // var attr_container = document.getElementById("mark_group_select");
         var revert = "d";
         var attr_min = parseInt(component_attribute[data_mode][one_attr][1]);
         var attr_max = parseInt(component_attribute[data_mode][one_attr][2]);
         var attr_range = component_attribute[data_mode][one_attr][3];
 
-        var sep = document.createElement("div");
-        var gap = document.createElement("div");
-        var gap_title = document.createElement("span");
-        var gap_input = document.createElement("select");
-        var revert_button = document.createElement("button");
-        var group_slider = document.createElement("div");
-        var range = document.createElement("div");
-        
-        gap_input.id = "sep_gap";
-        revert_button.id = "revert_button";
-        revert_button.innerHTML = "Revert";
-        revert_button.setAttribute("class", "right");
-        gap_input.setAttribute("style", "width:100px");
-        group_slider.id = "layer_slider";
-        gap.setAttribute("style", "margin-top:5px;");
-
-        range.id = "sep_range";
-        range.setAttribute("style", "margin:15 0 0 0; position:relative; width:65px;");
-        range.setAttribute("class", "left");
-
-        gap_title.innerHTML = "Total Layer: ";
-        gap_title.setAttribute("class", "myfont3");
-        sep.id = "sep_group";
-        sep.setAttribute("style", "margin:15 0 0 10; position:relative;");
-        sep.setAttribute("class", "left");
-        // group_slider.setAttribute("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (50*(user_map.length+1)) + ";");
-        group_slider.setAttribute("class", "left");
-
+        var sep = $('<div id="sep_group" class="left" style="margin:15 0 0 10; position:relative;"></div>');
+        var gap = $('<div style="margin-top:5px;"></div>');
+        var gap_title = $('<span class="myfont3">Total Layer: </span>');
+        var gap_input = $('<select id="sep_gap" style="width:100px"></select>');
+        var revert_button = $('<button id="revert_button" class="right">Revert</button>');
+        var group_slider = $('<div id="layer_slider" class="left layer_slider"></div>');
+        var range = $('<div id="sep_range" class="left layer_range"></div>');
+                
         var mapping_gap = attr_range/9;
         var slider_val = [];
         // check the gap
@@ -551,27 +448,25 @@ var MappingView = Backbone.View.extend({
             total_gap = attr_range*2;
         if(one_attr == ori_attr && comp in attribute_mapping){
             var user_map = attribute_mapping[comp];   
-            group_slider.setAttribute("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (50*(user_map.length+1)) + ";");
+            group_slider.attr("style", "height:" + (50*(user_map.length+1)) + ";");
         
             for(var s=4; s < total_gap; s++){
-                var opt = document.createElement("option");
-                opt.value = s;
-                opt.innerHTML = s;
-                opt.setAttribute("class", "myfont3");
+                var opt = $('<option class="myfont3"></option>');
+                opt.val(s).html(s);
                 if(s == user_map.length+1)
-                    opt.setAttribute("selected", true);
+                    opt.prop("selected", true);
                 
-                gap_input.appendChild(opt);
+                gap_input.append(opt);
             }
 
-            gap.appendChild(gap_title);
-            gap.appendChild(gap_input);
-            gap.appendChild(revert_button);
+            gap.append(gap_title);
+            gap.append(gap_input);
+            gap.append(revert_button);
 
-            attr_container.appendChild(gap);
-            attr_container.appendChild(range);
-            attr_container.appendChild(group_slider);
-            attr_container.appendChild(sep);
+            $("#mark_group_select").append(gap);
+            $("#mark_group_select").append(range);
+            $("#mark_group_select").append(group_slider);
+            $("#mark_group_select").append(sep);
 
             // mapping_gap = attr_range/user_map.length;
             if(parseFloat(user_map[1],10) < parseFloat(user_map[0],10))
@@ -587,26 +482,25 @@ var MappingView = Backbone.View.extend({
 
         }
         else{
-            group_slider.setAttribute("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:500;");
+            group_slider.attr("style", "height:500;");
         
             for(var s=4; s < total_gap; s++){
-                var opt = document.createElement("option");
-                opt.value = s;
-                opt.innerHTML = s;
-                opt.setAttribute("class", "myfont3");
+                var opt = $('<option class="myfont3"></option>');
+                opt.val(s).html(s);
+                
                 if(s == 10)
-                    opt.setAttribute("selected", true);
-                gap_input.appendChild(opt);
+                    opt.prop("selected", true);
+                gap_input.append(opt);
             }
 
-            gap.appendChild(gap_title);
-            gap.appendChild(gap_input);
-            gap.appendChild(revert_button);
+            gap.append(gap_title);
+            gap.append(gap_input);
+            gap.append(revert_button);
 
-            attr_container.appendChild(gap);
-            attr_container.appendChild(range);
-            attr_container.appendChild(group_slider);
-            attr_container.appendChild(sep);
+            $("#mark_group_select").append(gap);
+            $("#mark_group_select").append(range);
+            $("#mark_group_select").append(group_slider);
+            $("#mark_group_select").append(sep);
 
             
             for(var g = attr_min; g <= attr_max; g+=mapping_gap){
@@ -654,13 +548,13 @@ var MappingView = Backbone.View.extend({
         $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
         $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
 
-        $("#sep_group").empty();
-        $("#sep_range").empty();
+        sep.empty();
+        range.empty();
         
         self.set_layer_handle_id(revert, slider_val);
 
-        $("#revert_button").unbind();
-        $("#revert_button").click(function(){
+        revert_button.unbind();
+        revert_button.click(function(){
             var my_revert = "a";
             if(revert == "a")
                 my_revert = "d";
@@ -668,7 +562,7 @@ var MappingView = Backbone.View.extend({
             var attr_min = parseInt(component_attribute[data_mode][one_attr][1]);
             var attr_max = parseInt(component_attribute[data_mode][one_attr][2]);
             var attr_range = component_attribute[data_mode][one_attr][3];
-            var gap = attr_range/($("#sep_gap").val()-1);
+            var gap = attr_range/($("#sep_gap").val()-1); //!!!
             var new_slider_val = [];
             var real_slider_val = [];
             for(var g = attr_min; g <= attr_max; g+=gap){
@@ -689,7 +583,8 @@ var MappingView = Backbone.View.extend({
                 new_slider_val = new_slider_val.reverse();
             
             $("#layer_slider").slider( "destroy" );
-            $("#layer_slider").attr("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (50*$("#sep_gap").val()) + ";");
+            $("#layer_slider").attr("class", "left layer_slider");
+            $("#layer_slider").attr("style", "height:" + (50*$("#sep_gap").val()) + ";");
             if(my_revert == "a"){
                 $("#layer_slider").slider({
                     orientation: "vertical",
@@ -730,8 +625,8 @@ var MappingView = Backbone.View.extend({
             
         });
 
-        $("#sep_gap").unbind();
-        $("#sep_gap").change(function(){
+        gap_input.unbind();
+        gap_input.change(function(){
             revert = "d";
             var attr_min = parseInt(component_attribute[data_mode][one_attr][1]);
             var attr_max = parseInt(component_attribute[data_mode][one_attr][2]);
@@ -748,7 +643,8 @@ var MappingView = Backbone.View.extend({
             }
             
             $("#layer_slider").slider( "destroy" );
-            $("#layer_slider").attr("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (50*$("#sep_gap").val()) + ";");
+            $("#layer_slider").attr("class", "left layer_slider");
+            $("#layer_slider").attr("style", "height:" + (50*$("#sep_gap").val()) + ";");
         
             $("#layer_slider").slider({
                 orientation: "vertical",
@@ -776,13 +672,12 @@ var MappingView = Backbone.View.extend({
     color_cat_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
-        var attr_container = document.getElementById("mark_group_select");
+        // var attr_container = document.getElementById("mark_group_select");
         var total_items = component_attribute[data_mode][one_attr][0];
         var color_table = [];
         var render_table = [];
         var used = 0;
         if(one_attr == ori_attr && comp in attribute_mapping){
-            // total_items = component_attribute[data_mode][one_attr][0];
             used = 1;
             if(comp == "leaf_color")
                 render_table = mapping_color.render_leaf_color;
@@ -796,29 +691,16 @@ var MappingView = Backbone.View.extend({
             color_table = mapping_color.roots_color;
 
         for(var c = 0; c < total_items.length; c ++){
-            var br = document.createElement("br");
-            var p = document.createElement("p");
             if(c == 0){
-                var br1 = document.createElement("br");
-                var p1 = document.createElement("p");
-                var c1 = document.createElement("span");
-                var c2 = document.createElement("span");
-                c1.innerHTML = "Color Map";
-                c2.innerHTML = "Attribute Data";
-                c1.setAttribute("class", "myfont3");
-                c2.setAttribute("class", "myfont3");
-                c2.setAttribute("style", "position:absolute; left:125px;");
-                attr_container.appendChild(c1);
-                attr_container.appendChild(c2);
-                
-                attr_container.appendChild(br1);
-                attr_container.appendChild(p1);
+                var c1 = $('<span class="myfont3">Color Map</span>');
+                var c2 = $('<span class="myfont3" style="position:absolute; left:125px;">Attribute Data</span>');
+                $("#mark_group_select").append(c1);
+                $("#mark_group_select").append(c2);                
+                $("#mark_group_select").append('<br><p>');
             }
 
-
-            var label_container = document.createElement("span"); // attribute data
-            label_container.innerHTML = total_items[c];
-            label_container.setAttribute("style", "position:absolute; left:125px;");
+            var label_container =$('<span style="position:absolute; left:125px;"></span>'); // attribute data
+            label_container.html(total_items[c]);
 
             var select_container = $('<div class="dropdown"></div>');
             select_container.val(c.toString()).attr('id', "ori_attr_val_" + c);
@@ -862,67 +744,17 @@ var MappingView = Backbone.View.extend({
             }
             select_container.append(selection_ul);
             $("#mark_group_select").append(select_container);
-            attr_container.appendChild(label_container);
-            
-            attr_container.appendChild(br);
-            attr_container.appendChild(p);
-
-            /*
-            var select_container = document.createElement("select");
-            var label_container = document.createElement("span");
-            select_container.value = c;
-            select_container.setAttribute("class", "mapping_selection");
-            // select_container.setAttribute("style", "width:100px; position:absolute; left:30px;");
-            select_container.id = "ori_attr_val_" + c;
-            label_container.innerHTML = total_items[c];
-            label_container.setAttribute("style", "position:absolute; left:125px;");
-
-            for(var l_color = 0; l_color < color_table.length; l_color++){
-                var selection_opt = document.createElement('option');
-                selection_opt.value = l_color;
-                selection_opt.setAttribute("class", "myfont3");
-                selection_opt.setAttribute("style", "background-color:" + color_table[l_color] + ";");
-                if(used == 1){
-                    if(color_table[l_color] == render_table[c]){
-                        selection_opt.setAttribute("selected", true);
-                        select_container.setAttribute("style", "width:100px; position:absolute; background-color:" + color_table[l_color] + ";");
-                    }
-                }
-                else{
-                    if(l_color == c){
-                        selection_opt.setAttribute("selected", true);
-                        select_container.setAttribute("style", "width:100px; position:absolute; background-color:" + color_table[l_color] + ";");
-                    }
-                        
-                    else if(color_table.length < c && l_color == color_table.length-1){
-                        selection_opt.setAttribute("selected", true);
-                        select_container.setAttribute("style", "width:100px; position:absolute; background-color:" + color_table[color_table.length-1] + ";");
-                    }
-                }                
-                    
-                select_container.appendChild(selection_opt);
-                
-            }
-            
-            attr_container.appendChild(select_container);
-            attr_container.appendChild(label_container);
-            
-            attr_container.appendChild(br);
-            attr_container.appendChild(p);
-            */
+            $("#mark_group_select").append(label_container);
+            $("#mark_group_select").append('<br><p>');
         }
 
-        // $(".mapping_selection").unbind();
-        // $(".mapping_selection").change(function(){
-        //     this.style.background = color_table[this.value];
-        // });
 
     },
 
     color_num_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
-        var attr_container = document.getElementById("mark_group_select");
+        // var attr_container = document.getElementById("mark_group_select");
         var total_gap = 0;
         var used = 0;
         var user_map = [];
@@ -940,73 +772,44 @@ var MappingView = Backbone.View.extend({
         var attr_max = parseInt(component_attribute[data_mode][one_attr][2]);
         var attr_range = component_attribute[data_mode][one_attr][3];
 
-        var sep = document.createElement("div");
-        var gap = document.createElement("div");
-        var gap_title = document.createElement("span");
-        var gap_input = document.createElement("select");
-        var group_slider = document.createElement("div");
-        var range = document.createElement("div");
+        var sep = $('<div id="sep_group" class="left" style="margin:15 0 0 10; position:relative;"></div>');
+        var gap = $('<div style="margin-top:10px; margin-bottom: 10px;"></div>');
+        var gap_title = $('<span class="myfont3">Total Categories: </span>');
+        var gap_input = $('<select id="sep_gap" style="width:100px"></select>');
+        var group_slider = $('<div id="layer_slider"></div>');
+        var range = $('<div id="sep_range" class="left color_range"></div>');
         
-        gap_input.id = "sep_gap";
-        gap_input.setAttribute("style", "width:100px");
-
-        group_slider.id = "layer_slider";
-        gap.setAttribute("style", "margin-top:10px; margin-bottom: 10px;");
-
-        range.id = "sep_range";
-        range.setAttribute("style", "margin:15 0 0 0; position:relative; width:125px;");
-        range.setAttribute("class", "left");
-
-        gap_title.innerHTML = "Total Categories: ";
-        gap_title.setAttribute("class", "myfont3");
-        sep.id = "sep_group";
-        sep.setAttribute("style", "margin:15 0 0 10; position:relative;");
-        sep.setAttribute("class", "left");
-        // group_slider.setAttribute("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (50*(user_map.length+1)) + ";");
-        group_slider.setAttribute("class", "left");
-
         var mapping_gap = attr_range/5;
         var slider_val = [];
 
         if(used == 1){
             if(comp == "leaf_color")
-                group_slider.setAttribute("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:" + (50*(user_map.length+1)) + ";");
+                group_slider.attr("class", "left leaf_color_slider").attr("style", "height:" + (50*(user_map.length+1)) + ";");
             else if(comp == "root")
-                group_slider.setAttribute("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (50*(user_map.length+1)) + ";");
+                group_slider.attr("class", "left root_slider").attr("style", "height:" + (50*(user_map.length+1)) + ";");
+                
             for(var s=2; s <= total_gap; s++){
-                var opt = document.createElement("option");
-                opt.value = s;
-                opt.innerHTML = s;
-                opt.setAttribute("class", "myfont3");
-                
+                var opt = $('<option class="myfont3"></option>');
+                opt.val(s).html(s);                
                 if(s == (user_map.length+1))
-                    opt.setAttribute("selected", true);
+                    opt.prop("selected", true);
                 
-                gap_input.appendChild(opt);
+                gap_input.append(opt);
             }
-            gap.appendChild(gap_title);
-            gap.appendChild(gap_input);
-            attr_container.appendChild(gap);
+            gap.append(gap_title);
+            gap.append(gap_input);
+            $("#mark_group_select").append(gap);
 
-            var br1 = document.createElement("br");
-            var p1 = document.createElement("p");
-            var c1 = document.createElement("span");
-            var c2 = document.createElement("span");
+            var c1 = $('<span class="myfont3">Color Map</span>');
+            var c2 = $('<span class="myfont3" style="margin-left:50px;">Attribute Data</span>');
+                
+            $("#mark_group_select").append(c1);
+            $("#mark_group_select").append(c2);
+            $("#mark_group_select").append('<br><p>');
 
-            c1.innerHTML = "Color Map";
-            c2.innerHTML = "Attribute Data";
-            c1.setAttribute("class", "myfont3");
-            c2.setAttribute("class", "myfont3");
-            c2.setAttribute("style", "margin-left:50px;");
-            attr_container.appendChild(c1);
-            attr_container.appendChild(c2);
-            
-            attr_container.appendChild(br1);
-            attr_container.appendChild(p1);                    
-            
-            attr_container.appendChild(range);
-            attr_container.appendChild(group_slider);
-            attr_container.appendChild(sep);
+            $("#mark_group_select").append(range);
+            $("#mark_group_select").append(group_slider);
+            $("#mark_group_select").append(sep);
 
             var slider_val = [];
 
@@ -1016,43 +819,32 @@ var MappingView = Backbone.View.extend({
         }
         else{
             if(comp == "leaf_color")
-                group_slider.setAttribute("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:300;");
+                group_slider.attr("class", "left leaf_color_slider").attr("style", "height:300;");
             else if(comp == "root")
-                group_slider.setAttribute("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:300;");
+                group_slider.attr("class", "left root_slider").attr("style", "height:300;");
             
             for(var s=2; s <= total_gap; s++){
-                var opt = document.createElement("option");
-                opt.value = s;
-                opt.innerHTML = s;
-                opt.setAttribute("class", "myfont3");
+                var opt = $('<option class="myfont3"></option>');
+                opt.val(s).html(s);
                 if(s == 6)
-                    opt.setAttribute("selected", true);
-                gap_input.appendChild(opt);
+                    opt.prop("selected", true);
+                gap_input.append(opt);
             }
 
-            gap.appendChild(gap_title);
-            gap.appendChild(gap_input);
-            attr_container.appendChild(gap);
+            gap.append(gap_title);
+            gap.append(gap_input);
+            $("#mark_group_select").append(gap);
 
-            var br1 = document.createElement("br");
-            var p1 = document.createElement("p");
-            var c1 = document.createElement("span");
-            var c2 = document.createElement("span");
+            var c1 = $('<span class="myfont3">Color Map</span>');
+            var c2 = $('<span class="myfont3" style="margin-left:50px;">Attribute Data</span>');
 
-            c1.innerHTML = "Color Map";
-            c2.innerHTML = "Attribute Data";
-            c1.setAttribute("class", "myfont3");
-            c2.setAttribute("class", "myfont3");
-            c2.setAttribute("style", "margin-left:50px;");
-            attr_container.appendChild(c1);
-            attr_container.appendChild(c2);
-            
-            attr_container.appendChild(br1);
-            attr_container.appendChild(p1);
+            $("#mark_group_select").append(c1);
+            $("#mark_group_select").append(c2);
+            $("#mark_group_select").append('<br><p>');
 
-            attr_container.appendChild(range);
-            attr_container.appendChild(group_slider);
-            attr_container.appendChild(sep);
+            $("#mark_group_select").append(range);
+            $("#mark_group_select").append(group_slider);
+            $("#mark_group_select").append(sep);
             
             for(var g = attr_min; g <= attr_max; g+=mapping_gap){
                 slider_val.push(Math.round(g*100)/100);
@@ -1063,7 +855,7 @@ var MappingView = Backbone.View.extend({
 
         }
 
-        $("#layer_slider").slider({
+        group_slider.slider({
             orientation: "vertical",
             min: attr_min,
             max: attr_max,
@@ -1072,29 +864,25 @@ var MappingView = Backbone.View.extend({
             slide: function( event, ui ) {
                 var v = parseInt(ui.handle.id.split("_").pop());
                 return self.set_general_slide(v, ui.values, slider_val);
-                // var display = "#layer_" + v;
-                // var on_handle = "#layer_handle_"+ v;
-                // console.log("handle:", $(on_handle).position().top);
-                // console.log("handle_value:", $(display).position().top);
             }
         });
 
         $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
         $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
 
-        $("#sep_group").empty();
-        $("#sep_range").empty();
+        sep.empty();
+        range.empty();
 
         self.set_color_handle_id(slider_val, comp, used);
         
 
-        $("#sep_gap").unbind();
-        $("#sep_gap").change(function(){
+        gap_input.unbind();
+        gap_input.change(function(){
             used = 0;
-            var attr_min = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][1]);
-            var attr_max = parseInt(component_attribute[data_mode][$("#sidekeyselect").val()][2]);
-            var attr_range = component_attribute[data_mode][$("#sidekeyselect").val()][3];
-            var gap = attr_range/($("#sep_gap").val()-1);
+            var attr_min = parseInt(component_attribute[data_mode][self.el_sidekeyselect.val()][1]);
+            var attr_max = parseInt(component_attribute[data_mode][self.el_sidekeyselect.val()][2]);
+            var attr_range = component_attribute[data_mode][self.el_sidekeyselect.val()][3];
+            var gap = attr_range/($("#sep_gap").val()-1); //!!!
             var new_slider_val = [];
         
             for(var g = attr_min; g <= attr_max; g+=gap){
@@ -1107,10 +895,9 @@ var MappingView = Backbone.View.extend({
             
             $("#layer_slider").slider( "destroy" );
             if(comp == "leaf_color")
-                $("#layer_slider").attr("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:" + (50*$("#sep_gap").val()) + ";");
-        
+                $("#layer_slider").attr("class", "left leaf_color_slider").attr("style", "height:" + (50*$("#sep_gap").val()) + ";");
             else if(comp == "root")
-                $("#layer_slider").attr("style", "background:rgba(125, 96, 66, 0.7); margin-top:25px; margin-left:5px; height:" + (50*$("#sep_gap").val()) + ";");
+                $("#layer_slider").attr("class", "left root_slider").attr("style", "height:" + (50*$("#sep_gap").val()) + ";");
         
             $("#layer_slider").slider({
                 orientation: "vertical",
@@ -1138,7 +925,7 @@ var MappingView = Backbone.View.extend({
     size_cat_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
-        var attr_container = document.getElementById("mark_group_select");
+        // var attr_container = document.getElementById("mark_group_select");
         var total_items = component_attribute[data_mode][one_attr][0];
         var img_src;
         if(comp == "leaf_size")
@@ -1153,74 +940,49 @@ var MappingView = Backbone.View.extend({
             user_map = attribute_mapping[comp];
         }
 
-        // var br = document.createElement("br");
-        // var p = document.createElement("p");
-        // attr_container.appendChild(br);
-        // attr_container.appendChild(p);
-
         for(var c = 0; c < total_items.length; c ++){
             var size_val = c;
             if(used == 1)
                 size_val = parseInt(user_map[total_items[c]]);
             if(c == 0){
-                var br1 = document.createElement("br");
-                var p1 = document.createElement("p");
-                var c1 = document.createElement("span");
-                var c2 = document.createElement("span");
-                c1.innerHTML = "Size Scale";
-                c2.innerHTML = "Attribute Data";
-                c1.setAttribute("class", "myfont3");
-                c2.setAttribute("class", "myfont3");
-                c2.setAttribute("style", "margin-left: 60px;");
-                attr_container.appendChild(c1);
-                attr_container.appendChild(c2);
-                
-                attr_container.appendChild(br1);
-                attr_container.appendChild(p1);
+                var c1 = $('<span class="myfont3">Size Scale</span>');
+                var c2 = $('<span class="myfont3" style="margin-left: 60px;">Attribute Data</span>');
+                $("#mark_group_select").append(c1);
+                $("#mark_group_select").append(c2);                
+                $("#mark_group_select").append('<br><p>');
             }                    
-            var select_container = document.createElement("div");
-            var oneitem = document.createElement("img");
-            var objslider = document.createElement("div");
-            var label_container = document.createElement("span");
-            var slider_label = document.createElement("span");
+            var select_container = $('<div class="size_cat_select_container"></div>');
+            var oneitem = $('<img></img>');
+            var objslider = $('<div class="size_cat_objslider"></div>');
+            var label_container = $('<span class="size_cat_label_container"></span>');
+            var slider_label = $('<span class="size_cat_slider_label"></span>');
             
-            select_container.setAttribute("style", "margin:15 0 20 10; padding-bottom:20px; width:100px; position:relative; height:" + (15 + (10+(parseInt(size_val)*3))) + "px;");
+            select_container.attr("style", "height:" + (15 + (10+(parseInt(size_val)*3))) + "px;");
+            select_container.attr("id", "size_selector_" + c);
+
+            oneitem.attr("id", "oneitem_" + c).attr("style", "position:absolute; width:"+ (10 + size_val*3) +"%;").attr("src", img_src);
+            objslider.attr("id", "ori_attr_val_" + c);
+            slider_label.attr("id", "slider_label_" + c);
+
+            label_container.html(total_items[c]);
             
-            select_container.id = "size_selector_" + c;
-            oneitem.id = "oneitem_" + c;
-            oneitem.setAttribute("style", "position:absolute; width:"+ (10 + size_val*3) +"%;");
-
-            oneitem.src = img_src;
-
-            objslider.id = "ori_attr_val_" + c;
-            objslider.setAttribute("style", "width:100%; position:absolute; bottom:0px;");
-
-            slider_label.id = "slider_label_" + c;
-            slider_label.setAttribute("style", "position:absolute; bottom:-20px;");
-
-            label_container.innerHTML = total_items[c];
-            label_container.setAttribute("style", "position:absolute; left:125px; bottom:0px;");
-            
-            select_container.appendChild(oneitem);
-            select_container.appendChild(objslider);
-            select_container.appendChild(slider_label);
-            select_container.appendChild(label_container);
+            select_container.append(oneitem);
+            select_container.append(objslider);
+            select_container.append(slider_label);
+            select_container.append(label_container);
                         
-            attr_container.appendChild(select_container);
+            $("#mark_group_select").append(select_container);
 
-            var slider_id = "#ori_attr_val_" + c;
-            var leaf_img_id = "#oneitem_" + c;
             var handle = "#ori_attr_val_" + c + " .ui-slider-handle";
-            var s_label = "#slider_label_" + c;
 
-            $(slider_id).slider({
+            objslider.slider({
                 orientation: "horizontal",
                 min: 0,
                 max: 10,
                 value: size_val,
                 slide: function( event, ui) {
                     var myid = this.id;
-                    var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop();
+                    var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop(); //!!!
                     var container_id = "#size_selector_" + myid.split("attr_val_").pop();
                     var s_label = "#slider_label_" + myid.split("attr_val_").pop();
                     
@@ -1234,11 +996,11 @@ var MappingView = Backbone.View.extend({
 
             $(handle).css({'width':'0.7em'});
             $(handle).css({'height':'1em'});
-            $(slider_id).css({'height':'8px'});
+            objslider.css({'height':'8px'});
 
-            $(s_label).text(size_val);
-            $(s_label).val(size_val);
-            $(s_label).css({"left": (size_val*10-5)+"%"});
+            slider_label.text(size_val);
+            slider_label.val(size_val);
+            slider_label.css({"left": (size_val*10-5)+"%"});
                             
         }
     },
@@ -1246,7 +1008,7 @@ var MappingView = Backbone.View.extend({
     size_num_operation: function(one_attr, comp, ori_attr){
         var self = this;
         var data_mode = self.model.get("view_mode");
-        var attr_container = document.getElementById("mark_group_select");
+        // var attr_container = document.getElementById("mark_group_select");
         var total_items = component_attribute[data_mode][one_attr][0];
         var used = 0;
         var selected_gap = 6;
@@ -1265,71 +1027,43 @@ var MappingView = Backbone.View.extend({
         var attr_max = parseInt(component_attribute[data_mode][one_attr][2]);
         var attr_range = component_attribute[data_mode][one_attr][3];
         
-        var sep = document.createElement("div");
-        var gap = document.createElement("div");
-        var gap_title = document.createElement("span");
-        var gap_input = document.createElement("select");
-        var group_slider = document.createElement("div");
-        var range = document.createElement("div");
-
-        gap_input.id = "sep_gap";
-        gap_input.setAttribute("style", "width:100px");
-
-        group_slider.id = "layer_slider";
-        gap.setAttribute("style", "margin-top:10px;");
-
-        range.id = "sep_range";
-        range.setAttribute("style", "margin:15 0 0 0; position:relative; width:155px;");
-        range.setAttribute("class", "left");
-
-        gap_title.innerHTML = "Number of Difference: ";
-        gap_title.setAttribute("class", "myfont3");
-        sep.id = "sep_group";
-        sep.setAttribute("style", "margin:15 0 0 180; position:relative;");
+        var sep = $('<div id="sep_group" class="left" style="margin:15 0 0 10; position:relative;"></div>');
+        var gap = $('<div style="margin-top:10px;"></div>');
+        var gap_title = $('<span class="myfont3">Number of Difference: </span>');
+        var gap_input = $('<select id="sep_gap" style="width:100px"></select>');
+        var group_slider = $('<div id="layer_slider"></div>');
+        var range = $('<div id="sep_range" class="left size_range"></div>');
         
         if(comp == "leaf_size")
-            group_slider.setAttribute("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:" + 50*selected_gap + ";");
+            group_slider.attr("class", "left leaf_size_slider").attr("style", "height:" + 50*selected_gap + ";");
         else
-            group_slider.setAttribute("style", "background:rgba(187, 7, 12, 0.7); margin-top:25px; margin-left:5px; height:" + 50*selected_gap + ";");
+            group_slider.attr("class", "left fruit_size_slider").attr("style", "height:" + 50*selected_gap + ";");
         
-        group_slider.setAttribute("class", "left");
-
         var total_gap = 10;
         if(attr_range < 5)
             total_gap = attr_range*2-1;
         for(var s=2; s <= total_gap; s++){
-            var opt = document.createElement("option");
-            opt.value = s;
-            opt.innerHTML = s;
-            opt.setAttribute("class", "myfont3");
+            var opt = $('<option class="myfont3"></option>');
+            opt.val(s).html(s);
             if(s == selected_gap)
-                opt.setAttribute("selected", true);
-            gap_input.appendChild(opt);
+                opt.prop("selected", true);
+            gap_input.append(opt);
         }
 
-        gap.appendChild(gap_title);
-        gap.appendChild(gap_input);
-        attr_container.appendChild(gap);
+        gap.append(gap_title);
+        gap.append(gap_input);
+        $("#mark_group_select").append(gap);
 
-        var br1 = document.createElement("br");
-        var p1 = document.createElement("p");
-        var c1 = document.createElement("span");
-        var c2 = document.createElement("span");
+        var c1 = $('<span class="myfont3">Size Scale</span>');
+        var c2 = $('<span class="myfont3" style="margin-left:90px;">Attribute Data</span>');
+                
+        $("#mark_group_select").append(c1);
+        $("#mark_group_select").append(c2);
+        $("#mark_group_select").append('<br><p>');
 
-        c1.innerHTML = "Size Scale";
-        c2.innerHTML = "Attribute Data";
-        c1.setAttribute("class", "myfont3");
-        c2.setAttribute("class", "myfont3");
-        c2.setAttribute("style", "margin-left:90px;");
-        attr_container.appendChild(c1);
-        attr_container.appendChild(c2);
-        
-        attr_container.appendChild(br1);
-        attr_container.appendChild(p1);
-
-        attr_container.appendChild(range);
-        attr_container.appendChild(group_slider);                    
-        attr_container.appendChild(sep);
+        $("#mark_group_select").append(range);
+        $("#mark_group_select").append(group_slider);                    
+        $("#mark_group_select").append(sep);
 
         var slider_val = [];
 
@@ -1350,7 +1084,7 @@ var MappingView = Backbone.View.extend({
             }
         }
 
-        $("#layer_slider").slider({
+        group_slider.slider({
             orientation: "vertical",
             min: attr_min,
             max: attr_max,
@@ -1365,20 +1099,20 @@ var MappingView = Backbone.View.extend({
         $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
         $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
 
-        $("#sep_group").empty();
-        $("#sep_range").empty();       
+        sep.empty();
+        range.empty();       
         
         self.set_size_handle_id(slider_val, comp, used, size_map, val_map);
 
-        $("#sep_gap").unbind();
-        $("#sep_gap").change(function(){
+        gap_input.unbind();
+        gap_input.change(function(){
             var used = 0;
             var size_map = [];
             var val_map = [];
             var attr_min = parseInt(component_attribute[data_mode][one_attr][1]);
             var attr_max = parseInt(component_attribute[data_mode][one_attr][2]);
             var attr_range = component_attribute[data_mode][one_attr][3];
-            var mapping_gap = attr_range/($("#sep_gap").val()-1);
+            var mapping_gap = attr_range/($("#sep_gap").val()-1); //!!!
             var new_slider_val = [];
         
             for(var g = attr_min; g <= attr_max; g+=mapping_gap){
@@ -1389,11 +1123,11 @@ var MappingView = Backbone.View.extend({
                 new_slider_val.push(attr_max);
             }
             
-            $("#layer_slider").slider( "destroy" );
+            $("#layer_slider").slider( "destroy" );     
             if(comp == "leaf_size")
-                $("#layer_slider").attr("style", "background:rgba(7, 147, 9, 0.6); margin-top:25px; margin-left:5px; height:" + (50*$("#sep_gap").val()) + ";");
+                $("#layer_slider").attr("class", "left leaf_size_slider").attr("style", "height:" + (50*$("#sep_gap").val()) + ";");
             else
-                $("#layer_slider").attr("style", "background:rgba(187, 7, 12, 0.7); margin-top:25px; margin-left:5px; height:" + (50*$("#sep_gap").val()) + ";");
+                $("#layer_slider").attr("class", "left fruit_size_slider").attr("style", "height:" + (50*$("#sep_gap").val()) + ";");
             
             $("#layer_slider").slider({
                 orientation: "vertical",
@@ -1410,7 +1144,7 @@ var MappingView = Backbone.View.extend({
             $('#layer_slider .ui-slider-handle').css({'height':'0.5em'});
             $('#layer_slider .ui-slider-handle').css({'margin-bottom':'0.1px'});
             
-            $("#sep_group").empty();
+            $("#sep_group").empty(); //!!!
             $("#sep_range").empty();
 
             self.set_size_handle_id(new_slider_val, comp, used, size_map, val_map);
@@ -1424,7 +1158,6 @@ var MappingView = Backbone.View.extend({
         var attr_map = self.model.get("attribute");
         var attr_opt = self.model.get("attr_option");
         var ego_selections = self.model.get("selected_egos");
-        var submit_id = "#sidekey_submit_" + comp;
         var color_table = [];
         if(comp == "leaf_color"){
             color_table = mapping_color.leaf_color;
@@ -1459,9 +1192,9 @@ var MappingView = Backbone.View.extend({
             d3.json(request_url, function(result){
                 var set_update_info = function(data){
                     var attr_map = self.model.get("attribute");
-                    $("#block_layer").hide();
-                    $(submit_id).text("Done");
-                    $(submit_id).removeAttr("disabled");
+                    self.el_block_layer.hide();
+                    self.el_sidekey_submit.text("Done");
+                    self.el_sidekey_submit.removeAttr("disabled");
 
                     attr_map[comp] = new_attr;
                     
@@ -1542,9 +1275,9 @@ var MappingView = Backbone.View.extend({
             d3.json(request_url, function(result){
                 var set_update_info = function(data){
                     var attr_map = self.model.get("attribute");
-                    $("#block_layer").hide();
-                    $(submit_id).text("Done");
-                    $(submit_id).removeAttr("disabled");
+                    self.el_block_layer.hide();
+                    self.el_sidekey_submit.text("Done");
+                    self.el_sidekey_submit.removeAttr("disabled");
 
                     attr_map[comp] = new_attr;
                     self.model.set({"attribute": attr_map});
@@ -1563,8 +1296,6 @@ var MappingView = Backbone.View.extend({
         var attr_map = self.model.get("attribute");
         var attr_opt = self.model.get("attr_option");
         var ego_selections = self.model.get("selected_egos");
-
-        var submit_id = "#sidekey_submit_" + comp;
 
         if(comp in attribute_mapping){
             delete attribute_mapping[comp];
@@ -1586,9 +1317,9 @@ var MappingView = Backbone.View.extend({
                 var set_update_info = function(data){
                     var attr_map = self.model.get("attribute");
                     
-                    $("#block_layer").hide();
-                    $(submit_id).text("Done");
-                    $(submit_id).removeAttr("disabled");
+                    self.el_block_layer.hide();
+                    self.el_sidekey_submit.text("Done");
+                    self.el_sidekey_submit.removeAttr("disabled");
 
                     attr_map[comp] = new_attr;
                     
@@ -1643,9 +1374,9 @@ var MappingView = Backbone.View.extend({
             d3.json(request_url, function(result){
                 var set_update_info = function(data){
                     var attr_map = self.model.get("attribute");
-                    $("#block_layer").hide();
-                    $(submit_id).text("Done");
-                    $(submit_id).removeAttr("disabled");
+                    self.el_block_layer.hide();
+                    self.el_sidekey_submit.text("Done");
+                    self.el_sidekey_submit.removeAttr("disabled");
 
                     attr_map[comp] = new_attr;
                     self.model.set({"attribute": attr_map});
@@ -1674,8 +1405,7 @@ var MappingView = Backbone.View.extend({
         var attr_map = self.model.get("attribute");
         var attr_opt = self.model.get("attr_option");
         var ego_selections = self.model.get("selected_egos");
-        var submit_id = "#sidekey_submit_" + comp;
-
+        
         if(comp in attribute_mapping){
             delete attribute_mapping[comp];
         }
@@ -1718,9 +1448,9 @@ var MappingView = Backbone.View.extend({
             d3.json(request_url, function(result){
                 var set_update_info = function(data){
                     var attr_map = self.model.get("attribute");                    
-                    $("#block_layer").hide();
-                    $(submit_id).text("Done");
-                    $(submit_id).removeAttr("disabled");
+                    self.el_block_layer.hide();
+                    self.el_sidekey_submit.text("Done");
+                    self.el_sidekey_submit.removeAttr("disabled");
 
                     attr_map[comp] = new_attr;
 
@@ -1741,19 +1471,13 @@ var MappingView = Backbone.View.extend({
         var on_handle = "#layer_handle_"+ v;
         if(v < slider_val.length-1 && all_value[v] > Math.round((all_value[v+1]-0.5)*100)/100){
             $("#layer_slider").slider('values', v, Math.round((all_value[v+1]-0.5)*100)/100); 
-            // $(display).val(Math.round((0-(all_value[v+1]-0.5))*100)/100);
-            // $(display).css({"top": $(on_handle).position().top});
             return false;
         }
         if(v > 0 && all_value[v] < Math.round((all_value[v-1]+0.5)*100)/100){
             $("#layer_slider").slider('values', v, Math.round((all_value[v-1]+0.5)*100)/100); 
-            // $(display).val(Math.round((0-(all_value[v-1]+0.5))*100)/100);
-            // $(display).css({"top": $(on_handle).position().top});
-            // $(label).css({"top": $(on_handle).position().top});
             return false;
         }
         $(display).css({"top": $(on_handle).position().top});
-        // $(label).css({"top": $(on_handle).position().top});
         if(v == 0){
             var up_handle = "#layer_handle_"+ (v+1);
             $(label2).css({"top": ($(up_handle).position().top+$(on_handle).position().top)/2});
@@ -1816,242 +1540,47 @@ var MappingView = Backbone.View.extend({
 
     set_layer_handle_id: function(my_revert, slider_val){
         var self = this;
-        var sep_container = document.getElementById("sep_group");
+        var sep_container = $("#sep_group");
         var handle = $('#layer_slider A.ui-slider-handle');
-        var range_container = document.getElementById("sep_range");
+        var range_container = $("#sep_range");
         
         for(var v = slider_val.length-1; v >= 0; v--){
             handle.eq(v).attr('id', "layer_handle_" + v);
 
             if(v == 0){
-                var sep_layer_title = document.createElement("span");
-                sep_layer_title.setAttribute("class", "layer_label");
-                // sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()+handle.eq(v).position().top)/2 + "; position:absolute;");
-                sep_layer_title.setAttribute("style", "top:" + ($("#layer_slider").height()-3) + ";");
-                sep_layer_title.innerHTML = "Layer " + (v+1);
-                sep_layer_title.id = "title_" + v;
-                range_container.appendChild(sep_layer_title);
+                var sep_layer_title = $('<span class="layer_label"></span>');
+                sep_layer_title.attr("style", "top:" + ($("#layer_slider").height()-3) + ";");
+                sep_layer_title.html("Layer " + (v+1)).attr("id", "title_" + v);
+                range_container.append(sep_layer_title);
             }   
             else{
-                var sep_layer_title = document.createElement("span");
-                sep_layer_title.setAttribute("class", "layer_label");
-                sep_layer_title.setAttribute("style", "top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + ";");
-                sep_layer_title.innerHTML = "Layer " + (v+1);
-                sep_layer_title.id = "title_" + v;
-                range_container.appendChild(sep_layer_title);
+                var sep_layer_title = $('<span class="layer_label"></span>');
+                sep_layer_title.attr("style", "top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + ";");
+                sep_layer_title.html("Layer " + (v+1)).attr("id", "title_" + v);
+                range_container.append(sep_layer_title);
                 if(v == slider_val.length-1){
-                    var sep_layer_title = document.createElement("span");
-                    sep_layer_title.setAttribute("class", "layer_label");
-                    sep_layer_title.setAttribute("style", "top:-15;");
-                    sep_layer_title.innerHTML = "Layer " + (v+2);
-                    sep_layer_title.id = "title_" + v;
-                    range_container.appendChild(sep_layer_title);
+                    var sep_layer_title = $('<span class="layer_label" style="top:-15;"></span>');
+                    sep_layer_title.html("Layer " + (v+2)).attr("id", "title_" + v);
+                    range_container.append(sep_layer_title);
                 }
             }
-            var sep_layer_input = document.createElement("input");
-            sep_layer_input.setAttribute("class", "layer_order");
-            sep_layer_input.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; width:100px; position:absolute; background:none; border:0;");
-            sep_layer_input.setAttribute("readonly", "readonly");
+            var sep_layer_input = $('<input class="layer_order handle_input" readonly></input>');
+            sep_layer_input.attr("style", "top:" + (handle.eq(v).position().top) + ";");
+            // sep_layer_input.setAttribute("readonly", "readonly");
             if(my_revert == "a")
-                sep_layer_input.value = 0-slider_val[v];
+                sep_layer_input.val(0-slider_val[v]);
             else
-                sep_layer_input.value = slider_val[v];
-            sep_layer_input.id = "layer_" + v;
+                sep_layer_input.val(slider_val[v]);
+            sep_layer_input.attr("id", "layer_" + v);
 
-            sep_container.appendChild(sep_layer_input);
+            sep_container.append(sep_layer_input);
+
         }
-    },
-
-    set_color_handle_id_old: function(slider_val, comp, used){
-        var self = this;
-        var sep_container = document.getElementById("sep_group");
-        var handle = $('#layer_slider A.ui-slider-handle');
-        var range_container = document.getElementById("sep_range");
-
-        var color_table = [];
-        var render_table = [];
-        
-        if(used == 1){
-            if(comp == "leaf_color")
-                render_table = mapping_color.render_leaf_color;
-            else if(comp == "root")
-                render_table = mapping_color.render_roots_color;
-        }
-
-        if(comp == "leaf_color")
-            color_table = mapping_color.leaf_color;
-        else if(comp == "root")
-            color_table = mapping_color.roots_color;
-
-        for(var v = slider_val.length-1; v >= 0; v--){
-            handle.eq(v).attr('id', "layer_handle_" + v); 
-
-            if(v == 0){
-                var color_container = document.createElement("select");
-                color_container.value = v;
-                color_container.setAttribute("class", "mapping_selection");
-                color_container.id = "title_" + v;
-
-                for(var l_color = 0; l_color < color_table.length; l_color++){
-                    var selection_opt = document.createElement('option');
-                    selection_opt.value = l_color;
-                    // selection_opt.innerHTML = color_table[l_color];
-                    selection_opt.setAttribute("class", "myfont3");
-                    selection_opt.setAttribute("style", "background-color:" + color_table[l_color] + ";");
-
-                    if(used == 1){
-                        if(color_table[l_color] == render_table[v]){
-                            selection_opt.setAttribute("selected", true);
-                            color_container.setAttribute("style", "width:100px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.roots_color[l_color] + ";");
-                        }
-                    }
-                    else{
-                        if(l_color == v){
-                            selection_opt.setAttribute("selected", true);
-                            color_container.setAttribute("style", "width:100px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + color_table[l_color] + ";");
-                        }
-                            
-                        else if(color_table.length < v && l_color == color_table.length-1){
-                            selection_opt.setAttribute("selected", true);
-                            color_container.setAttribute("style", "width:100px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + color_table[color_table.length-1] + ";");
-                        }
-                    }  
-                        
-                    color_container.appendChild(selection_opt);
-                    
-                }
-                range_container.appendChild(color_container);
-                if(slider_val.length == 1){
-                    var color_container = document.createElement("select");
-                    color_container.value = v;
-                    color_container.setAttribute("class", "mapping_selection");
-                    color_container.id = "title_" + (v+1);
-                    for(var l_color = 0; l_color < color_table.length; l_color++){
-                        var selection_opt = document.createElement('option');
-                        selection_opt.value = l_color;
-                        // selection_opt.innerHTML = color_table[l_color];
-                        selection_opt.setAttribute("class", "myfont3");
-                        selection_opt.setAttribute("style", "background-color:" + color_table[l_color] + ";");
-                        if(used == 1){
-                            if(color_table[l_color] == render_table[(v+1)]){
-                                selection_opt.setAttribute("selected", true);
-                                color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.roots_color[l_color] + ";");
-                            }
-                        }
-                        else{
-                            if(l_color == (v+1)){
-                                selection_opt.setAttribute("selected", true);
-                                color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + color_table[l_color] + ";");
-                            }
-                                
-                            else if(color_table.length < v && l_color == color_table.length-1){
-                                selection_opt.setAttribute("selected", true);
-                                color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + color_table[color_table.length-1] + ";");
-                            }
-                        }                        
-                            
-                        color_container.appendChild(selection_opt);
-                        
-                    }
-                    
-                    range_container.appendChild(color_container);
-                }
-            }   
-            else{
-                var color_container = document.createElement("select");
-                color_container.value = v;
-                color_container.setAttribute("class", "mapping_selection");
-                color_container.id = "title_" + v;
-
-                for(var l_color = 0; l_color < color_table.length; l_color++){
-                    var selection_opt = document.createElement('option');
-                    selection_opt.value = l_color;
-                    // selection_opt.innerHTML = color_table[l_color];
-                    selection_opt.setAttribute("class", "myfont3");
-                    selection_opt.setAttribute("style", "background-color:" + color_table[l_color] + ";");
-                    
-                    if(used == 1){
-                        if(color_table[l_color] == render_table[v]){
-                            selection_opt.setAttribute("selected", true);
-                            color_container.setAttribute("style", "width:100px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.roots_color[l_color] + ";");
-                        }
-                    }
-                    else{
-                        if(l_color == v){
-                            selection_opt.setAttribute("selected", true);
-                            color_container.setAttribute("style", "width:100px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + color_table[l_color] + ";");
-                        }
-                            
-                        else if(color_table.length < v && l_color == color_table.length-1){
-                            selection_opt.setAttribute("selected", true);
-                            color_container.setAttribute("style", "width:100px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + color_table[color_table.length-1] + ";");
-                        }
-                    } 
-                        
-                    color_container.appendChild(selection_opt);
-                    
-                }
-
-                range_container.appendChild(color_container);
-
-                if(v == slider_val.length-1){
-                    var color_container = document.createElement("select");
-                    color_container.value = v;
-                    color_container.setAttribute("class", "mapping_selection");
-                    color_container.id = "title_" + (v+1);
-                    for(var l_color = 0; l_color < color_table.length; l_color++){
-                        var selection_opt = document.createElement('option');
-                        selection_opt.value = l_color;
-                        // selection_opt.innerHTML = color_table[l_color];
-                        selection_opt.setAttribute("class", "myfont3");
-                        selection_opt.setAttribute("style", "background-color:" + color_table[l_color] + ";");
-
-                        if(used == 1){
-                            if(color_table[l_color] == render_table[(v+1)]){
-                                selection_opt.setAttribute("selected", true);
-                                color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + mapping_color.roots_color[l_color] + ";");
-                            }
-                        }
-                        else{
-                            if(l_color == (v+1)){
-                                selection_opt.setAttribute("selected", true);
-                                color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + color_table[l_color] + ";");
-                            }
-                                
-                            else if(color_table.length < v && l_color == color_table.length-1){
-                                selection_opt.setAttribute("selected", true);
-                                color_container.setAttribute("style", "width:100px; position:absolute; top:-15; background-color:" + color_table[color_table.length-1] + ";");
-                            }
-                        }                         
-                            
-                        color_container.appendChild(selection_opt);
-                        
-                    }
-                    
-                    range_container.appendChild(color_container);
-                }
-            }                 
-            var sep_layer_input = document.createElement("input");
-
-            sep_layer_input.setAttribute("class", "layer_order");
-            sep_layer_input.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; width:100px; position:absolute; background:none; border:0;");
-            sep_layer_input.setAttribute("readonly", "readonly");
-            sep_layer_input.value = slider_val[v];
-            sep_layer_input.id = "layer_" + v;
-
-            sep_container.appendChild(sep_layer_input);
-            
-        }
-
-        $(".mapping_selection").unbind();
-        $(".mapping_selection").change(function(){
-            this.style.background = color_table[this.value];
-        });
     },
 
     set_color_handle_id: function(slider_val, comp, used){
         var self = this;
-        var sep_container = document.getElementById("sep_group");
+        var sep_container = $("#sep_group");
         var handle = $('#layer_slider A.ui-slider-handle');
         var range_container = $("#sep_range");
 
@@ -2240,15 +1769,12 @@ var MappingView = Backbone.View.extend({
                     range_container.append(select_container);
                 }
             }                 
-            var sep_layer_input = document.createElement("input");
+            var sep_layer_input = $('<input class="layer_order handle_input" readonly></input>');
 
-            sep_layer_input.setAttribute("class", "layer_order");
-            sep_layer_input.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; width:100px; position:absolute; background:none; border:0;");
-            sep_layer_input.setAttribute("readonly", "readonly");
-            sep_layer_input.value = slider_val[v];
-            sep_layer_input.id = "layer_" + v;
-
-            sep_container.appendChild(sep_layer_input);
+            sep_layer_input.attr("style", "top:" + (handle.eq(v).position().top) + ";");
+            sep_layer_input.attr("id", "layer_" + v).val(slider_val[v]);//.attr('readonly', true)
+            
+            sep_container.append(sep_layer_input);
             
         }
 
@@ -2267,9 +1793,9 @@ var MappingView = Backbone.View.extend({
         else if(comp == "fruit_size")
             img_src = "media/img/one_fruit.png";
         
-        var sep_container = document.getElementById("sep_group");
+        var sep_container = $("#sep_group");
         var handle = $('#layer_slider A.ui-slider-handle');   
-        var range_container = document.getElementById("sep_range");
+        var range_container = $("#sep_range");
 
         var size_val = 0;
         for(var v = slider_val.length-1; v >= 0; v--){
@@ -2279,35 +1805,27 @@ var MappingView = Backbone.View.extend({
                 if(used == 1)
                     size_val = parseInt(size_map[v]);
 
-                var select_container = document.createElement("div");
-                var oneitem = document.createElement("img");
-                var objslider = document.createElement("div");
-                var slider_label = document.createElement("span");
-                select_container.setAttribute("style", "width:140px; position:relative; height:35px;");
+                var select_container = $('<div class="size_num_select_container"></div>');
+                var oneitem = $('<img></img>');
+                var objslider = $('<div class="size_num_objslider"></div>');
+                var slider_label = $('<span></span>');
                 
-                select_container.id = "title_" + v;
-                oneitem.id = "oneitem_" + v;
-                oneitem.setAttribute("style", "position:absolute; width:"+ (5+30*(size_val*0.1)) +"%;");
-                oneitem.src = img_src;
+                select_container.attr("id", "title_" + v);
+                oneitem.attr("id", "oneitem_" + v).attr("style", "position:absolute; width:"+ (5+30*(size_val*0.1)) +"%;").attr("src", img_src);
 
-                objslider.id = "ori_attr_val_" + v;
-                objslider.setAttribute("style", "position:absolute; left:40px; width:100px; top:10px;");
+                objslider.attr("id", "ori_attr_val_" + v);
 
-                slider_label.id = "slider_label_" + v;
-                slider_label.setAttribute("style", "position:absolute; bottom:0px;");
+                slider_label.attr("id", "slider_label_" + v);
+                slider_label.attr("style", "position:absolute; bottom:0px;");
 
-                select_container.appendChild(oneitem);
-                select_container.appendChild(objslider);
-                select_container.appendChild(slider_label);
+                select_container.append(oneitem);
+                select_container.append(objslider);
+                select_container.append(slider_label);
                         
-                range_container.appendChild(select_container);
+                range_container.append(select_container);
 
-                var slider_id = "#ori_attr_val_" + v;
-                var leaf_img_id = "#oneitem_" + v;
                 var size_handle = "#ori_attr_val_" + v + " .ui-slider-handle";
-                var s_label = "#slider_label_" + v;
-                var s_container = "#title_" + v;
-                $(slider_id).slider({
+                objslider.slider({
                     orientation: "horizontal",
                     min: 0,
                     max: 10,
@@ -2325,58 +1843,48 @@ var MappingView = Backbone.View.extend({
                     }
                 });
 
-                $(s_container).css({"position": "absolute"});
-                $(s_container).css({"top": $("#layer_slider").height()-5});
+                select_container.css({"position": "absolute"});
+                select_container.css({"top": $("#layer_slider").height()-5});
                 
-                $(slider_id).css({'top':'8px'});
-                $(size_handle).css({'width':'0.7em'});
-                $(size_handle).css({'height':'1em'});
-                $(slider_id).css({'height':'8px'});
-                $(s_label).text(size_val);
-                $(s_label).val(size_val);
-                $(s_label).css({"left": 35+100*(0.1*size_val)});
+                objslider.css({'top':'8px'});
+                $(size_handle).css({'width':'0.7em', 'height':'1em'});
+                objslider.css({'height':'8px'});
+                slider_label.text(size_val);
+                slider_label.val(size_val);
+                slider_label.css({"left": 35+100*(0.1*size_val)});
 
                 if(slider_val.length == 1){
                     size_val = (v+1);
                     if(used == 1)
                         size_val = parseInt(size_map[(v+1)]);
-                    var select_container = document.createElement("div");
-                    var oneitem = document.createElement("img");
-                    var objslider = document.createElement("div");
-                    var slider_label = document.createElement("span");
-                    // select_container.setAttribute("style", "margin-bottom:20px; padding-bottom:20px; margin-top:15px; width:100px; position:relative; height:" + (20 + (10*(c+1)*0.5)) + "px;");
-                    select_container.setAttribute("style", "width:140px; position:relative; height:35px;");
+                    var select_container = $('<div class="size_num_select_container"></div>');
+                    var oneitem = $('<img></img>');
+                    var objslider = $('<div class="size_num_objslider"></div>');
+                    var slider_label = $('<span></span>');
                     
-                    select_container.id = "title_" + (v+1);
-                    oneitem.id = "oneitem_" + (v+1);
-                    oneitem.setAttribute("style", "position:absolute; width:"+ (5+30*(size_val*0.1)) +"%;");
-                    oneitem.src = img_src;
+                    select_container.attr("id", "title_" + (v+1));
+                    oneitem.attr("id", "oneitem_" + (v+1)).attr("style", "position:absolute; width:"+ (5+30*(size_val*0.1)) +"%;").attr("src", img_src);
 
-                    objslider.id = "ori_attr_val_" + (v+1);
-                    objslider.setAttribute("style", "position:absolute; left:40px; width:100px; top:10px;");
+                    objslider.attr("id", "ori_attr_val_" + (v+1));
 
-                    slider_label.id = "slider_label_" + (v+1);
-                    slider_label.setAttribute("style", "position:absolute; bottom:0px;");
+                    slider_label.attr("id", "slider_label_" + (v+1));
+                    slider_label.attr("style", "position:absolute; bottom:0px;");
 
-                    select_container.appendChild(oneitem);
-                    select_container.appendChild(objslider);
-                    select_container.appendChild(slider_label);
+                    select_container.append(oneitem);
+                    select_container.append(objslider);
+                    select_container.append(slider_label);
                             
-                    range_container.appendChild(select_container);
+                    range_container.append(select_container);
 
-                    var slider_id = "#ori_attr_val_" + (v+1);
-                    var leaf_img_id = "#oneitem_" + (v+1);
                     var size_handle = "#ori_attr_val_" + (v+1) + " .ui-slider-handle";
-                    var s_label = "#slider_label_" + (v+1);
-                    var s_container = "#title_" + (v+1);
-                    $(slider_id).slider({
+                    objslider.slider({
                         orientation: "horizontal",
                         min: 0,
                         max: 10,
                         value: size_val,
                         slide: function( event, ui) {
                             var myid = this.id;
-                            var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop();
+                            var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop(); //!!!
                             var container_id = "#title_" + myid.split("attr_val_").pop();
                             var s_label = "#slider_label_" + myid.split("attr_val_").pop();
 
@@ -2387,17 +1895,16 @@ var MappingView = Backbone.View.extend({
                         }
                     });
 
-                    $(s_container).css({"position": "absolute"});
-                    $(s_container).css({"top": -15});
+                    select_container.css({"position": "absolute"});
+                    select_container.css({"top": -15});
                     
-                    $(slider_id).css({'top':'8px'});
-                    $(size_handle).css({'width':'0.7em'});
-                    $(size_handle).css({'height':'1em'});
-                    $(slider_id).css({'height':'8px'});
+                    objslider.css({'top':'8px'});
+                    $(size_handle).css({'width':'0.7em', 'height':'1em'});
+                    objslider.css({'height':'8px'});
                    
-                    $(s_label).text(size_val);
-                    $(s_label).val(size_val);
-                    $(s_label).css({"left": 35+100*0.1*size_val});
+                    slider_label.text(size_val);
+                    slider_label.val(size_val);
+                    slider_label.css({"left": 35+100*0.1*size_val});
 
                 }
 
@@ -2406,42 +1913,34 @@ var MappingView = Backbone.View.extend({
                 size_val = v;
                 if(used == 1)
                     size_val = parseInt(size_map[v]);
-                var select_container = document.createElement("div");
-                var oneitem = document.createElement("img");
-                var objslider = document.createElement("div");
-                var slider_label = document.createElement("span");
-                select_container.setAttribute("style", "width:140px; position:relative; height:35px;");
+                var select_container = $('<div class="size_num_select_container"></div>');
+                var oneitem = $('<img></img>');
+                var objslider = $('<div class="size_num_objslider"></div>');
+                var slider_label = $('<span></span>');
                 
-                select_container.id = "title_" + v;
-                oneitem.id = "oneitem_" + v;
-                oneitem.setAttribute("style", "position:absolute; width:"+ (5+30*(size_val*0.1)) +"%;");
-                oneitem.src = img_src;
+                select_container.attr("id", "title_" + v);
+                oneitem.attr("id", "oneitem_" + v).attr("style", "position:absolute; width:"+ (5+30*(size_val*0.1)) +"%;").attr("src", img_src);
 
-                objslider.id = "ori_attr_val_" + v;
-                objslider.setAttribute("style", "position:absolute; left:40px; width:100px; top:10px;");
+                objslider.attr("id", "ori_attr_val_" + v);
 
-                slider_label.id = "slider_label_" + v;
-                slider_label.setAttribute("style", "position:absolute; bottom:0px;");
+                slider_label.attr("id", "slider_label_" + v);
+                slider_label.attr("style", "position:absolute; bottom:0px;");
 
-                select_container.appendChild(oneitem);
-                select_container.appendChild(objslider);
-                select_container.appendChild(slider_label);
+                select_container.append(oneitem);
+                select_container.append(objslider);
+                select_container.append(slider_label);
                         
-                range_container.appendChild(select_container);
+                range_container.append(select_container);
 
-                var slider_id = "#ori_attr_val_" + v;
-                var leaf_img_id = "#oneitem_" + v;
                 var size_handle = "#ori_attr_val_" + v + " .ui-slider-handle";
-                var s_label = "#slider_label_" + v;
-                var s_container = "#title_" + v;
-                $(slider_id).slider({
+                objslider.slider({
                     orientation: "horizontal",
                     min: 0,
                     max: 10,
                     value: size_val,
                     slide: function( event, ui) {
                         var myid = this.id;
-                        var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop();
+                        var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop(); //!!!
                         var container_id = "#title_" + myid.split("attr_val_").pop();
                         var s_label = "#slider_label_" + myid.split("attr_val_").pop();
 
@@ -2452,52 +1951,42 @@ var MappingView = Backbone.View.extend({
                     }
                 });
 
-                $(s_container).css({"position": "absolute"});
-                $(s_container).css({"top": (handle.eq(v-1).position().top+handle.eq(v).position().top)/2});
+                select_container.css({"position": "absolute"});
+                select_container.css({"top": (handle.eq(v-1).position().top+handle.eq(v).position().top)/2});
                 
-                $(slider_id).css({'top':'8px'});
-                $(size_handle).css({'width':'0.7em'});
-                $(size_handle).css({'height':'1em'});
-                $(slider_id).css({'height':'8px'});
+                objslider.css({'top':'8px'});
+                $(size_handle).css({'width':'0.7em', 'height':'1em'});
+                objslider.css({'height':'8px'});
                 
-                $(s_label).text(size_val);
-                $(s_label).val(size_val);
-                $(s_label).css({"left": 35+100*(0.1*size_val)});
+                slider_label.text(size_val);
+                slider_label.val(size_val);
+                slider_label.css({"left": 35+100*(0.1*size_val)});
 
                 if(v == slider_val.length-1){
                     size_val = (v+1);
                     if(used == 1)
                         size_val = parseInt(size_map[(v+1)]);
-                    var select_container = document.createElement("div");
-                    var oneitem = document.createElement("img");
-                    var objslider = document.createElement("div");
-                    var slider_label = document.createElement("span");
-                    // select_container.setAttribute("style", "margin-bottom:20px; padding-bottom:20px; margin-top:15px; width:100px; position:relative; height:" + (20 + (10*(c+1)*0.5)) + "px;");
-                    select_container.setAttribute("style", "width:140px; position:relative; height:35px;");
-                    
-                    select_container.id = "title_" + (v+1);
-                    oneitem.id = "oneitem_" + (v+1);
-                    oneitem.setAttribute("style", "position:absolute; width:"+ (5+30*(size_val*0.1)) +"%;");
-                    oneitem.src = img_src;
+                    var select_container = $('<div class="size_num_select_container"></div>');
+                    var oneitem = $('<img></img>');
+                    var objslider = $('<div class="size_num_objslider"></div>');
+                    var slider_label = $('<span></span>');
+                                        
+                    select_container.attr("id", "title_" + (v+1));
+                    oneitem.attr("id", "oneitem_" + (v+1)).attr("style", "position:absolute; width:"+ (5+30*(size_val*0.1)) +"%;").attr("src", img_src);
 
-                    objslider.id = "ori_attr_val_" + (v+1);
-                    objslider.setAttribute("style", "position:absolute; left:40px; width:100px; top:10px;");
+                    objslider.attr("id", "ori_attr_val_" + (v+1));
 
-                    slider_label.id = "slider_label_" + (v+1);
-                    slider_label.setAttribute("style", "position:absolute; bottom:0px;");
+                    slider_label.attr("id", "slider_label_" + (v+1));
+                    slider_label.attr("style", "position:absolute; bottom:0px;");
 
-                    select_container.appendChild(oneitem);
-                    select_container.appendChild(objslider);
-                    select_container.appendChild(slider_label);
+                    select_container.append(oneitem);
+                    select_container.append(objslider);
+                    select_container.append(slider_label);
                             
-                    range_container.appendChild(select_container);
+                    range_container.append(select_container);
 
-                    var slider_id = "#ori_attr_val_" + (v+1);
-                    var leaf_img_id = "#oneitem_" + (v+1);
                     var size_handle = "#ori_attr_val_" + (v+1) + " .ui-slider-handle";
-                    var s_label = "#slider_label_" + (v+1);
-                    var s_container = "#title_" + (v+1);
-                    $(slider_id).slider({
+                    objslider.slider({
                         orientation: "horizontal",
                         min: 0,
                         max: 10,
@@ -2515,27 +2004,23 @@ var MappingView = Backbone.View.extend({
                         }
                     });
 
-                    $(s_container).css({"position": "absolute"});
-                    $(s_container).css({"top": -15});
+                    select_container.css({"position": "absolute"});
+                    select_container.css({"top": -15});
                     
-                    $(slider_id).css({'top':'8px', 'height':'8px'});
+                    objslider.css({'top':'8px', 'height':'8px'});
                     $(size_handle).css({'width':'0.7em', 'height':'1em'});
                    
-                    $(s_label).text(size_val);
-                    $(s_label).val(size_val);
-                    $(s_label).css({"left": 35+100*0.1*size_val});
+                    slider_label.text(size_val);
+                    slider_label.val(size_val);
+                    slider_label.css({"left": 35+100*0.1*size_val});
                     
                 }
-            }                 
-            var sep_layer_input = document.createElement("input");
-
-            sep_layer_input.setAttribute("class", "layer_order");
-            sep_layer_input.setAttribute("style", "top:" + (handle.eq(v).position().top) + "; width:100px; position:absolute; background:none; border:0;");
-            sep_layer_input.setAttribute("readonly", "readonly");
-            sep_layer_input.value = slider_val[v];
-            sep_layer_input.id = "layer_" + v;
-
-            sep_container.appendChild(sep_layer_input);
+            } 
+            var sep_layer_input = $('<input class="layer_order handle_input" readonly></input>');
+            sep_layer_input.attr("style", "top:" + (handle.eq(v).position().top) + ";");
+            sep_layer_input.attr("id", "layer_" + v).val(slider_val[v]);//.attr('readonly', true)
+            
+            sep_container.append(sep_layer_input);
             
         }
     },
@@ -2546,14 +2031,12 @@ var MappingView = Backbone.View.extend({
         var attr_map = self.model.get("attribute");
         var attr_opt = self.model.get("attr_option");
         console.log("in trunk mapping");
-        $('#mapping_img').attr('src', 'media/img/trunk_mapping.png');
+        self.el_mapping_img.attr('src', 'media/img/trunk_mapping.png');
 
-        $("#sidekey_selection").show();
-        $("#sidekey_title").text("Trunk Mapping:");
+        self.el_sidekey_selection.show();
+        self.el_sidekey_title.text("Trunk Mapping:");
         
-        $("#sidekeyselect").empty();
-        var container = document.getElementById("sidekeyselect");
-       
+        self.el_sidekeyselect.empty();               
         // list all the attribute can be mapped
         for(s in component_attribute[data_mode]){
             if(s == "none"){
@@ -2565,28 +2048,28 @@ var MappingView = Backbone.View.extend({
                     continue;
             }
 
-            var selection_opt = document.createElement('option');
-            selection_opt.value = s;
+            var selection_opt = $('<option class="myfont3"></option>');
+            selection_opt.val(s);
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.innerHTML = s + "*";
+                selection_opt.html(s + "*");
             else{
                 if(s == "dataset")
-                    selection_opt.innerHTML = "waves";
+                    selection_opt.html("waves");
                 else
-                    selection_opt.innerHTML = s;
+                    selection_opt.html(s);
             }
-            selection_opt.setAttribute("class", "myfont3");
+            
             if(s == attr_map["trunk"])
-                selection_opt.setAttribute("selected", true);
-            container.appendChild(selection_opt);
+                selection_opt.prop("selected", true);
+            self.el_sidekeyselect.append(selection_opt);
         }
 
         // set user's map
         if(attr_map["trunk"] != "none"){
             $("#mark_group_select").empty();
             $("#sidekey_operation").show();
-            $("#mark_group").html("<b>NOTE: Blue</b> as left trunk | <b>Red</b> as right trunk");
-            $("#mark_group").show();
+            self.el_mark_group.html("<b>NOTE: Blue</b> as left trunk | <b>Red</b> as right trunk");
+            self.el_mark_group.show();
 
             if(component_attribute[data_mode][attr_map["trunk"]][5] == "categorical" || component_attribute[data_mode][attr_map["trunk"]][5] == "boolean"){
                 self.binary_cat_operation(attr_map["trunk"], "trunk", attr_map["trunk"]);
@@ -2595,58 +2078,44 @@ var MappingView = Backbone.View.extend({
                 self.binary_num_operation(attr_map["trunk"], "trunk", attr_map["trunk"]);
             }
 
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
-            $("#sidekey_submit_trunk").show();
-            $("#sidekey_submit_trunk").text("Done");
+            self.el_sidekey_submit.show();
+            self.el_sidekey_submit.text("Done");
         }
 
-        $("#sidekeyselect").unbind();
-        $("#sidekeyselect").change(function(){
+        self.el_sidekeyselect.unbind();
+        self.el_sidekeyselect.change(function(){
             $("#mark_group_select").empty();
-            if( $("#sidekeyselect").val() != "none"){
+            if( self.el_sidekeyselect.val() != "none"){
                 var data_mode = self.model.get("view_mode");
                 var attr_map = self.model.get("attribute");
                 $("#sidekey_operation").show();
-                // $("#mark_group").text("✔ as Left Side of Trunk: 【NOTE】");
-                $("#mark_group").html("<b>NOTE: Blue</b> as left trunk | <b>Red</b> as right trunk");
-                $("#mark_group").show();
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
-                    self.binary_cat_operation($("#sidekeyselect").val(), "trunk", attr_map["trunk"]);
+                // self.el_mark_group.text("✔ as Left Side of Trunk: 【NOTE】");
+                self.el_mark_group.html("<b>NOTE: Blue</b> as left trunk | <b>Red</b> as right trunk");
+                self.el_mark_group.show();
+                if(component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "categorical" || component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "boolean"){
+                    self.binary_cat_operation(self.el_sidekeyselect.val(), "trunk", attr_map["trunk"]);
                 }
                 else{
-                    self.binary_num_operation($("#sidekeyselect").val(), "trunk", attr_map["trunk"]);
+                    self.binary_num_operation(self.el_sidekeyselect.val(), "trunk", attr_map["trunk"]);
                 }
                 
             }
 
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
-            
-            $("#sidekey_submit_trunk").show();
-            $("#sidekey_submit_trunk").text("Done");
+            self.el_sidekey_submit.show();
+            self.el_sidekey_submit.text("Done");
         });
     
-        $("#sidekey_submit_trunk").unbind();
-        $("#sidekey_submit_trunk").click(function(){
-            $("#block_page").show();
-            $("#loading_process").html("<b>Mapping...</b>");
+        self.el_sidekey_submit.unbind();
+        self.el_sidekey_submit.click(function(){
+            console.log("in trunk submit");
+            self.el_block_page.show();
+            self.el_loading_process.html("<b>Mapping...</b>");
 
-            $("#sidekey_submit_trunk").text("Update");
-            $("#sidekey_submit_trunk").attr("disabled", true);
-            $("#block_layer").show();
+            self.el_sidekey_submit.text("Update");
+            self.el_sidekey_submit.attr("disabled", true);
+            self.el_block_layer.show();
 
-            self.binary_submit(attr_map["trunk"], $("#sidekeyselect").val(), "trunk");                   
+            self.binary_submit(attr_map["trunk"], self.el_sidekeyselect.val(), "trunk");                   
 
         });
 
@@ -2658,13 +2127,12 @@ var MappingView = Backbone.View.extend({
         var attr_map = self.model.get("attribute");
         var attr_opt = self.model.get("attr_option");
         console.log("in bside mapping");
-        $('#mapping_img').attr('src', 'media/img/bside_mapping.png');
-        $("#sidekey_selection").show();
-        $("#sidekey_title").text("Branch Side Mapping:");
+        self.el_mapping_img.attr('src', 'media/img/bside_mapping.png');
+        self.el_sidekey_selection.show();
+        self.el_sidekey_title.text("Branch Side Mapping:");
     
-        $("#sidekeyselect").empty();
-        var container = document.getElementById("sidekeyselect");
-        // container.setAttribute("class", "sidekey_selection");
+        self.el_sidekeyselect.empty();
+        
         for(s in component_attribute[data_mode]){
             if(s == "none"){
                 continue;
@@ -2673,28 +2141,30 @@ var MappingView = Backbone.View.extend({
                  if(component_attribute[data_mode][s][0].length == 0 || (s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["bside"]))
                     continue;
             }
-            var selection_opt = document.createElement('option');
-            selection_opt.value = s;
+
+            var selection_opt = $('<option class="myfont3"></option>');
+            selection_opt.val(s);
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.innerHTML = s + "*";
+                selection_opt.html(s + "*");
             else{
                 if(s == "dataset")
-                    selection_opt.innerHTML = "waves";
+                    selection_opt.html("waves");
                 else
-                    selection_opt.innerHTML = s;
+                    selection_opt.html(s);
             }
-            selection_opt.setAttribute("class", "myfont3");
+            
             if(s == attr_map["bside"])
-                selection_opt.setAttribute("selected", true);
-            container.appendChild(selection_opt);
+                selection_opt.prop("selected", true);
+            self.el_sidekeyselect.append(selection_opt);
+
         }
 
         if(attr_map["bside"] != "none"){
             $("#mark_group_select").empty();
             $("#sidekey_operation").show();
-            // $("#mark_group").text("✔ as Left Side of bside: 【NOTE】");
-            $("#mark_group").html("<b>NOTE: Blue</b> as upper side | <b>Red</b> as lower side");
-            $("#mark_group").show();
+            // self.el_mark_group.text("✔ as Left Side of bside: 【NOTE】");
+            self.el_mark_group.html("<b>NOTE: Blue</b> as upper side | <b>Red</b> as lower side");
+            self.el_mark_group.show();
             if(component_attribute[data_mode][attr_map["bside"]][5] == "categorical" || component_attribute[data_mode][attr_map["bside"]][5] == "boolean"){
                 self.binary_cat_operation(attr_map["bside"], "bside", attr_map["bside"]);
             }
@@ -2702,57 +2172,43 @@ var MappingView = Backbone.View.extend({
                 self.binary_num_operation(attr_map["bside"], "bside", attr_map["bside"]);
             }                
 
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
-            $("#sidekey_submit_bside").show();
-            $("#sidekey_submit_bside").text("Done");
+            self.el_sidekey_submit.show();
+            self.el_sidekey_submit.text("Done");
         }
 
-        $("#sidekeyselect").unbind();
-        $("#sidekeyselect").change(function(){
+        self.el_sidekeyselect.unbind();
+        self.el_sidekeyselect.change(function(){
             $("#mark_group_select").empty();
-            if( $("#sidekeyselect").val() != "none"){
+            if( self.el_sidekeyselect.val() != "none"){
                 var data_mode = self.model.get("view_mode");
                 var attr_map = self.model.get("attribute");
                 $("#sidekey_operation").show();
-                var attr_container = document.getElementById("mark_group_select");
-                $("#mark_group").html("<b>NOTE: Blue</b> as upper side | <b>Red</b> as lower side");
-                $("#mark_group").show();
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
-                    self.binary_cat_operation($("#sidekeyselect").val(), "bside", attr_map["bside"]);
+                // var attr_container = document.getElementById("mark_group_select");
+                self.el_mark_group.html("<b>NOTE: Blue</b> as upper side | <b>Red</b> as lower side");
+                self.el_mark_group.show();
+                if(component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "categorical" || component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "boolean"){
+                    self.binary_cat_operation(self.el_sidekeyselect.val(), "bside", attr_map["bside"]);
                 }
                 else{
-                    self.binary_num_operation($("#sidekeyselect").val(), "bside", attr_map["bside"]);
+                    self.binary_num_operation(self.el_sidekeyselect.val(), "bside", attr_map["bside"]);
                 }
             }
-
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
             
-            $("#sidekey_submit_bside").show();
-            $("#sidekey_submit_bside").text("Done");
+            self.el_sidekey_submit.show();
+            self.el_sidekey_submit.text("Done");
         });
 
-        $("#sidekey_submit_bside").unbind();
-        $("#sidekey_submit_bside").click(function(){
-            $("#block_page").show();
-            $("#loading_process").html("<b>Mapping...</b>");
+        self.el_sidekey_submit.unbind();
+        self.el_sidekey_submit.click(function(){
+            console.log("in bside submit");
+            self.el_block_page.show();
+            self.el_loading_process.html("<b>Mapping...</b>");
 
-            $("#sidekey_submit_bside").text("Update");
-            $("#sidekey_submit_bside").attr("disabled", true);
-            $("#block_layer").show();
+            self.el_sidekey_submit.text("Update");
+            self.el_sidekey_submit.attr("disabled", true);
+            self.el_block_layer.show();
 
-            self.binary_submit(attr_map["bside"], $("#sidekeyselect").val(), "bside");
+            self.binary_submit(attr_map["bside"], self.el_sidekeyselect.val(), "bside");
 
         });
     },
@@ -2763,13 +2219,13 @@ var MappingView = Backbone.View.extend({
         var attr_map = self.model.get("attribute");
         var attr_opt = self.model.get("attr_option");
         console.log("in branch mapping");
-        $('#mapping_img').attr('src', 'media/img/branch_mapping.png');
-        $("#sidekey_selection").show();
-        $("#sidekey_title").text("Branch Layer Mapping:");
+        self.el_mapping_img.attr('src', 'media/img/branch_mapping.png');
+        self.el_sidekey_selection.show();
+        self.el_sidekey_title.text("Branch Layer Mapping:");
         $("#sidekey_description").text("The branch mapping will place alter into different layer, so the attribute is better to be related with alter or we will random place the same alter into duplication sticks. This determines the height of the tree and it will be menful if this attribute is in a order.");
 
-        $("#sidekeyselect").empty();
-        var container = document.getElementById("sidekeyselect");
+        self.el_sidekeyselect.empty();
+        
 
         for(s in component_attribute[data_mode]){
             if(s == "none"){
@@ -2779,28 +2235,28 @@ var MappingView = Backbone.View.extend({
                  if(component_attribute[data_mode][s][0].length == 0 || (s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["branch"]))
                     continue;
             }
-            var selection_opt = document.createElement('option');
-            selection_opt.value = s;
+
+            var selection_opt = $('<option class="myfont3"></option>');
+            selection_opt.val(s);
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.innerHTML = s + "*";
+                selection_opt.html(s + "*");
             else{
                 if(s == "dataset")
-                    selection_opt.innerHTML = "waves";
+                    selection_opt.html("waves");
                 else
-                    selection_opt.innerHTML = s;
+                    selection_opt.html(s);
             }
-            selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["branch"])
-                selection_opt.setAttribute("selected", true);
-            container.appendChild(selection_opt);
+                selection_opt.prop("selected", true);
+            self.el_sidekeyselect.append(selection_opt);
         }
         $("#mark_group_select").empty();
 
         if(attr_map["branch"] != "none"){
             $("#sidekey_operation").show();
             // var attr_container = document.getElementById("mark_group_select");
-            $("#mark_group").html("<b>NOTE: Order</b> the attributes as the branch order</b>");
-            $("#mark_group").show();
+            self.el_mark_group.html("<b>NOTE: Order</b> the attributes as the branch order</b>");
+            self.el_mark_group.show();
             if(component_attribute[data_mode][attr_map["branch"]][5] == "categorical" || component_attribute[data_mode][attr_map["branch"]][5] == "boolean"){
                 self.layer_cat_operation(attr_map["branch"], "branch", attr_map["branch"]);
             }
@@ -2808,75 +2264,60 @@ var MappingView = Backbone.View.extend({
                 self.layer_num_operation(attr_map["branch"], "branch", attr_map["branch"]);
             }
 
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
-            
-            $("#sidekey_submit_branch").show();
-            $("#sidekey_submit_branch").text("Done");
+            self.el_sidekey_submit.show();
+            self.el_sidekey_submit.text("Done");
             
         }
 
-        $("#sidekeyselect").unbind();
-        $("#sidekeyselect").change(function(){
+        self.el_sidekeyselect.unbind();
+        self.el_sidekeyselect.change(function(){
             $("#mark_group_select").empty();
             var revert = "d";
-            if( $("#sidekeyselect").val() != "none"){
+            if( self.el_sidekeyselect.val() != "none"){
                 var data_mode = self.model.get("view_mode");
                 var attr_map = self.model.get("attribute");                
                 $("#sidekey_operation").show();
                 // var attr_container = document.getElementById("mark_group_select");
-                $("#mark_group").html("<b>NOTE: Order</b> the attributes as the branch order</b>");
-                $("#mark_group").show();
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
-                    self.layer_cat_operation($("#sidekeyselect").val(), "branch", attr_map["branch"]);
+                self.el_mark_group.html("<b>NOTE: Order</b> the attributes as the branch order</b>");
+                self.el_mark_group.show();
+                if(component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "categorical" || component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "boolean"){
+                    self.layer_cat_operation(self.el_sidekeyselect.val(), "branch", attr_map["branch"]);
                 }
                 else{
-                    self.layer_num_operation($("#sidekeyselect").val(), "branch", attr_map["branch"]);
+                    self.layer_num_operation(self.el_sidekeyselect.val(), "branch", attr_map["branch"]);
                 }
                 
             }           
-
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
             
-            $("#sidekey_submit_branch").show();
-            $("#sidekey_submit_branch").text("Done");
+            self.el_sidekey_submit.show();
+            self.el_sidekey_submit.text("Done");
             
         });
 
-        $("#sidekey_submit_branch").unbind();
-        $("#sidekey_submit_branch").click(function(){
+        self.el_sidekey_submit.unbind();
+        self.el_sidekey_submit.click(function(){
+            console.log("in branch submit");
             var data_mode = self.model.get("view_mode");
             var ego_selections = self.model.get("selected_egos");
-            $("#block_page").show();
-            $("#loading_process").html("<b>Mapping...</b>");
-            $("#sidekey_submit_branch").text("Update");
-            $("#sidekey_submit_branch").attr("disabled", true);
-            $("#block_layer").show();
+            self.el_block_page.show();
+            self.el_loading_process.html("<b>Mapping...</b>");
+            self.el_sidekey_submit.text("Update");
+            self.el_sidekey_submit.attr("disabled", true);
+            self.el_block_layer.show();
 
             if("branch" in attribute_mapping){
                 delete attribute_mapping["branch"];
             }
-            attr_map["branch"] = $("#sidekeyselect").val();
+            attr_map["branch"] = self.el_sidekeyselect.val();
 
-            if($("#sidekeyselect").val() == "none"){}
+            if(self.el_sidekeyselect.val() == "none"){}
             
             else{
-                var update_info = data_mode + ":-ctree_branch:-" + $("#sidekeyselect").val();
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
+                var update_info = data_mode + ":-ctree_branch:-" + self.el_sidekeyselect.val();
+                if(component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "categorical" || component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "boolean"){
                     var layer_map = {};
                     attribute_mapping["branch"] = {};
-                    count_layer = component_attribute[data_mode][$("#sidekeyselect").val()][0].length-1;
+                    count_layer = component_attribute[data_mode][self.el_sidekeyselect.val()][0].length-1;
                     $('#mapping_group').children().each(function(){
                         
                         attribute_mapping["branch"][$(this).val()] = count_layer;
@@ -2906,11 +2347,11 @@ var MappingView = Backbone.View.extend({
                 d3.json(request_url, function(result){
                     var set_update_info = function(data){
                         var attr_map = self.model.get("attribute");
-                        $("#block_layer").hide();
-                        $("#sidekey_submit_branch").text("Done");
-                        $("#sidekey_submit_branch").removeAttr("disabled");
+                        self.el_block_layer.hide();
+                        self.el_sidekey_submit.text("Done");
+                        self.el_sidekey_submit.removeAttr("disabled");
                         
-                        attr_map["branch"] = $("#sidekeyselect").val();
+                        attr_map["branch"] = self.el_sidekeyselect.val();
                         
                         self.model.set({"attribute": attr_map});
                         
@@ -2929,41 +2370,41 @@ var MappingView = Backbone.View.extend({
         var attr_map = self.model.get("attribute");
         var attr_opt = self.model.get("attr_option");
         console.log("in root mapping");
-        $('#mapping_img').attr('src', 'media/img/root_mapping.png');
-        $("#sidekey_selection").show();
-        $("#sidekey_title").text("Root Mapping:");
+        self.el_mapping_img.attr('src', 'media/img/root_mapping.png');
+        self.el_sidekey_selection.show();
+        self.el_sidekey_title.text("Root Mapping:");
         
-        $("#sidekeyselect").empty();
-        var container = document.getElementById("sidekeyselect");
+        self.el_sidekeyselect.empty();
+        
         for(s in component_attribute[data_mode]){
             if(s == "none"){}
             else{
                  if(component_attribute[data_mode][s][0].length == 0)
                     continue;
             }
-            var selection_opt = document.createElement('option');
-            selection_opt.value = s;
+
+            var selection_opt = $('<option class="myfont3"></option>');
+            selection_opt.val(s);
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.innerHTML = s + "*";
+                selection_opt.html(s + "*");
             else{
                 if(s == "dataset")
-                    selection_opt.innerHTML = "waves";
+                    selection_opt.html("waves");
                 else
-                    selection_opt.innerHTML = s;
+                    selection_opt.html(s);
             }
-            selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["root"])
-                selection_opt.setAttribute("selected", true);
-            container.appendChild(selection_opt);
+                selection_opt.prop("selected", true);
+            self.el_sidekeyselect.append(selection_opt);
         }
 
         // set user mapping
         if(attr_map["root"] != "none"){
             $("#mark_group_select").empty();
             $("#sidekey_operation").show();
-            $("#mark_group").html("<b>NOTE: Color</b> as different categories");
-            $("#mark_group").show();
-            var attr_container = document.getElementById("mark_group_select");
+            self.el_mark_group.html("<b>NOTE: Color</b> as different categories");
+            self.el_mark_group.show();
+            // var attr_container = document.getElementById("mark_group_select");
             var user_map = attribute_mapping[attr_map["root"]];
             if(component_attribute[data_mode][attr_map["root"]][5] == "categorical" || component_attribute[data_mode][attr_map["root"]][5] == "boolean"){
                 self.color_cat_operation(attr_map["root"], "root", attr_map["root"]);
@@ -2972,65 +2413,50 @@ var MappingView = Backbone.View.extend({
                 self.color_num_operation(attr_map["root"], "root", attr_map["root"]);
             }
             
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
-
-            $("#sidekey_submit_root").show();
-            $("#sidekey_submit_root").text("Done");
+            self.el_sidekey_submit.show();
+            self.el_sidekey_submit.text("Done");
         }
 
-        $("#sidekeyselect").unbind();
-        $("#sidekeyselect").change(function(){
+        self.el_sidekeyselect.unbind();
+        self.el_sidekeyselect.change(function(){
             var attr_map = self.model.get("attribute");
             $("#mark_group_select").empty();
-            if( $("#sidekeyselect").val() != "none"){
+            if( self.el_sidekeyselect.val() != "none"){
                 $("#sidekey_operation").show();
-                $("#mark_group").html("<b>NOTE: Color</b> as different categories");
-                $("#mark_group").show();
-                var attr_container = document.getElementById("mark_group_select");
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
-                    self.color_cat_operation($("#sidekeyselect").val(), "root", attr_map["root"]);
+                self.el_mark_group.html("<b>NOTE: Color</b> as different categories");
+                self.el_mark_group.show();
+                // var attr_container = document.getElementById("mark_group_select");
+                if(component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "categorical" || component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "boolean"){
+                    self.color_cat_operation(self.el_sidekeyselect.val(), "root", attr_map["root"]);
                 }
                 else{
-                    self.color_num_operation($("#sidekeyselect").val(), "root", attr_map["root"]);
+                    self.color_num_operation(self.el_sidekeyselect.val(), "root", attr_map["root"]);
                 }
                 
             }
             else{
                 $("#sidekey_operation").show();
-                $("#mark_group").html("<b>NOTE:</b> Map <b>nothing</b> to root");
-                $("#mark_group").show();
+                self.el_mark_group.html("<b>NOTE:</b> Map <b>nothing</b> to root");
+                self.el_mark_group.show();
             }
 
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
-
-            $("#sidekey_submit_root").show();
-            $("#sidekey_submit_root").text("Done");
+            self.el_sidekey_submit.show();
+            self.el_sidekey_submit.text("Done");
             
         });
 
     
-        $("#sidekey_submit_root").unbind();
-        $("#sidekey_submit_root").click(function(){
-            $("#block_page").show();
-            $("#loading_process").html("<b>Mapping...</b>");
-            $("#sidekey_submit_root").text("Update");
-            $("#sidekey_submit_root").attr("disabled", true);
+        self.el_sidekey_submit.unbind();
+        self.el_sidekey_submit.click(function(){
+            console.log("in root submit");
+            self.el_block_page.show();
+            self.el_loading_process.html("<b>Mapping...</b>");
+            self.el_sidekey_submit.text("Update");
+            self.el_sidekey_submit.attr("disabled", true);
             
-            $("#block_layer").show();
+            self.el_block_layer.show();
 
-            self.color_submit(attr_map["root"], $("#sidekeyselect").val(), "root");
+            self.color_submit(attr_map["root"], self.el_sidekeyselect.val(), "root");
 
         });
     },    
@@ -3041,13 +2467,13 @@ var MappingView = Backbone.View.extend({
         var attr_map = self.model.get("attribute");
         var attr_opt = self.model.get("attr_option");
         console.log("in leaf_color mapping");
-        $('#mapping_img').attr('src', 'media/img/leaf_mapping.png');
-        $("#sidekey_selection").show();
-        $("#sidekey_title").text("Leaf Color Mapping:");
+        self.el_mapping_img.attr('src', 'media/img/leaf_mapping.png');
+        self.el_sidekey_selection.show();
+        self.el_sidekey_title.text("Leaf Color Mapping:");
         $("#sidekey_description").text("The leaf color mapping will show the different category of each contact as a leaf color, so the attribute is better to be related with the unique information. You also can choose the group for the color.");
 
-        $("#sidekeyselect").empty();
-        var container = document.getElementById("sidekeyselect");
+        self.el_sidekeyselect.empty();
+        
         // container.setAttribute("class", "sidekey_selection");
         for(s in component_attribute[data_mode]){
             if(s == "none"){}
@@ -3055,27 +2481,27 @@ var MappingView = Backbone.View.extend({
                  if(component_attribute[data_mode][s][0].length == 0 || (s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["leaf_color"]))
                     continue;
             }
-            var selection_opt = document.createElement('option');
-            selection_opt.value = s;
+
+            var selection_opt = $('<option class="myfont3"></option>');
+            selection_opt.val(s);
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.innerHTML = s + "*";
+                selection_opt.html(s + "*");
             else{
                 if(s == "dataset")
-                    selection_opt.innerHTML = "waves";
+                    selection_opt.html("waves");
                 else
-                    selection_opt.innerHTML = s;
+                    selection_opt.html(s);
             }
-            selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["leaf_color"])
-                selection_opt.setAttribute("selected", true);
-            container.appendChild(selection_opt);
+                selection_opt.prop("selected", true);
+            self.el_sidekeyselect.append(selection_opt);
         }
 
         if(attr_map["leaf_color"] != "none"){
             $("#mark_group_select").empty();
             $("#sidekey_operation").show();
-            $("#mark_group").html("<b>NOTE: Color</b> as different categories");
-            $("#mark_group").show();
+            self.el_mark_group.html("<b>NOTE: Color</b> as different categories");
+            self.el_mark_group.show();
 
             if(component_attribute[data_mode][attr_map["leaf_color"]][5] == "categorical" || component_attribute[data_mode][attr_map["leaf_color"]][5] == "boolean"){
                 self.color_cat_operation(attr_map["leaf_color"], "leaf_color", attr_map["leaf_color"]);
@@ -3083,61 +2509,46 @@ var MappingView = Backbone.View.extend({
             else{
                 self.color_num_operation(attr_map["leaf_color"], "leaf_color", attr_map["leaf_color"]);
             }
-                        
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
 
-            $("#sidekey_submit_leaf_color").show();
-            $("#sidekey_submit_leaf_color").text("Done");
+            self.el_sidekey_submit.show();
+            self.el_sidekey_submit.text("Done");
         }
 
-        $("#sidekeyselect").unbind();
-        $("#sidekeyselect").change(function(){
+        self.el_sidekeyselect.unbind();
+        self.el_sidekeyselect.change(function(){
             $("#mark_group_select").empty();
-            if( $("#sidekeyselect").val() != "none"){
+            if( self.el_sidekeyselect.val() != "none"){
                 $("#sidekey_operation").show();
-                $("#mark_group").html("<b>NOTE: Color</b> as different categories");
-                $("#mark_group").show();
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
-                    self.color_cat_operation($("#sidekeyselect").val(), "leaf_color", attr_map["leaf_color"]);
+                self.el_mark_group.html("<b>NOTE: Color</b> as different categories");
+                self.el_mark_group.show();
+                if(component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "categorical" || component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "boolean"){
+                    self.color_cat_operation(self.el_sidekeyselect.val(), "leaf_color", attr_map["leaf_color"]);
                 }
                 else{
-                    self.color_num_operation($("#sidekeyselect").val(), "leaf_color", attr_map["leaf_color"]);
+                    self.color_num_operation(self.el_sidekeyselect.val(), "leaf_color", attr_map["leaf_color"]);
                 }
             }
             else{
                 $("#sidekey_operation").show();
-                $("#mark_group").html("<b>NOTE:</b> Map <b>nothing</b> to leaf color");
-                $("#mark_group").show();
+                self.el_mark_group.html("<b>NOTE:</b> Map <b>nothing</b> to leaf color");
+                self.el_mark_group.show();
             }
 
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
-
-            $("#sidekey_submit_leaf_color").show();
-            $("#sidekey_submit_leaf_color").text("Done");
+            self.el_sidekey_submit.show();
+            self.el_sidekey_submit.text("Done");
             
         });
         
-        $("#sidekey_submit_leaf_color").unbind();
-        $("#sidekey_submit_leaf_color").click(function(){
-            $("#sidekey_submit_leaf_color").text("Update");
-            $("#sidekey_submit_leaf_color").attr("disabled", true);
-            $("#block_page").show();
-            $("#loading_process").html("<b>Mapping...</b>");
-            $("#block_layer").show();
+        self.el_sidekey_submit.unbind();
+        self.el_sidekey_submit.click(function(){
+            console.log("in leaf_color submit");
+            self.el_sidekey_submit.text("Update");
+            self.el_sidekey_submit.attr("disabled", true);
+            self.el_block_page.show();
+            self.el_loading_process.html("<b>Mapping...</b>");
+            self.el_block_layer.show();
 
-            self.color_submit(attr_map["leaf_color"], $("#sidekeyselect").val(), "leaf_color");
+            self.color_submit(attr_map["leaf_color"], self.el_sidekeyselect.val(), "leaf_color");
 
         });
     },
@@ -3150,89 +2561,75 @@ var MappingView = Backbone.View.extend({
         var data_mode = self.model.get("view_mode");
         var ego_selections = self.model.get("selected_egos");
         console.log("in leaf_highlight mapping");
-        $('#mapping_img').attr('src', 'media/img/leaf_highlight_mapping.png');
-        $("#sidekey_selection").show();
-        $("#sidekey_title").text("Leaf Highlight Mapping:");
+        self.el_mapping_img.attr('src', 'media/img/leaf_highlight_mapping.png');
+        self.el_sidekey_selection.show();
+        self.el_sidekey_title.text("Leaf Highlight Mapping:");
         
-        $("#sidekeyselect").empty();
-        var container = document.getElementById("sidekeyselect");
+        self.el_sidekeyselect.empty();
+        
         for(s in component_attribute[data_mode]){
-            // if(s == "none"){}
-            // else{
-            //     if(s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["highlight"]) 
-            //         continue;
-            // }
-            var selection_opt = document.createElement('option');
-            selection_opt.value = s;
+            var selection_opt = $('<option class="myfont3"></option>');
+            selection_opt.val(s);
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.innerHTML = s + "*";
+                selection_opt.html(s + "*");
             else{
                 if(s == "dataset")
-                    selection_opt.innerHTML = "waves";
+                    selection_opt.html("waves");
                 else
-                    selection_opt.innerHTML = s;
+                    selection_opt.html(s);
             }
-            selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["highlight"])
-                selection_opt.setAttribute("selected", true);
-            container.appendChild(selection_opt);
+                selection_opt.prop("selected", true);
+            self.el_sidekeyselect.append(selection_opt);
         }
 
-        $("#sidekeyselect").unbind();
-        $("#sidekeyselect").change(function(){
+        self.el_sidekeyselect.unbind();
+        self.el_sidekeyselect.change(function(){
             $("#mark_group_select").empty();
-            if( $("#sidekeyselect").val() != "none"){
+            if( self.el_sidekeyselect.val() != "none"){
                 $("#sidekey_operation").show();
-                $("#mark_group").html("<b>NOTE: Highlight \"" + $("#sidekeyselect").val() + "\"</b> information on leaf<br><b>");
-                $("#mark_group").show();         
+                self.el_mark_group.html("<b>NOTE: Highlight \"" + self.el_sidekeyselect.val() + "\"</b> information on leaf<br><b>");
+                self.el_mark_group.show();         
             }
             else{
                 $("#sidekey_operation").show();
-                $("#mark_group").html("<b>NOTE:</b> Map <b>nothing</b> to leaf highlight");
-                $("#mark_group").show();
+                self.el_mark_group.html("<b>NOTE:</b> Map <b>nothing</b> to leaf highlight");
+                self.el_mark_group.show();
             }
 
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_fruit_size").hide();
-
-            $("#sidekey_submit_leaf_highlight").show();
-            $("#sidekey_submit_leaf_highlight").text("Done");
+            self.el_sidekey_submit.show();
+            self.el_sidekey_submit.text("Done");
         });
 
-        $("#sidekey_submit_leaf_highlight").unbind();
-        $("#sidekey_submit_leaf_highlight").click(function(){
+        self.el_sidekey_submit.unbind();
+        self.el_sidekey_submit.click(function(){
+            console.log("in highlight submit");
             var attr_map = self.model.get("attribute");
             var attr_opt = self.model.get("attr_option");
-            $("#block_page").show();
-            $("#loading_process").html("<b>Mapping...</b>");
+            self.el_block_page.show();
+            self.el_loading_process.html("<b>Mapping...</b>");
 
-            var update_info = data_mode + ":-ctree_highlight:-" + $("#sidekeyselect").val();
+            var update_info = data_mode + ":-ctree_highlight:-" + self.el_sidekeyselect.val();
             for(ego in ego_selections){
                 update_info += ":=" + ego;
             }
-            attr_map["highlight"] = $("#sidekeyselect").val();
+            attr_map["highlight"] = self.el_sidekeyselect.val();
             
             var request = self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
             var request_url = "update_highlight/?update=" + encodeURIComponent(request);
-            
+
             d3.json(request_url, function(result){
                 // console.log("finish update");
                 var set_update_info = function(data){
                     var attr_map = self.model.get("attribute");
                     // console.log(data)
-                    $("#block_layer").hide();
-                    $("#sidekey_submit_leaf_highlight").text("Done");
-                    $("#sidekey_submit_leaf_highlight").removeAttr("disabled");
+                    self.el_block_layer.hide();
+                    self.el_sidekey_submit.text("Done");
+                    self.el_sidekey_submit.removeAttr("disabled");
 
                     self.model.set({"attribute": attr_map});
                     
                     self.restructure(data);
-                    // self.model.trigger('change:attribute');
                 };
                 set_update_info(result);
             });
@@ -3245,13 +2642,13 @@ var MappingView = Backbone.View.extend({
         var attr_map = self.model.get("attribute");
         var attr_opt = self.model.get("attr_option");
         console.log("in leaf_size mapping");
-        $('#mapping_img').attr('src', 'media/img/leaf_mapping.png');
-        $("#sidekey_selection").show();
-        $("#sidekey_title").text("Leaf Size Mapping:");
+        self.el_mapping_img.attr('src', 'media/img/leaf_mapping.png');
+        self.el_sidekey_selection.show();
+        self.el_sidekey_title.text("Leaf Size Mapping:");
         $("#sidekey_description").text("The leaf size mapping will show the quantity of each contact as a leaf size, so the attribute is better to be related with the unique information. You also can choose the scale of the different between the size.");
 
-        $("#sidekeyselect").empty();
-        var container = document.getElementById("sidekeyselect");
+        self.el_sidekeyselect.empty();
+        
         // container.setAttribute("class", "sidekey_selection");
         for(s in component_attribute[data_mode]){
             if(s == "none"){}
@@ -3259,28 +2656,27 @@ var MappingView = Backbone.View.extend({
                  if(component_attribute[data_mode][s][0].length == 0 || (s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["leaf_size"]))
                     continue;
             }
-            var selection_opt = document.createElement('option');
-            selection_opt.value = s;
-            if(component_attribute[data_mode][s][4] == "1" && s != "none")
-                selection_opt.innerHTML = s + "*";
+            var selection_opt = $('<option class="myfont3"></option>');
+            selection_opt.val(s);
+            if(s != "none" && component_attribute[data_mode][s][4] == 1)
+                selection_opt.html(s + "*");
             else{
                 if(s == "dataset")
-                    selection_opt.innerHTML = "waves";
+                    selection_opt.html("waves");
                 else
-                    selection_opt.innerHTML = s;
+                    selection_opt.html(s);
             }
-            selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["leaf_size"])
-                selection_opt.setAttribute("selected", true);
-            container.appendChild(selection_opt);
+                selection_opt.prop("selected", true);
+            self.el_sidekeyselect.append(selection_opt);
         }
 
         if(attr_map["leaf_size"] != "none"){
             var user_map = attribute_mapping[attr_map["leaf_size"]];
             $("#mark_group_select").empty();
             $("#sidekey_operation").show();
-            $("#mark_group").html("<b>NOTE: Leaf size scale</b> of the attributes mapping");
-            $("#mark_group").show();
+            self.el_mark_group.html("<b>NOTE: Leaf size scale</b> of the attributes mapping");
+            self.el_mark_group.show();
             // var attr_container = document.getElementById("mark_group_select");
             if(component_attribute[data_mode][attr_map["leaf_size"]][5] == "categorical" || component_attribute[data_mode][attr_map["leaf_size"]][5] == "boolean"){
                 self.size_cat_operation(attr_map["leaf_size"], "leaf_size", attr_map["leaf_size"]);
@@ -3288,62 +2684,48 @@ var MappingView = Backbone.View.extend({
             else{
                 self.size_num_operation(attr_map["leaf_size"], "leaf_size", attr_map["leaf_size"]);
             }
-
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
             
-            $("#sidekey_submit_leaf_size").show();
-            $("#sidekey_submit_leaf_size").text("Done");
+            self.el_sidekey_submit.show();
+            self.el_sidekey_submit.text("Done");
         }
 
 
-        $("#sidekeyselect").unbind();
-        $("#sidekeyselect").change(function(){
+        self.el_sidekeyselect.unbind();
+        self.el_sidekeyselect.change(function(){
             var attr_map = self.model.get("attribute");
             $("#mark_group_select").empty();
-            if( $("#sidekeyselect").val() != "none"){   
+            if( self.el_sidekeyselect.val() != "none"){   
                 $("#sidekey_operation").show();
-                $("#mark_group").html("<b>NOTE: Leaf size scale</b> of the attributes mapping");
-                $("#mark_group").show();
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
-                    self.size_cat_operation($("#sidekeyselect").val(), "leaf_size", attr_map["leaf_size"]);
+                self.el_mark_group.html("<b>NOTE: Leaf size scale</b> of the attributes mapping");
+                self.el_mark_group.show();
+                if(component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "categorical" || component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "boolean"){
+                    self.size_cat_operation(self.el_sidekeyselect.val(), "leaf_size", attr_map["leaf_size"]);
                 }
                 else{
-                    self.size_num_operation($("#sidekeyselect").val(), "leaf_size", attr_map["leaf_size"]);
+                    self.size_num_operation(self.el_sidekeyselect.val(), "leaf_size", attr_map["leaf_size"]);
                 }
             }
             else{
                 $("#sidekey_operation").show();
-                $("#mark_group").html("<b>NOTE:</b> Map <b>nothing</b> to leaf size");
-                $("#mark_group").show();
+                self.el_mark_group.html("<b>NOTE:</b> Map <b>nothing</b> to leaf size");
+                self.el_mark_group.show();
             }
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-            $("#sidekey_submit_fruit_size").hide();
-            
-            $("#sidekey_submit_leaf_size").show();
-            $("#sidekey_submit_leaf_size").text("Done");
+                        
+            self.el_sidekey_submit.show();
+            self.el_sidekey_submit.text("Done");
             
         });
 
-        $("#sidekey_submit_leaf_size").unbind();
-        $("#sidekey_submit_leaf_size").click(function(){
-            $("#block_page").show();
-            $("#loading_process").html("<b>Mapping...</b>");
-            $("#sidekey_submit_leaf_size").text("Update");
-            $("#sidekey_submit_leaf_size").attr("disabled", true);
-            $("#block_layer").show();
+        self.el_sidekey_submit.unbind();
+        self.el_sidekey_submit.click(function(){
+            console.log("in leaf_size submit");
+            self.el_block_page.show();
+            self.el_loading_process.html("<b>Mapping...</b>");
+            self.el_sidekey_submit.text("Update");
+            self.el_sidekey_submit.attr("disabled", true);
+            self.el_block_layer.show();
 
-            self.size_submit(attr_map["leaf_size"], $("#sidekeyselect").val(), "leaf_size");
+            self.size_submit(attr_map["leaf_size"], self.el_sidekeyselect.val(), "leaf_size");
 
         });
     },
@@ -3354,12 +2736,12 @@ var MappingView = Backbone.View.extend({
         var attr_map = self.model.get("attribute");
         var attr_opt = self.model.get("attr_option");
         console.log("in fruit_size mapping");
-        $('#mapping_img').attr('src', 'media/img/fruit_size_mapping.png');
-        $("#sidekey_selection").show();
-        $("#sidekey_title").text("Fruit Size Mapping:");
+        self.el_mapping_img.attr('src', 'media/img/fruit_size_mapping.png');
+        self.el_sidekey_selection.show();
+        self.el_sidekey_title.text("Fruit Size Mapping:");
         
-        $("#sidekeyselect").empty();
-        var container = document.getElementById("sidekeyselect");
+        self.el_sidekeyselect.empty();
+        
         
         for(s in component_attribute[data_mode]){
             if(s == "none"){}
@@ -3367,27 +2749,27 @@ var MappingView = Backbone.View.extend({
                 if(component_attribute[data_mode][s][0].length == 0 || component_attribute[data_mode][s][4] != "1" || (s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["fruit_size"]))
                     continue;
             }
-            var selection_opt = document.createElement('option');
-            selection_opt.value = s;
-            if(s != "none")
-                selection_opt.innerHTML = s + "*";
+
+            var selection_opt = $('<option class="myfont3"></option>');
+            selection_opt.val(s);
+            if(s != "none" && component_attribute[data_mode][s][4] == 1)
+                selection_opt.html(s + "*");
             else{
                 if(s == "dataset")
-                    selection_opt.innerHTML = "waves";
+                    selection_opt.html("waves");
                 else
-                    selection_opt.innerHTML = s;
+                    selection_opt.html(s);
             }
-            selection_opt.setAttribute("class", "myfont3");
             if(s == attr_map["fruit_size"])
-                selection_opt.setAttribute("selected", true);
-            container.appendChild(selection_opt);
+                selection_opt.prop("selected", true);
+            self.el_sidekeyselect.append(selection_opt);
         }
 
         if(attr_map["fruit_size"] != "none"){
             $("#mark_group_select").empty();
             $("#sidekey_operation").show();
-            $("#mark_group").html("<b>NOTE: Fruit size scale</b> of the attributes mapping");
-            $("#mark_group").show();
+            self.el_mark_group.html("<b>NOTE: Fruit size scale</b> of the attributes mapping");
+            self.el_mark_group.show();
             // var attr_container = document.getElementById("mark_group_select");
             var user_map = attribute_mapping[attr_map["fruit_size"]];
             if(component_attribute[data_mode][attr_map["fruit_size"]][5] == "categorical" || component_attribute[data_mode][attr_map["fruit_size"]][5] == "boolean"){
@@ -3397,79 +2779,55 @@ var MappingView = Backbone.View.extend({
                 self.size_num_operation(attr_map["fruit_size"], "fruit_size", attr_map["fruit_size"]);
             }
             
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-
-            $("#sidekey_submit_fruit_size").show();
-            $("#sidekey_submit_fruit_size").text("Done");
+            self.el_sidekey_submit.show();
+            self.el_sidekey_submit.text("Done");
         }
 
-        $("#sidekeyselect").unbind();
-        $("#sidekeyselect").change(function(){
+        self.el_sidekeyselect.unbind();
+        self.el_sidekeyselect.change(function(){
             var attr_map = self.model.get("attribute");
             $("#mark_group_select").empty();
-            if( $("#sidekeyselect").val() != "none"){   
+            if( self.el_sidekeyselect.val() != "none"){   
                 $("#sidekey_operation").show();
-                $("#mark_group").html("<b>NOTE: Fruit size scale</b> of the attributes mapping");
-                $("#mark_group").show();
-                if(component_attribute[data_mode][$("#sidekeyselect").val()][5] == "categorical" || component_attribute[data_mode][$("#sidekeyselect").val()][5] == "boolean"){
-                    self.size_cat_operation($("#sidekeyselect").val(), "fruit_size", attr_map["fruit_size"]);
+                self.el_mark_group.html("<b>NOTE: Fruit size scale</b> of the attributes mapping");
+                self.el_mark_group.show();
+                if(component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "categorical" || component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "boolean"){
+                    self.size_cat_operation(self.el_sidekeyselect.val(), "fruit_size", attr_map["fruit_size"]);
                 }
                 else{
-                    self.size_num_operation($("#sidekeyselect").val(), "fruit_size", attr_map["fruit_size"]);
+                    self.size_num_operation(self.el_sidekeyselect.val(), "fruit_size", attr_map["fruit_size"]);
                 }
             }
             else{
                 $("#sidekey_operation").show();
-                $("#mark_group").html("<b>NOTE:</b> Map <b>nothing</b> to fruit size");
-                $("#mark_group").show();
+                self.el_mark_group.html("<b>NOTE:</b> Map <b>nothing</b> to fruit size");
+                self.el_mark_group.show();
             }
 
-            $("#sidekey_submit_trunk").hide();
-            $("#sidekey_submit_branch").hide();
-            $("#sidekey_submit_bside").hide();
-            $("#sidekey_submit_root").hide();
-            $("#sidekey_submit_leaf_size").hide();
-            $("#sidekey_submit_leaf_color").hide();
-            $("#sidekey_submit_leaf_highlight").hide();
-
-            $("#sidekey_submit_fruit_size").show();
-            $("#sidekey_submit_fruit_size").text("Done");
+            self.el_sidekey_submit.show();
+            self.el_sidekey_submit.text("Done");
             
         });
         
-        $("#sidekey_submit_fruit_size").unbind();
-        $("#sidekey_submit_fruit_size").click(function(){
-            $("#block_page").show();
-            $("#loading_process").html("<b>Mapping...</b>");
-            $("#sidekey_submit_fruit_size").text("Update");
-            $("#sidekey_submit_fruit_size").attr("disabled", true);
-            $("#block_layer").show();
+        self.el_sidekey_submit.unbind();
+        self.el_sidekey_submit.click(function(){
+            console.log("in fruit_size submit");
+            self.el_block_page.show();
+            self.el_loading_process.html("<b>Mapping...</b>");
+            self.el_sidekey_submit.text("Update");
+            self.el_sidekey_submit.attr("disabled", true);
+            self.el_block_layer.show();
 
-            self.size_submit(attr_map["fruit_size"], $("#sidekeyselect").val(), "fruit_size");
+            self.size_submit(attr_map["fruit_size"], self.el_sidekeyselect.val(), "fruit_size");
 
         });
     },
 
     set_component: function(){
         var self = this;
-        // var myattribute = JSON.parse(JSON.stringify(self.model.get("attribute")));
         var data_mode = self.model.get("view_mode");
         var myattribute = self.model.get("attribute");
-        // $("#block_layer").hide();
-        // $("#sidekey_submit_trunk").hide();
-        // $("#sidekey_submit_branch").hide();
-        // $("#sidekey_submit_bside").hide();
-        // $("#sidekey_submit_root").hide();
-        // $("#sidekey_submit_leaf_size").hide();
-        // $("#sidekey_submit_leaf_color").hide();
-        // $("#sidekey_submit_leaf_highlight").hide();
-        // $("#sidekey_submit_fruit_size").hide();
+        
         if(jQuery.isEmptyObject(myattribute)){
             $(".sidekey_map").css('visibility', 'hidden');
             $('#save_label').attr("disabled", true);
@@ -3505,8 +2863,7 @@ var MappingView = Backbone.View.extend({
             if(cmpt == "stick")
                 continue;
             cmpt_id += cmpt + "_save_map";
-            // console.log(cmpt_id);
-            // $(cmpt_id).text(myattribute[cmpt]);
+            
             if(component_attribute[data_mode][myattribute[cmpt]][4] != "1" || myattribute[cmpt] == "none")                
                 $(cmpt_id).text(myattribute[cmpt]);
             else
@@ -3526,10 +2883,10 @@ var MappingView = Backbone.View.extend({
         tree_size = {};
         self.model.set({"tree_boundary":{}});
         self.model.trigger('change:attribute');
-        $("#loading_process").html("<b>Rendering...</b>");
+        self.el_loading_process.html("<b>Rendering...</b>");
         var ego_selections = self.model.get("selected_egos");
         if(jQuery.isEmptyObject(ego_selections)){
-            $("#block_page").hide();
+            self.el_block_page.hide();
             return
         }
             
@@ -3555,7 +2912,7 @@ var MappingView = Backbone.View.extend({
             }
         }                
         // self.model.trigger('change:tree_structure');
-        $("#block_page").hide();          
+        self.el_block_page.hide();          
     }
 
 });

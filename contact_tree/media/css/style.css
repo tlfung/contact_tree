@@ -233,3 +233,116 @@ table, th, td {
   background: none;
   border: 2px solid;
 }
+
+.binary_sep {
+  margin-top:10px; 
+  position:relative; 
+  width:100%; 
+  margin-left:5px; 
+  height:30px;
+}
+
+.binary_group_slider {
+  background:rgba(236, 91, 94, 0.5); 
+  position:absolute; 
+  top:25px; 
+  width:100%;
+}
+
+.layer_range {
+  margin:15 0 0 0; 
+  position:relative; 
+  width:65px;
+}
+
+.layer_slider {
+  background:rgba(125, 96, 66, 0.7); 
+  margin-top:25px;
+  margin-left:5px; 
+}
+
+.layer_range {
+  margin:15 0 0 0; 
+  position:relative; 
+  width:65px;
+}
+
+.leaf_color_slider {
+  background:rgba(7, 147, 9, 0.6); 
+  margin-top:25px; 
+  margin-left:5px; 
+}
+
+.root_slider {
+  background:rgba(125, 96, 66, 0.7); 
+  margin-top:25px; 
+  margin-left:5px; 
+}
+
+.leaf_size_slider {
+  background:rgba(7, 147, 9, 0.6); 
+  margin-top:25px; 
+  margin-left:5px; 
+}
+
+.fruit_size_slider {
+  background:rgba(187, 7, 12, 0.7); 
+  margin-top:25px; 
+  margin-left:5px; 
+}
+
+.color_range {
+  margin:15 0 0 0; 
+  position:relative; 
+  width:125px;
+}
+
+.size_range {
+  margin:15 0 0 0; 
+  position:relative; 
+  width:155px;
+}
+
+.size_cat_select_container {
+  margin:15 0 20 10; 
+  padding-bottom:20px; 
+  width:100px; 
+  position:relative; 
+}
+
+.size_num_select_container {
+  width:140px; 
+  position:relative; 
+  height:35px;
+}
+
+.size_cat_objslider {
+  width:100%; 
+  position:absolute; 
+  bottom:0px;
+}
+
+.size_num_objslider {
+  position:absolute; 
+  left:40px; 
+  width:100px; 
+  top:10px;
+}
+
+.size_cat_label_container {
+  position:absolute; 
+  left:125px; 
+  bottom:0px;
+}
+
+.size_cat_slider_label {
+  position:absolute; 
+  bottom:-20px;
+}
+
+.handle_input {
+  width:100px; 
+  position:absolute; 
+  background:none; 
+  border:0;
+}
