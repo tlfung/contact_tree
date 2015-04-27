@@ -429,38 +429,14 @@ def csv2mysql(fn, table):
 ####################################### above is for database #####################################################
 # return the data format of dataset
 def get_dataset(request):
-    # folder = []
     group_list = ["", "all"]
     db = DB()
-    # db.query('SET SQL_SAFE_UPDATES = 0;')
-    # db.conn.commit()
+    
     if request.GET.get('data'):
         data_table = request.GET.get('data').split("_of_")[1]
         session = request.GET.get('data').split("_of_")[0]
         session_table = request.GET.get('data')
-
-        user_ctree_data = dict()
-        check_file_exist = os.path.exists("./contact_tree/data/auto_save/" + session + ".json")
-        if check_file_exist:
-            with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
-                user_ctree_data = json.load(json_file)
-
-        if session not in user_ctree_data:
-            user_ctree_data[session] = dict()
-        
-        user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
-        with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
-            json_file.write(user_ctree_data_json)
-
-        # print 'SELECT * FROM auto_save WHERE session_id=' + str(session) + ' AND mode="' + data_table + '";'
-        # s_cur = db.query('SELECT * FROM auto_save WHERE session_id=' + str(session) + ' AND mode="' + data_table + '";')
-        # if s_cur.fetchone():
-        #     db.query('UPDATE auto_save SET mode="' + data_table + '" WHERE session_id="' + str(session) + '"  AND mode="' + data_table + '";')
-        #     # db.query('UPDATE attribute_mapping SET mode="' + data_table + '" WHERE session_id="' + str(session) + '";')
-        # else:
-        #     db.query('INSERT INTO auto_save (mode, session_id) VALUES ("' + data_table + '",' + session + ');')
-        #     # db.query('INSERT INTO attribute_mapping (mode, session_id, mapping_name) VALUES ("' + data_table + '",' + session + ', "auto_map");')
-                                        
+                             
         cur = db.query("SELECT attr FROM dataset_collection WHERE dataset='" + data_table + "' and attr='dataset';")
         group = cur.fetchone()
         if group:
@@ -468,10 +444,8 @@ def get_dataset(request):
     else:
         raise Http404
 
-    # db.query('SET SQL_SAFE_UPDATES = 1;')
-    # db.conn.commit()
     return_json = simplejson.dumps(group_list, indent=4, use_decimal=True)
-    # print json
+    
     return HttpResponse(return_json)
 
 # get all the dataset in the database
@@ -1057,6 +1031,237 @@ def duplicate_stick(all_data, attr, branch_layer):
 
 
 ################################### local cache #######################################
+def set_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_group):
+    # print "insert_default_mapping"    
+    db = DB()
+    binary_index = dict()
+    branch_order_index = []
+    reorder = []
+    data_table = table.split("_of_")[1]
+    session = table.split("_of_")[0]
+
+    attr_idx = []
+    attr_name = []
+    index_found = 1
+    index_list = 10
+    # unused_col = {"e_id":1, "egoid":1, "alterid":1, "ctree_branch":1, "ctree_trunk":1, "ctree_bside":1, "ctree_leaf_color":1, "ctree_leaf_size":1, "ctree_fruit_size":1, "ctree_root":1 }
+    
+    if data_table not in user_ctree_data[session]:
+        user_ctree_data[session][data_table] = {"layer_" + ego_group: -1}
+    
+    # pre store dataset_collection query
+    attr_detail = dict()
+    for compt in attr: 
+        attr_detail[compt] = dict() 
+        if attr[compt] != 'none':
+            cur = db.query('SELECT * FROM dataset_collection WHERE dataset="' + data_table + '" and attr="' + attr[compt] + '";')
+            attr_detail[compt] = cur.fetchone()
+    
+    dataset = "all"
+    layer_count = []
+    if ("layer_" + ego_group) in user_ctree_data[session][data_table]:
+        last_layer = user_ctree_data[session][data_table]["layer_" + ego_group]
+    else:
+        user_ctree_data[session][data_table]["layer_" + ego_group] = -1
+        last_layer = -1
+
+    for d in all_data:
+        if ego_group != "all":
+            dataset = d["dataset"]
+        record_label = str(d['egoid']) + "_of_" + dataset
+
+        if record_label not in user_ctree_data[session][data_table]:
+            # user_ctree_data[session][data_table]["layer_" + ego_group] = -1
+            user_ctree_data[session][data_table][record_label] = dict() 
+            user_ctree_data[session][data_table][record_label]["record"] = []
+            user_ctree_data[session][data_table][record_label]["done"] = -1
+        
+        elif user_ctree_data[session][data_table][record_label]["done"] == 1:
+            return
+        
+        elif user_ctree_data[session][data_table][record_label]["done"] == 0: # has record but not being updated yet
+            # user_ctree_data[session][data_table]["layer_" + ego_group] = -1
+            user_ctree_data[session][data_table][record_label]["record"] = []
+            user_ctree_data[session][data_table][record_label]["done"] = -1
+
+        ctree_record = [-100 for i in range(10)]
+        
+        ctree_record[egoid_index] = d['egoid']
+        ctree_record[alterid_index] = d['alterid']
+        for compt in attr:
+            if attr[compt] != 'none' and d[attr[compt]] is None:
+                continue        
+            collecting_data = attr_detail[compt]  
+            
+            if compt == 'trunk' or compt == 'bside':
+                if compt == 'trunk':
+                    record_index = trunk_index
+                else:
+                    record_index = bside_index
+                if compt in mapping:
+                    if collecting_data["type"] == "numerical":
+                        if float(d[attr[compt]]) <= float(mapping[compt]["0"][0]):
+                            ctree_record[record_index] = 0
+                        else:
+                            ctree_record[record_index] = 1
+                    
+                    else:
+                        if str(d[attr[compt]]) in str(mapping[compt]["0"]):
+                            ctree_record[record_index] = 0
+                        else:
+                            ctree_record[record_index] = 1       
+
+                else:
+                    if str(collecting_data["type"]) == "numerical":
+                        mid = math.floor((float(collecting_data['max']) + float(collecting_data['min']))*0.5)
+                        if float(d[attr[compt]]) <= float(mid):
+                            ctree_record[record_index] = 0
+                        else:
+                            ctree_record[record_index] = 1
+                    else:
+                        if compt in binary_index:
+                            if binary_index[compt].index(d[attr[compt]]) < (len(binary_index[compt])*0.5):
+                                ctree_record[record_index] = 0
+                            else:
+                                ctree_record[record_index] = 1
+
+                        else:
+                            binary_index[compt] = []
+                            precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + data_table + ' ORDER BY(' + attr[compt] + ');')
+                            real_data = precur.fetchall()
+                            for dist_d in real_data:
+                                binary_index[compt].append(dist_d[attr[compt]])
+
+                            if binary_index[compt].index(d[attr[compt]]) < (len(binary_index[compt])*0.5):
+                                ctree_record[record_index] = 0
+                            else:
+                                ctree_record[record_index] = 1
+
+
+            elif compt == 'fruit_size' or compt == 'leaf_size' or compt == 'leaf_color' or compt == 'branch' or compt == 'root':
+                if attr[compt] == "none":
+                    if compt == 'fruit_size':
+                        ctree_record[fruit_size_index] = 0
+                    elif compt == 'leaf_size':
+                        ctree_record[leaf_size_index] = 3
+                    elif compt == 'leaf_color':
+                        ctree_record[leaf_color_index] = 3
+                    elif compt == 'root':
+                        ctree_record[root_index] = 3
+                    
+                else:
+                    # set comp index for ctree record
+                    if compt == 'fruit_size':
+                        record_index = fruit_size_index
+                    elif compt == 'leaf_size':
+                        record_index = leaf_size_index
+                    elif compt == 'leaf_color':
+                        record_index = leaf_color_index
+                    elif compt == 'branch':
+                        record_index = branch_index
+                    elif compt == 'root':
+                        record_index = root_index
+
+                    if compt in mapping:
+                        if collecting_data["type"] == "categorical" or collecting_data["type"] == "boolean":
+                            for cat in mapping[compt]:
+                                if d[attr[compt]] == cat:
+                                    ctree_record[record_index] = int(mapping[compt][cat])
+                                    if compt == 'branch':
+                                        layer_count.append(mapping[compt][cat])                                    
+                                    break
+                        else:
+                            if compt == 'branch' and layer_count == []:
+                                layer_count.append(len(mapping[compt])+1)
+                            if compt == 'branch' and mapping[compt][1] < mapping[compt][0]: # for the revert mapping
+                                if float(d[attr[compt]]) >= float(mapping[compt][0]):
+                                    ctree_record[record_index] = 0
+                                                                                                         
+                                elif float(d[attr[compt]]) <= float(mapping[compt][-1]):
+                                    ctree_record[record_index] = len(mapping)
+                                                                        
+                                else:
+                                    for order in range(len(mapping[compt])-2, -1, -1):
+                                        if float(d[attr[compt]]) <= float(mapping[compt][order]) and float(d[attr[compt]]) > float(mapping[compt][order+1]):
+                                            ctree_record[record_index] = (order+1)
+                                            break
+                            elif compt == 'branch' or compt == 'leaf_color' or compt == 'root': # for general mapping
+                                if float(d[attr[compt]]) <= float(mapping[compt][0]):
+                                    ctree_record[record_index] = 0
+
+                                elif float(d[attr[compt]]) >= float(mapping[compt][-1]):
+                                    ctree_record[record_index] = len(mapping)
+                                
+                                else:
+                                    for order in range(1, len(mapping[compt])):
+                                        if float(d[attr[compt]]) > float(mapping[compt][order-1]) and float(d[attr[compt]]) <= float(mapping[compt][order]):
+                                            ctree_record[record_index] = order
+                                            break
+                            else: # special for size mapping
+                                size_map = mapping[compt][1]
+                                val_map = mapping[compt][0]
+
+                                if float(d[attr[compt]]) <= float(val_map[0]):
+                                    ctree_record[record_index] = int(size_map[0])
+                                    
+                                elif float(d[attr[compt]]) >= float(val_map[-1]):
+                                    ctree_record[record_index] = int(size_map[len(val_map)])
+                                    
+                                else:
+                                    for order in range(1, len(val_map)):
+                                        if float(d[attr[compt]]) > float(val_map[order-1]) and float(d[attr[compt]]) <= float(val_map[order]):
+                                            ctree_record[record_index] = int(size_map[order])
+                                            break
+  
+                    else: # only branch will have default mapping
+                        if collecting_data["type"] == "numerical":
+                            if len(reorder) == 0:
+                                gap = collecting_data['attr_range']/9.0
+                                g = float(collecting_data["min"])
+                                while g <= float(collecting_data["max"]):
+                                    reorder.append(round(g, 2))
+                                    g += gap
+                               
+                                if len(reorder) < 9:
+                                    reorder.append(collecting_data["max"])
+                                layer_count = [10]
+                            if int(d[attr[compt]]) <= reorder[0]:
+                                ctree_record[record_index] = 0
+
+                            elif int(d[attr[compt]]) >= reorder[-1]:
+                                ctree_record[record_index] = len(reorder)
+                            else:
+                                for order in range(1, len(reorder)):
+                                    if int(d[attr[compt]]) > reorder[order-1] and int(d[attr[compt]]) <= reorder[order]:
+                                        ctree_record[record_index] = order                                        
+                                        break
+                        else:
+                            if len(branch_order_index) == 0:
+                                precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + data_table + ' ORDER BY(' + attr[compt] + ');')
+                                real_data = precur.fetchall()
+                                for dist_d in real_data:
+                                    branch_order_index.append(dist_d[attr[compt]])
+                            
+                            ctree_record[record_index] = branch_order_index.index(d[attr[compt]])
+                            layer_count.append(branch_order_index.index(d[attr[compt]]))
+                                                                           
+
+            elif compt == 'highlight':
+                if attr[compt] == "none":
+                    ctree_record[highlight_index] = "none"
+                else:
+                    ctree_record[highlight_index] = d[attr[compt]]
+            
+        user_ctree_data[session][data_table][record_label]["record"].append(ctree_record)
+
+    if len(layer_count) != 0 and max(layer_count) != last_layer:
+        user_ctree_data[session][data_table]["layer_" + ego_group] = max(layer_count)
+
+    for label in user_ctree_data[session][data_table]:
+        if "layer" not in label and user_ctree_data[session][data_table][label]["done"] == -1:
+            user_ctree_data[session][data_table][label]["done"] = 1
+
+
 def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_group):
     # print "insert_default_mapping"    
     db = DB()
@@ -1936,16 +2141,8 @@ def one_contact_update(request):
         # ego_info = json.loads(list_request[5])
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0]
-        
-        # with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
-        #     user_ctree_data = json.load(json_file)
-        
-        check_file_exist = os.path.exists("./contact_tree/data/auto_save/" + session + ".json")
-        if check_file_exist:
-            with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
-                user_ctree_data = json.load(json_file)
-        else:
-            user_ctree_data[session] = dict()
+   
+        user_ctree_data[session] = dict()
 
         # print 'SELECT * FROM ' + data_table + ' WHERE egoid="' + ego + '" ORDER BY (e_id);'
         cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
@@ -1953,18 +2150,14 @@ def one_contact_update(request):
         precur = db.query('SELECT * FROM ' + data_table + ' WHERE egoid="' + ego + '" ORDER BY (e_id);')
         all_data = precur.fetchall()
     
-        insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_group)
+        # insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_group)
+        set_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_group)
 
         structure_request = list_request[0] + ":-" + list_request[4] + ":-" + list_request[5] + ":-" + list_request[2]
         return_json = one_contact_structure(user_ctree_data, structure_request)
 
     else:
         raise Http404
-
-    user_ctree_data_json = simplejson.dumps(user_ctree_data, use_decimal=True)
-    with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
-        json_file.write(user_ctree_data_json)
-
     
     return HttpResponse(return_json)
 
@@ -1982,12 +2175,7 @@ def restore_mapping_update(request):
 
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0]
-        # print attr, ego_list, table, mapping
-        check_file_exist = os.path.exists("./contact_tree/data/auto_save/" + session + ".json")
-        if check_file_exist:
-            with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
-                user_ctree_data = json.load(json_file)
-
+        
         user_ctree_data[session] = dict()
 
         if len(ego_list) == 0:
@@ -2002,14 +2190,11 @@ def restore_mapping_update(request):
         precur = db.query(query_request)
         all_data = precur.fetchall()
 
-        insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, data_group)
+        set_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, data_group)
 
         # general tree structure
         structure_request = list_request[0] + ":-" + list_request[4] + ":-" + list_request[5] + ":-" + list_request[2]
         return_json = one_contact_structure(user_ctree_data, structure_request)
-        user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
-        with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
-            json_file.write(user_ctree_data_json)
 
     else:
         raise Http404
@@ -2032,48 +2217,26 @@ def last_use_update(request):
 
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0]
-        # print attr, ego_list, table, mapping
-        check_file_exist = os.path.exists("./contact_tree/data/auto_save/" + session + ".json")
-        if check_file_exist:
-            with open("./contact_tree/data/auto_save/" + session + ".json", "rb") as json_file:
-                user_ctree_data = json.load(json_file)
-        else:
-            user_ctree_data = {session: {data_table: {}}}
+        
+        user_ctree_data = {session: {data_table: {}}}
+        if len(ego_list) == 0:
+            return_json = simplejson.dumps(table, indent=4, use_decimal=True)
+            return HttpResponse(return_json)
 
-        if data_table in user_ctree_data[session] and user_ctree_data[session][data_table] and "layer_" + data_group in user_ctree_data[session][data_table]:
-            last_ctree_data = restore_ctree_mapping(user_ctree_data, ego_list, table, attr, mapping, data_group)
-            # general tree structure
-            structure_request = list_request[0] + ":-" + list_request[4] + ":-" + list_request[5] + ":-" + list_request[2]
-            return_json = one_contact_structure(last_ctree_data, structure_request)
-            # user_ctree_data[session][data_table] = dict()
-            # user_ctree_data[session][data_table]["layer"] = -1
-        else:
-            # if data_table not in user_ctree_data[session]:
-            #     user_ctree_data[session][data_table] = {"layer_" + data_group: -1}
-            # else:
-            #     user_ctree_data[session][data_table]["layer_" + data_group] = -1
+        query_request = 'SELECT * FROM ' + data_table + ' WHERE egoid="' + ego_list[0] + '"' #!!!
+        
+        for ego in ego_list[1:]:
+            query_request += ' or egoid="' + ego + '"'
+        query_request += " ORDER BY (e_id);"
+        precur = db.query(query_request)
+        all_data = precur.fetchall()
 
-            if len(ego_list) == 0:
-                return_json = simplejson.dumps(table, indent=4, use_decimal=True)
-                return HttpResponse(return_json)
+        set_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, data_group)
 
-            query_request = 'SELECT * FROM ' + data_table + ' WHERE egoid="' + ego_list[0] + '"' #!!!
+        # general tree structure
+        structure_request = list_request[0] + ":-" + list_request[4] + ":-" + list_request[5] + ":-" + list_request[2]
+        return_json = one_contact_structure(user_ctree_data, structure_request)
             
-            for ego in ego_list[1:]:
-                query_request += ' or egoid="' + ego + '"'
-            query_request += " ORDER BY (e_id);"
-            precur = db.query(query_request)
-            all_data = precur.fetchall()
-
-            insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, data_group)
-
-            # general tree structure
-            structure_request = list_request[0] + ":-" + list_request[4] + ":-" + list_request[5] + ":-" + list_request[2]
-            return_json = one_contact_structure(user_ctree_data, structure_request)
-            user_ctree_data_json = simplejson.dumps(user_ctree_data, indent=4, use_decimal=True)
-            with open("./contact_tree/data/auto_save/" + session + ".json", "wb") as json_file:
-                json_file.write(user_ctree_data_json)
-
     else:
         raise Http404
     
