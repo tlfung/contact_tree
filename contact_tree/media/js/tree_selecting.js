@@ -93,7 +93,8 @@ var SelectingView = Backbone.View.extend({
     // get all the available dataset
     get_dataset: function(){
         var self = this;
-        var request_url = "dataset_mode/?mode=" + encodeURIComponent(session_id);
+        // var request_url = "dataset_mode/?mode=" + encodeURIComponent(session_id);
+        var request_url = request_builder.dataset_mode(session_id);
         var data_selection = [""]
 
         d3.json(request_url, function(result){
@@ -209,9 +210,8 @@ var SelectingView = Backbone.View.extend({
         for(var ego in all_ego){
             ego_list.push(ego);
         }
-        var request = JSON.stringify(now_attr) + ":-" + JSON.stringify(ego_list) + ":-" + now_mode + ":-" + JSON.stringify(attribute_mapping) + ":-" + data_group + ":-" + JSON.stringify(all_ego);
-        var request_url = "last_use_data/?restore="+encodeURIComponent(request);
         
+        var request_url = request_builder.last_use_data(now_attr, ego_list, now_mode, attribute_mapping, data_group, all_ego);
         self.el_block_page.show();
         d3.json(request_url, function(result) {
             set_structure(result, ego_list);
@@ -280,8 +280,8 @@ var SelectingView = Backbone.View.extend({
                 // if it is new user
                 if(first_use == 0){
                     self.el_block_page.show();
-                    var request_url = "dataset/?data="+encodeURIComponent(data_selected); // !!!query select last=1
-                    
+                    var request_url = request_builder.dataset(data_selected);
+                    // var request_url = "dataset/?data="+encodeURIComponent(data_selected);
                     d3.json(request_url, function(result){
                         var set_dataset_group = function(data){
                             waves = data;
@@ -304,8 +304,7 @@ var SelectingView = Backbone.View.extend({
                 }
 
                 // find the user information
-                var pre_request_url = "restore_user_history/?user="+data_selected;
-                    
+                var pre_request_url = request_builder.restore_user_history(data_selected);   
                 d3.json(pre_request_url, function(result){
                     // check and set the result
                     self.set_user_history(result);
@@ -325,7 +324,8 @@ var SelectingView = Backbone.View.extend({
                         self.el_egogroup.trigger('change');
                     }
                     else{
-                        var request_url = "dataset/?data="+encodeURIComponent(data_selected);
+                        var request_url = request_builder.dataset(data_selected);
+                        // var request_url = "dataset/?data="+encodeURIComponent(data_selected);
                         
                         d3.json(request_url, function(result){
                             var set_dataset_group = function(data){
@@ -408,7 +408,8 @@ var SelectingView = Backbone.View.extend({
                     user_history = 2;
                     return
                 }
-                var pre_request_url = "restore_user_group_history/?user="+data_selected + "_of_" + data_group;
+                
+                var pre_request_url = request_builder.restore_user_group_history(data_selected, data_group);
                 d3.json(pre_request_url, function(result){
                     self.set_user_history(result);
                     self.el_block_page.show();
@@ -553,25 +554,25 @@ var SelectingView = Backbone.View.extend({
                     self.el_sub_selection.append('<label><input class="myfont3 sub_option" type="checkbox" name="select_option" value="' + self.ego_subgroup[s] + '" id="' + self.ego_subgroup[s] + '">' + self.ego_subgroup[s] + '</label>');            
                 self.el_sub_selection.append("<p></p>");
             }
-            var data_group = self.model.get("dataset_group");
-            var now_attr = JSON.stringify(self.model.get("attribute"));
-            var now_mode = self.model.get("view_mode");
-            var ego_group = JSON.stringify(ego_group);
 
-            var requst = now_attr + ":-" + self.my_ego + ":-" + now_mode + ":-" + JSON.stringify(attribute_mapping) + ":-" + data_group + ":-" + ego_group;
-        
+            var data_group = self.model.get("dataset_group");
+            var now_attr = self.model.get("attribute");
+            var now_mode = self.model.get("view_mode");
+
+            // var requst = now_attr + ":-" + self.my_ego + ":-" + now_mode + ":-" + JSON.stringify(attribute_mapping) + ":-" + data_group + ":-" + ego_group;
+            var request_url = request_builder.get_update(now_attr, self.my_ego, now_mode, attribute_mapping, data_group, ego_group);
             // get all the structure of this selected ego
-            self.model.query_data(requst);
+            self.model.query_data(request_url, ego_group);
             
             // button click event
             self.el_submit_ego.unbind();
             self.el_submit_ego.click(function(){ // store selecting data
                 self.my_ego_selected = self.model.get("selected_egos");
                 self.my_ego_display = self.model.get("display_egos");
-                var now_attr = JSON.stringify(self.model.get("attribute"));
-                var now_mode = self.model.get("view_mode");
-                var now_ego = {};
-                var now_subset = self.model.get("dataset_group");
+                // var now_attr = JSON.stringify(self.model.get("attribute"));
+                // var now_mode = self.model.get("view_mode");
+                // var now_ego = {};
+                // var now_subset = self.model.get("dataset_group");
 
                 // store last page's selections
                 var display = [];

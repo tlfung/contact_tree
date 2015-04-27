@@ -61,8 +61,7 @@ var Tree_Model = Backbone.Model.extend({
 	    if(first_use == 0)
 	    	return;
 
-	    var request = session_id + ":-" + last_use;
-	    var request_url = "get_user_data/?user="+encodeURIComponent(request);
+	    var request_url = request_builder.get_user_data(session_id, last_use);
 	    var get_auto_saving = function(result){
 			// var restore_array = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15]; // total = 15
 			var restore_array = [];
@@ -127,7 +126,8 @@ var Tree_Model = Backbone.Model.extend({
         };
 	    	   
 	    var request = table + ":-" + group;
-	    var request_url = "datatable/?table="+encodeURIComponent(request);
+	    var request_url = request_builder.datatable(table, group);
+	    // var request_url = "datatable/?table="+encodeURIComponent(request);
 	    d3.json(request_url, function(result){
 	        in_change_mode = 0;
 	        set_ego_list_json(result[0]);
@@ -146,13 +146,10 @@ var Tree_Model = Backbone.Model.extend({
 	},
 
 	// get the tree structure of selected ego
-	query_data: function(request){
+	query_data: function(request_url, sub_request){
 	    var self = this;
 	    var mode = self.get("view_mode");
-	    // var request_url = "get_contact/?contact="+request;
-
-	    var request_url = "get_update/?contact="+encodeURIComponent(request);
-	    
+	    // var request_url = "get_update/?contact="+encodeURIComponent(request);	    
 	    var el_block_page= $("#block_page");
 	    var el_submit_ego = $("#submit_ego");
 	    var el_ego_checkbox = $('.ego_checkbox');
@@ -162,6 +159,7 @@ var Tree_Model = Backbone.Model.extend({
 	    el_submit_ego.attr("disabled", true);
 	    el_submit_ego.text("Loading");
 	    el_ego_checkbox.attr("disabled", true);
+
 	    d3.json(request_url, function(result) {
 	      	var tree_structure = self.get("tree_structure");
 	      	if(mode in tree_structure){}
@@ -183,9 +181,8 @@ var Tree_Model = Backbone.Model.extend({
 		        
 		        self.set({"tree_structure": tree_structure}, {silent: true});
 		        
-	      	};
-	      	
-		    var sub_request = JSON.parse(request.split(":-")[5]);
+	      	};	
+		    // var sub_request = JSON.parse(request.split(":-")[5]);
 		    for(s in sub_request)
 		    	set_structure(result, s);
 	      	

@@ -226,7 +226,6 @@ def update_collection_data(data_table, attr_json):
         row = [data_table, a, attr_json[a]["MIN"], attr_json[a]["MAX"], attr_json[a]["RANGE"], attr_json[a]["TYPE"]]
         
         clause.execute(insert_collection_sql, row)
-       
         # my_attr = '"' + data_table + '", "' + a + '", "' + str(attr_json[a]["MIN"]) + '", "' + str(attr_json[a]["MAX"]) + '", "' + str(attr_json[a]["RANGE"]) + '", "' + str(attr_json[a]["TYPE"]) + '", "' + str(a_index) + '"' 
         # # clause.execute('INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, type, branch_range) VALUES (%s);' %my_attr)
         # clause.execute('INSERT INTO dataset_collection (dataset, attr, min, max, attr_range, type, a_index) VALUES (%s);' %my_attr)
@@ -505,8 +504,9 @@ def get_list_ego(request):
     db.conn.commit()
     if request.GET.get('table'):
         # ./contact_tree/data
-        table = request.GET.get('table').split(":-")[0]
-        column = request.GET.get('table').split(":-")[1]
+        list_request = json.loads(request.GET['table'])
+        table = list_request[0]
+        column = list_request[1]
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0];
         myego = "egoid"
@@ -1926,7 +1926,8 @@ def one_contact_update(request):
     user_ctree_data = dict()
        
     if request.GET.get('contact'):
-        list_request = request.GET['contact'].split(":-")
+        list_request = json.loads(request.GET['contact'])
+
         attr = json.loads(list_request[0])
         ego = list_request[1]
         table = list_request[2]
@@ -1946,7 +1947,7 @@ def one_contact_update(request):
         else:
             user_ctree_data[session] = dict()
 
-        print 'SELECT * FROM ' + data_table + ' WHERE egoid="' + ego + '" ORDER BY (e_id);'
+        # print 'SELECT * FROM ' + data_table + ' WHERE egoid="' + ego + '" ORDER BY (e_id);'
         cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
         stick_unique = cur.fetchone()["alter_info"]
         precur = db.query('SELECT * FROM ' + data_table + ' WHERE egoid="' + ego + '" ORDER BY (e_id);')
@@ -1972,7 +1973,7 @@ def restore_mapping_update(request):
     user_ctree_data = dict()
 
     if request.GET.get('restore'):
-        list_request = request.GET['restore'].split(":-")
+        list_request = json.loads(request.GET['restore'])
         attr = json.loads(list_request[0])
         ego_list = json.loads(list_request[1])
         table = list_request[2]
@@ -2022,7 +2023,7 @@ def last_use_update(request):
     user_ctree_data = dict()
 
     if request.GET.get('restore'):
-        list_request = request.GET['restore'].split(":-")
+        list_request = json.loads(request.GET['restore'])
         attr = json.loads(list_request[0])
         ego_list = json.loads(list_request[1])
         table = list_request[2]
@@ -2131,7 +2132,7 @@ def save_mapping(request):
     db.query('SET SQL_SAFE_UPDATES = 0;')
     db.conn.commit()
     if request.GET.get('save'):
-        save_detail = request.GET.get('save').split(":-")
+        save_detail = json.loads(request.GET['save'])
         
         #general saving info
         session = str(save_detail[0].split("_of_")[0])
@@ -2171,19 +2172,14 @@ def del_mapping(request):
     db.query('SET SQL_SAFE_UPDATES = 0;')
     db.conn.commit()
     if request.GET.get('save'):
-        save_detail = request.GET.get('save').split(":-")
-        # print save_detail
+        save_detail = json.loads(request.GET['save'])
         session = str(save_detail[0].split("_of_")[0])
         mode = str(save_detail[0].split("_of_")[1])
         name = save_detail[1]
         group = save_detail[2]
         
         mapcur = db.query("DELETE FROM attribute_mapping WHERE session_id=" + session + " AND mapping_name='" + name + "' AND mode='" + mode + "' AND `group`='" + group + "';")
-        # mapping_exist = mapcur.fetchone()
-        # mapping saving info
-        # attr_info = "attr_info='" + map_detail + "'"
-        # mapping_exist
-
+        
     else:
         raise Http404
 
@@ -2380,7 +2376,7 @@ def fetch_data(request):
     # table = request.GET.get('contact')
     # print request.GET['contact']
     if request.GET.get('ego'):
-        all_info = request.GET.get('ego').split(":=")
+        all_info = request.GET['ego'].split(":=")
         attr = json.loads(all_info[1])
         ego_info = all_info[0].split(":-")
         table = ego_info[0]

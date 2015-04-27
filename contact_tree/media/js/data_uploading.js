@@ -107,12 +107,13 @@ var UploadView = Backbone.View.extend({
         // check the data format
         var set_db = function(fn){
             self.session = fn;
-
             var request = fn + ":-" + self.dataset;
             var all_mode = self.model.get("dataset_mode");
             console.log(request);
             self.el_loading.html("<b>Analyzing...</b>");
-            d3.json("collecting_data/?collection=" + request, function(result) {
+
+            var request_url = request_builder.collecting_data(request);
+            d3.json(request_url, function(result) {
                 console.log(result);
                 // in correct format
                 if(result == self.dataset){

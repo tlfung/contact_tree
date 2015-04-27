@@ -54,9 +54,8 @@ var CustomizedView = Backbone.View.extend({
         save_array[16] = JSON.stringify(waves);
         
         // generate the request link
-        var request = JSON.stringify(save_array);
-        var request_url = "auto_save/?save="+encodeURIComponent(request);
-        
+        var request_url = request_builder.auto_save(save_array);
+            
         d3.json(request_url, function(result) {
             // console.log(">>>>>>>>>", result);            
         }); 
@@ -89,10 +88,7 @@ var CustomizedView = Backbone.View.extend({
         auto_map["name"] = "auto_map";
         
         // generate the request link
-        var request = self.model.get("view_mode") + ":-" + JSON.stringify(auto_map) + ":-" + auto_map["name"] + ":-" +  self.model.get("dataset_group");
-
-        var request_url = "save_mapping/?save="+encodeURIComponent(request);
-        
+        var request_url = request_builder.save_mapping(self.model.get("view_mode"), auto_map, auto_map["name"], self.model.get("dataset_group"));
         d3.json(request_url, function(result) {
             // console.log(">>>>>>>>>", result);            
         });          
@@ -103,12 +99,11 @@ var CustomizedView = Backbone.View.extend({
         var self = this;
         var mode = self.model.get("view_mode");
         var group = self.model.get("dataset_group")
-        var request = mode + "_of_" + group; 
+        
         if(mode == "0" || group == "")
             return;
-        // get all the user saving mapping of this mode
-        var request_url = "restore_user_mapping/?user="+encodeURIComponent(request);
-        
+        // get all the user saving mapping of this mode        
+        var request_url = request_builder.restore_user_mapping(mode, group);
         d3.json(request_url, function(result) {
             // console.log(">>>>>>>>>", result);
             self.model.set({"user_mapping": result});

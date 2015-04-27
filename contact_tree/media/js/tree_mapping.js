@@ -71,9 +71,7 @@ var MappingView = Backbone.View.extend({
                 user_map["name"] = map_name;
                 save_user_mapping.push(user_map);
 
-                var request = self.model.get("view_mode") + ":-" + encodeURIComponent(JSON.stringify(user_map)) + ":-" + map_name + ":-" +  self.model.get("dataset_group");
-                var request_url = "save_mapping/?save="+encodeURIComponent(request);
-                
+                var request_url = request_builder.save_mapping(self.model.get("view_mode"), user_map, map_name, self.model.get("dataset_group"));
                 d3.json(request_url, function(result) {
                     self.model.set({"user_mapping": save_user_mapping});
                     self.model.trigger('change:user_mapping');
@@ -102,11 +100,9 @@ var MappingView = Backbone.View.extend({
             for(var ego in all_ego){
                 ego_list.push(ego);
             }
-            var request = JSON.stringify(now_attr) + ":-" + JSON.stringify(ego_list) + ":-" + now_mode + ":-" + JSON.stringify(now_attr_map) + ":-" + data_group + ":-" + JSON.stringify(all_ego);
-            var request_url = "restore_data/?restore="+encodeURIComponent(request);
-            
-            self.el_block_page.show();
 
+            var request_url = request_builder.restore_data(now_attr, ego_list, now_mode, now_attr_map, data_group, all_ego);
+            self.el_block_page.show();
             d3.json(request_url, function(result) {
                 self.el_block_page.hide();
                 attribute_mapping = now_attr_map;
@@ -186,9 +182,8 @@ var MappingView = Backbone.View.extend({
                     return false;
                 };
 
-                var request = self.model.get("view_mode") + ":-" + save_user_mapping[this.value-1]["name"] + ":-" + self.model.get("dataset_group");
-                var request_url = "del_mapping/?save="+encodeURIComponent(request);
-                
+                var request_url = request_builder.del_mapping(self.model.get("view_mode"), save_user_mapping[this.value-1]["name"], self.model.get("dataset_group"));
+            
                 d3.json(request_url, function(result) {
                     set_new_record();
                 }); 
@@ -1186,9 +1181,8 @@ var MappingView = Backbone.View.extend({
                 update_info += ":=" + ego;
             }
 
-            var request = self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
-            var request_url = "update_layer/?update=" + encodeURIComponent(request);
-
+            var request_url = request_builder.update_layer(self.model.get("dataset_group"), attr_map, update_info);
+            
             d3.json(request_url, function(result){
                 var set_update_info = function(data){
                     var attr_map = self.model.get("attribute");
@@ -1269,9 +1263,8 @@ var MappingView = Backbone.View.extend({
                 update_info += ":=" + ego;
             }
 
-            var request = self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
-            var request_url = "update_layer/?update=" + encodeURIComponent(request);
-
+            var request_url = request_builder.update_layer(self.model.get("dataset_group"), attr_map, update_info);
+            
             d3.json(request_url, function(result){
                 var set_update_info = function(data){
                     var attr_map = self.model.get("attribute");
@@ -1310,9 +1303,8 @@ var MappingView = Backbone.View.extend({
                 update_info += ":=" + ego;
             }
 
-            var request = self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
-            var request_url = "update_layer/?update=" + encodeURIComponent(request);
-
+            var request_url = request_builder.update_layer(self.model.get("dataset_group"), attr_map, update_info);
+            
             d3.json(request_url, function(result){
                 var set_update_info = function(data){
                     var attr_map = self.model.get("attribute");
@@ -1368,9 +1360,8 @@ var MappingView = Backbone.View.extend({
                 update_info += ":=" + ego;
             }               
 
-            var request = self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
-            var request_url = "update_layer/?update=" + encodeURIComponent(request);
-
+            var request_url = request_builder.update_layer(self.model.get("dataset_group"), attr_map, update_info);
+            
             d3.json(request_url, function(result){
                 var set_update_info = function(data){
                     var attr_map = self.model.get("attribute");
@@ -1442,9 +1433,7 @@ var MappingView = Backbone.View.extend({
                 }
             }
             
-            var request = self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
-            var request_url = "update_binary/?update=" + encodeURIComponent(request);
-
+            var request_url = request_builder.update_binary(self.model.get("dataset_group"), attr_map, update_info);
             d3.json(request_url, function(result){
                 var set_update_info = function(data){
                     var attr_map = self.model.get("attribute");                    
@@ -2341,9 +2330,8 @@ var MappingView = Backbone.View.extend({
                     update_info += ":=" + ego;
                 }
 
-                var request = self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
-                var request_url = "update_layer/?update=" + encodeURIComponent(request);
-
+                var request_url = request_builder.update_layer(self.model.get("dataset_group"), attr_map, update_info);
+            
                 d3.json(request_url, function(result){
                     var set_update_info = function(data){
                         var attr_map = self.model.get("attribute");
@@ -2615,9 +2603,7 @@ var MappingView = Backbone.View.extend({
             }
             attr_map["highlight"] = self.el_sidekeyselect.val();
             
-            var request = self.model.get("dataset_group") + ":-" + JSON.stringify(attr_map) + ":-" + update_info;
-            var request_url = "update_highlight/?update=" + encodeURIComponent(request);
-
+            var request_url = request_builder.update_highlight(self.model.get("dataset_group"), attr_map, update_info);
             d3.json(request_url, function(result){
                 // console.log("finish update");
                 var set_update_info = function(data){
