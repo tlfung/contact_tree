@@ -32,8 +32,27 @@ var MappingView = Backbone.View.extend({
             modal: true,
             resizable: false,
             close: function(){
-                if(self.change_mapping != 0)
+                if(self.change_mapping != 0){
                     self.model.trigger('change:tree_structure');
+                }
+                else{
+                    var data_group = self.model.get("dataset_group");
+                    var now_attr = self.model.get("attribute");
+                    var now_mode = self.model.get("view_mode");
+                    // var now_attr_map = JSON.parse(JSON.stringify(save_user_mapping[this.value]["map_info"]));
+                    var all_ego = self.model.get("selected_egos");
+                    var ego_list = [];
+                    
+                    for(var ego in all_ego){
+                        ego_list.push(ego);
+                    }
+                    var request_url = request_builder.restore_data(now_attr, ego_list, now_mode, attribute_mapping, data_group, all_ego);
+                    self.el_block_page.show();
+                    d3.json(request_url, function(result) {
+                        self.restructure(result);
+                        self.model.trigger('change:tree_structure');
+                    });
+                }
             }
         });
 
@@ -1173,24 +1192,12 @@ var MappingView = Backbone.View.extend({
             for(ego in ego_selections){
                 update_info += ":=" + ego;
             }
-
-            var request_url = request_builder.update_layer(self.model.get("dataset_group"), attr_map, update_info);
             
-            d3.json(request_url, function(result){
-                var set_update_info = function(data){
-                    var attr_map = self.model.get("attribute");
-                    self.el_block_layer.hide();
-                    self.el_sidekey_submit.text("Done");
-                    self.el_sidekey_submit.removeAttr("disabled");
-
-                    attr_map[comp] = new_attr;
-                    
-                    self.model.set({"attribute": attr_map});
-                    
-                    self.restructure(data);
-                };
-                set_update_info(result);
-            });
+            attr_map[comp] = new_attr;
+            self.model.set({"attribute": attr_map});
+            self.set_component();
+            self.el_block_page.hide();
+            self.el_block_layer.hide();
         }
 
         else{
@@ -1256,22 +1263,11 @@ var MappingView = Backbone.View.extend({
                 update_info += ":=" + ego;
             }
 
-            var request_url = request_builder.update_layer(self.model.get("dataset_group"), attr_map, update_info);
-            
-            d3.json(request_url, function(result){
-                var set_update_info = function(data){
-                    var attr_map = self.model.get("attribute");
-                    self.el_block_layer.hide();
-                    self.el_sidekey_submit.text("Done");
-                    self.el_sidekey_submit.removeAttr("disabled");
-
-                    attr_map[comp] = new_attr;
-                    self.model.set({"attribute": attr_map});
-                    
-                    self.restructure(data);
-                };
-                set_update_info(result);
-            });
+            attr_map[comp] = new_attr;
+            self.model.set({"attribute": attr_map});
+            self.set_component();
+            self.el_block_page.hide();
+            self.el_block_layer.hide();
 
         }
     },
@@ -1296,25 +1292,11 @@ var MappingView = Backbone.View.extend({
                 update_info += ":=" + ego;
             }
 
-            var request_url = request_builder.update_layer(self.model.get("dataset_group"), attr_map, update_info);
-            
-            d3.json(request_url, function(result){
-                var set_update_info = function(data){
-                    var attr_map = self.model.get("attribute");
-                    
-                    self.el_block_layer.hide();
-                    self.el_sidekey_submit.text("Done");
-                    self.el_sidekey_submit.removeAttr("disabled");
-
-                    attr_map[comp] = new_attr;
-                    
-                    self.model.set({"attribute": attr_map});
-                    
-                    self.restructure(data);
-                    
-                };
-                set_update_info(result);
-            });
+            attr_map[comp] = new_attr;
+            self.model.set({"attribute": attr_map});
+            self.set_component();
+            self.el_block_page.hide();
+            self.el_block_layer.hide();
         }
         else{
             var update_info = data_mode + ":-ctree_" + comp + ":-" + new_attr;             
@@ -1353,23 +1335,11 @@ var MappingView = Backbone.View.extend({
                 update_info += ":=" + ego;
             }               
 
-            var request_url = request_builder.update_layer(self.model.get("dataset_group"), attr_map, update_info);
-            
-            d3.json(request_url, function(result){
-                var set_update_info = function(data){
-                    var attr_map = self.model.get("attribute");
-                    self.el_block_layer.hide();
-                    self.el_sidekey_submit.text("Done");
-                    self.el_sidekey_submit.removeAttr("disabled");
-
-                    attr_map[comp] = new_attr;
-                    self.model.set({"attribute": attr_map});
-                    
-                    self.restructure(data);
-                };
-                set_update_info(result);
-            });
-
+            attr_map[comp] = new_attr;
+            self.model.set({"attribute": attr_map});
+            self.set_component();
+            self.el_block_page.hide();
+            self.el_block_layer.hide();
         }
 
     },
@@ -1426,22 +1396,11 @@ var MappingView = Backbone.View.extend({
                 }
             }
             
-            var request_url = request_builder.update_binary(self.model.get("dataset_group"), attr_map, update_info);
-            d3.json(request_url, function(result){
-                var set_update_info = function(data){
-                    var attr_map = self.model.get("attribute");                    
-                    self.el_block_layer.hide();
-                    self.el_sidekey_submit.text("Done");
-                    self.el_sidekey_submit.removeAttr("disabled");
-
-                    attr_map[comp] = new_attr;
-
-                    self.model.set({"attribute": attr_map});
-                    
-                    self.restructure(data);
-                };
-                set_update_info(result);
-            });
+            attr_map[comp] = new_attr;
+            self.model.set({"attribute": attr_map});
+            self.set_component();
+            self.el_block_page.hide();
+            self.el_block_layer.hide();
         } 
     },
 
@@ -2093,8 +2052,8 @@ var MappingView = Backbone.View.extend({
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
 
-            self.el_sidekey_submit.text("Update");
-            self.el_sidekey_submit.attr("disabled", true);
+            // self.el_sidekey_submit.text("Update");
+            // self.el_sidekey_submit.attr("disabled", true);
             self.el_block_layer.show();
 
             self.binary_submit(attr_map["trunk"], self.el_sidekeyselect.val(), "trunk");                   
@@ -2186,8 +2145,8 @@ var MappingView = Backbone.View.extend({
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
 
-            self.el_sidekey_submit.text("Update");
-            self.el_sidekey_submit.attr("disabled", true);
+            // self.el_sidekey_submit.text("Update");
+            // self.el_sidekey_submit.attr("disabled", true);
             self.el_block_layer.show();
 
             self.binary_submit(attr_map["bside"], self.el_sidekeyselect.val(), "bside");
@@ -2283,8 +2242,8 @@ var MappingView = Backbone.View.extend({
             var ego_selections = self.model.get("selected_egos");
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
-            self.el_sidekey_submit.text("Update");
-            self.el_sidekey_submit.attr("disabled", true);
+            // self.el_sidekey_submit.text("Update");
+            // self.el_sidekey_submit.attr("disabled", true);
             self.el_block_layer.show();
 
             if("branch" in attribute_mapping){
@@ -2323,23 +2282,11 @@ var MappingView = Backbone.View.extend({
                     update_info += ":=" + ego;
                 }
 
-                var request_url = request_builder.update_layer(self.model.get("dataset_group"), attr_map, update_info);
-            
-                d3.json(request_url, function(result){
-                    var set_update_info = function(data){
-                        var attr_map = self.model.get("attribute");
-                        self.el_block_layer.hide();
-                        self.el_sidekey_submit.text("Done");
-                        self.el_sidekey_submit.removeAttr("disabled");
-                        
-                        attr_map["branch"] = self.el_sidekeyselect.val();
-                        
-                        self.model.set({"attribute": attr_map});
-                        
-                        self.restructure(data);
-                    };
-                    set_update_info(result);
-                });
+                attr_map[comp] = new_attr;
+                self.model.set({"attribute": attr_map});
+                self.set_component();
+                self.el_block_page.hide();
+                self.el_block_layer.hide();
             }
 
         });
@@ -2432,8 +2379,8 @@ var MappingView = Backbone.View.extend({
             console.log("in root submit");
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
-            self.el_sidekey_submit.text("Update");
-            self.el_sidekey_submit.attr("disabled", true);
+            // self.el_sidekey_submit.text("Update");
+            // self.el_sidekey_submit.attr("disabled", true);
             
             self.el_block_layer.show();
 
@@ -2523,8 +2470,8 @@ var MappingView = Backbone.View.extend({
         self.el_sidekey_submit.unbind();
         self.el_sidekey_submit.click(function(){
             console.log("in leaf_color submit");
-            self.el_sidekey_submit.text("Update");
-            self.el_sidekey_submit.attr("disabled", true);
+            // self.el_sidekey_submit.text("Update");
+            // self.el_sidekey_submit.attr("disabled", true);
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
             self.el_block_layer.show();
@@ -2595,23 +2542,11 @@ var MappingView = Backbone.View.extend({
                 update_info += ":=" + ego;
             }
             attr_map["highlight"] = self.el_sidekeyselect.val();
+            self.model.set({"attribute": attr_map});
+            self.set_component();
+            self.el_block_page.hide();
+            self.el_block_layer.hide();
             
-            var request_url = request_builder.update_highlight(self.model.get("dataset_group"), attr_map, update_info);
-            d3.json(request_url, function(result){
-                // console.log("finish update");
-                var set_update_info = function(data){
-                    var attr_map = self.model.get("attribute");
-                    // console.log(data)
-                    self.el_block_layer.hide();
-                    self.el_sidekey_submit.text("Done");
-                    self.el_sidekey_submit.removeAttr("disabled");
-
-                    self.model.set({"attribute": attr_map});
-                    
-                    self.restructure(data);
-                };
-                set_update_info(result);
-            });
         });
     },
 
@@ -2700,8 +2635,8 @@ var MappingView = Backbone.View.extend({
             console.log("in leaf_size submit");
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
-            self.el_sidekey_submit.text("Update");
-            self.el_sidekey_submit.attr("disabled", true);
+            // self.el_sidekey_submit.text("Update");
+            // self.el_sidekey_submit.attr("disabled", true);
             self.el_block_layer.show();
 
             self.size_submit(attr_map["leaf_size"], self.el_sidekeyselect.val(), "leaf_size");
@@ -2793,8 +2728,8 @@ var MappingView = Backbone.View.extend({
             console.log("in fruit_size submit");
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
-            self.el_sidekey_submit.text("Update");
-            self.el_sidekey_submit.attr("disabled", true);
+            // self.el_sidekey_submit.text("Update");
+            // self.el_sidekey_submit.attr("disabled", true);
             self.el_block_layer.show();
 
             self.size_submit(attr_map["fruit_size"], self.el_sidekeyselect.val(), "fruit_size");
@@ -2858,7 +2793,7 @@ var MappingView = Backbone.View.extend({
 
     restructure: function(data){
         var self = this;
-        self.change_mapping += 1;
+        self.change_mapping = 1;
         tree_size = {};
         self.model.set({"tree_boundary":{}});
         self.model.trigger('change:attribute');

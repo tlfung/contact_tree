@@ -1032,10 +1032,11 @@ def duplicate_stick(all_data, attr, branch_layer):
 
 ################################### local cache #######################################
 def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_ego): #!!!
-    # print "insert_default_mapping"    
+    print "***** set_ctree_mapping *****"    
     db = DB()
     binary_index = dict()
     branch_order_index = []
+    layer_count = []
     reorder = []
     data_table = table.split("_of_")[1]
     session = table.split("_of_")[0]
@@ -1047,7 +1048,7 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
     # check to create data index
     with open("./contact_tree/data/dataset_index.json", "rb") as json_file:
         dataset_index = json.load(json_file)
-    ori_col_index = dataset_index[data_table][ori_column]
+    ori_col_index = dataset_index[data_table]
 
     user_ctree_data[session][data_table]["layer_" + ego_group] = -1
     last_layer = -1
@@ -1057,7 +1058,7 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
     ori_index = dict()
     for compt in attr: 
         attr_detail[compt] = dict() 
-        if attr[compt] != 'none':
+        if attr[compt] != 'none' and compt != 'stick':
             cur = db.query('SELECT * FROM dataset_collection WHERE dataset="' + data_table + '" and attr="' + attr[compt] + '";')
             attr_detail[compt] = cur.fetchone()
             ori_index[compt] = ori_col_index[attr[compt]]
@@ -1077,7 +1078,9 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
         if ego in select_ego:
             for record in data_info["record"]:
                 for compt in attr:
-                    if attr[compt] != 'none' and d[attr[compt]] is None:
+                    if compt == 'stick':
+                        continue
+                    if attr[compt] != 'none' and record[ori_index[compt]] is None:
                         continue        
                     collecting_data = attr_detail[compt]  
                     
@@ -1089,53 +1092,53 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
                         if compt in mapping:
                             if collecting_data["type"] == "numerical":
                                 if float(record[ori_index[compt]]) <= float(mapping[compt]["0"][0]):
-                                    ctree_record[record_index] = 0
+                                    record[record_index] = 0
                                 else:
-                                    ctree_record[record_index] = 1
+                                    record[record_index] = 1
                             
                             else:
                                 if str(record[ori_index[compt]]) in str(mapping[compt]["0"]):
-                                    ctree_record[record_index] = 0
+                                    record[record_index] = 0
                                 else:
-                                    ctree_record[record_index] = 1       
+                                    record[record_index] = 1       
 
                         else:
                             if str(collecting_data["type"]) == "numerical":
                                 mid = math.floor((float(collecting_data['max']) + float(collecting_data['min']))*0.5)
                                 if float(record[ori_index[compt]]) <= float(mid):
-                                    ctree_record[record_index] = 0
+                                    record[record_index] = 0
                                 else:
-                                    ctree_record[record_index] = 1
+                                    record[record_index] = 1
                             else:
                                 if compt in binary_index:
                                     if binary_index[compt].index(record[ori_index[compt]]) < (len(binary_index[compt])*0.5):
-                                        ctree_record[record_index] = 0
+                                        record[record_index] = 0
                                     else:
-                                        ctree_record[record_index] = 1
+                                        record[record_index] = 1
 
                                 else:
                                     binary_index[compt] = []
                                     precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + data_table + ' ORDER BY(' + attr[compt] + ');')
                                     real_data = precur.fetchall()
                                     for dist_d in real_data:
-                                        binary_index[compt].append(dist_record[ori_index[compt]])
+                                        binary_index[compt].append(dist_d[attr[compt]])
 
                                     if binary_index[compt].index(record[ori_index[compt]]) < (len(binary_index[compt])*0.5):
-                                        ctree_record[record_index] = 0
+                                        record[record_index] = 0
                                     else:
-                                        ctree_record[record_index] = 1
+                                        record[record_index] = 1
 
 
                     elif compt == 'fruit_size' or compt == 'leaf_size' or compt == 'leaf_color' or compt == 'branch' or compt == 'root':
                         if attr[compt] == "none":
                             if compt == 'fruit_size':
-                                ctree_record[fruit_size_index] = 0
+                                record[fruit_size_index] = 0
                             elif compt == 'leaf_size':
-                                ctree_record[leaf_size_index] = 3
+                                record[leaf_size_index] = 3
                             elif compt == 'leaf_color':
-                                ctree_record[leaf_color_index] = 3
+                                record[leaf_color_index] = 3
                             elif compt == 'root':
-                                ctree_record[root_index] = 3
+                                record[root_index] = 3
                             
                         else:
                             # set comp index for ctree record
@@ -1154,7 +1157,7 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
                                 if collecting_data["type"] == "categorical" or collecting_data["type"] == "boolean":
                                     for cat in mapping[compt]:
                                         if record[ori_index[compt]] == cat:
-                                            ctree_record[record_index] = int(mapping[compt][cat])
+                                            record[record_index] = int(mapping[compt][cat])
                                             if compt == 'branch':
                                                 layer_count.append(mapping[compt][cat])                                    
                                             break
@@ -1163,42 +1166,42 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
                                         layer_count.append(len(mapping[compt])+1)
                                     if compt == 'branch' and mapping[compt][1] < mapping[compt][0]: # for the revert mapping
                                         if float(record[ori_index[compt]]) >= float(mapping[compt][0]):
-                                            ctree_record[record_index] = 0
+                                            record[record_index] = 0
                                                                                                                  
                                         elif float(record[ori_index[compt]]) <= float(mapping[compt][-1]):
-                                            ctree_record[record_index] = len(mapping)
+                                            record[record_index] = len(mapping)
                                                                                 
                                         else:
                                             for order in range(len(mapping[compt])-2, -1, -1):
                                                 if float(record[ori_index[compt]]) <= float(mapping[compt][order]) and float(record[ori_index[compt]]) > float(mapping[compt][order+1]):
-                                                    ctree_record[record_index] = (order+1)
+                                                    record[record_index] = (order+1)
                                                     break
                                     elif compt == 'branch' or compt == 'leaf_color' or compt == 'root': # for general mapping
                                         if float(record[ori_index[compt]]) <= float(mapping[compt][0]):
-                                            ctree_record[record_index] = 0
+                                            record[record_index] = 0
 
                                         elif float(record[ori_index[compt]]) >= float(mapping[compt][-1]):
-                                            ctree_record[record_index] = len(mapping)
+                                            record[record_index] = len(mapping)
                                         
                                         else:
                                             for order in range(1, len(mapping[compt])):
                                                 if float(record[ori_index[compt]]) > float(mapping[compt][order-1]) and float(record[ori_index[compt]]) <= float(mapping[compt][order]):
-                                                    ctree_record[record_index] = order
+                                                    record[record_index] = order
                                                     break
                                     else: # special for size mapping
                                         size_map = mapping[compt][1]
                                         val_map = mapping[compt][0]
 
                                         if float(record[ori_index[compt]]) <= float(val_map[0]):
-                                            ctree_record[record_index] = int(size_map[0])
+                                            record[record_index] = int(size_map[0])
                                             
                                         elif float(record[ori_index[compt]]) >= float(val_map[-1]):
-                                            ctree_record[record_index] = int(size_map[len(val_map)])
+                                            record[record_index] = int(size_map[len(val_map)])
                                             
                                         else:
                                             for order in range(1, len(val_map)):
                                                 if float(record[ori_index[compt]]) > float(val_map[order-1]) and float(record[ori_index[compt]]) <= float(val_map[order]):
-                                                    ctree_record[record_index] = int(size_map[order])
+                                                    record[record_index] = int(size_map[order])
                                                     break
           
                             else: # only branch will have default mapping
@@ -1214,38 +1217,42 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
                                             reorder.append(collecting_data["max"])
                                         layer_count = [10]
                                     if int(record[ori_index[compt]]) <= reorder[0]:
-                                        ctree_record[record_index] = 0
+                                        record[record_index] = 0
 
                                     elif int(record[ori_index[compt]]) >= reorder[-1]:
-                                        ctree_record[record_index] = len(reorder)
+                                        record[record_index] = len(reorder)
                                     else:
                                         for order in range(1, len(reorder)):
                                             if int(record[ori_index[compt]]) > reorder[order-1] and int(record[ori_index[compt]]) <= reorder[order]:
-                                                ctree_record[record_index] = order                                        
+                                                record[record_index] = order                                        
                                                 break
                                 else:
                                     if len(branch_order_index) == 0:
                                         precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + data_table + ' ORDER BY(' + attr[compt] + ');')
                                         real_data = precur.fetchall()
                                         for dist_d in real_data:
-                                            branch_order_index.append(dist_record[ori_index[compt]])
+                                            branch_order_index.append(dist_d[attr[compt]])
                                     
-                                    ctree_record[record_index] = branch_order_index.index(record[ori_index[compt]])
+                                    record[record_index] = branch_order_index.index(record[ori_index[compt]])
                                     layer_count.append(branch_order_index.index(record[ori_index[compt]]))
                                                                                    
 
                     elif compt == 'highlight':
                         if attr[compt] == "none":
-                            ctree_record[highlight_index] = "none"
+                            record[highlight_index] = "none"
                         else:
-                            ctree_record[highlight_index] = record[ori_index[compt]]
+                            record[highlight_index] = record[ori_index[compt]]
                 # update_ctree_data[session][data_table][label]["record"].append(record)
         else:
             data_info["done"] = 0
 
+    if len(layer_count) != 0 and max(layer_count) != last_layer:
+        user_ctree_data[session][data_table]["layer_" + ego_group] = max(layer_count)
+
+
 
 def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_group):
-    # print "insert_default_mapping"    
+    print "****** insert_ctree_mapping ******"
     db = DB()
     binary_index = dict()
     branch_order_index = []
@@ -1508,6 +1515,7 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
 
 
 def restore_ctree_mapping(user_ctree_data, ego_list, table, attr, mapping, group):
+    print "****** restore_ctree_mapping ******"
     data_table = table.split("_of_")[1]
     session = table.split("_of_")[0]
     last_use_ego = {session: {data_table: {}}}
@@ -2166,7 +2174,7 @@ def restore_mapping_update(request): #!!!change mapping using memcache
         if cache_data:
             user_ctree_data[session] = cache_data
             if data_table in user_ctree_data[session]:
-                set_ctree_mapping(user_ctree_data, table, attr, mapping, data_group)
+                set_ctree_mapping(user_ctree_data, table, attr, mapping, data_group, ego_list)
                 structure_request = list_request[0] + ":-" + list_request[4] + ":-" + list_request[5] + ":-" + list_request[2]
                 return_json = one_contact_structure(user_ctree_data, structure_request)
                 cache.set(session, user_ctree_data[session], cache_time)
@@ -2596,3 +2604,34 @@ def is_empty(any_structure):
 def takeClosest(num, collection):
    return min(collection,key=lambda x:abs(x-num))
 
+
+
+def memcahe_upload(request):
+    pre_cache = dict()
+    if request.GET.get('memcahe'):
+        info = request.GET['memcahe'].split(":-")
+        cache_key = info[0]
+        cache_time = 3600 # time to live in seconds
+        data = info[1]
+        cache.set(cache_key, data, cache_time)
+        result = cache.get(cache_key)
+    else:
+        raise Http404
+    # pre_cache[cache_key] = data
+    return_json = simplejson.dumps({cache_key: data}, indent=4, use_decimal=True)
+    # print return_json
+    return HttpResponse(return_json)
+
+def memcahe_download(request):
+    pre_cache = dict()
+    if request.GET.get('memcahe'):
+        cache_key = request.GET['memcahe']
+        result = cache.get(cache_key)
+        print "**********", result
+        pre_cache[cache_key] = result
+    else:
+        raise Http404
+    
+    return_json = simplejson.dumps(pre_cache, indent=4, use_decimal=True)
+    # print return_json
+    return HttpResponse(return_json)
