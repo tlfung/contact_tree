@@ -25,10 +25,7 @@ urlpatterns = patterns('',
     (r'^restore_user_mapping/$', query.restore_user_mapping),
     (r'^restore_user_history/$', query.restore_user_history),
     (r'^restore_user_group_history/$', query.restore_user_group_history),
-    (r'^del_mapping/$', query.del_mapping),
-    # for testing memcache
-    (r'^memcahe_upload/$', query.memcahe_upload),
-    (r'^memcahe_download/$', query.memcahe_download)
+    (r'^del_mapping/$', query.del_mapping)
 )
 
 urlpatterns += staticfiles_urlpatterns()

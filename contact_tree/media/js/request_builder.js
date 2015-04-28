@@ -140,21 +140,3 @@ var request_builder = {
         return return_request;
     }
 };
-
-var test_Memcache = {
-    upload: function(request){
-        request_url = "memcahe_upload/?memcahe=" + encodeURIComponent(request);
-        d3.json(request_url, function(result) {  
-            console.log("in memcache upload");        
-            console.log(result);
-        });
-
-    },
-    download: function(request){
-        request_url = "memcahe_download/?memcahe=" + encodeURIComponent(request);
-        d3.json(request_url, function(result) {  
-            console.log("in memcache download");        
-            console.log(result);
-        });
-    }
-};

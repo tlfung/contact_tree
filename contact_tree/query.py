@@ -1031,7 +1031,7 @@ def duplicate_stick(all_data, attr, branch_layer):
 
 
 ################################### local cache #######################################
-def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_ego): #!!!
+def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_ego):
     print "***** set_ctree_mapping *****"    
     db = DB()
     binary_index = dict()
@@ -2155,7 +2155,7 @@ def one_contact_update(request):
     return HttpResponse(return_json)
 
 
-def restore_mapping_update(request): #!!!change mapping using memcache 
+def restore_mapping_update(request):
     db = DB()    
     user_ctree_data = dict()
 
@@ -2173,7 +2173,8 @@ def restore_mapping_update(request): #!!!change mapping using memcache
         cache_data = cache.get(session)
         if cache_data:
             user_ctree_data[session] = cache_data
-            if data_table in user_ctree_data[session]:
+            # using Memcache to restore mapping
+            if data_table in user_ctree_data[session] and "layer_" + data_group in user_ctree_data[session][data_table]:
                 set_ctree_mapping(user_ctree_data, table, attr, mapping, data_group, ego_list)
                 structure_request = list_request[0] + ":-" + list_request[4] + ":-" + list_request[5] + ":-" + list_request[2]
                 return_json = one_contact_structure(user_ctree_data, structure_request)
@@ -2181,7 +2182,7 @@ def restore_mapping_update(request): #!!!change mapping using memcache
                 return HttpResponse(return_json)
         else:
             user_ctree_data[session] = dict()
-
+        # using database to restore mapping
         if len(ego_list) == 0:
             return_json = simplejson.dumps(table, indent=4, use_decimal=True)
             # cache.set(session, user_ctree_data[session], cache_time)
@@ -2208,7 +2209,7 @@ def restore_mapping_update(request): #!!!change mapping using memcache
     return HttpResponse(return_json)
 
 
-def last_use_update(request): #!!!
+def last_use_update(request):
     db = DB()
     
     user_ctree_data = dict()
@@ -2227,6 +2228,7 @@ def last_use_update(request): #!!!
         cache_data = cache.get(session)
         if cache_data:
             user_ctree_data[session] = cache_data
+            # using Memcache to restore mapping
             if data_table in user_ctree_data[session] and "layer_" + data_group in user_ctree_data[session][data_table]:
                 last_ctree_data = restore_ctree_mapping(user_ctree_data, ego_list, table, attr, mapping, data_group)
                 # general tree structure
@@ -2237,6 +2239,7 @@ def last_use_update(request): #!!!
         else:
             user_ctree_data[session] = dict()
 
+        # using database to restore mapping
         if len(ego_list) == 0:
             return_json = simplejson.dumps(table, indent=4, use_decimal=True)
             return HttpResponse(return_json)
@@ -2293,9 +2296,7 @@ def auto_save(request):
         condition = "session_id=" + session + " AND " + mode + " AND " + group
 
         update_query = waves + "," + group + "," + display_egos + "," + selected_egos + "," + leaf_scale + "," + fruit_scale + "," + sub_leaf_len_scale + "," + dtl_branch_curve + "," + root_curve + "," + root_len_scale + "," + filter_contact + "," + canvas_scale + "," + tree_boundary + "," + canvas_translate + "," + total_ego + "," + component_attribute
-        # check_update = "UPDATE auto_save SET %s WHERE %s;" %(update_query, condition)
-        # print "UPDATE auto_save SET %s WHERE %s;" %(update_query, condition)
-
+    
         db.query("UPDATE auto_save SET %s WHERE %s;" %(update_query, condition))
 
 
@@ -2305,7 +2306,7 @@ def auto_save(request):
     db.query('SET SQL_SAFE_UPDATES = 1;')
     db.conn.commit()
     return_json = simplejson.dumps("auto saved", indent=4, use_decimal=True)
-    # print json
+
     return HttpResponse(return_json)
 
 
@@ -2343,7 +2344,7 @@ def save_mapping(request):
     db.query('SET SQL_SAFE_UPDATES = 1;')
     db.conn.commit()
     return_json = simplejson.dumps("mapping save", indent=4, use_decimal=True)
-    # print json
+    
     return HttpResponse(return_json)
 
 
@@ -2366,7 +2367,7 @@ def del_mapping(request):
     db.query('SET SQL_SAFE_UPDATES = 1;')
     db.conn.commit()
     return_json = simplejson.dumps("mapping del", indent=4, use_decimal=True)
-    # print json
+    
     return HttpResponse(return_json)
 
 
@@ -2390,7 +2391,7 @@ def get_user_data(request):
         raise Http404
 
     return_json = simplejson.dumps(last_used_info, indent=4, use_decimal=True)
-    # print json
+    
     return HttpResponse(return_json)
 
 
@@ -2604,34 +2605,3 @@ def is_empty(any_structure):
 def takeClosest(num, collection):
    return min(collection,key=lambda x:abs(x-num))
 
-
-
-def memcahe_upload(request):
-    pre_cache = dict()
-    if request.GET.get('memcahe'):
-        info = request.GET['memcahe'].split(":-")
-        cache_key = info[0]
-        cache_time = 3600 # time to live in seconds
-        data = info[1]
-        cache.set(cache_key, data, cache_time)
-        result = cache.get(cache_key)
-    else:
-        raise Http404
-    # pre_cache[cache_key] = data
-    return_json = simplejson.dumps({cache_key: data}, indent=4, use_decimal=True)
-    # print return_json
-    return HttpResponse(return_json)
-
-def memcahe_download(request):
-    pre_cache = dict()
-    if request.GET.get('memcahe'):
-        cache_key = request.GET['memcahe']
-        result = cache.get(cache_key)
-        print "**********", result
-        pre_cache[cache_key] = result
-    else:
-        raise Http404
-    
-    return_json = simplejson.dumps(pre_cache, indent=4, use_decimal=True)
-    # print return_json
-    return HttpResponse(return_json)
