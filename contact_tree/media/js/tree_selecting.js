@@ -69,21 +69,17 @@ var SelectingView = Backbone.View.extend({
 
         self.el_dataselect.attr('class', 'dataset_selector');
         for(var s = 0; s < data_mode.length; s++){
-            var selection_opt = $('<option></option>');
+            var text = data_mode[s];
+            var option_val = session_id + "_of_" + data_mode[s];
+            // var selection_opt = $('<option></option>');
             if(data_mode[s] == ""){
-                selection_opt.val("0").html("dataset").attr("class", "myfont3");
-
+                text = "dataset";
+                option_val = "0";
                 if(data_mode[s] == on_mode)
-                    selection_opt.prop("selected", true);
-    
-            }
-            else{
-                selection_opt.val(session_id + "_of_" + data_mode[s]).html(data_mode[s]).attr("class", "myfont3");
-                
-                if(selection_opt.val() == on_mode)
-                    selection_opt.prop("selected", true);
+                    on_mode = "0"    
             }
             
+            var selection_opt = util.create_option(option_val, text, "myfont3", option_val==on_mode);
             self.el_dataselect.append(selection_opt);
         }
 
@@ -287,12 +283,7 @@ var SelectingView = Backbone.View.extend({
                             waves = data;
                             var on_group = "";
                             for(var s = 0; s < waves.length; s++){
-                                var selection_opt = $('<option></option>');
-                                selection_opt.val(waves[s]).html(display_group[waves[s]]).attr("class", "myfont3");
-
-                                if(waves[s] == on_group)
-                                    selection_opt.prop("selected", true);
-                                
+                                var selection_opt = util.create_option(waves[s], display_group[waves[s]], "myfont3", waves[s] == on_group);
                                 self.el_egogroup.append(selection_opt);
                             }
                             self.el_group_container.show();
@@ -312,12 +303,7 @@ var SelectingView = Backbone.View.extend({
                     if(user_history == 1){
                         var on_group = self.model.get("dataset_group"); // has a chosen group
                         for(var s = 0; s < waves.length; s++){
-                            var selection_opt = $('<option></option>');
-                            selection_opt.val(waves[s]).html(display_group[waves[s]]).attr("class", "myfont3");
-
-                            if(waves[s] == on_group)
-                                selection_opt.prop("selected", true);
-                            
+                            var selection_opt = util.create_option(waves[s], display_group[waves[s]], "myfont3", waves[s] == on_group);
                             self.el_egogroup.append(selection_opt);
                         }
                         self.el_group_container.show();
@@ -332,12 +318,7 @@ var SelectingView = Backbone.View.extend({
                                 waves = data;
                                 var on_group = ""; // no chosen group                            
                                 for(var s = 0; s < waves.length; s++){
-                                    var selection_opt = $('<option></option>');
-                                    selection_opt.val(waves[s]).html(display_group[waves[s]]).attr("class", "myfont3");
-
-                                    if(waves[s] == on_group)
-                                        selection_opt.prop("selected", true);
-                                    
+                                    var selection_opt = util.create_option(waves[s], display_group[waves[s]], "myfont3", waves[s] == on_group);
                                     self.el_egogroup.append(selection_opt);
                                 }
                                 self.el_group_container.show();
@@ -403,8 +384,8 @@ var SelectingView = Backbone.View.extend({
                     self.model.set({"canvas_scale":0.15});
 
                     self.model.trigger('change:display_egos');
-                    self.el_egogroup.empty();
-                    self.el_group_container.hide();
+                    // self.el_egogroup.empty();
+                    // self.el_group_container.hide();
                     user_history = 2;
                     return
                 }

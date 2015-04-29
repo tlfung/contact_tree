@@ -2604,4 +2604,3 @@ def is_empty(any_structure):
 
 def takeClosest(num, collection):
    return min(collection,key=lambda x:abs(x-num))
-

@@ -2699,5 +2699,4 @@ var RenderingView = Backbone.View.extend({
         self.el_custom_download_link[0].click();      
         
     }
-
 });

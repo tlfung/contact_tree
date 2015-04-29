@@ -459,11 +459,7 @@ var MappingView = Backbone.View.extend({
             group_slider.attr("style", "height:" + (50*(user_map.length+1)) + ";");
         
             for(var s=4; s < total_gap; s++){
-                var opt = $('<option class="myfont3"></option>');
-                opt.val(s).html(s);
-                if(s == user_map.length+1)
-                    opt.prop("selected", true);
-                
+                var opt = util.create_option(s, s, "myfont3", s==user_map.length+1);
                 gap_input.append(opt);
             }
 
@@ -493,11 +489,7 @@ var MappingView = Backbone.View.extend({
             group_slider.attr("style", "height:500;");
         
             for(var s=4; s < total_gap; s++){
-                var opt = $('<option class="myfont3"></option>');
-                opt.val(s).html(s);
-                
-                if(s == 10)
-                    opt.prop("selected", true);
+                var opt = util.create_option(s, s, "myfont3", s==10);
                 gap_input.append(opt);
             }
 
@@ -796,11 +788,7 @@ var MappingView = Backbone.View.extend({
                 group_slider.attr("class", "left root_slider").attr("style", "height:" + (50*(user_map.length+1)) + ";");
                 
             for(var s=2; s <= total_gap; s++){
-                var opt = $('<option class="myfont3"></option>');
-                opt.val(s).html(s);                
-                if(s == (user_map.length+1))
-                    opt.prop("selected", true);
-                
+                var opt = util.create_option(s, s, "myfont3", s==(user_map.length+1));
                 gap_input.append(opt);
             }
             gap.append(gap_title);
@@ -831,10 +819,7 @@ var MappingView = Backbone.View.extend({
                 group_slider.attr("class", "left root_slider").attr("style", "height:300;");
             
             for(var s=2; s <= total_gap; s++){
-                var opt = $('<option class="myfont3"></option>');
-                opt.val(s).html(s);
-                if(s == 6)
-                    opt.prop("selected", true);
+                var opt = util.create_option(s, s, "myfont3", s==6);
                 gap_input.append(opt);
             }
 
@@ -1050,10 +1035,7 @@ var MappingView = Backbone.View.extend({
         if(attr_range < 5)
             total_gap = attr_range*2-1;
         for(var s=2; s <= total_gap; s++){
-            var opt = $('<option class="myfont3"></option>');
-            opt.val(s).html(s);
-            if(s == selected_gap)
-                opt.prop("selected", true);
+            var opt = util.create_option(s, s, "myfont3", s==selected_gap);
             gap_input.append(opt);
         }
 
@@ -1988,20 +1970,14 @@ var MappingView = Backbone.View.extend({
                 if(component_attribute[data_mode][s][0].length == 0 || (s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["trunk"]))
                     continue;
             }
-
-            var selection_opt = $('<option class="myfont3"></option>');
-            selection_opt.val(s);
+            var text = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.html(s + "*");
+                text = s + "*";
             else{
                 if(s == "dataset")
-                    selection_opt.html("waves");
-                else
-                    selection_opt.html(s);
+                    text = "waves"; 
             }
-            
-            if(s == attr_map["trunk"])
-                selection_opt.prop("selected", true);
+            var selection_opt = util.create_option(s, text, "myfont3", s==attr_map["trunk"]);
             self.el_sidekeyselect.append(selection_opt);
         }
 
@@ -2083,19 +2059,14 @@ var MappingView = Backbone.View.extend({
                     continue;
             }
 
-            var selection_opt = $('<option class="myfont3"></option>');
-            selection_opt.val(s);
+            var text = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.html(s + "*");
+                text = s +"*";
             else{
                 if(s == "dataset")
-                    selection_opt.html("waves");
-                else
-                    selection_opt.html(s);
+                    text = "waves"; 
             }
-            
-            if(s == attr_map["bside"])
-                selection_opt.prop("selected", true);
+            var selection_opt = util.create_option(s, text, "myfont3", s==attr_map["bside"]);
             self.el_sidekeyselect.append(selection_opt);
 
         }
@@ -2177,18 +2148,14 @@ var MappingView = Backbone.View.extend({
                     continue;
             }
 
-            var selection_opt = $('<option class="myfont3"></option>');
-            selection_opt.val(s);
+            var text = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.html(s + "*");
+                text = s +"*";
             else{
                 if(s == "dataset")
-                    selection_opt.html("waves");
-                else
-                    selection_opt.html(s);
+                    text = "waves"; 
             }
-            if(s == attr_map["branch"])
-                selection_opt.prop("selected", true);
+            var selection_opt = util.create_option(s, text, "myfont3", s==attr_map["branch"]);
             self.el_sidekeyselect.append(selection_opt);
         }
         self.el_mark_group_select.empty();
@@ -2311,18 +2278,14 @@ var MappingView = Backbone.View.extend({
                     continue;
             }
 
-            var selection_opt = $('<option class="myfont3"></option>');
-            selection_opt.val(s);
+            var text = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.html(s + "*");
+                text = s +"*";
             else{
                 if(s == "dataset")
-                    selection_opt.html("waves");
-                else
-                    selection_opt.html(s);
+                    text = "waves"; 
             }
-            if(s == attr_map["root"])
-                selection_opt.prop("selected", true);
+            var selection_opt = util.create_option(s, text, "myfont3", s==attr_map["root"]);
             self.el_sidekeyselect.append(selection_opt);
         }
 
@@ -2409,19 +2372,14 @@ var MappingView = Backbone.View.extend({
                  if(component_attribute[data_mode][s][0].length == 0 || (s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["leaf_color"]))
                     continue;
             }
-
-            var selection_opt = $('<option class="myfont3"></option>');
-            selection_opt.val(s);
+            var text = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.html(s + "*");
+                text = s +"*";
             else{
                 if(s == "dataset")
-                    selection_opt.html("waves");
-                else
-                    selection_opt.html(s);
+                    text = "waves"; 
             }
-            if(s == attr_map["leaf_color"])
-                selection_opt.prop("selected", true);
+            var selection_opt = util.create_option(s, text, "myfont3", s==attr_map["leaf_color"]);
             self.el_sidekeyselect.append(selection_opt);
         }
 
@@ -2496,18 +2454,14 @@ var MappingView = Backbone.View.extend({
         self.el_sidekeyselect.empty();
         
         for(s in component_attribute[data_mode]){
-            var selection_opt = $('<option class="myfont3"></option>');
-            selection_opt.val(s);
+            var text = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.html(s + "*");
+                text = s +"*";
             else{
                 if(s == "dataset")
-                    selection_opt.html("waves");
-                else
-                    selection_opt.html(s);
+                    text = "waves"; 
             }
-            if(s == attr_map["highlight"])
-                selection_opt.prop("selected", true);
+            var selection_opt = util.create_option(s, text, "myfont3", s==attr_map["highlight"]);
             self.el_sidekeyselect.append(selection_opt);
         }
 
@@ -2570,18 +2524,14 @@ var MappingView = Backbone.View.extend({
                  if(component_attribute[data_mode][s][0].length == 0 || (s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["leaf_size"]))
                     continue;
             }
-            var selection_opt = $('<option class="myfont3"></option>');
-            selection_opt.val(s);
+            var text = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.html(s + "*");
+                text = s +"*";
             else{
                 if(s == "dataset")
-                    selection_opt.html("waves");
-                else
-                    selection_opt.html(s);
+                    text = "waves"; 
             }
-            if(s == attr_map["leaf_size"])
-                selection_opt.prop("selected", true);
+            var selection_opt = util.create_option(s, text, "myfont3", s==attr_map["leaf_size"]);
             self.el_sidekeyselect.append(selection_opt);
         }
 
@@ -2663,19 +2613,14 @@ var MappingView = Backbone.View.extend({
                 if(component_attribute[data_mode][s][0].length == 0 || component_attribute[data_mode][s][4] != "1" || (s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["fruit_size"]))
                     continue;
             }
-
-            var selection_opt = $('<option class="myfont3"></option>');
-            selection_opt.val(s);
+            var text = s;
             if(s != "none" && component_attribute[data_mode][s][4] == 1)
-                selection_opt.html(s + "*");
+                text = s +"*";
             else{
                 if(s == "dataset")
-                    selection_opt.html("waves");
-                else
-                    selection_opt.html(s);
+                    text = "waves"; 
             }
-            if(s == attr_map["fruit_size"])
-                selection_opt.prop("selected", true);
+            var selection_opt = util.create_option(s, text, "myfont3", s==attr_map["fruit_size"]);
             self.el_sidekeyselect.append(selection_opt);
         }
 
