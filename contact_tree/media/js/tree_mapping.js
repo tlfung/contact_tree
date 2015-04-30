@@ -21,6 +21,7 @@ var MappingView = Backbone.View.extend({
         this.el_sidekey_title = $("#sidekey_title");
         this.el_block_page = $("#block_page");
         this.el_sidekey_submit = $("#sidekey_submit");
+        this.el_sidekey_instruction = $("#sidekey_instruction");
         
         this.change_structure = 0;
         this.change_mapping = 0;
@@ -63,6 +64,7 @@ var MappingView = Backbone.View.extend({
             self.el_sidekey_selection.hide();
             self.el_sidekey_operation.hide();
             self.el_mark_group.hide();
+            self.el_sidekey_instruction.show();
             self.change_structure = 0;
             self.change_mapping = 0;
             self.set_component();
@@ -104,7 +106,7 @@ var MappingView = Backbone.View.extend({
             
         });
 
-        $("#use_label").click(function() {
+        $("#use_label").click(function() { //!!! only change the mapping setting
             // console.log(save_user_mapping);
             var data_group = self.model.get("dataset_group");
             var save_user_mapping = self.model.get("user_mapping");
@@ -169,9 +171,11 @@ var MappingView = Backbone.View.extend({
 
             save_item.click(function(){
                 self.el_sidekey_selection.hide();
+                self.el_sidekey_instruction.hide();
                 self.el_sidekey_save_img.show();
                 self.set_save_component(save_user_mapping[this.value-1]["attr"]);
                 $("#use_label").val(this.value-1);
+                return false;
             });    
 
             save_item_dlt.hover(function(){
@@ -220,59 +224,79 @@ var MappingView = Backbone.View.extend({
             self.el_sidekey_save_img.hide();
             self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
+            self.el_sidekey_instruction.hide();
             self.trunk_map();
-
+            return false;
         });
 
         $("#branch_label").click(function() {
             self.el_sidekey_save_img.hide();
             self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
+            self.el_sidekey_instruction.hide();
             self.branch_map();
+            return false;
         });
 
         $("#bside_label").click(function() {
             self.el_sidekey_save_img.hide();
             self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
+            self.el_sidekey_instruction.hide();
             self.bside_map();
+            return false;
         });
 
         $("#root_label").click(function() {
             self.el_sidekey_save_img.hide();
             self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
+            self.el_sidekey_instruction.hide();
             self.root_map();
+            return false;
         });
 
         $("#leaf_size_label").click(function() {
             self.el_sidekey_save_img.hide();
             self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
+            self.el_sidekey_instruction.hide();
             self.leaf_size_map();
+            return false;
         });
 
         $("#leaf_color_label").click(function() {
             self.el_sidekey_save_img.hide();
             self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
+            self.el_sidekey_instruction.hide();
             self.leaf_color_map();
+            return false;
         });
 
         $("#leaf_highlight_label").click(function() {
             self.el_sidekey_save_img.hide();
             self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
+            self.el_sidekey_instruction.hide();
             self.leaf_highlight_map();
+            return false;
         });
 
         $("#fruit_size_label").click(function() {
             self.el_sidekey_save_img.hide();
             self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
+            self.el_sidekey_instruction.hide();
             self.fruit_size_map();
-        });        
+            return false;
+        });
 
+        $("#sidekey_img").click(function() {
+            self.el_sidekey_save_img.hide();
+            self.el_sidekey_selection.hide();
+            self.el_sidekey_instruction.show();
+        });
     },
 
     binary_cat_operation: function(one_attr, comp, ori_attr){
