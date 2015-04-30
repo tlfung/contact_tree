@@ -72,6 +72,10 @@ table, th, td {
 	width:110px;
 }
 
+.mapping_finish{
+  width:50%;
+}
+
 .sidekey_label{
   cursor:pointer; 
   position:absolute;

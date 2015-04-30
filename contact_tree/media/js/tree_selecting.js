@@ -509,7 +509,7 @@ var SelectingView = Backbone.View.extend({
                 self.model.trigger('change:tree_structure');
                 self.el_submit_ego.removeAttr("disabled");
                 self.el_block_page.hide();
-                $( "#menu_dialog" ).dialog( "close" );
+                $("#menu_dialog").dialog("close");
 
                 self.model.trigger('change:selected_egos');
                 // self.model.trigger('change:display_egos');   

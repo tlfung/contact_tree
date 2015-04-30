@@ -22,8 +22,14 @@ var MappingView = Backbone.View.extend({
         this.el_block_page = $("#block_page");
         this.el_sidekey_submit = $("#sidekey_submit");
         this.el_sidekey_instruction = $("#sidekey_instruction");
-        
-        this.change_structure = 0;
+        this.el_sidekey_finish = $("#sidekey_finish");
+
+        this.current_user_mapping;
+        this.current_attr;
+        this.current_render_leaf_color;
+        this.current_render_roots_color;
+        this.current_attr_option;
+
         this.change_mapping = 0;
         $( "#sidekey_dialog" ).dialog({
             autoOpen: false,
@@ -34,43 +40,38 @@ var MappingView = Backbone.View.extend({
             modal: true,
             resizable: false,
             close: function(){
-                if(self.change_structure != 0 && self.change_mapping != 0){
-                    self.model.trigger('change:tree_structure');
-                }
-                else if(self.change_mapping != 0){
-                    var data_group = self.model.get("dataset_group");
-                    var now_attr = self.model.get("attribute");
-                    var now_mode = self.model.get("view_mode");
-                    var all_ego = self.model.get("selected_egos");
-                    var ego_list = [];
-                    
-                    for(var ego in all_ego){
-                        ego_list.push(ego);
-                    }
-                    var request_url = request_builder.restore_data(now_attr, ego_list, now_mode, attribute_mapping, data_group, all_ego);
-                    self.el_block_page.show();
-                    d3.json(request_url, function(result) {
-                        self.restructure(result);
-                        self.model.trigger('change:tree_structure');
-                    });
+                if(self.change_mapping != 2){
+                    mapping_color.render_leaf_color = JSON.parse(JSON.stringify(self.current_render_leaf_color));
+                    mapping_color.render_roots_color = JSON.parse(JSON.stringify(self.current_render_roots_color));                
+                    attribute_mapping = self.current_user_mapping;
+                    self.model.set({"attribute": self.current_attr});
+                    self.model.set({"attr_option": self.current_attr_option});
                 }
             }
         });
 
         $("#map").click(function() {
             self.el_mapping_img.attr('src', 'media/img/real_mix_tree.png');
-            $("#sidekey_dialog").dialog( "open" );
+            self.save_current_mapping();
+            $("#sidekey_dialog").dialog("open");
             self.el_sidekey_save_img.hide();
             self.el_sidekey_selection.hide();
             self.el_sidekey_operation.hide();
             self.el_mark_group.hide();
             self.el_sidekey_instruction.show();
-            self.change_structure = 0;
             self.change_mapping = 0;
             self.set_component();
-
         });
+        
+        this.model.bind('change:attribute', this.set_component);
+        this.model.bind('change:user_mapping', this.set_user_mapping);  
+        
+        self.set_save_function();
+        self.set_option();
+    },
 
+    set_save_function: function(){
+        var self = this;
         $("#save_label").click(function() {
             var save_user_mapping = self.model.get("user_mapping");
             if(save_user_mapping.length >= 5){
@@ -106,39 +107,29 @@ var MappingView = Backbone.View.extend({
             
         });
 
-        $("#use_label").click(function() { //!!! only change the mapping setting
-            // console.log(save_user_mapping);
-            var data_group = self.model.get("dataset_group");
+        $("#use_label").click(function(){
+            self.change_mapping = 1;
             var save_user_mapping = self.model.get("user_mapping");
             var now_attr = JSON.parse(JSON.stringify(save_user_mapping[this.value]["attr"]));
-            var now_mode = save_user_mapping[this.value]["mode"];
             var now_attr_map = JSON.parse(JSON.stringify(save_user_mapping[this.value]["map_info"]));
-            var all_ego = self.model.get("selected_egos");
-            var ego_list = [];
+            
             mapping_color.render_leaf_color = JSON.parse(JSON.stringify(save_user_mapping[this.value]["render_leaf_color"]));
             mapping_color.render_roots_color = JSON.parse(JSON.stringify(save_user_mapping[this.value]["render_roots_color"]));
-        
-            // self.el_sidekey_save_img.hide();
-            for(var ego in all_ego){
-                ego_list.push(ego);
-            }
-
-            var request_url = request_builder.restore_data(now_attr, ego_list, now_mode, now_attr_map, data_group, all_ego);
-            self.el_block_page.show();
-            d3.json(request_url, function(result) {
-                self.el_block_page.hide();
-                attribute_mapping = now_attr_map;
-                self.model.set({"attribute": now_attr});
-                self.restructure(result);
-                // self.model.trigger('change:attribute');
-            });            
             
-        });       
-        
-        this.model.bind('change:attribute', this.set_component);
-        this.model.bind('change:user_mapping', this.set_user_mapping);  
-        
-        self.set_option();
+            attribute_mapping = now_attr_map;
+            self.model.set({"attribute": now_attr});
+            self.set_component();
+        }); 
+
+    },
+
+    save_current_mapping: function(){
+        var self = this;
+        self.current_user_mapping = JSON.parse(JSON.stringify(attribute_mapping));
+        self.current_attr = JSON.parse(JSON.stringify(self.model.get("attribute")));
+        self.current_render_leaf_color = JSON.parse(JSON.stringify(mapping_color.render_leaf_color));
+        self.current_render_roots_color = JSON.parse(JSON.stringify(mapping_color.render_roots_color));
+        self.current_attr_option = JSON.parse(JSON.stringify(self.model.get("attr_option")));
     },
 
     set_user_mapping: function(){
@@ -224,6 +215,7 @@ var MappingView = Backbone.View.extend({
             self.el_sidekey_save_img.hide();
             self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
+            self.el_sidekey_finish.hide();
             self.el_sidekey_instruction.hide();
             self.trunk_map();
             return false;
@@ -233,6 +225,7 @@ var MappingView = Backbone.View.extend({
             self.el_sidekey_save_img.hide();
             self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
+            self.el_sidekey_finish.hide();
             self.el_sidekey_instruction.hide();
             self.branch_map();
             return false;
@@ -242,6 +235,7 @@ var MappingView = Backbone.View.extend({
             self.el_sidekey_save_img.hide();
             self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
+            self.el_sidekey_finish.hide();
             self.el_sidekey_instruction.hide();
             self.bside_map();
             return false;
@@ -251,6 +245,7 @@ var MappingView = Backbone.View.extend({
             self.el_sidekey_save_img.hide();
             self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
+            self.el_sidekey_finish.hide();
             self.el_sidekey_instruction.hide();
             self.root_map();
             return false;
@@ -260,6 +255,7 @@ var MappingView = Backbone.View.extend({
             self.el_sidekey_save_img.hide();
             self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
+            self.el_sidekey_finish.hide();
             self.el_sidekey_instruction.hide();
             self.leaf_size_map();
             return false;
@@ -269,6 +265,7 @@ var MappingView = Backbone.View.extend({
             self.el_sidekey_save_img.hide();
             self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
+            self.el_sidekey_finish.hide();
             self.el_sidekey_instruction.hide();
             self.leaf_color_map();
             return false;
@@ -278,6 +275,7 @@ var MappingView = Backbone.View.extend({
             self.el_sidekey_save_img.hide();
             self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
+            self.el_sidekey_finish.hide();
             self.el_sidekey_instruction.hide();
             self.leaf_highlight_map();
             return false;
@@ -287,6 +285,7 @@ var MappingView = Backbone.View.extend({
             self.el_sidekey_save_img.hide();
             self.el_sidekey_operation.hide();
             self.el_sidekey_submit.hide();
+            self.el_sidekey_finish.hide();
             self.el_sidekey_instruction.hide();
             self.fruit_size_map();
             return false;
@@ -296,6 +295,28 @@ var MappingView = Backbone.View.extend({
             self.el_sidekey_save_img.hide();
             self.el_sidekey_selection.hide();
             self.el_sidekey_instruction.show();
+        });
+
+        $(".mapping_finish").click(function() {
+            if(self.change_mapping != 0){
+                var data_group = self.model.get("dataset_group");
+                var now_attr = self.model.get("attribute");
+                var now_mode = self.model.get("view_mode");
+                var all_ego = self.model.get("selected_egos");
+                var ego_list = [];
+                
+                for(var ego in all_ego){
+                    ego_list.push(ego);
+                }
+                var request_url = request_builder.restore_data(now_attr, ego_list, now_mode, attribute_mapping, data_group, all_ego);
+                self.el_block_page.show();
+                d3.json(request_url, function(result) {
+                    self.restructure(result);
+                    self.model.trigger('change:tree_structure');
+                });
+            }
+            self.change_mapping = 2;
+            $("#sidekey_dialog").dialog("close");
         });
     },
 
@@ -1832,7 +1853,7 @@ var MappingView = Backbone.View.extend({
                         value: size_val,
                         slide: function( event, ui) {
                             var myid = this.id;
-                            var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop(); //!!!
+                            var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop();
                             var container_id = "#title_" + myid.split("attr_val_").pop();
                             var s_label = "#slider_label_" + myid.split("attr_val_").pop();
 
@@ -1888,7 +1909,7 @@ var MappingView = Backbone.View.extend({
                     value: size_val,
                     slide: function( event, ui) {
                         var myid = this.id;
-                        var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop(); //!!!
+                        var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop();
                         var container_id = "#title_" + myid.split("attr_val_").pop();
                         var s_label = "#slider_label_" + myid.split("attr_val_").pop();
 
@@ -2021,7 +2042,7 @@ var MappingView = Backbone.View.extend({
             }
 
             self.el_sidekey_submit.show();
-            self.el_sidekey_submit.text("Done");
+            self.el_sidekey_finish.show();
         }
 
         self.el_sidekeyselect.unbind();
@@ -2044,7 +2065,7 @@ var MappingView = Backbone.View.extend({
             }
 
             self.el_sidekey_submit.show();
-            self.el_sidekey_submit.text("Done");
+            self.el_sidekey_finish.show();
         });
     
         self.el_sidekey_submit.unbind();
@@ -2053,9 +2074,6 @@ var MappingView = Backbone.View.extend({
             console.log("in trunk submit");
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
-
-            // self.el_sidekey_submit.text("Update");
-            // self.el_sidekey_submit.attr("disabled", true);
             self.el_block_layer.show();
 
             self.binary_submit(attr_map["trunk"], self.el_sidekeyselect.val(), "trunk");                   
@@ -2111,7 +2129,7 @@ var MappingView = Backbone.View.extend({
             }                
 
             self.el_sidekey_submit.show();
-            self.el_sidekey_submit.text("Done");
+            self.el_sidekey_finish.show();
         }
 
         self.el_sidekeyselect.unbind();
@@ -2133,7 +2151,7 @@ var MappingView = Backbone.View.extend({
             }
             
             self.el_sidekey_submit.show();
-            self.el_sidekey_submit.text("Done");
+            self.el_sidekey_finish.show();
         });
 
         self.el_sidekey_submit.unbind();
@@ -2143,8 +2161,6 @@ var MappingView = Backbone.View.extend({
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
 
-            // self.el_sidekey_submit.text("Update");
-            // self.el_sidekey_submit.attr("disabled", true);
             self.el_block_layer.show();
 
             self.binary_submit(attr_map["bside"], self.el_sidekeyselect.val(), "bside");
@@ -2200,7 +2216,7 @@ var MappingView = Backbone.View.extend({
             }
 
             self.el_sidekey_submit.show();
-            self.el_sidekey_submit.text("Done");
+            self.el_sidekey_finish.show();
             
         }
 
@@ -2225,7 +2241,7 @@ var MappingView = Backbone.View.extend({
             }           
             
             self.el_sidekey_submit.show();
-            self.el_sidekey_submit.text("Done");
+            self.el_sidekey_finish.show();
             
         });
 
@@ -2331,7 +2347,7 @@ var MappingView = Backbone.View.extend({
             }
             
             self.el_sidekey_submit.show();
-            self.el_sidekey_submit.text("Done");
+            self.el_sidekey_finish.show();
         }
 
         self.el_sidekeyselect.unbind();
@@ -2358,7 +2374,7 @@ var MappingView = Backbone.View.extend({
             }
 
             self.el_sidekey_submit.show();
-            self.el_sidekey_submit.text("Done");
+            self.el_sidekey_finish.show();
             
         });
 
@@ -2422,7 +2438,7 @@ var MappingView = Backbone.View.extend({
             }
 
             self.el_sidekey_submit.show();
-            self.el_sidekey_submit.text("Done");
+            self.el_sidekey_finish.show();
         }
 
         self.el_sidekeyselect.unbind();
@@ -2446,7 +2462,7 @@ var MappingView = Backbone.View.extend({
             }
 
             self.el_sidekey_submit.show();
-            self.el_sidekey_submit.text("Done");
+            self.el_sidekey_finish.show();
             
         });
         
@@ -2504,7 +2520,7 @@ var MappingView = Backbone.View.extend({
             }
 
             self.el_sidekey_submit.show();
-            self.el_sidekey_submit.text("Done");
+            self.el_sidekey_finish.show();
         });
 
         self.el_sidekey_submit.unbind();
@@ -2575,7 +2591,7 @@ var MappingView = Backbone.View.extend({
             }
             
             self.el_sidekey_submit.show();
-            self.el_sidekey_submit.text("Done");
+            self.el_sidekey_finish.show();
         }
 
 
@@ -2601,7 +2617,7 @@ var MappingView = Backbone.View.extend({
             }
                         
             self.el_sidekey_submit.show();
-            self.el_sidekey_submit.text("Done");
+            self.el_sidekey_finish.show();
             
         });
 
@@ -2611,8 +2627,7 @@ var MappingView = Backbone.View.extend({
             console.log("in leaf_size submit");
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
-            // self.el_sidekey_submit.text("Update");
-            // self.el_sidekey_submit.attr("disabled", true);
+
             self.el_block_layer.show();
 
             self.size_submit(attr_map["leaf_size"], self.el_sidekeyselect.val(), "leaf_size");
@@ -2665,7 +2680,7 @@ var MappingView = Backbone.View.extend({
             }
             
             self.el_sidekey_submit.show();
-            self.el_sidekey_submit.text("Done");
+            self.el_sidekey_finish.show();
         }
 
         self.el_sidekeyselect.unbind();
@@ -2690,7 +2705,7 @@ var MappingView = Backbone.View.extend({
             }
 
             self.el_sidekey_submit.show();
-            self.el_sidekey_submit.text("Done");
+            self.el_sidekey_finish.show();
             
         });
         
@@ -2700,8 +2715,7 @@ var MappingView = Backbone.View.extend({
             console.log("in fruit_size submit");
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
-            // self.el_sidekey_submit.text("Update");
-            // self.el_sidekey_submit.attr("disabled", true);
+
             self.el_block_layer.show();
 
             self.size_submit(attr_map["fruit_size"], self.el_sidekeyselect.val(), "fruit_size");
@@ -2770,8 +2784,6 @@ var MappingView = Backbone.View.extend({
 
     restructure: function(data){
         var self = this;
-        self.change_structure = 1;
-        self.change_mapping = 1;
         tree_size = {};
         self.model.set({"tree_boundary":{}});
         self.model.trigger('change:attribute');
