@@ -22,6 +22,7 @@ var MappingView = Backbone.View.extend({
         this.el_block_page = $("#block_page");
         this.el_sidekey_submit = $("#sidekey_submit");
         
+        this.change_structure = 0;
         this.change_mapping = 0;
         $( "#sidekey_dialog" ).dialog({
             autoOpen: false,
@@ -32,14 +33,13 @@ var MappingView = Backbone.View.extend({
             modal: true,
             resizable: false,
             close: function(){
-                if(self.change_mapping != 0){
+                if(self.change_structure != 0 && self.change_mapping != 0){
                     self.model.trigger('change:tree_structure');
                 }
-                else{
+                else if(self.change_mapping != 0){
                     var data_group = self.model.get("dataset_group");
                     var now_attr = self.model.get("attribute");
                     var now_mode = self.model.get("view_mode");
-                    // var now_attr_map = JSON.parse(JSON.stringify(save_user_mapping[this.value]["map_info"]));
                     var all_ego = self.model.get("selected_egos");
                     var ego_list = [];
                     
@@ -63,6 +63,7 @@ var MappingView = Backbone.View.extend({
             self.el_sidekey_selection.hide();
             self.el_sidekey_operation.hide();
             self.el_mark_group.hide();
+            self.change_structure = 0;
             self.change_mapping = 0;
             self.set_component();
 
@@ -2024,6 +2025,7 @@ var MappingView = Backbone.View.extend({
     
         self.el_sidekey_submit.unbind();
         self.el_sidekey_submit.click(function(){
+            self.change_mapping = 1;
             console.log("in trunk submit");
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
@@ -2112,6 +2114,7 @@ var MappingView = Backbone.View.extend({
 
         self.el_sidekey_submit.unbind();
         self.el_sidekey_submit.click(function(){
+            self.change_mapping = 1;
             console.log("in bside submit");
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
@@ -2204,13 +2207,12 @@ var MappingView = Backbone.View.extend({
 
         self.el_sidekey_submit.unbind();
         self.el_sidekey_submit.click(function(){
+            self.change_mapping = 1;
             console.log("in branch submit");
             var data_mode = self.model.get("view_mode");
             var ego_selections = self.model.get("selected_egos");
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
-            // self.el_sidekey_submit.text("Update");
-            // self.el_sidekey_submit.attr("disabled", true);
             self.el_block_layer.show();
 
             if("branch" in attribute_mapping){
@@ -2249,7 +2251,7 @@ var MappingView = Backbone.View.extend({
                     update_info += ":=" + ego;
                 }
 
-                attr_map[comp] = new_attr;
+                attr_map["branch"] = self.el_sidekeyselect.val();
                 self.model.set({"attribute": attr_map});
                 self.set_component();
                 self.el_block_page.hide();
@@ -2339,11 +2341,10 @@ var MappingView = Backbone.View.extend({
     
         self.el_sidekey_submit.unbind();
         self.el_sidekey_submit.click(function(){
+            self.change_mapping = 1;
             console.log("in root submit");
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
-            // self.el_sidekey_submit.text("Update");
-            // self.el_sidekey_submit.attr("disabled", true);
             
             self.el_block_layer.show();
 
@@ -2427,9 +2428,8 @@ var MappingView = Backbone.View.extend({
         
         self.el_sidekey_submit.unbind();
         self.el_sidekey_submit.click(function(){
+            self.change_mapping = 1;
             console.log("in leaf_color submit");
-            // self.el_sidekey_submit.text("Update");
-            // self.el_sidekey_submit.attr("disabled", true);
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
             self.el_block_layer.show();
@@ -2485,6 +2485,7 @@ var MappingView = Backbone.View.extend({
 
         self.el_sidekey_submit.unbind();
         self.el_sidekey_submit.click(function(){
+            self.change_mapping = 1;
             console.log("in highlight submit");
             var attr_map = self.model.get("attribute");
             var attr_opt = self.model.get("attr_option");
@@ -2582,6 +2583,7 @@ var MappingView = Backbone.View.extend({
 
         self.el_sidekey_submit.unbind();
         self.el_sidekey_submit.click(function(){
+            self.change_mapping = 1;
             console.log("in leaf_size submit");
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
@@ -2670,6 +2672,7 @@ var MappingView = Backbone.View.extend({
         
         self.el_sidekey_submit.unbind();
         self.el_sidekey_submit.click(function(){
+            self.change_mapping = 1;
             console.log("in fruit_size submit");
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
@@ -2709,8 +2712,13 @@ var MappingView = Backbone.View.extend({
                     $(cmpt_id).attr('style', 'background: rgb(245, 244, 174);');
             }
             $(".sidekey_map").css('visibility', 'visible');
-            
         }
+        var single_attr = [];
+        // set model attr_option whenever changing attribute
+        for(a in myattribute){
+            single_attr.push(myattribute[a]);
+        }
+        self.model.set({"attr_option": single_attr});
         
     },
 
@@ -2738,6 +2746,7 @@ var MappingView = Backbone.View.extend({
 
     restructure: function(data){
         var self = this;
+        self.change_structure = 1;
         self.change_mapping = 1;
         tree_size = {};
         self.model.set({"tree_boundary":{}});

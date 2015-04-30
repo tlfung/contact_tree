@@ -107,8 +107,6 @@ def test_type(table, attr_type):
                 # if attr_info[f]["COUNT"] > 20:
                 #     final_attr_info["incat"].append(f)
                 attr_info[field]["RANGE"] = attr_info[field]["COUNT"]
-                # attr_info[field]["MIN"] = attr_info[field]["MIN"].decode('utf-8')
-                # attr_info[field]["MAX"] = attr_info[field]["MAX"].decode('utf-8')
                 useful_data += 1
 
             elif attr_type[field] == 'numerical':
@@ -129,8 +127,6 @@ def test_type(table, attr_type):
                     attr_info[field][ff.split("(")[0]] = col_val
                 if attr_info[field]["COUNT"] > 2:
                     final_attr_info["inbool"].append(field)
-                # attr_info[field]["MIN"] = attr_info[field]["MIN"].decode('utf-8')
-                # attr_info[field]["MAX"] = attr_info[field]["MAX"].decode('utf-8')
                 attr_info[field]["RANGE"] = attr_info[field]["COUNT"]
                 useful_data += 1
             else:
@@ -523,7 +519,8 @@ def get_list_ego(request): #!!!
                 else:
                     e_list[e[myego]] = []
                     e_list[e[myego]].append(e["dataset"])
-                    
+            for e in e_list:
+                e_list[e].append("all")
         final_return.append(e_list) # for all the egoid
 
         # get the default mapping
@@ -663,7 +660,6 @@ def get_list_ego(request): #!!!
         default_attr["root"] = "none"
         default_attr["highlight"] = "none"
 
-        print "======", default_attr
         final_return.append(default_attr)
 
         # get all the information for the attributes
@@ -675,6 +671,7 @@ def get_list_ego(request): #!!!
             if info['type'] == "boolean" or info['type'] == "categorical" or info['attr_range'] < 20:
                 infocur = db.query('SELECT DISTINCT(`' + info['attr'] + '`) FROM ' + data_table + ' WHERE `' + info['attr'] + '` != "" ORDER BY(`' + info['attr'] + '`);')
                 attr_detail = infocur.fetchall()
+                print "======", info['attr']
                 if info['min'].isdigit():
                     for d in attr_detail:
                         detail_array.append(int(d[info['attr']]))  
@@ -1069,12 +1066,12 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
             continue
         ego = label.split("_of_")[0]
         dataset = label.split("_of_")[1]
-        if ego_group != "all" and dataset == "all":
-            data_info["done"] = 0
-            continue
-        if ego_group == "all" and dataset != "all":
-            data_info["done"] = 0
-            continue
+        # if ego_group != "all" and dataset == "all":
+        #     data_info["done"] = 0
+        #     continue
+        # if ego_group == "all" and dataset != "all":
+        #     data_info["done"] = 0
+        #     continue
         if ego in select_ego:
             for record in data_info["record"]:
                 for compt in attr:
@@ -1243,7 +1240,7 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
                         else:
                             record[highlight_index] = record[ori_index[compt]]
                 # update_ctree_data[session][data_table][label]["record"].append(record)
-        else:
+        else: #!!!
             data_info["done"] = 0
 
     if len(layer_count) != 0 and max(layer_count) != last_layer:
@@ -1297,6 +1294,7 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
         user_ctree_data[session][data_table]["layer_" + ego_group] = -1
         last_layer = -1
 
+    
     for d in all_data:
         if index_found == 0:
             for col in d:
@@ -1312,6 +1310,18 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
 
         if ego_group != "all":
             dataset = d["dataset"]
+            record_all = str(d['egoid']) + "_of_all"
+            if record_all not in user_ctree_data[session][data_table]:
+                user_ctree_data[session][data_table][record_all] = dict() 
+                user_ctree_data[session][data_table][record_all]["record"] = []
+                user_ctree_data[session][data_table][record_all]["done"] = -1
+            elif user_ctree_data[session][data_table][record_all]["done"] == 1:
+                return
+            
+            elif user_ctree_data[session][data_table][record_all]["done"] == 0: # has record but not being updated yet
+                user_ctree_data[session][data_table][record_all]["record"] = []
+                user_ctree_data[session][data_table][record_all]["done"] = -1
+
         record_label = str(d['egoid']) + "_of_" + dataset
 
         if record_label not in user_ctree_data[session][data_table]:
@@ -1500,6 +1510,8 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
                     ctree_record[highlight_index] = d[attr[compt]]
             
         user_ctree_data[session][data_table][record_label]["record"].append(ctree_record)
+        if ego_group != "all":
+            user_ctree_data[session][data_table][record_all]["record"].append(ctree_record)
 
     # if user_ctree_data[session][data_table]["layer_" + ego_group] == -1:
     if len(layer_count) != 0 and max(layer_count) != last_layer:
@@ -1529,10 +1541,7 @@ def restore_ctree_mapping(user_ctree_data, ego_list, table, attr, mapping, group
        
         ego = label.split("_of_")[0]
         dataset = label.split("_of_")[1]
-        if group != "all" and dataset == "all":
-            continue
-        if group == "all" and dataset != "all":
-            continue
+        
         if ego in ego_list:   
             last_use_ego[session][data_table][label] = data_info
         # print data_info
@@ -2138,8 +2147,8 @@ def one_contact_update(request):
             user_ctree_data[session] = dict()
 
         # print 'SELECT * FROM ' + data_table + ' WHERE egoid="' + ego + '" ORDER BY (e_id);'
-        cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
-        stick_unique = cur.fetchone()["alter_info"]
+        # cur = db.query('SELECT `alter_info` FROM dataset_collection WHERE dataset= "' + data_table + '" and attr="' + attr['bside'] + '";')
+        # stick_unique = cur.fetchone()["alter_info"]
         precur = db.query('SELECT * FROM ' + data_table + ' WHERE egoid="' + ego + '" ORDER BY (e_id);')
         all_data = precur.fetchall()
     
@@ -2604,3 +2613,33 @@ def is_empty(any_structure):
 
 def takeClosest(num, collection):
    return min(collection,key=lambda x:abs(x-num))
+
+def memcahe_upload(request):
+    pre_cache = dict()
+    if request.GET.get('memcahe'):
+        info = request.GET['memcahe'].split(":-")
+        cache_key = info[0]
+        cache_time = 3600 # time to live in seconds
+        data = info[1]
+        cache.set(cache_key, data, cache_time)
+        result = cache.get(cache_key)
+    else:
+        raise Http404
+    # pre_cache[cache_key] = data
+    return_json = simplejson.dumps({cache_key: data}, indent=4, use_decimal=True)
+    # print return_json
+    return HttpResponse(return_json)
+
+def memcahe_download(request):
+    pre_cache = dict()
+    if request.GET.get('memcahe'):
+        cache_key = request.GET['memcahe']
+        result = cache.get(cache_key)
+        # print "**********", result
+        pre_cache[cache_key] = result
+    else:
+        raise Http404
+    
+    return_json = simplejson.dumps(pre_cache, indent=4, use_decimal=True)
+    # print return_json
+    return HttpResponse(return_json)

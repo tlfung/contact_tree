@@ -98,7 +98,6 @@ var Tree_Model = Backbone.Model.extend({
 
         var set_default_attr = function(data){
           	var single_attr = [];
-          	// self.set({"attr_option": data});
           	self.set({"attribute": data}, {silent: true});
           	for(a in data){
             	single_attr.push(data[a]);
@@ -110,24 +109,16 @@ var Tree_Model = Backbone.Model.extend({
         	var mode = self.get("view_mode");
         	var group = self.get("dataset_group");
         	component_attribute[mode] = {};
-        	if(group == "dataset"){
-        		for(a in data){
-        			if(a != "dataset")
-	        			component_attribute[mode][a] = data[a];
-	        	}
+        	for(a in data){
+        		component_attribute[mode][a] = data[a];
         	}
-        	else{
-        		for(a in data){
-	        		component_attribute[mode][a] = data[a];
-	        	}
-        	}
-        	
+
         	component_attribute[mode]["none"] = [["none"], 0, 0, 0, 1, "none"];
         };
 	    	   
 	    var request = table + ":-" + group;
 	    var request_url = request_builder.datatable(table, group);
-	    // var request_url = "datatable/?table="+encodeURIComponent(request);
+	    
 	    d3.json(request_url, function(result){
 	        in_change_mode = 0;
 	        set_ego_list_json(result[0]);
