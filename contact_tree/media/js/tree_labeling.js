@@ -169,12 +169,13 @@ var LabelView = Backbone.View.extend({
         if(group != "all"){
             $('.label_checkbox').change(function() {
                 self.temp_selecting = [];
-                var on_ego = this.id.split("_")[1];
-                var label_class_checked = '#sub_' + on_ego +':checked';
+                var on_ego_id = this.id.split("_")[1];
+                var on_ego = this.attributes["name"].value;
+                var label_class_checked = '#sub_' + on_ego_id +':checked';
                 $(label_class_checked).each(function(){
                     var e = this.value.split("_")[0];
                     var c = this.value.split("_")[1];
-                    on_ego = this.attributes["name"].value;
+                    // on_ego = this.attributes["name"].value;
                     self.temp_selecting.push(c);
                 });
                 self.label_display[on_ego] = self.temp_selecting;
