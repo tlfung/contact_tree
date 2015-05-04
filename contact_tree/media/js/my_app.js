@@ -70,7 +70,7 @@ function event_setting(){
             share_link = window.location.href + "share_id=" + session_id;
         
         var share_window = prompt("Here is the share link:", share_link);
-        window.location.href = share_link;
+        window.location.href = window.location.href + "share_id=" + session_id;
 
     });
     
@@ -177,13 +177,13 @@ var MyApp = function MyApp(){
             document.cookie = "session_id=" + session_id.toString() + ";"
         }
     }
-  
-    // if(session_id == 2184585863724351){
-    //     session_id = 3184585863724355;
-    //     document.cookie = "session_id=" + session_id.toString() + ";"
-    //     first_use = 0;
-    //     document.cookie = "mode=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    // }
+
+    if(session_id == 8407169205136597){
+        session_id = 8807169205136597;
+        document.cookie = "session_id=" + session_id.toString() + ";"
+        first_use = 0;
+        document.cookie = "mode=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
     
     // get the share url
     var current_url = window.location.href;
@@ -205,6 +205,7 @@ var MyApp = function MyApp(){
 
     // initial drawing canvas
     var myCanvas = drawing_canvas.main_canvas;
+    var initial_clicking_grid = [];
 
     // set drawing canvas size
     myCanvas.height = $(window).height()-$("#header").height()-$("#top_list").height()-$("#footer").height()-$("#history").height()-45;
@@ -224,8 +225,15 @@ var MyApp = function MyApp(){
 
     // set the middle position of drawing canvas
     drawing_canvas.middle = (myCanvas.width/0.15)/2;
-    // self.model.trigger('change:snapshot');
-   
+    // initial clicking grid to -1
+    for(var x = 0; x <= Math.round(myCanvas.width/1.5); x++){
+        initial_clicking_grid.push([]);
+        for(var y = 0; y <= Math.round(myCanvas.height/1.5); y++){
+            initial_clicking_grid[x][y] = -1;
+        }
+    }
+    self.model.set({"canvas_grid":initial_clicking_grid});
+
     // adjust when resize
     window.onresize = function(event) {
         var myCanvas = drawing_canvas.main_canvas;

@@ -471,7 +471,225 @@ def get_dataset_mode(request):
     # print json
     return HttpResponse(return_json)
 
-def get_list_ego(request): #!!!
+
+def find_default_mapping(data_table):
+    deafult_mapping = dict()
+    db = DB()
+    deafult_mapping["stick"] = "alterid"
+
+    alter_cat_attr = []
+    alter_num_attr = []
+    all_other_attr = []
+
+    cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" AND `type` != "id" AND attr_range > 1 AND dataset="' + data_table + '" ORDER BY attr_range;')
+    all_attr = cur.fetchall()
+
+    for relate in all_attr:
+        if relate['alter_info'] == "1":
+            if relate['type'] == "numerical":
+                alter_num_attr.append(relate['attr'])
+            else:
+                alter_cat_attr.append(relate['attr'])
+        else:
+            all_other_attr.append(relate['attr'])
+            
+    len_alter_cat_attr = len(alter_cat_attr)
+    len_alter_num_attr = len(alter_num_attr)
+    len_all_other_attr = len(all_other_attr)
+
+    if len_alter_cat_attr >= 3:
+        deafult_mapping["trunk"] = alter_cat_attr[0]
+        deafult_mapping["bside"] = alter_cat_attr[1]
+        deafult_mapping["branch"] = alter_cat_attr[-1]
+
+    elif len_alter_cat_attr == 2:
+        deafult_mapping["trunk"] = alter_cat_attr[0]
+        deafult_mapping["bside"] = alter_cat_attr[1]
+        if len_alter_num_attr > 0:
+            deafult_mapping["branch"] = alter_num_attr[-1]
+        else:
+            deafult_mapping["bside"] = all_other_attr[0]
+            deafult_mapping["branch"] = alter_cat_attr[-1]
+
+    elif len_alter_cat_attr == 1:
+        deafult_mapping["trunk"] = alter_cat_attr[0]
+        if len_alter_num_attr > 1:
+            deafult_mapping["bside"] = alter_num_attr[0]
+            deafult_mapping["branch"] = alter_num_attr[-1]
+        elif len_alter_num_attr > 0:
+            deafult_mapping["branch"] = alter_num_attr[-1]
+            deafult_mapping["bside"] = all_other_attr[0]
+        else:
+            deafult_mapping["branch"] = all_other_attr[-1]
+            deafult_mapping["bside"] = all_other_attr[0]
+    # if no any attr in alter_cat_attr
+    elif len_alter_num_attr >= 3:
+        deafult_mapping["trunk"] = alter_num_attr[0]
+        deafult_mapping["bside"] = alter_num_attr[1]
+        deafult_mapping["branch"] = alter_num_attr[-1]
+    elif len_alter_num_attr == 2:
+        deafult_mapping["trunk"] = alter_num_attr[0]
+        deafult_mapping["branch"] = alter_num_attr[1]
+        deafult_mapping["bside"] = all_other_attr[0]
+    elif len_alter_num_attr == 1:
+        deafult_mapping["trunk"] = alter_num_attr[0]
+        deafult_mapping["branch"] = all_other_attr[-1]
+        deafult_mapping["bside"] = all_other_attr[0]
+    # use all the other attributes
+    else:
+        deafult_mapping["trunk"] = all_other_attr[0]
+        deafult_mapping["branch"] = all_other_attr[-1]
+        deafult_mapping["bside"] = all_other_attr[1]
+
+
+    deafult_mapping["fruit_size"] = "none"
+    deafult_mapping["leaf_color"] = "none"
+    deafult_mapping["leaf_size"] = "none"
+    deafult_mapping["root"] = "none"
+    deafult_mapping["highlight"] = "none"
+
+    return deafult_mapping
+
+def find_default_mapping_old(data_table):
+    default_attr = dict()
+    default_attr["stick"] = "alterid"
+    db = DB()
+    cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range > 1 and attr_range < 20 and `type`="categorical" and dataset="' + data_table + '" and `alter_info`="1" ORDER BY attr_range;')
+    all_attr = cur.fetchall()
+
+    candidate1 = []
+    for relate in all_attr:
+        candidate1.append(relate['attr'])
+
+    required_cmpt = ["trunk", "bside", "branch"]
+    if len(candidate1) >= 3:
+        default_attr["trunk"] = candidate1[0]
+        default_attr["bside"] = candidate1[1]
+        default_attr["branch"] = candidate1[-1]
+        
+    elif len(candidate1) == 2:
+        default_attr["trunk"] = candidate1[0]
+        default_attr["bside"] = candidate1[1]
+
+        cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range >= 20 and dataset="' + data_table + '" and `alter_info`="1" and `type`="numerical" ORDER BY attr_range;')
+        all_attr = cur.fetchall()
+        # candidate2 = dict()
+        candidate2 = []
+        for relate in all_attr:
+            candidate2.append(relate['attr'])
+            # candidate2[relate['attr']] = int(relate["attr_range"])
+        if len(candidate2) > 0:
+            default_attr["branch"] = candidate2[-1]
+        else:
+            default_attr["branch"] = candidate1[-1]
+            cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + data_table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
+            all_attr = cur.fetchone()
+            default_attr["bside"] = all_attr['attr']
+
+    elif len(candidate1) == 1:
+        default_attr["trunk"] = candidate1[0]
+
+        cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range >= 20 and dataset="' + data_table + '" and `alter_info`="1" and `type`="numerical" ORDER BY attr_range;')
+        all_attr = cur.fetchall()
+        # candidate2 = dict()
+        candidate2 = []
+        for relate in all_attr:
+            candidate2.append(relate['attr'])
+            # candidate2[relate['attr']] = int(relate["attr_range"])
+        if len(candidate2) > 1:
+            default_attr["bside"] = candidate2[0]
+            default_attr["branch"] = candidate2[-1]
+        elif len(candidate2) > 0:
+            default_attr["branch"] = candidate2[-1]
+
+            cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + data_table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
+            all_attr = cur.fetchall()
+            # candidate3 = dict()
+            candidate3 = []
+            # max_group3 = 0
+            for relate in all_attr:
+                # max_group3 = int(relate["attr_range"])
+                candidate3.append(relate['attr'])
+                # candidate3[relate['attr']] = int(relate["attr_range"])
+            if len(candidate3) > 0:
+                default_attr["bside"] = candidate3[0]
+        else:
+            cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + data_table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
+            all_attr = cur.fetchall()
+            # candidate3 = dict()
+            candidate3 = []
+            # max_group3 = 0
+            for relate in all_attr:
+                # max_group3 = int(relate["attr_range"])
+                candidate3.append(relate['attr'])
+                # candidate3[relate['attr']] = int(relate["attr_range"])
+            if len(candidate3) > 0:
+                default_attr["bside"] = candidate3[0]
+                default_attr["branch"] = candidate3[-1]
+
+    elif len(candidate1) == 0:
+        cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range >= 20 and dataset="' + data_table + '" and `alter_info`="1" and `type`="numerical" ORDER BY attr_range;')
+        all_attr = cur.fetchall()
+        # candidate2 = dict()
+        candidate2 = []
+        for relate in all_attr:
+            candidate2.append(relate['attr'])
+            # candidate2[relate['attr']] = int(relate["attr_range"])
+        if len(candidate2) > 2:
+            default_attr["trunk"] = candidate2[0]
+            default_attr["bside"] = candidate2[1]
+            default_attr["branch"] = candidate2[-1]
+        elif len(candidate2) == 2:
+            default_attr["trunk"] = candidate2[0]
+            default_attr["branch"] = candidate2[-1]
+            cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + data_table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
+            all_attr = cur.fetchall()
+            # candidate3 = dict()
+            candidate3 = []
+            # max_group3 = 0
+            for relate in all_attr:
+                # max_group3 = int(relate["attr_range"])
+                candidate3.append(relate['attr'])
+            if len(candidate3) > 0:
+                default_attr["bside"] = candidate2[1]
+        elif len(candidate2) == 1:
+            default_attr["trunk"] = candidate2[0]
+            # default_attr["branch"] = candidate2[1]
+            cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + data_table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
+            all_attr = cur.fetchall()
+            # candidate3 = dict()
+            candidate3 = []
+            # max_group3 = 0
+            for relate in all_attr:
+                # max_group3 = int(relate["attr_range"])
+                candidate3.append(relate['attr'])
+            if len(candidate3) > 0:
+                default_attr["bside"] = candidate3[0]
+                default_attr["branch"] = candidate3[-1]
+        else:
+            cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + data_table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
+            all_attr = cur.fetchall()
+            # candidate3 = dict()
+            candidate3 = []
+            # max_group3 = 0
+            for relate in all_attr:
+                # max_group3 = int(relate["attr_range"])
+                candidate3.append(relate['attr'])
+            if len(candidate3) > 0:
+                default_attr["trunk"] = candidate3[0]
+                default_attr["bside"] = candidate3[1]
+                default_attr["branch"] = candidate3[-1]
+
+    default_attr["fruit_size"] = "none"
+
+    default_attr["leaf_color"] = "none"
+    default_attr["leaf_size"] = "none"
+    default_attr["root"] = "none"
+    default_attr["highlight"] = "none"
+
+    return default_attr
+
+def get_list_ego(request):
     final_return = []
     e_list = dict()    
     default_attr = dict()
@@ -524,146 +742,11 @@ def get_list_ego(request): #!!!
         final_return.append(e_list) # for all the egoid
 
         # get the default mapping
-        default_attr["stick"] = "alterid"
-
-        cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range > 1 and attr_range < 20 and `type`="categorical" and dataset="' + data_table + '" and `alter_info`="1" ORDER BY attr_range;')
-        all_attr = cur.fetchall()
-
-        
-        candidate1 = []
-        for relate in all_attr:
-            candidate1.append(relate['attr'])
-
-        required_cmpt = ["trunk", "bside", "branch"]
-        if len(candidate1) >= 3:
-            default_attr["trunk"] = candidate1[0]
-            default_attr["bside"] = candidate1[1]
-            default_attr["branch"] = candidate1[-1]
-            
-        elif len(candidate1) == 2:
-            default_attr["trunk"] = candidate1[0]
-            default_attr["bside"] = candidate1[1]
-
-            cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range >= 20 and dataset="' + data_table + '" and `alter_info`="1" and `type`="numerical" ORDER BY attr_range;')
-            all_attr = cur.fetchall()
-            # candidate2 = dict()
-            candidate2 = []
-            for relate in all_attr:
-                candidate2.append(relate['attr'])
-                # candidate2[relate['attr']] = int(relate["attr_range"])
-            if len(candidate2) > 0:
-                default_attr["branch"] = candidate2[-1]
-            else:
-                default_attr["branch"] = candidate1[-1]
-                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + data_table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
-                all_attr = cur.fetchone()
-                default_attr["bside"] = all_attr['attr']
-
-        elif len(candidate1) == 1:
-            default_attr["trunk"] = candidate1[0]
-
-            cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range >= 20 and dataset="' + data_table + '" and `alter_info`="1" and `type`="numerical" ORDER BY attr_range;')
-            all_attr = cur.fetchall()
-            # candidate2 = dict()
-            candidate2 = []
-            for relate in all_attr:
-                candidate2.append(relate['attr'])
-                # candidate2[relate['attr']] = int(relate["attr_range"])
-            if len(candidate2) > 1:
-                default_attr["bside"] = candidate2[0]
-                default_attr["branch"] = candidate2[-1]
-            elif len(candidate2) > 0:
-                default_attr["branch"] = candidate2[-1]
-
-                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + data_table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
-                all_attr = cur.fetchall()
-                # candidate3 = dict()
-                candidate3 = []
-                # max_group3 = 0
-                for relate in all_attr:
-                    # max_group3 = int(relate["attr_range"])
-                    candidate3.append(relate['attr'])
-                    # candidate3[relate['attr']] = int(relate["attr_range"])
-                if len(candidate3) > 0:
-                    default_attr["bside"] = candidate3[0]
-            else:
-                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + data_table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
-                all_attr = cur.fetchall()
-                # candidate3 = dict()
-                candidate3 = []
-                # max_group3 = 0
-                for relate in all_attr:
-                    # max_group3 = int(relate["attr_range"])
-                    candidate3.append(relate['attr'])
-                    # candidate3[relate['attr']] = int(relate["attr_range"])
-                if len(candidate3) > 0:
-                    default_attr["bside"] = candidate3[0]
-                    default_attr["branch"] = candidate3[-1]
-
-        elif len(candidate1) == 0:
-            cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and attr_range >= 20 and dataset="' + data_table + '" and `alter_info`="1" and `type`="numerical" ORDER BY attr_range;')
-            all_attr = cur.fetchall()
-            # candidate2 = dict()
-            candidate2 = []
-            for relate in all_attr:
-                candidate2.append(relate['attr'])
-                # candidate2[relate['attr']] = int(relate["attr_range"])
-            if len(candidate2) > 2:
-                default_attr["trunk"] = candidate2[0]
-                default_attr["bside"] = candidate2[1]
-                default_attr["branch"] = candidate2[-1]
-            elif len(candidate2) == 2:
-                default_attr["trunk"] = candidate2[0]
-                default_attr["branch"] = candidate2[-1]
-                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + data_table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
-                all_attr = cur.fetchall()
-                # candidate3 = dict()
-                candidate3 = []
-                # max_group3 = 0
-                for relate in all_attr:
-                    # max_group3 = int(relate["attr_range"])
-                    candidate3.append(relate['attr'])
-                if len(candidate3) > 0:
-                    default_attr["bside"] = candidate2[1]
-            elif len(candidate2) == 1:
-                default_attr["trunk"] = candidate2[0]
-                # default_attr["branch"] = candidate2[1]
-                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + data_table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
-                all_attr = cur.fetchall()
-                # candidate3 = dict()
-                candidate3 = []
-                # max_group3 = 0
-                for relate in all_attr:
-                    # max_group3 = int(relate["attr_range"])
-                    candidate3.append(relate['attr'])
-                if len(candidate3) > 0:
-                    default_attr["bside"] = candidate3[0]
-                    default_attr["branch"] = candidate3[-1]
-            else:
-                cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" and dataset="' + data_table + '" and `alter_info`is NULL and (`type`="numerical" or `type`="categorical") ORDER BY attr_range;')
-                all_attr = cur.fetchall()
-                # candidate3 = dict()
-                candidate3 = []
-                # max_group3 = 0
-                for relate in all_attr:
-                    # max_group3 = int(relate["attr_range"])
-                    candidate3.append(relate['attr'])
-                if len(candidate3) > 0:
-                    default_attr["trunk"] = candidate3[0]
-                    default_attr["bside"] = candidate3[1]
-                    default_attr["branch"] = candidate3[-1]
-
-        default_attr["fruit_size"] = "none"
-
-        default_attr["leaf_color"] = "none"
-        default_attr["leaf_size"] = "none"
-        default_attr["root"] = "none"
-        default_attr["highlight"] = "none"
+        default_attr = find_default_mapping(data_table)
 
         final_return.append(default_attr)
 
         # get all the information for the attributes
-        # cur = db.query('SELECT * FROM dataset_collection WHERE attr!="dataset" and dataset="' + data_table + '";')
         cur = db.query('SELECT * FROM dataset_collection WHERE dataset="' + data_table + '";')
         attr_info = cur.fetchall()
         for info in attr_info:
@@ -671,7 +754,6 @@ def get_list_ego(request): #!!!
             if info['type'] == "boolean" or info['type'] == "categorical" or info['attr_range'] < 20:
                 infocur = db.query('SELECT DISTINCT(`' + info['attr'] + '`) FROM ' + data_table + ' WHERE `' + info['attr'] + '` != "" ORDER BY(`' + info['attr'] + '`);')
                 attr_detail = infocur.fetchall()
-                print "======", info['attr']
                 if info['min'].isdigit():
                     for d in attr_detail:
                         detail_array.append(int(d[info['attr']]))  
