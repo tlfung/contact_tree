@@ -973,7 +973,7 @@ def duplicate_stick(all_data, attr, branch_layer):
 
 ################################### local cache #######################################
 def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_ego):
-    print "***** set_ctree_mapping *****"    
+    # print "***** set_ctree_mapping *****"    
     db = DB()
     binary_index = dict()
     branch_order_index = []
@@ -1193,7 +1193,7 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
 
 
 def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_group):
-    print "****** insert_ctree_mapping ******"
+    # print "****** insert_ctree_mapping ******"
     db = DB()
     binary_index = dict()
     branch_order_index = []
@@ -1471,7 +1471,7 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
 
 
 def restore_ctree_mapping(user_ctree_data, ego_list, table, attr, mapping, group):
-    print "****** restore_ctree_mapping ******"
+    # print "****** restore_ctree_mapping ******"
     data_table = table.split("_of_")[1]
     session = table.split("_of_")[0]
     last_use_ego = {session: {data_table: {}}}

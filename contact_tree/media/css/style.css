@@ -76,6 +76,15 @@ table, th, td {
   width:50%;
 }
 
+.instruction_map{
+  font-size:18px;
+  border:1px solid;
+  border-radius:5px;
+  background: rgb(245, 244, 174);
+  /*background: rgb(252, 180, 183);*/
+  padding: 0 3px;
+}
+
 .sidekey_label{
   cursor:pointer; 
   position:absolute;
@@ -84,7 +93,6 @@ table, th, td {
   border-radius:5;
   background: gray;*/
 }
-
 
 .sidekey_cmpt{
   font-size:18px;

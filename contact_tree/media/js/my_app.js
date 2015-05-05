@@ -178,12 +178,12 @@ var MyApp = function MyApp(){
         }
     }
 
-    if(session_id == 8407169205136597){
-        session_id = 8807169205136597;
-        document.cookie = "session_id=" + session_id.toString() + ";"
-        first_use = 0;
-        document.cookie = "mode=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    }
+    // if(session_id == 8407169205136597){
+    //     session_id = 8807169205136597;
+    //     document.cookie = "session_id=" + session_id.toString() + ";"
+    //     first_use = 0;
+    //     document.cookie = "mode=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    // }
     
     // get the share url
     var current_url = window.location.href;
