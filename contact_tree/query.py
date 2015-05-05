@@ -1,5 +1,6 @@
 from datetime import date, timedelta, datetime
 from django.http import Http404, HttpResponse, HttpResponseRedirect
+from django.views.decorators.csrf import csrf_exempt
 from django.core.cache import cache
 import os.path
 import csv
@@ -12,14 +13,13 @@ import time
 import collections
 import warnings 
 from operator import *
-from django.views.decorators.csrf import csrf_exempt
 import hashlib
 import operator
 import json
 import math
 import copy
 import time
-import chardet
+# import chardet
 
 warnings.filterwarnings(action='ignore', category=MySQLdb.Warning)
 
