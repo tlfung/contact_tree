@@ -40,12 +40,27 @@ var MappingView = Backbone.View.extend({
             modal: true,
             resizable: false,
             close: function(){
-                if(self.change_mapping != 2){
-                    mapping_color.render_leaf_color = JSON.parse(JSON.stringify(self.current_render_leaf_color));
-                    mapping_color.render_roots_color = JSON.parse(JSON.stringify(self.current_render_roots_color));                
-                    attribute_mapping = self.current_user_mapping;
-                    self.model.set({"attribute": self.current_attr});
-                    self.model.set({"attr_option": self.current_attr_option});
+                if(self.change_mapping != 2 && self.change_mapping != 0){
+                    // mapping_color.render_leaf_color = JSON.parse(JSON.stringify(self.current_render_leaf_color));
+                    // mapping_color.render_roots_color = JSON.parse(JSON.stringify(self.current_render_roots_color));                
+                    // attribute_mapping = self.current_user_mapping;
+                    // self.model.set({"attribute": self.current_attr});
+                    // self.model.set({"attr_option": self.current_attr_option});
+                    var data_group = self.model.get("dataset_group");
+                    var now_attr = self.model.get("attribute");
+                    var now_mode = self.model.get("view_mode");
+                    var all_ego = self.model.get("selected_egos");
+                    var ego_list = [];
+                    
+                    for(var ego in all_ego){
+                        ego_list.push(ego);
+                    }
+                    var request_url = request_builder.restore_data(now_attr, ego_list, now_mode, attribute_mapping, data_group, all_ego);
+                    self.el_block_page.show();
+                    d3.json(request_url, function(result) {
+                        self.restructure(result);
+                        self.model.trigger('change:tree_structure');
+                    });
                 }
             }
         });

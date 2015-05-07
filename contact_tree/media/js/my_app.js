@@ -43,7 +43,7 @@ function resize_dialog(h, w){
     });
 
     // set the dialog's container
-    var menu_container = (w*0.4*0.7) - 50 - $("#main_title").height() - $("#ego_container").height();
+    var menu_container = (w*0.4*0.7) - 100 - $("#main_title").height() - $("#ego_container").height();
     
     $("#divTable_menu").css({'height': menu_container});
     var sidekey_container = (w*0.7*0.7) - 150 - $("#sidekey_title").height() - $("#attribute_candidate").height() - $("#sidekey_submit_trunk").height() - $("#mark_group").height();

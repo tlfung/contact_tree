@@ -40,7 +40,8 @@ var SelectingView = Backbone.View.extend({
             resizable: false
         });
 
-        self.el_divTable_menu.css({'height': ($(window).width()*0.4*0.7) - $("ego_container").height() - $("main_title").height() - 100}); // - $("ui-id-2").height() 
+        self.el_divTable_menu.css({'height': ($(window).width()*0.4*0.7) - $("ego_container").height() - $("main_title").height() - 120}); // - $("ui-id-2").height() 
+
 
         $( "#menu" ).click(function() {
             var mode = self.model.get("view_mode");
