@@ -235,15 +235,14 @@ var RenderingView = Backbone.View.extend({
                 var info_pos = [];  
 
                 self.ego_label = e + "_" + sub;
-                if(this.start_x > canvas_x_boundary[1]){
-                // if(this.start_x - (self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0]) - 150 > canvas_x_boundary[1]){
+                if(this.start_x - 150 > canvas_x_boundary[1]){
                     // console.log("extend right", msg);
                     break;
                 }          
                 
                 // adjust the trunk scale
-                var ori_dr = right_side*0.6;
-                var ori_dl = left_side*0.6;
+                var ori_dr = right_side*0.65;
+                var ori_dl = left_side*0.65;
                 var t_scale = (right_side + left_side)/150;
                 if(right_side+left_side < 80){
                     t_scale = 0.5;
@@ -256,17 +255,18 @@ var RenderingView = Backbone.View.extend({
 
                 if(self.ego_label in self.tree_size){ // has exact tree boundary
                     this.start_x += (self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0]) + 150;
-                    if(total_tree == 0 && this.start_x > canvas_x_boundary[1])
+                    // if(total_tree == 0 && this.start_x > canvas_x_boundary[1] && this.translate_point[0] == 0 &&　this.translate_point[1] == 0)
+                    if(total_tree == 0 && (self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0]) + 150 > (canvas_x_boundary[1] = canvas_x_boundary[0]))
                         this.start_x = drawing_canvas.middle;
                     else if(total_tree > 0){
-                        if(1000 > two_trees + (self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0]) + 150){
-                            this.start_x -= (self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0]) + 150;
+                        if(1000 > two_trees + (self.tree_size[this.ego_label][1] - self.tree_size[this.ego_label][4]) + 150){
+                            this.start_x -= (self.tree_size[this.ego_label][1] - self.tree_size[this.ego_label][4]) + 150;
                             this.start_x += 1000;
                         }
                     }
-                    if(this.start_x + (self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0]) + 150 < canvas_x_boundary[0]){
+                    if(this.start_x + (self.tree_size[this.ego_label][1] - self.tree_size[this.ego_label][4]) + 150 < canvas_x_boundary[0]){
                         // console.log("less left", msg);
-                        this.start_x += (self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0]) + 150;
+                        this.start_x += (self.tree_size[this.ego_label][1] - self.tree_size[this.ego_label][4]) + 150;
                         continue;
                     }
                 }
@@ -326,8 +326,8 @@ var RenderingView = Backbone.View.extend({
                         break;
                     }
                     if(this.start_y - (this.stick_length + this.temp_height)*5 > canvas_y_boundary[1]){
-                        ori_dr -= layer_total_alter["right"][real_height]*0.6;
-                        ori_dl -= layer_total_alter["left"][real_height]*0.6;
+                        ori_dr -= layer_total_alter["right"][real_height]*0.45;
+                        ori_dl -= layer_total_alter["left"][real_height]*0.45;
                         this.start_y = this.start_y - this.stick_length - this.temp_height;
                         // this.start_x = this.start_x + 100;
                         real_height += 1;
@@ -369,8 +369,8 @@ var RenderingView = Backbone.View.extend({
                     else
                         used_dl = this.draw_left_branch(height, layer_total_alter["left"][real_height], ego["left"][real_height]["level"]);
 
-                    ori_dr -= used_dr*0.6;                    
-                    ori_dl -= used_dl*0.6;
+                    ori_dr -= used_dr*0.45;                    
+                    ori_dl -= used_dl*0.45;
                     this.start_y = this.start_y - this.stick_length - this.temp_height;
                     // this.start_x = this.start_x + 100;
                     real_height += 1;
@@ -527,13 +527,13 @@ var RenderingView = Backbone.View.extend({
         if(total_draw_stick > 0){
             this.context.bezierCurveTo(cp1[0], cp1[1], cp2[0], cp2[1], tree_rstpoint[0], tree_rstpoint[1]);
             this.context.lineTo(tree_rstpoint[2], tree_rstpoint[3]);
-            this.context.bezierCurveTo(cp3[0], cp3[1], cp4[0], cp4[1], this.start_x, this.start_y + this.temp_height);
+            this.context.bezierCurveTo(cp3[0], cp3[1], cp4[0], cp4[1], this.start_x - this.dl, this.start_y + this.temp_height);
             this.context.closePath();
             // draw rectangle to fill the trunk
             this.context.moveTo(this.start_x + this.dr, this.start_y + this.temp_height);
             this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height + this.stick_length+200);
-            this.context.lineTo(this.start_x, this.start_y + this.temp_height + this.stick_length+200);
-            this.context.lineTo(this.start_x, this.start_y + this.temp_height);
+            this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height + this.stick_length+200);
+            this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height);
             this.context.closePath();
 
             this.context.stroke();//draw line
@@ -1018,13 +1018,13 @@ var RenderingView = Backbone.View.extend({
         if(total_draw_stick > 0){
             this.context.bezierCurveTo(cp1[0], cp1[1], cp2[0], cp2[1], tree_lstpoint[0], tree_lstpoint[1]);
             this.context.lineTo(tree_lstpoint[2], tree_lstpoint[3]);
-            this.context.bezierCurveTo(cp3[0], cp3[1], cp4[0], cp4[1], this.start_x, this.start_y + this.temp_height);
+            this.context.bezierCurveTo(cp3[0], cp3[1], cp4[0], cp4[1], this.start_x + this.dr, this.start_y + this.temp_height);
             this.context.closePath();
             // draw rectangle to fill the trunk
             this.context.moveTo(this.start_x - this.dl, this.start_y + this.temp_height);
             this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height + this.stick_length+200);
-            this.context.lineTo(this.start_x, this.start_y + this.temp_height + this.stick_length+200);
-            this.context.lineTo(this.start_x, this.start_y + this.temp_height);
+            this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height + this.stick_length+200);
+            this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height);
             this.context.closePath();
 
             this.context.stroke();//draw line

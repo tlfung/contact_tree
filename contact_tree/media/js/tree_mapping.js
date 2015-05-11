@@ -31,6 +31,7 @@ var MappingView = Backbone.View.extend({
         this.current_attr_option;
 
         this.change_mapping = 0;
+        this.apply_mapping = 0;
         $( "#sidekey_dialog" ).dialog({
             autoOpen: false,
             // height: 600,
@@ -40,7 +41,7 @@ var MappingView = Backbone.View.extend({
             modal: true,
             resizable: false,
             close: function(){
-                if(self.change_mapping != 2 && self.change_mapping != 0){
+                if(self.change_mapping != 2 && self.change_mapping != 0 && self.apply_mapping == 0){
                     // mapping_color.render_leaf_color = JSON.parse(JSON.stringify(self.current_render_leaf_color));
                     // mapping_color.render_roots_color = JSON.parse(JSON.stringify(self.current_render_roots_color));                
                     // attribute_mapping = self.current_user_mapping;
@@ -62,6 +63,33 @@ var MappingView = Backbone.View.extend({
                         self.model.trigger('change:tree_structure');
                     });
                 }
+                else if(self.apply_mapping != 0){
+                    if(self.apply_mapping == 1)
+                        var r = confirm("Leave without saving current setting!");
+                    else if(self.apply_mapping == 2)
+                        var r = confirm("Leave without restore saved setting!");
+                    if(r==true) {
+                        var data_group = self.model.get("dataset_group");
+                        var now_attr = self.model.get("attribute");
+                        var now_mode = self.model.get("view_mode");
+                        var all_ego = self.model.get("selected_egos");
+                        var ego_list = [];
+                        
+                        for(var ego in all_ego){
+                            ego_list.push(ego);
+                        }
+                        var request_url = request_builder.restore_data(now_attr, ego_list, now_mode, attribute_mapping, data_group, all_ego);
+                        self.el_block_page.show();
+                        d3.json(request_url, function(result) {
+                            self.restructure(result);
+                            self.model.trigger('change:tree_structure');
+                        });
+                    }
+                    else{
+                        $("#sidekey_dialog").dialog("open");
+                        return;
+                    }
+                }
             }
         });
 
@@ -75,6 +103,7 @@ var MappingView = Backbone.View.extend({
             self.el_mark_group.hide();
             self.el_sidekey_instruction.show();
             self.change_mapping = 0;
+            self.apply_mapping = 0;
             self.set_component();
         });
         
@@ -124,6 +153,7 @@ var MappingView = Backbone.View.extend({
 
         $("#use_label").click(function(){
             self.change_mapping = 1;
+            self.apply_mapping = 0;
             var save_user_mapping = self.model.get("user_mapping");
             var now_attr = JSON.parse(JSON.stringify(save_user_mapping[this.value]["attr"]));
             var now_attr_map = JSON.parse(JSON.stringify(save_user_mapping[this.value]["map_info"]));
@@ -176,6 +206,8 @@ var MappingView = Backbone.View.extend({
             });
 
             save_item.click(function(){
+                self.apply_mapping = 2;
+                self.change_mapping = 1;
                 self.el_sidekey_selection.hide();
                 self.el_sidekey_instruction.hide();
                 self.el_sidekey_save_img.show();
@@ -314,7 +346,7 @@ var MappingView = Backbone.View.extend({
         });
 
         $(".mapping_finish").click(function() {
-            if(self.change_mapping != 0){
+            if(self.change_mapping != 0 && self.apply_mapping == 0){
                 var data_group = self.model.get("dataset_group");
                 var now_attr = self.model.get("attribute");
                 var now_mode = self.model.get("view_mode");
@@ -331,6 +363,33 @@ var MappingView = Backbone.View.extend({
                     self.model.trigger('change:tree_structure');
                 });
             }
+            else if(self.change_mapping != 0 && self.apply_mapping != 0){
+                if(self.apply_mapping == 1)
+                    var r = confirm("Leave without saving current setting!");
+                else if(self.apply_mapping == 2)
+                    var r = confirm("Leave without restore saved setting!");
+                if(r==true) {
+                    var data_group = self.model.get("dataset_group");
+                    var now_attr = self.model.get("attribute");
+                    var now_mode = self.model.get("view_mode");
+                    var all_ego = self.model.get("selected_egos");
+                    var ego_list = [];
+                    
+                    for(var ego in all_ego){
+                        ego_list.push(ego);
+                    }
+                    var request_url = request_builder.restore_data(now_attr, ego_list, now_mode, attribute_mapping, data_group, all_ego);
+                    self.el_block_page.show();
+                    d3.json(request_url, function(result) {
+                        self.restructure(result);
+                        self.model.trigger('change:tree_structure');
+                    });
+                }
+                else{
+                    return;
+                }
+            }
+            
             self.change_mapping = 2;
             $("#sidekey_dialog").dialog("close");
         });
@@ -422,6 +481,8 @@ var MappingView = Backbone.View.extend({
                 value: parseInt(attribute_mapping[comp][0]),
                 step: 1,
                 slide: function( event, ui ) {
+                    self.apply_mapping = 1;
+                    self.change_mapping = 1;
                     sep_title.text(ui.value);
                     sep_title.val(ui.value);
                     sep_title.css({"left": 100*(ui.value-attr_min)/((attr_max-attr_min)+1) + "%"});
@@ -444,6 +505,8 @@ var MappingView = Backbone.View.extend({
                 value: Math.floor((attr_min + attr_max)/2),
                 step: 1,
                 slide: function( event, ui ) {
+                    self.apply_mapping = 1;
+                    self.change_mapping = 1;
                     sep_title.text(ui.value);
                     sep_title.val(ui.value);
                     sep_title.css({"left": 100*(ui.value-attr_min)/((attr_max-attr_min)+1) + "%"});
@@ -588,6 +651,8 @@ var MappingView = Backbone.View.extend({
                 values: slider_val,
                 step: 0.1,
                 slide: function( event, ui ) {
+                    self.apply_mapping = 1;
+                    self.change_mapping = 1;
                     var v = parseInt(ui.handle.id.split("_").pop());
                     return self.set_revert_slide(v, ui.values, slider_val);
                 }
@@ -603,6 +668,8 @@ var MappingView = Backbone.View.extend({
                 values: slider_val,
                 step: 0.1,
                 slide: function( event, ui ) {
+                    self.apply_mapping = 1;
+                    self.change_mapping = 1;
                     var v = parseInt(ui.handle.id.split("_").pop());
                     return self.set_general_slide(v, ui.values, slider_val);
                 }
@@ -657,6 +724,8 @@ var MappingView = Backbone.View.extend({
                     values: new_slider_val,
                     step: 0.1,
                     slide: function( event, ui ) {
+                        self.apply_mapping = 1;
+                        self.change_mapping = 1;
                         var v = parseInt(ui.handle.id.split("_").pop());
                         return self.set_revert_slide(v, ui.values, new_slider_val);
                     }
@@ -671,6 +740,8 @@ var MappingView = Backbone.View.extend({
                     values: new_slider_val,
                     step: 0.1,
                     slide: function( event, ui ) {
+                        self.apply_mapping = 1;
+                        self.change_mapping = 1;
                         var v = parseInt(ui.handle.id.split("_").pop());
                         return self.set_general_slide(v, ui.values, new_slider_val);
                     }
@@ -691,6 +762,8 @@ var MappingView = Backbone.View.extend({
 
         gap_input.unbind();
         gap_input.change(function(){
+            self.apply_mapping = 1;
+            self.change_mapping = 1;
             revert = "d";
             var attr_min = parseInt(component_attribute[data_mode][one_attr][1]);
             var attr_max = parseInt(component_attribute[data_mode][one_attr][2]);
@@ -718,6 +791,8 @@ var MappingView = Backbone.View.extend({
                 values: new_slider_val,
                 step: 0.1,
                 slide: function( event, ui ) {
+                    self.apply_mapping = 1;
+                    self.change_mapping = 1;
                     var v = parseInt(ui.handle.id.split("_").pop());
                     return self.set_general_slide(v, ui.values, new_slider_val);
                 }
@@ -918,6 +993,8 @@ var MappingView = Backbone.View.extend({
             values: slider_val,
             step: 0.1,            
             slide: function( event, ui ) {
+                self.apply_mapping = 1;
+                self.change_mapping = 1;
                 var v = parseInt(ui.handle.id.split("_").pop());
                 return self.set_general_slide(v, ui.values, slider_val);
             }
@@ -934,6 +1011,8 @@ var MappingView = Backbone.View.extend({
 
         gap_input.unbind();
         gap_input.change(function(){
+            self.apply_mapping = 1;
+            self.change_mapping = 1;
             used = 0;
             var attr_min = parseInt(component_attribute[data_mode][self.el_sidekeyselect.val()][1]);
             var attr_max = parseInt(component_attribute[data_mode][self.el_sidekeyselect.val()][2]);
@@ -962,6 +1041,8 @@ var MappingView = Backbone.View.extend({
                 values: new_slider_val,
                 step: 0.1,                
                 slide: function(event, ui) {
+                    self.apply_mapping = 1;
+                    self.change_mapping = 1;
                     var v = parseInt(ui.handle.id.split("_").pop());
                     return self.set_general_slide(v, ui.values, new_slider_val);
                 }
@@ -1043,6 +1124,8 @@ var MappingView = Backbone.View.extend({
                 max: 15,
                 value: size_val,
                 slide: function( event, ui) {
+                    self.apply_mapping = 1;
+                    self.change_mapping = 1;
                     var myid = this.id;
                     var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop();
                     var container_id = "#size_selector_" + myid.split("attr_val_").pop();
@@ -1152,6 +1235,8 @@ var MappingView = Backbone.View.extend({
             values: slider_val,
             step: 0.1,
             slide: function( event, ui ) {
+                self.apply_mapping = 1;
+                self.change_mapping = 1;
                 var v = parseInt(ui.handle.id.split("_").pop());
                 return self.set_general_slide(v, ui.values, slider_val);
             }
@@ -1167,6 +1252,8 @@ var MappingView = Backbone.View.extend({
 
         gap_input.unbind();
         gap_input.change(function(){
+            self.apply_mapping = 1;
+            self.change_mapping = 1;
             var used = 0;
             var size_map = [];
             var val_map = [];
@@ -1197,6 +1284,8 @@ var MappingView = Backbone.View.extend({
                 values: new_slider_val,
                 step: 0.1,
                 slide: function( event, ui ) {
+                    self.apply_mapping = 1;
+                    self.change_mapping = 1;
                     var v = parseInt(ui.handle.id.split("_").pop());
                     return self.set_general_slide(v, ui.values, new_slider_val);
                 }
@@ -1776,6 +1865,8 @@ var MappingView = Backbone.View.extend({
 
         $(".mapping_selection").unbind();
         $(".mapping_selection").change(function(){
+            self.apply_mapping = 1;
+            self.change_mapping = 1;
             this.style.background = color_table[this.value];
         });
     },
@@ -1827,6 +1918,8 @@ var MappingView = Backbone.View.extend({
                     max: 10,
                     value: size_val,
                     slide: function( event, ui) {
+                        self.apply_mapping = 1;
+                        self.change_mapping = 1;
                         var myid = this.id;
                         var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop();
                         var container_id = "#title_" + myid.split("attr_val_").pop();
@@ -1879,6 +1972,8 @@ var MappingView = Backbone.View.extend({
                         max: 10,
                         value: size_val,
                         slide: function( event, ui) {
+                            self.apply_mapping = 1;
+                            self.change_mapping = 1;
                             var myid = this.id;
                             var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop();
                             var container_id = "#title_" + myid.split("attr_val_").pop();
@@ -1935,6 +2030,8 @@ var MappingView = Backbone.View.extend({
                     max: 10,
                     value: size_val,
                     slide: function( event, ui) {
+                        self.apply_mapping = 1;
+                        self.change_mapping = 1;
                         var myid = this.id;
                         var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop();
                         var container_id = "#title_" + myid.split("attr_val_").pop();
@@ -1988,6 +2085,8 @@ var MappingView = Backbone.View.extend({
                         max: 10,
                         value: size_val,
                         slide: function( event, ui) {
+                            self.apply_mapping = 1;
+                            self.change_mapping = 1;
                             var myid = this.id;
                             var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop();
                             var container_id = "#title_" + myid.split("attr_val_").pop();
@@ -2074,6 +2173,8 @@ var MappingView = Backbone.View.extend({
 
         self.el_sidekeyselect.unbind();
         self.el_sidekeyselect.change(function(){
+            self.apply_mapping = 1;
+            self.change_mapping = 1;
             self.el_mark_group_select.empty();
             if( self.el_sidekeyselect.val() != "none"){
                 var data_mode = self.model.get("view_mode");
@@ -2098,6 +2199,7 @@ var MappingView = Backbone.View.extend({
         self.el_sidekey_submit.unbind();
         self.el_sidekey_submit.click(function(){
             self.change_mapping = 1;
+            self.apply_mapping = 0;
             console.log("in trunk submit");
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
@@ -2161,6 +2263,8 @@ var MappingView = Backbone.View.extend({
 
         self.el_sidekeyselect.unbind();
         self.el_sidekeyselect.change(function(){
+            self.apply_mapping = 1;
+            self.change_mapping = 1;
             self.el_mark_group_select.empty();
             if( self.el_sidekeyselect.val() != "none"){
                 var data_mode = self.model.get("view_mode");
@@ -2184,6 +2288,7 @@ var MappingView = Backbone.View.extend({
         self.el_sidekey_submit.unbind();
         self.el_sidekey_submit.click(function(){
             self.change_mapping = 1;
+            self.apply_mapping = 0;
             console.log("in bside submit");
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
@@ -2249,6 +2354,8 @@ var MappingView = Backbone.View.extend({
 
         self.el_sidekeyselect.unbind();
         self.el_sidekeyselect.change(function(){
+            self.apply_mapping = 1;
+            self.change_mapping = 1;
             self.el_mark_group_select.empty();
             var revert = "d";
             if( self.el_sidekeyselect.val() != "none"){
@@ -2275,6 +2382,7 @@ var MappingView = Backbone.View.extend({
         self.el_sidekey_submit.unbind();
         self.el_sidekey_submit.click(function(){
             self.change_mapping = 1;
+            self.apply_mapping = 0;
             console.log("in branch submit");
             var data_mode = self.model.get("view_mode");
             var ego_selections = self.model.get("selected_egos");
@@ -2379,6 +2487,8 @@ var MappingView = Backbone.View.extend({
 
         self.el_sidekeyselect.unbind();
         self.el_sidekeyselect.change(function(){
+            self.apply_mapping = 1;
+            self.change_mapping = 1;
             var attr_map = self.model.get("attribute");
             self.el_mark_group_select.empty();
             if( self.el_sidekeyselect.val() != "none"){
@@ -2409,6 +2519,7 @@ var MappingView = Backbone.View.extend({
         self.el_sidekey_submit.unbind();
         self.el_sidekey_submit.click(function(){
             self.change_mapping = 1;
+            self.apply_mapping = 0;
             console.log("in root submit");
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
@@ -2470,6 +2581,8 @@ var MappingView = Backbone.View.extend({
 
         self.el_sidekeyselect.unbind();
         self.el_sidekeyselect.change(function(){
+            self.apply_mapping = 1;
+            self.change_mapping = 1;
             self.el_mark_group_select.empty();
             if( self.el_sidekeyselect.val() != "none"){
                 self.el_sidekey_operation.show();
@@ -2496,6 +2609,7 @@ var MappingView = Backbone.View.extend({
         self.el_sidekey_submit.unbind();
         self.el_sidekey_submit.click(function(){
             self.change_mapping = 1;
+            self.apply_mapping = 0;
             console.log("in leaf_color submit");
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
@@ -2534,6 +2648,8 @@ var MappingView = Backbone.View.extend({
 
         self.el_sidekeyselect.unbind();
         self.el_sidekeyselect.change(function(){
+            self.apply_mapping = 1;
+            self.change_mapping = 1;
             self.el_mark_group_select.empty();
             if( self.el_sidekeyselect.val() != "none"){
                 self.el_sidekey_operation.show();
@@ -2553,6 +2669,7 @@ var MappingView = Backbone.View.extend({
         self.el_sidekey_submit.unbind();
         self.el_sidekey_submit.click(function(){
             self.change_mapping = 1;
+            self.apply_mapping = 0;
             console.log("in highlight submit");
             var attr_map = self.model.get("attribute");
             var attr_opt = self.model.get("attr_option");
@@ -2624,6 +2741,8 @@ var MappingView = Backbone.View.extend({
 
         self.el_sidekeyselect.unbind();
         self.el_sidekeyselect.change(function(){
+            self.apply_mapping = 1;
+            self.change_mapping = 1;
             var attr_map = self.model.get("attribute");
             self.el_mark_group_select.empty();
             if( self.el_sidekeyselect.val() != "none"){   
@@ -2651,6 +2770,7 @@ var MappingView = Backbone.View.extend({
         self.el_sidekey_submit.unbind();
         self.el_sidekey_submit.click(function(){
             self.change_mapping = 1;
+            self.apply_mapping = 0;
             console.log("in leaf_size submit");
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
@@ -2712,6 +2832,8 @@ var MappingView = Backbone.View.extend({
 
         self.el_sidekeyselect.unbind();
         self.el_sidekeyselect.change(function(){
+            self.apply_mapping = 1;
+            self.change_mapping = 1;
             var attr_map = self.model.get("attribute");
             self.el_mark_group_select.empty();
             if( self.el_sidekeyselect.val() != "none"){   
@@ -2739,6 +2861,7 @@ var MappingView = Backbone.View.extend({
         self.el_sidekey_submit.unbind();
         self.el_sidekey_submit.click(function(){
             self.change_mapping = 1;
+            self.apply_mapping = 0;
             console.log("in fruit_size submit");
             self.el_block_page.show();
             self.el_loading_process.html("<b>Mapping...</b>");
