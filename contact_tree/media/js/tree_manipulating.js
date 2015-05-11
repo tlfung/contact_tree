@@ -262,7 +262,7 @@ var ZoomView = Backbone.View.extend({
         var context = self.myCanvas.getContext('2d');
         context.fillStyle = 'rgba(225,225,225, 0.5)';
         
-        context.fillRect(px-2, py, 135, 110);
+        context.fillRect(px-2, py, 140, 110);
         context.font = '12pt Calibri';
         context.fillStyle = 'black';
         context.fillText("Alter id: " + info[0], px, py+20); //pos

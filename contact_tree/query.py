@@ -56,7 +56,7 @@ leaf_color_index = 7
 root_index = 8
 highlight_index = 9
 
-cache_time = 86400 # 24hr
+cache_time = 172800 # 48hr
 
 # save the post request file to server
 @csrf_exempt
@@ -372,7 +372,7 @@ def csv2mysql(fn, table):
     col_types = None
     attribute_info = dict()
     encoding = '-1'
-    
+
     for row in csv.reader(open(fn)):
         # insert Mysql 
         if col_types:

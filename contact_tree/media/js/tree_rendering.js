@@ -204,15 +204,7 @@ var RenderingView = Backbone.View.extend({
                 
                 this.start_y = (this.myCanvas.height/0.15)-this.stick_length-380; //_gly
 
-                for(var s = 0; s < self.total_layer; s++){
-                    // if("id" in ego["left"][s]["level"]["down"])
-                    //     l += ego["left"][s]["level"]["down"].length;
-                    // if("id" in ego["left"][s]["level"]["up"])
-                    //     l += ego["left"][s]["level"]["up"].length;
-                    // if("id" in ego["right"][s]["level"]["down"])
-                    //     r += ego["right"][s]["level"]["down"].length;
-                    // if("id" in ego["right"][s]["level"]["up"])
-                    //     r += ego["right"][s]["level"]["up"].length;
+                for(var s = 0; s < self.total_layer; s++){ // !!!count twice if alter is not unique...
                     var l = ego["left"][s]["level"]["down"].length + ego["left"][s]["level"]["up"].length;
                     var r = ego["right"][s]["level"]["down"].length + ego["right"][s]["level"]["up"].length;
                     layer_total_alter["right"].push(r);
@@ -246,26 +238,10 @@ var RenderingView = Backbone.View.extend({
                     // console.log("extend right", msg);
                     break;
                 }          
-               
-                // // for the left boundary
-                // var stick_length = 0;
                 
-                // for(var l = 0; l < layer_total_alter["left"].length; l++){
-                //     var down = ego["left"][l]["level"]["down"].length + l;
-                //     var up = ego["left"][l]["level"]["up"].length + l;
-                //     if(stick_length < down && down >= up){
-                //         stick_length = down;
-                //     }
-                //     else if(stick_length < up && down < up){
-                //         stick_length = up;
-                //     }
-                // }                
-                // total_distance += ((stick_length)*this.sub_stick_length + this.x_dist);
-
-
                 // adjust the trunk scale
-                var ori_dr = right_side;
-                var ori_dl = left_side;
+                var ori_dr = right_side*0.8;
+                var ori_dl = left_side*0.8;
                 var t_scale = (right_side + left_side)/150;
                 if(right_side+left_side < 80){
                     t_scale = 0.5;
@@ -327,18 +303,6 @@ var RenderingView = Backbone.View.extend({
                 if(self.group == "all"){
                     pos = [((this.start_x - ori_dl/t_scale)+(this.start_x + ori_dr/t_scale))/2-170, this.start_y + this.stick_length + 350];
                 }
-                // count the right boundary
-                // var stick_length = 0;
-                // for(var r = 0; r < layer_total_alter["right"].length; r++){
-                //     var down = ego["right"][r]["level"]["down"].length + r;
-                //     var up = ego["right"][r]["level"]["up"].length + r;
-                //     if(stick_length < down && down >= up){
-                //         stick_length = down;
-                //     }
-                //     else if(stick_length < up && ego["right"][r]["level"]["down"].length < up){
-                //         stick_length = up;
-                //     }
-                // }
                 
                 var start_h = 0;
                 var add_h = 1;
@@ -361,8 +325,8 @@ var RenderingView = Backbone.View.extend({
                         break;
                     }
                     if(this.start_y - (this.stick_length + this.temp_height)*5 > canvas_y_boundary[1]){
-                        ori_dr -= layer_total_alter["right"][real_height];
-                        ori_dl -= layer_total_alter["left"][real_height];
+                        ori_dr -= layer_total_alter["right"][real_height]*0.65;
+                        ori_dl -= layer_total_alter["left"][real_height]*0.65;
                         this.start_y = this.start_y - this.stick_length - this.temp_height;
                         // this.start_x = this.start_x + 100;
                         real_height += 1;
@@ -404,8 +368,8 @@ var RenderingView = Backbone.View.extend({
                     else
                         used_dl = this.draw_left_branch(height, layer_total_alter["left"][real_height], ego["left"][real_height]["level"]);
 
-                    ori_dr -= used_dr;                    
-                    ori_dl -= used_dl;
+                    ori_dr -= used_dr*0.65;                    
+                    ori_dl -= used_dl*0.65;
                     this.start_y = this.start_y - this.stick_length - this.temp_height;
                     // this.start_x = this.start_x + 100;
                     real_height += 1;
