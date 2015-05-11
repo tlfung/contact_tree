@@ -1,3 +1,5 @@
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
 from datetime import date, timedelta, datetime
 from django.http import Http404, HttpResponse, HttpResponseRedirect
 from django.views.decorators.csrf import csrf_exempt
@@ -20,6 +22,9 @@ import math
 import copy
 import time
 # import chardet
+import sys
+reload(sys)
+sys.setdefaultencoding("utf-8")
 
 warnings.filterwarnings(action='ignore', category=MySQLdb.Warning)
 
@@ -27,8 +32,7 @@ class DB:
   conn = None
 
   def connect(self):
-    self.conn = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree", cursorclass=MySQLdb.cursors.DictCursor)
-
+    self.conn = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree", use_unicode=True, charset="utf8", cursorclass=MySQLdb.cursors.DictCursor)
   def query(self, sql):
     try:
       cursor = self.conn.cursor()
@@ -212,7 +216,7 @@ def create_csv2database(request):
     
 # update the attribute information
 def update_collection_data(data_table, attr_json):
-    database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
+    database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree", use_unicode=True, charset="utf8")
     clause = database.cursor()
     db = DB()
     clause.execute('SET SQL_SAFE_UPDATES = 0;')
@@ -235,6 +239,7 @@ def update_collection_data(data_table, attr_json):
     temp_alter = cur.fetchone()['alterid']
     cur = db.query('SELECT min(egoid) FROM ' + data_table + ';')
     temp_ego = cur.fetchone()['min(egoid)']
+    
     for a in attr_json:
         if a == 'dataset':
             continue
@@ -346,7 +351,7 @@ def safe_col(s):
 
 def define_type(s):
     if s == 'categorical':
-        return "varchar(32) NULL DEFAULT NULL"
+        return "varchar(64) NULL DEFAULT NULL"
     elif s == 'numerical':
         return "int NULL DEFAULT NULL"
     elif s == 'boolean':
@@ -358,7 +363,7 @@ def define_type(s):
 
 
 def csv2mysql(fn, table):
-    database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
+    database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree", use_unicode=True, charset="utf8")
     clause = database.cursor()
     print 'Analyzing column types ...'
     # col_types = get_col_types(fn)
@@ -366,12 +371,16 @@ def csv2mysql(fn, table):
     header = None
     col_types = None
     attribute_info = dict()
+    encoding = '-1'
+    
     for row in csv.reader(open(fn)):
         # insert Mysql 
         if col_types:
             # clause.execute(insert_sql, row)
             for x in range(len(row)):
-                row[x] = row[x].decode('big5').encode('utf-8')
+                if encoding != 'utf-8':
+                    row[x] = row[x].decode(encoding).encode('utf-8')
+                    # row[x] = row[x].decode('big5').encode('utf-8')
                 if row[x] == '':
                     row[x] = None
                 # attribute_info[header[count_col].replace('`', '')] = col
@@ -383,6 +392,9 @@ def csv2mysql(fn, table):
                 return -1
             
         else:
+            if encoding == '-1':
+                encoding = row[0]
+                continue
             if header: # after getting the column name
                 col_types = []
                 count_col = 0
@@ -616,7 +628,7 @@ def get_list_ego(request):
             if info['type'] == "boolean" or info['type'] == "categorical" or info['attr_range'] < 20:
                 infocur = db.query('SELECT DISTINCT(`' + info['attr'] + '`) FROM ' + data_table + ' WHERE `' + info['attr'] + '` != "" ORDER BY(`' + info['attr'] + '`);')
                 attr_detail = infocur.fetchall()
-                if info['min'].isdigit():
+                if info['min'].isdigit() and info['max'].isdigit():
                     for d in attr_detail:
                         detail_array.append(int(d[info['attr']]))  
                     detail_array.sort(key=int)
@@ -1038,10 +1050,16 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
                                     record[record_index] = 1
                             
                             else:
-                                if str(record[ori_index[compt]]) in str(mapping[compt]["0"]):
-                                    record[record_index] = 0
+                                if str(record[ori_index[compt]]).isdigit():
+                                    if str(record[ori_index[compt]]) in str(mapping[compt]["0"]):
+                                        record[record_index] = 0
+                                    else:
+                                        record[record_index] = 1
                                 else:
-                                    record[record_index] = 1       
+                                    if str(record[ori_index[compt]]).encode('utf-8') in mapping[compt]["0"]:
+                                        record[record_index] = 0
+                                    else:
+                                        record[record_index] = 1  
 
                         else:
                             if str(collecting_data["type"]) == "numerical":
@@ -1097,11 +1115,18 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
                             if compt in mapping:
                                 if collecting_data["type"] == "categorical" or collecting_data["type"] == "boolean":
                                     for cat in mapping[compt]:
-                                        if record[ori_index[compt]] == cat:
-                                            record[record_index] = int(mapping[compt][cat])
-                                            if compt == 'branch':
-                                                layer_count.append(mapping[compt][cat])                                    
-                                            break
+                                        if str(record[ori_index[compt]]).isdigit():
+                                            if str(record[ori_index[compt]]) == str(cat):
+                                                record[record_index] = int(mapping[compt][cat])
+                                                if compt == 'branch':
+                                                    layer_count.append(int(mapping[compt][cat]))                                    
+                                                break
+                                        else:
+                                            if str(record[ori_index[compt]]).encode('utf-8') == cat:
+                                                record[record_index] = int(mapping[compt][cat])
+                                                if compt == 'branch':
+                                                    layer_count.append(int(mapping[compt][cat]))                                    
+                                                break
                                 else:
                                     if compt == 'branch' and layer_count == []:
                                         layer_count.append(len(mapping[compt])+1)
@@ -1193,7 +1218,7 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
 
 
 def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_group):
-    # print "****** insert_ctree_mapping ******"
+    print "****** insert_ctree_mapping ******"
     db = DB()
     binary_index = dict()
     branch_order_index = []
@@ -1307,10 +1332,16 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
                             ctree_record[record_index] = 1
                     
                     else:
-                        if str(d[attr[compt]]) in str(mapping[compt]["0"]):
-                            ctree_record[record_index] = 0
+                        if str(d[attr[compt]]).isdigit():
+                            if str(d[attr[compt]]) in str(mapping[compt]["0"]):
+                                ctree_record[record_index] = 0
+                            else:
+                                ctree_record[record_index] = 1
                         else:
-                            ctree_record[record_index] = 1       
+                            if str(d[attr[compt]]).encode('utf-8') in mapping[compt]["0"]:
+                                ctree_record[record_index] = 0
+                            else:
+                                ctree_record[record_index] = 1       
 
                 else:
                     if str(collecting_data["type"]) == "numerical":
@@ -1366,11 +1397,19 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
                     if compt in mapping:
                         if collecting_data["type"] == "categorical" or collecting_data["type"] == "boolean":
                             for cat in mapping[compt]:
-                                if d[attr[compt]] == cat:
-                                    ctree_record[record_index] = int(mapping[compt][cat])
-                                    if compt == 'branch':
-                                        layer_count.append(mapping[compt][cat])                                    
-                                    break
+                                if str(d[attr[compt]]).isdigit():
+                                    if str(d[attr[compt]]) == str(cat):
+                                        ctree_record[record_index] = int(mapping[compt][cat])
+                                        if compt == 'branch':
+                                            layer_count.append(int(mapping[compt][cat]))                                    
+                                        break
+                                else:
+                                    if str(d[attr[compt]]).encode('utf-8') == cat:
+                                        ctree_record[record_index] = int(mapping[compt][cat])
+                                        if compt == 'branch':
+                                            layer_count.append(int(mapping[compt][cat]))                                    
+                                        break
+                                
                         else:
                             if compt == 'branch' and layer_count == []:
                                 layer_count.append(len(mapping[compt])+1)
@@ -2113,16 +2152,31 @@ def restore_mapping_update(request):
     user_ctree_data = dict()
 
     if request.GET.get('restore'):
-        list_request = json.loads(request.GET['restore'])
-        attr = json.loads(list_request[0])
-        ego_list = json.loads(list_request[1])
-        table = list_request[2]
-        mapping = json.loads(list_request[3])
-        data_group = list_request[4]
+        list_request = json.loads(request.GET['restore'], encoding='unicode')
+        attr = json.loads(list_request[0], encoding='unicode')
+        ego_list = json.loads(list_request[1], encoding='unicode')
+        table = list_request[2].encode('utf-8')
+        mapping = json.loads(list_request[3], encoding='unicode')
+        data_group = list_request[4].encode('utf-8')
 
         data_table = table.split("_of_")[1]
         session = table.split("_of_")[0]
 
+        # print mapping, "**********"
+        # for m in mapping:
+        #     print m, mapping[m]
+        #     if mapping[m] == 'none':
+        #         continue
+        #     if type(mapping[m]) is dict:
+        #         for c in mapping[m]:
+        #             new_c = str(c).encode('utf-8')
+        #             for i in range(len(mapping[m][c])):
+        #                 mapping[m][c][i] = str(mapping[m][c][i]).encode('utf-8')
+        #     if type(mapping[m]) is list:
+        #         for i in range(len(mapping[m])):
+        #             mapping[m][i] = str(mapping[m][i]).encode('utf-8')
+        # print mapping, "**********"
+        
         cache_data = cache.get(session)
         if cache_data:
             user_ctree_data[session] = cache_data
@@ -2229,22 +2283,22 @@ def auto_save(request):
         session = str(save_detail[0].split("_of_")[0])
         mode = 'mode="' + str(save_detail[0].split("_of_")[1]) + '"'
 
-        display_egos = "display_egos='" + str(save_detail[1]) + "'"
-        selected_egos = "selected_egos='" + str(save_detail[2]) + "'"
-        leaf_scale = 'leaf_scale=' + str(save_detail[3])
-        fruit_scale = 'fruit_scale=' + str(save_detail[4])
-        sub_leaf_len_scale = 'leaf_len_scale=' + str(save_detail[5])
-        dtl_branch_curve = 'branch_curve=' + str(save_detail[6])
-        root_curve = 'root_curve=' + str(save_detail[7])
-        root_len_scale = 'root_len_scale=' + str(save_detail[8])
-        canvas_scale = 'canvas_scale=' + str(save_detail[9])
-        filter_contact = 'filter_contact=' + str(save_detail[10])
-        tree_boundary = "tree_boundary='" + str(save_detail[11]) + "'"
-        canvas_translate = "canvas_translate='" + str(save_detail[12]) + "'"
-        total_ego = "total_ego='" + str(save_detail[13]) + "'"
-        group = 'data_group="' + str(save_detail[14]) + '"'
-        component_attribute = "component_attribute='" + save_detail[15].encode('utf-8') + "'"
-        waves = "waves='" + str(save_detail[16]) + "'"
+        display_egos = "display_egos='" + str(save_detail[1]).encode('utf-8') + "'"
+        selected_egos = "selected_egos='" + str(save_detail[2]).encode('utf-8') + "'"
+        leaf_scale = 'leaf_scale=' + str(save_detail[3]).encode('utf-8')
+        fruit_scale = 'fruit_scale=' + str(save_detail[4]).encode('utf-8')
+        sub_leaf_len_scale = 'leaf_len_scale=' + str(save_detail[5]).encode('utf-8')
+        dtl_branch_curve = 'branch_curve=' + str(save_detail[6]).encode('utf-8')
+        root_curve = 'root_curve=' + str(save_detail[7]).encode('utf-8')
+        root_len_scale = 'root_len_scale=' + str(save_detail[8]).encode('utf-8')
+        canvas_scale = 'canvas_scale=' + str(save_detail[9]).encode('utf-8')
+        filter_contact = 'filter_contact=' + str(save_detail[10]).encode('utf-8')
+        tree_boundary = "tree_boundary='" + str(save_detail[11]).encode('utf-8') + "'"
+        canvas_translate = "canvas_translate='" + str(save_detail[12]).encode('utf-8') + "'"
+        total_ego = "total_ego='" + str(save_detail[13]).encode('utf-8') + "'"
+        group = 'data_group="' + str(save_detail[14]).encode('utf-8') + '"'
+        component_attribute = "component_attribute='" + str(save_detail[15]).encode('utf-8') + "'"
+        waves = "waves='" + str(save_detail[16]).encode('utf-8') + "'"
 
         condition = "session_id=" + session + " AND " + mode + " AND " + group
 

@@ -471,7 +471,8 @@ var MappingView = Backbone.View.extend({
             
             for(var c = total_items.length-1; c >= 0 ; c--){
                 var item = $('<li class="sortable-item"></li>');
-                item.html(total_items[c]).val(total_items[c]);
+                // item.html(total_items[c]).val(total_items[c]);
+                item.html(total_items[c]).val(component_attribute[data_mode][one_attr][0].indexOf(total_items[c]));
                 list.append(item);
             }
         }
@@ -479,7 +480,8 @@ var MappingView = Backbone.View.extend({
             var total_items = component_attribute[data_mode][one_attr][0].length;
             for(var c = total_items-1; c >= 0; c--){
                 var item = $('<li class="sortable-item"></li>');
-                item.html(component_attribute[data_mode][one_attr][0][c]).val(component_attribute[data_mode][one_attr][0][c]);
+                // item.html(component_attribute[data_mode][one_attr][0][c]).val(component_attribute[data_mode][one_attr][0][c]);
+                item.html(component_attribute[data_mode][one_attr][0][c]).val(c);
                 list.append(item);
             }
         }
@@ -997,6 +999,8 @@ var MappingView = Backbone.View.extend({
             var size_val = c;
             if(used == 1)
                 size_val = parseInt(user_map[total_items[c]]);
+            if(size_val > 15)
+                size_val = 15;
             if(c == 0){
                 var c1 = $('<span class="myfont3">Size Scale</span>');
                 var c2 = $('<span class="myfont3" style="margin-left: 60px;">Attribute Data</span>');
@@ -1005,23 +1009,27 @@ var MappingView = Backbone.View.extend({
                 self.el_mark_group_select.append('<br><p>');
             }                    
             var select_container = $('<div class="size_cat_select_container"></div>');
+            var size_control = $('<div style="width:100px; position:relative;"></div>');
             var oneitem = $('<img></img>');
             var objslider = $('<div class="size_cat_objslider"></div>');
             var label_container = $('<span class="size_cat_label_container"></span>');
             var slider_label = $('<span class="size_cat_slider_label"></span>');
             
-            select_container.attr("style", "height:" + (15 + (10+(parseInt(size_val)*3))) + "px;");
+            select_container.attr("style", "height:" + (15 + (10+(parseInt((size_val/1.5))*3))) + "px;");
+            size_control.css({"height": (15 + (10+(parseInt((size_val/1.5))*3)))});
             select_container.attr("id", "size_selector_" + c);
+            size_control.attr("id", "size_control_" + c);
 
-            oneitem.attr("id", "oneitem_" + c).attr("style", "position:absolute; width:"+ (10 + size_val*3) +"%;").attr("src", img_src);
+            oneitem.attr("id", "oneitem_" + c).attr("style", "position:absolute; width:"+ (10 + (size_val/1.5)*3) +"%;").attr("src", img_src);
             objslider.attr("id", "ori_attr_val_" + c);
             slider_label.attr("id", "slider_label_" + c);
 
             label_container.html(total_items[c]);
             
-            select_container.append(oneitem);
-            select_container.append(objslider);
-            select_container.append(slider_label);
+            size_control.append(oneitem);
+            size_control.append(objslider);
+            size_control.append(slider_label);
+            select_container.append(size_control);            
             select_container.append(label_container);
                         
             self.el_mark_group_select.append(select_container);
@@ -1031,29 +1039,31 @@ var MappingView = Backbone.View.extend({
             objslider.slider({
                 orientation: "horizontal",
                 min: 0,
-                max: 10,
+                max: 15,
                 value: size_val,
                 slide: function( event, ui) {
                     var myid = this.id;
-                    var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop(); //!!!
+                    var oneitem_id = "#oneitem_" + myid.split("attr_val_").pop();
                     var container_id = "#size_selector_" + myid.split("attr_val_").pop();
+                    var control_id = "#size_control_" + myid.split("attr_val_").pop();
                     var s_label = "#slider_label_" + myid.split("attr_val_").pop();
                     
-                    $(s_label).css({"left": (ui.value*10-5)+"%"});
+                    $(s_label).css({"left": ((ui.value/1.5)*10-5)+"%"});
                     $(s_label).text(ui.value);
                     $(s_label).val(ui.value);
-                    $(oneitem_id).css({"width": 10+(ui.value*3)});
-                    $(container_id).css({"height": 15+(10+(ui.value*3))});
+                    $(oneitem_id).css({"width": 10+((ui.value/1.5)*3)});
+                    $(container_id).css({"height": 15+(10+((ui.value/1.5)*3))});
+                    $(control_id).css({"height": 15+(10+((ui.value/1.5)*3))});
                 }
             });
 
-            $(handle).css({'width':'0.7em'});
-            $(handle).css({'height':'1em'});
+            $(handle).css({'width':'0.7em', 'height':'1em'});
+            // $(handle).css({'height':'1em'});
             objslider.css({'height':'8px'});
 
             slider_label.text(size_val);
             slider_label.val(size_val);
-            slider_label.css({"left": (size_val*10-5)+"%"});
+            slider_label.css({"left": ((size_val/15)*100-5)+"%"});
                             
         }
     },
@@ -1262,6 +1272,7 @@ var MappingView = Backbone.View.extend({
                     color_map[total_items[c]] = c;
 
                     if(comp == "leaf_color"){
+                        // mapping_color.render_leaf_color.push(color_table[parseInt($(item_id).val())]);
                         mapping_color.render_leaf_color.push(color_table[parseInt($(item_id).val())]);
                     }
                     else if(comp == "root"){
@@ -2283,10 +2294,10 @@ var MappingView = Backbone.View.extend({
                     var layer_map = {};
                     attribute_mapping["branch"] = {};
                     count_layer = component_attribute[data_mode][self.el_sidekeyselect.val()][0].length-1;
-                    $('#mapping_group').children().each(function(){
-                        
-                        attribute_mapping["branch"][$(this).val()] = count_layer;
-                        layer_map[$(this).val()] = count_layer;
+                    $('#mapping_group').children().each(function(){ 
+                        var group_val = component_attribute[data_mode][self.el_sidekeyselect.val()][0][$(this).val()];
+                        attribute_mapping["branch"][group_val] = count_layer;
+                        layer_map[group_val] = count_layer;
                         count_layer--;
                     });
                     update_info += ":-" + JSON.stringify(layer_map);

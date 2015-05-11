@@ -318,7 +318,7 @@ table, th, td {
 .size_cat_select_container {
   margin:15 0 20 10; 
   padding-bottom:20px; 
-  width:100px; 
+  /*width:100px; */
   position:relative; 
 }
 
