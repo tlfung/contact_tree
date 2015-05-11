@@ -232,16 +232,18 @@ var RenderingView = Backbone.View.extend({
                 }
                 // info_box = info_box = ["", ""];
                 var pos = [];
-                var info_pos = [];      
+                var info_pos = [];  
 
+                self.ego_label = e + "_" + sub;
                 if(this.start_x > canvas_x_boundary[1]){
+                // if(this.start_x - (self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0]) - 150 > canvas_x_boundary[1]){
                     // console.log("extend right", msg);
                     break;
                 }          
                 
                 // adjust the trunk scale
-                var ori_dr = right_side*0.8;
-                var ori_dl = left_side*0.8;
+                var ori_dr = right_side*0.6;
+                var ori_dl = left_side*0.6;
                 var t_scale = (right_side + left_side)/150;
                 if(right_side+left_side < 80){
                     t_scale = 0.5;
@@ -252,7 +254,6 @@ var RenderingView = Backbone.View.extend({
                     }
                 }
 
-                self.ego_label = e + "_" + sub;
                 if(self.ego_label in self.tree_size){ // has exact tree boundary
                     this.start_x += (self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0]) + 150;
                     if(total_tree == 0 && this.start_x > canvas_x_boundary[1])
@@ -325,8 +326,8 @@ var RenderingView = Backbone.View.extend({
                         break;
                     }
                     if(this.start_y - (this.stick_length + this.temp_height)*5 > canvas_y_boundary[1]){
-                        ori_dr -= layer_total_alter["right"][real_height]*0.65;
-                        ori_dl -= layer_total_alter["left"][real_height]*0.65;
+                        ori_dr -= layer_total_alter["right"][real_height]*0.6;
+                        ori_dl -= layer_total_alter["left"][real_height]*0.6;
                         this.start_y = this.start_y - this.stick_length - this.temp_height;
                         // this.start_x = this.start_x + 100;
                         real_height += 1;
@@ -368,8 +369,8 @@ var RenderingView = Backbone.View.extend({
                     else
                         used_dl = this.draw_left_branch(height, layer_total_alter["left"][real_height], ego["left"][real_height]["level"]);
 
-                    ori_dr -= used_dr*0.65;                    
-                    ori_dl -= used_dl*0.65;
+                    ori_dr -= used_dr*0.6;                    
+                    ori_dl -= used_dl*0.6;
                     this.start_y = this.start_y - this.stick_length - this.temp_height;
                     // this.start_x = this.start_x + 100;
                     real_height += 1;
@@ -397,7 +398,7 @@ var RenderingView = Backbone.View.extend({
     draw_right_branch: function(layer, num_alter, alters){
         var self = this;
         var stick_scale = 0;
-        stick_scale = num_alter/15;
+        stick_scale = num_alter/50;
         if(num_alter < 15){
             stick_scale = 1/1.5;
         }
@@ -538,13 +539,13 @@ var RenderingView = Backbone.View.extend({
             this.context.stroke();//draw line
             this.context.fill();//fill color
 
-            this.context.beginPath();
-            this.context.lineWidth = 1;
-            this.context.arc(tree_rstpoint[0], (tree_rstpoint[1]+tree_rstpoint[3])/2, stick_width/2, 0, 2*Math.PI, true);
-            this.context.closePath();
-            this.context.stroke();
-            this.context.fill();
-            this.context.lineWidth = 5;
+            // this.context.beginPath();
+            // this.context.lineWidth = 1;
+            // this.context.arc(tree_rstpoint[0], (tree_rstpoint[1]+tree_rstpoint[3])/2, stick_width/2.5, 0, 2*Math.PI, true);
+            // this.context.closePath();
+            // this.context.stroke();
+            // this.context.fill();
+            // this.context.lineWidth = 5;
         }
         else{ // no branch
             this.context.lineTo(this.start_x + this.dr, this.start_y - this.stick_length);
@@ -888,7 +889,7 @@ var RenderingView = Backbone.View.extend({
     draw_left_branch: function(layer, num_alter, alters){
         var self = this;
         var stick_scale = 0;
-        stick_scale = num_alter/15;
+        stick_scale = num_alter/50;
         if(num_alter < 15){
             stick_scale = 1/1.5;
         }
@@ -1029,13 +1030,13 @@ var RenderingView = Backbone.View.extend({
             this.context.stroke();//draw line
             this.context.fill();//fill color
 
-            this.context.beginPath();
-            this.context.lineWidth = 1;
-            this.context.arc(tree_lstpoint[0], (tree_lstpoint[1]+tree_lstpoint[3])/2, stick_width/2, 0, 2*Math.PI, true);
-            this.context.closePath();
-            this.context.stroke();
-            this.context.fill();
-            this.context.lineWidth = 5;
+            // this.context.beginPath();
+            // this.context.lineWidth = 1;
+            // this.context.arc(tree_lstpoint[0], (tree_lstpoint[1]+tree_lstpoint[3])/2, stick_width/2, 0, 2*Math.PI, true);
+            // this.context.closePath();
+            // this.context.stroke();
+            // this.context.fill();
+            // this.context.lineWidth = 5;
 
         }
         else{ // no branch
@@ -1484,8 +1485,8 @@ var RenderingView = Backbone.View.extend({
                                     if(clicking_point[0] >= 0 && clicking_point[0] <= this.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= this.myCanvas.height/self.c_detail){
                                         if(leaf_id != "none")
                                             this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+" +  leaf_id;
-                                        else
-                                            this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+ ";
+                                        // else
+                                        //     this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+ ";
                                     }
                                 }
                                 
@@ -1519,8 +1520,8 @@ var RenderingView = Backbone.View.extend({
                                     if(clicking_point[0] >= 0 && clicking_point[0] <= this.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= this.myCanvas.height/self.c_detail){
                                         if(leaf_id != "none")
                                             this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+" +  leaf_id;
-                                        else
-                                            this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+ ";
+                                        // else
+                                        //     this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+ ";
                                     }
                                 }
                                 
@@ -1608,6 +1609,24 @@ var RenderingView = Backbone.View.extend({
                     dir_v = this.find_dir(ori_v, Math.PI/4);
                     point_y = p[1]+dir_v[1]*13*len_scale;
                     point_x = p[0]+dir_v[0]*13*len_scale;
+
+                    var point_in_canvas = [ (p[0]*this.scale) + this.translate_point[0], (p[1]*this.scale) + this.translate_point[1]];
+
+                    if(this.snap == 0 && this.save_img == 0){
+                        for(var i = 0; i < Math.round(13*len_scale*this.scale); i++){
+                            var p_index = [Math.round((point_in_canvas[0]+dir_v[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+dir_v[1]*i)/self.c_detail)];
+                            if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
+                                this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
+                            }
+                        }
+                    }
+                    else if(this.save_img == 0){
+                        for(var i = 0; i < Math.round(13*len_scale*this.snap_scale); i++){
+                            var p_index = [Math.round(p[0]*this.snap_scale), Math.round(p[1]*this.snap_scale)];
+                            this.snaping_grid[p_index[0]][p_index[1]] = self.snap_info;
+                        }
+                    }
+
                 }
                 if(sub%3 == 2){ 
                     point_y = p[1]+ori_v[1]*13*len_scale;
@@ -1643,6 +1662,23 @@ var RenderingView = Backbone.View.extend({
                     dir_v = this.find_dir(ori_v, -Math.PI/4);
                     point_y = p[1]+dir_v[1]*13*len_scale;
                     point_x = p[0]+dir_v[0]*13*len_scale;
+
+                    var point_in_canvas = [ (p[0]*this.scale) + this.translate_point[0], (p[1]*this.scale) + this.translate_point[1]];
+
+                    if(this.snap == 0 && this.save_img == 0){
+                        for(var i = 0; i < Math.round(13*len_scale*this.scale); i++){
+                            var p_index = [Math.round((point_in_canvas[0]+dir_v[0]*i)/self.c_detail), Math.round((point_in_canvas[1]+dir_v[1]*i)/self.c_detail)];
+                            if(p_index[0] >= 0 && p_index[0] <= this.myCanvas.width/self.c_detail && p_index[1] >= 0 && p_index[1] <= this.myCanvas.height/self.c_detail){
+                                this.clicking_grid[p_index[0]][p_index[1]] = set_alter_id;
+                            }
+                        }
+                    }
+                    else if(this.save_img == 0){
+                        for(var i = 0; i < Math.round(13*len_scale*this.snap_scale); i++){
+                            var p_index = [Math.round(p[0]*this.snap_scale), Math.round(p[1]*this.snap_scale)];
+                            this.snaping_grid[p_index[0]][p_index[1]] = self.snap_info;
+                        }
+                    }
                 }
                                            
                 if(sub%3 > 0 || (sub%3 == 0 && sub>0 && len-g>0)){
