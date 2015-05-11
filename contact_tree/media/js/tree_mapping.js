@@ -193,11 +193,12 @@ var MappingView = Backbone.View.extend({
             });     
 
             save_item_dlt.click(function(){
+                var del_val = this.value;
                 var set_new_record = function(){
-                    save_user_mapping.splice(this.value-1, 1);
-                    var del_container_id = "#mapping_container_" + this.value;
+                    save_user_mapping.splice(del_val-1, 1);
+                    var del_container_id = "#mapping_container_" + del_val;
                     $(del_container_id).remove();
-                    for(var s = (parseInt(this.value)+1); s <= save_user_mapping.length+1; s++){
+                    for(var s = (parseInt(del_val)+1); s <= save_user_mapping.length+1; s++){
                         var mapping_id = "#save_mapping_" + s;
                         var dlt_mapping_id = "#dlt_mapping_" + s;
                         var container_id = "#mapping_container_" + s;
