@@ -868,7 +868,7 @@ var MappingView = Backbone.View.extend({
                         select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; background-color:" + color_table[l_color] + ";");
                     }
                         
-                    else if(color_table.length < c && l_color == color_table.length-1){
+                    else if(color_table.length <= c && l_color == color_table.length-1){
                         select_container.val((color_table.length-1).toString()).attr('style', "height:15px; width:100px; position:absolute; background-color:" + color_table[color_table.length-1] + ";");
                     }
                 }
@@ -2452,7 +2452,7 @@ var MappingView = Backbone.View.extend({
         for(s in component_attribute[data_mode]){
             if(s == "none"){}
             else{
-                 if(component_attribute[data_mode][s][0].length == 0)
+                if(component_attribute[data_mode][s][0].length == 0)
                     continue;
             }
 

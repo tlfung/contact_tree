@@ -80,6 +80,16 @@ var CustomizedView = Backbone.View.extend({
         }
         self.model.set({"attr_option": single_attr});
 
+        display_detail["branch"] = attr_map["branch"];
+        display_detail["fruit"] = attr_map["fruit_size"];
+        display_detail["bside"] = attr_map["bside"];
+        if('branch' in attribute_mapping && jQuery.type(attribute_mapping["branch"]) == 'object'){
+            display_detail["branch_mapping"] = {};
+            for(var key in attribute_mapping["branch"]){
+                display_detail["branch_mapping"][attribute_mapping["branch"][key]] = key;
+            }
+        }
+    
         auto_map["mode"] = data_mode;
         auto_map["attr"] = JSON.parse(JSON.stringify(attr_map));
         auto_map["map_info"] = JSON.parse(JSON.stringify(attribute_mapping));

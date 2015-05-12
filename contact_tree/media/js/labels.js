@@ -4,6 +4,14 @@ var display_group = {
     "": ""
 };
 
+var display_detail = {
+    "branch": "branch",
+    "fruit": "fruit",
+    "bside": "bside",
+    "branch_mapping": {}
+};
+
+/********************* no use *******************************/
 var diary_label = {
     month: "Month",
     day: "Day",

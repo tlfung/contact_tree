@@ -261,15 +261,54 @@ var ZoomView = Backbone.View.extend({
         var mode = self.model.get("view_mode");
         var context = self.myCanvas.getContext('2d');
         context.fillStyle = 'rgba(225,225,225, 0.5)';
-        
-        context.fillRect(px-2, py, 140, 110);
+        if(display_detail["fruit"] != "none")
+            context.fillRect(px-2, py, 150, 110);
+        else
+            context.fillRect(px-2, py, 150, 90);
         context.font = '12pt Calibri';
         context.fillStyle = 'black';
         context.fillText("Alter id: " + info[0], px, py+20); //pos
         context.fillText("Total Contacts: " + info[1], px, py+40);
-        context.fillText("Fruit Size: " + info[2], px, py+60);
-        context.fillText("Branch Layer: " + info[3], px, py+80);
-        context.fillText("Sub Side: " + info[4], px, py+100);
+        // context.fillText("Fruit Size: " + info[2], px, py+60);
+        context.fillText("Branch Layer: " + info[3], px, py+60);
+        context.fillText("Branch Side: " + info[4], px, py+80);
+        if(display_detail["fruit"] != "none"){
+            context.fillText("Fruit Size: " + info[2], px, py+100);
+            // var index1 = '';
+            // var index2 = '';
+            // var real_val = "None";
+            // if(jQuery.type(attribute_mapping["fruit_size"]) == 'array'){
+            //     index1 = attribute_mapping["fruit_size"][0][attribute_mapping["fruit_size"][1].indexOf(info[2].toString())-1];
+            //     index2 = attribute_mapping["fruit_size"][0][attribute_mapping["fruit_size"][1].indexOf(info[2].toString())];
+            //     if(index1 == undefined) real_val = "~" + index2;
+            //     else if(index2 == undefined) real_val = index1 + "~";
+            //     else real_val = index1 + "~" + index2;
+            // }
+            // else if(jQuery.type(attribute_mapping["fruit_size"]) == 'object'){
+            // }
+            // real_val += " (" + info[2] + ")";
+            // context.fillText(display_detail["fruit"] + ": " + real_val, px, py+100);
+        }
+        /*
+        if(display_detail["branch"] != "none"){
+            var index1 = '';
+            var index2 = '';
+            var real_val = "None";
+            if(jQuery.type(attribute_mapping["branch"]) == 'array'){
+                index1 = attribute_mapping["branch"][info[3]-2];
+                index2 = attribute_mapping["branch"][info[3]-1];
+                if(index1 == undefined) real_val = "~" + index2;
+                else if(index2 == undefined) real_val = index1 + "~";
+                else real_val = index1 + "~" + index2;
+            }
+            else if(jQuery.type(attribute_mapping["branch"]) == 'object'){
+                real_val = display_detail["branch_mapping"][(info[3]-1).toString()];
+            }
+            real_val += " (L" + info[3] + ")";
+            context.fillText(display_detail["branch"] + ": " + real_val, px, py+60);
+        }
+        context.fillText("Branch Side: " + info[4], px, py+80);
+        */
     },
 
     writeNote: function (px, py, info) {

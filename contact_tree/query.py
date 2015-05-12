@@ -985,7 +985,7 @@ def duplicate_stick(all_data, attr, branch_layer):
 
 ################################### local cache #######################################
 def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_ego):
-    # print "***** set_ctree_mapping *****"    
+    print "***** set_ctree_mapping *****"    
     db = DB()
     binary_index = dict()
     branch_order_index = []
@@ -1129,13 +1129,14 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
                                                 break
                                 else:
                                     if compt == 'branch' and layer_count == []:
-                                        layer_count.append(len(mapping[compt])+1)
+                                        layer_count.append(len(mapping[compt]))
+
                                     if compt == 'branch' and mapping[compt][1] < mapping[compt][0]: # for the revert mapping
                                         if float(record[ori_index[compt]]) >= float(mapping[compt][0]):
                                             record[record_index] = 0
                                                                                                                  
                                         elif float(record[ori_index[compt]]) <= float(mapping[compt][-1]):
-                                            record[record_index] = len(mapping)
+                                            record[record_index] = len(mapping[compt])
                                                                                 
                                         else:
                                             for order in range(len(mapping[compt])-2, -1, -1):
@@ -1147,14 +1148,14 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
                                             record[record_index] = 0
 
                                         elif float(record[ori_index[compt]]) >= float(mapping[compt][-1]):
-                                            record[record_index] = len(mapping)
+                                            record[record_index] = len(mapping[compt])
                                         
                                         else:
                                             for order in range(1, len(mapping[compt])):
                                                 if float(record[ori_index[compt]]) > float(mapping[compt][order-1]) and float(record[ori_index[compt]]) <= float(mapping[compt][order]):
                                                     record[record_index] = order
                                                     break
-                                    else: # special for size mapping
+                                    elif compt == 'fruit_size' or compt == 'leaf_size': # special for size mapping
                                         size_map = mapping[compt][1]
                                         val_map = mapping[compt][0]
 
@@ -1214,7 +1215,6 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
 
     if len(layer_count) != 0 and max(layer_count) != last_layer:
         user_ctree_data[session][data_table]["layer_" + ego_group] = max(layer_count)
-
 
 
 def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_group):
@@ -1412,13 +1412,13 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
                                 
                         else:
                             if compt == 'branch' and layer_count == []:
-                                layer_count.append(len(mapping[compt])+1)
+                                layer_count.append(len(mapping[compt]))
                             if compt == 'branch' and mapping[compt][1] < mapping[compt][0]: # for the revert mapping
                                 if float(d[attr[compt]]) >= float(mapping[compt][0]):
                                     ctree_record[record_index] = 0
                                                                                                          
                                 elif float(d[attr[compt]]) <= float(mapping[compt][-1]):
-                                    ctree_record[record_index] = len(mapping)
+                                    ctree_record[record_index] = len(mapping[compt])
                                                                         
                                 else:
                                     for order in range(len(mapping[compt])-2, -1, -1):
@@ -1430,7 +1430,7 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
                                     ctree_record[record_index] = 0
 
                                 elif float(d[attr[compt]]) >= float(mapping[compt][-1]):
-                                    ctree_record[record_index] = len(mapping)
+                                    ctree_record[record_index] = len(mapping[compt])
                                 
                                 else:
                                     for order in range(1, len(mapping[compt])):
@@ -2102,7 +2102,7 @@ def one_contact_structure(user_ctree_data, structure_request):
                 final_structure[sub][e] = one_structure
 
     return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
-        
+    
     return return_json
 
 

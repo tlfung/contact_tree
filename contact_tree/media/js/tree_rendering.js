@@ -556,16 +556,16 @@ var RenderingView = Backbone.View.extend({
             // this.context.lineWidth = 5;
         }
         else{ // no branch
-            this.context.lineTo(this.start_x + this.dr, this.start_y - this.stick_length);
-            this.context.lineTo(this.start_x, this.start_y - this.stick_length);
-            this.context.lineTo(this.start_x, this.start_y + this.temp_height);
-            this.context.closePath();
+            // this.context.lineTo(this.start_x + this.dr, this.start_y - this.stick_length);
+            // this.context.lineTo(this.start_x - this.dl, this.start_y - this.stick_length);
+            // this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height);
+            // this.context.closePath();
 
             // draw rectangle to fill the trunk
             this.context.moveTo(this.start_x + this.dr, this.start_y + this.temp_height);
             this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height + this.stick_length+200);
-            this.context.lineTo(this.start_x, this.start_y + this.temp_height + this.stick_length+200);
-            this.context.lineTo(this.start_x, this.start_y + this.temp_height);
+            this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height + this.stick_length+200);
+            this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height);
             this.context.closePath();
 
             this.context.stroke();//draw line
@@ -1048,16 +1048,16 @@ var RenderingView = Backbone.View.extend({
 
         }
         else{ // no branch
-            this.context.lineTo(this.start_x - this.dl, this.start_y - this.stick_length);
-            this.context.lineTo(this.start_x, this.start_y - this.stick_length);
-            this.context.lineTo(this.start_x, this.start_y + this.temp_height);
-            this.context.closePath();
+            // this.context.lineTo(this.start_x - this.dl, this.start_y - this.stick_length);
+            // this.context.lineTo(this.start_x + this.dr, this.start_y - this.stick_length);
+            // this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height);
+            // this.context.closePath();
 
             // draw rectangle to fill the trunk
             this.context.moveTo(this.start_x - this.dl, this.start_y + this.temp_height);
             this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height + this.stick_length+200);
-            this.context.lineTo(this.start_x, this.start_y + this.temp_height + this.stick_length+200);
-            this.context.lineTo(this.start_x, this.start_y + this.temp_height);
+            this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height + this.stick_length+200);
+            this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height);
             this.context.closePath();
 
             this.context.stroke();//draw line
