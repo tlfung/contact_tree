@@ -63,7 +63,7 @@ var MappingView = Backbone.View.extend({
                         self.model.trigger('change:tree_structure');
                     });
                 }
-                else if(self.apply_mapping != 0){
+                else if(self.change_mapping != 2 && self.change_mapping != 0 && self.apply_mapping != 0){
                     if(self.apply_mapping == 1)
                         var r = confirm("Leave without saving current setting!");
                     else if(self.apply_mapping == 2)
@@ -384,6 +384,7 @@ var MappingView = Backbone.View.extend({
                         self.restructure(result);
                         self.model.trigger('change:tree_structure');
                     });
+                    self.change_mapping = 2;
                 }
                 else{
                     return;
@@ -843,7 +844,7 @@ var MappingView = Backbone.View.extend({
 
             var select_container = $('<div class="dropdown"></div>');
             select_container.val(c.toString()).attr('id', "ori_attr_val_" + c);
-            var select_button = $('<button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:15px;"></button>');
+            var select_button = $('<button type="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="height:15px; float:right;"></button>');
             select_button.attr('id', "dLabel_" + c);
             var select_span = $('<span class="caret"></span>');
             select_button.append(select_span);
