@@ -105,6 +105,7 @@ var RenderingView = Backbone.View.extend({
 
         this.canvas_x_boundary;
         this.canvas_y_boundary;
+        this.nobranch = 0;
     },
 
     redraw: function(){
@@ -361,8 +362,9 @@ var RenderingView = Backbone.View.extend({
 
                     var used_dr = 0;
                     var used_dl = 0;
+                    this.nobranch = 0;
                     // draw right tree
-                    if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || ori_dr == 0){}
+                    if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || ori_dr == 0){ this.nobranch = 1; }
 
                     else
                         used_dr = this.draw_right_branch(height, layer_total_alter["right"][real_height], ego["right"][real_height]["level"]);
@@ -556,6 +558,7 @@ var RenderingView = Backbone.View.extend({
             // this.context.lineWidth = 5;
         }
         else{ // no branch
+            this.nobranch = 1;
             // this.context.lineTo(this.start_x + this.dr, this.start_y - this.stick_length);
             // this.context.lineTo(this.start_x - this.dl, this.start_y - this.stick_length);
             // this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height);
@@ -1048,10 +1051,12 @@ var RenderingView = Backbone.View.extend({
 
         }
         else{ // no branch
-            // this.context.lineTo(this.start_x - this.dl, this.start_y - this.stick_length);
-            // this.context.lineTo(this.start_x + this.dr, this.start_y - this.stick_length);
-            // this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height);
-            // this.context.closePath();
+            if(this.nobranch == 1){
+                this.context.lineTo(this.start_x - this.dl, this.start_y - this.stick_length);
+                this.context.lineTo(this.start_x + this.dr, this.start_y - this.stick_length);
+                this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height);
+                this.context.closePath();
+            }
 
             // draw rectangle to fill the trunk
             this.context.moveTo(this.start_x - this.dl, this.start_y + this.temp_height);
@@ -2528,7 +2533,8 @@ var RenderingView = Backbone.View.extend({
     
             var used_dr = 0;
             var used_dl = 0;
-            if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || ori_dr == 0){}
+            this.nobranch = 0;
+            if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || ori_dr == 0){this.nobranch = 1;}
 
             else
                 used_dr = this.draw_right_branch(height, layer_total_alter["right"][real_height], ego["right"][real_height]["level"]);
@@ -2677,7 +2683,8 @@ var RenderingView = Backbone.View.extend({
     
             var used_dr = 0;
             var used_dl = 0;
-            if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || ori_dr == 0){}
+            this.nobranch = 0;
+            if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || ori_dr == 0){this.nobranch = 1;}
 
             else
                 used_dr = this.draw_right_branch(height, layer_total_alter["right"][real_height], ego["right"][real_height]["level"]);

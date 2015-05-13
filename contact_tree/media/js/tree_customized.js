@@ -38,16 +38,26 @@ var CustomizedView = Backbone.View.extend({
         // render parameters and push into save array
         save_array[1] = JSON.stringify(self.model.get("display_egos"));
         save_array[2] = JSON.stringify(self.model.get("selected_egos"));
-        save_array[3] = self.model.get("leaf_scale");
-        save_array[4] = self.model.get("fruit_scale");
-        save_array[5] = self.model.get("sub_leaf_len_scale");
-        save_array[6] = self.model.get("dtl_branch_curve");
-        save_array[7] = self.model.get("root_curve");
-        save_array[8] = self.model.get("root_len_scale");
-        save_array[9] = self.model.get("canvas_scale");
-        save_array[10] = self.model.get("filter_contact");
-        save_array[11] = JSON.stringify(self.model.get("tree_boundary"));
-        save_array[12] = JSON.stringify(self.model.get("canvas_translate"));
+        // save_array[3] = self.model.get("leaf_scale");
+        // save_array[4] = self.model.get("fruit_scale");
+        // save_array[5] = self.model.get("sub_leaf_len_scale");
+        // save_array[6] = self.model.get("dtl_branch_curve");
+        // save_array[7] = self.model.get("root_curve");
+        // save_array[8] = self.model.get("root_len_scale");
+        // save_array[9] = self.model.get("canvas_scale");
+        // save_array[10] = self.model.get("filter_contact");
+        // save_array[11] = JSON.stringify(self.model.get("tree_boundary"));
+        // save_array[12] = JSON.stringify(self.model.get("canvas_translate"));
+        save_array[3] = 3;
+        save_array[4] = 3;
+        save_array[5] = 1;
+        save_array[6] = 1;
+        save_array[7] = 0;
+        save_array[8] = 1;
+        save_array[9] = 0.15;
+        save_array[10] = 0;        
+        save_array[11] = {};        
+        save_array[12] = [0, 0];
         save_array[13] = JSON.stringify(total_ego);
         save_array[14] = self.model.get("dataset_group");
         save_array[15] = JSON.stringify(component_attribute[save_array[0]]);
@@ -89,7 +99,7 @@ var CustomizedView = Backbone.View.extend({
                 display_detail["branch_mapping"][attribute_mapping["branch"][key]] = key;
             }
         }
-    
+
         auto_map["mode"] = data_mode;
         auto_map["attr"] = JSON.parse(JSON.stringify(attr_map));
         auto_map["map_info"] = JSON.parse(JSON.stringify(attribute_mapping));
