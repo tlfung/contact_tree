@@ -2249,7 +2249,7 @@ var MappingView = Backbone.View.extend({
             self.el_mark_group_select.empty();
             self.el_sidekey_operation.show();
             // self.el_mark_group.text("✔ as Left Side of bside: 【NOTE】");
-            self.el_mark_group.html("<b>NOTE: Blue</b> as upper side | <b>Red</b> as lower side");
+            self.el_mark_group.html("<b>NOTE: Red</b> as upper side | <b>Blue</b> as lower side");
             self.el_mark_group.show();
             if(component_attribute[data_mode][attr_map["bside"]][5] == "categorical" || component_attribute[data_mode][attr_map["bside"]][5] == "boolean"){
                 self.binary_cat_operation(attr_map["bside"], "bside", attr_map["bside"]);
@@ -2272,7 +2272,7 @@ var MappingView = Backbone.View.extend({
                 var attr_map = self.model.get("attribute");
                 self.el_sidekey_operation.show();
                 
-                self.el_mark_group.html("<b>NOTE: Blue</b> as upper side | <b>Red</b> as lower side");
+                self.el_mark_group.html("<b>NOTE: Red</b> as upper side | <b>Blue</b> as lower side");
                 self.el_mark_group.show();
                 if(component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "categorical" || component_attribute[data_mode][self.el_sidekeyselect.val()][5] == "boolean"){
                     self.binary_cat_operation(self.el_sidekeyselect.val(), "bside", attr_map["bside"]);

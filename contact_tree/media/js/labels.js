@@ -11,6 +11,17 @@ var display_detail = {
     "branch_mapping": {}
 };
 
+var component_legends = {
+    "branch": "Branch Layer:",
+    "fruit_size": "Fruit Size:",
+    "bside": "Branch Side:",
+    "trunk": "Trunk Side:",
+    "leaf_size": "Leaf Size:",
+    "leaf_color": "Leaf Color:",
+    "root": "Root Color:",
+    "highlight": "Highlight Info:"
+};
+
 /********************* no use *******************************/
 var diary_label = {
     month: "Month",

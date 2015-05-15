@@ -1182,7 +1182,7 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
                                        
                                         if len(reorder) < 9:
                                             reorder.append(collecting_data["max"])
-                                        layer_count = [10]
+                                        layer_count = [9]
                                     if int(record[ori_index[compt]]) <= reorder[0]:
                                         record[record_index] = 0
 
@@ -1199,9 +1199,10 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
                                         real_data = precur.fetchall()
                                         for dist_d in real_data:
                                             branch_order_index.append(dist_d[attr[compt]])
+                                        layer_count.append(len(branch_order_index)-1)
                                     
                                     record[record_index] = branch_order_index.index(record[ori_index[compt]])
-                                    layer_count.append(branch_order_index.index(record[ori_index[compt]]))
+                                    # layer_count.append(branch_order_index.index(record[ori_index[compt]]))
                                                                                    
 
                     elif compt == 'highlight':
@@ -1464,7 +1465,7 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
                                
                                 if len(reorder) < 9:
                                     reorder.append(collecting_data["max"])
-                                layer_count = [10]
+                                layer_count = [9]
                             if int(d[attr[compt]]) <= reorder[0]:
                                 ctree_record[record_index] = 0
 
@@ -1481,10 +1482,11 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
                                 real_data = precur.fetchall()
                                 for dist_d in real_data:
                                     branch_order_index.append(dist_d[attr[compt]])
-                            
+                                layer_count.append(len(branch_order_index)-1)
+
                             ctree_record[record_index] = branch_order_index.index(d[attr[compt]])
-                            layer_count.append(branch_order_index.index(d[attr[compt]]))
-                                                                           
+                            # layer_count.append(branch_order_index.index(d[attr[compt]]))
+                                                                                                       
 
             elif compt == 'highlight':
                 if attr[compt] == "none":

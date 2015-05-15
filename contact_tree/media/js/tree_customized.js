@@ -90,15 +90,7 @@ var CustomizedView = Backbone.View.extend({
         }
         self.model.set({"attr_option": single_attr});
 
-        display_detail["branch"] = attr_map["branch"];
-        display_detail["fruit"] = attr_map["fruit_size"];
-        display_detail["bside"] = attr_map["bside"];
-        if('branch' in attribute_mapping && jQuery.type(attribute_mapping["branch"]) == 'object'){
-            display_detail["branch_mapping"] = {};
-            for(var key in attribute_mapping["branch"]){
-                display_detail["branch_mapping"][attribute_mapping["branch"][key]] = key;
-            }
-        }
+        this.legend_generator(attr_map, data_mode);
 
         auto_map["mode"] = data_mode;
         auto_map["attr"] = JSON.parse(JSON.stringify(attr_map));
@@ -119,7 +111,7 @@ var CustomizedView = Backbone.View.extend({
         var self = this;
         var mode = self.model.get("view_mode");
         var group = self.model.get("dataset_group")
-        
+        $("#tree_restore").trigger("click");
         if(mode == "0" || group == "")
             return;
         // get all the user saving mapping of this mode        
@@ -130,6 +122,78 @@ var CustomizedView = Backbone.View.extend({
             self.model.trigger('change:user_mapping');
         }); 
        
+    },
+
+    legend_generator: function(attr_map, data_mode){
+        var self = this;
+        display_detail["branch"] = attr_map["branch"];
+        display_detail["fruit"] = attr_map["fruit_size"];
+        display_detail["bside"] = attr_map["bside"];
+        /*
+        if('branch' in attribute_mapping && jQuery.type(attribute_mapping["branch"]) == 'object'){
+            display_detail["branch_mapping"] = {};
+            for(var key in attribute_mapping["branch"]){
+                display_detail["branch_mapping"][attribute_mapping["branch"][key]] = key;
+            }
+        }
+        */
+        /*
+        if(display_detail["fruit"] != "none"){
+            var index1 = '';
+            var index2 = '';
+            var real_val = "None";
+            if(jQuery.type(attribute_mapping["fruit_size"]) == 'array'){
+                index1 = attribute_mapping["fruit_size"][0][attribute_mapping["fruit_size"][1].indexOf(info[2].toString())-1];
+                index2 = attribute_mapping["fruit_size"][0][attribute_mapping["fruit_size"][1].indexOf(info[2].toString())];
+                if(index1 == undefined) real_val = "~" + index2;
+                else if(index2 == undefined) real_val = index1 + "~";
+                else real_val = index1 + "~" + index2;
+            }
+            else if(jQuery.type(attribute_mapping["fruit_size"]) == 'object'){
+            }
+            real_val += " (" + info[2] + ")";
+            context.fillText(display_detail["fruit"] + ": " + real_val, px, py+100);
+        }
+        
+        if(display_detail["branch"] != "none"){
+            var index1 = '';
+            var index2 = '';
+            var real_val = "None";
+            if(jQuery.type(attribute_mapping["branch"]) == 'array'){
+                index1 = attribute_mapping["branch"][info[3]-2];
+                index2 = attribute_mapping["branch"][info[3]-1];
+                if(index1 == undefined) real_val = "~" + index2;
+                else if(index2 == undefined) real_val = index1 + "~";
+                else real_val = index1 + "~" + index2;
+            }
+            else if(jQuery.type(attribute_mapping["branch"]) == 'object'){
+                real_val = display_detail["branch_mapping"][(info[3]-1).toString()];
+            }
+            real_val += " (L" + info[3] + ")";
+            context.fillText(display_detail["branch"] + ": " + real_val, px, py+60);
+        }
+        */
+        var legens_cotainer = $("#legends");
+        legens_cotainer.empty();
+        for(a in attr_map){
+            if(attr_map[a] != 'none' && attr_map[a] != 'alterid'){
+                var one_legend = $("<div class='legends_list' style='cursor:pointer;'><b>" + component_legends[a] + "</b> " + attr_map[a] + "</div>");
+                // var extend_button = $("<span class='glyphicon glyphicon-info-sign' style='margin-left:5px; font-size:smaller;'></span>");
+                // extend_button.attr('id', "legend_" + a);
+                // one_legend.append(extend_button);
+                one_legend.attr('id', "legend_" + a);
+                legens_cotainer.append(one_legend);
+                // set event of clicking
+                one_legend.click(function(){
+                    $("#sidekey_dialog").dialog("open");
+                    var attr = this.id.split("legend_")[1];
+                    var trriger_attr_id = "#" + attr + "_label";
+                    $(trriger_attr_id).trigger("click");
+                    return false;
+                }); 
+            }
+        }
+
     }
 
 });

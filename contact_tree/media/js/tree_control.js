@@ -30,6 +30,8 @@ var ControlView = Backbone.View.extend({
         this.el_dtl_box = $("#dtl_box");
         this.el_fruit_switcher = $("#fruit_switcher");
         this.el_root_switcher = $("#root_switcher");
+        this.legends_container = $("#legends");
+        this.legends_display = 0;
 
         $("#tree_restore").click(function(){
             self.model.set({"leaf_scale":3});
@@ -67,6 +69,18 @@ var ControlView = Backbone.View.extend({
             self.el_filter_contact.ionRangeSlider("update", {
                 from: 0
             });
+        });
+
+        $("#tree_legends").click(function(){
+            if(self.legends_display == 0){
+                self.legends_container.show();
+                self.legends_display = 1;
+            }
+            else if(self.legends_display == 1){
+                self.legends_container.hide();
+                self.legends_display = 0;
+            }
+            return false;
         });
         
 

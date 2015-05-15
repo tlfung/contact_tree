@@ -154,6 +154,7 @@ var ZoomView = Backbone.View.extend({
         self.myCanvas.addEventListener('mouseup',function(evt){
             self.grid = self.model.get("canvas_grid");
             self.model.set({"moving": 0});
+            // trigger redraw
             self.model.trigger('change:canvas_scale');
             self.translate = self.model.get("canvas_translate");
             self.scale = self.model.get("canvas_scale");
@@ -226,6 +227,7 @@ var ZoomView = Backbone.View.extend({
                         self.writeMessage(Math.floor(mousePos.x), Math.floor(mousePos.y), alter_info[index[0]][index[1]]);
                     }
                 }
+
             }
             self.dragStart = null;
         },false);
@@ -274,41 +276,7 @@ var ZoomView = Backbone.View.extend({
         context.fillText("Branch Side: " + info[4], px, py+80);
         if(display_detail["fruit"] != "none"){
             context.fillText("Fruit Size: " + info[2], px, py+100);
-            // var index1 = '';
-            // var index2 = '';
-            // var real_val = "None";
-            // if(jQuery.type(attribute_mapping["fruit_size"]) == 'array'){
-            //     index1 = attribute_mapping["fruit_size"][0][attribute_mapping["fruit_size"][1].indexOf(info[2].toString())-1];
-            //     index2 = attribute_mapping["fruit_size"][0][attribute_mapping["fruit_size"][1].indexOf(info[2].toString())];
-            //     if(index1 == undefined) real_val = "~" + index2;
-            //     else if(index2 == undefined) real_val = index1 + "~";
-            //     else real_val = index1 + "~" + index2;
-            // }
-            // else if(jQuery.type(attribute_mapping["fruit_size"]) == 'object'){
-            // }
-            // real_val += " (" + info[2] + ")";
-            // context.fillText(display_detail["fruit"] + ": " + real_val, px, py+100);
         }
-        /*
-        if(display_detail["branch"] != "none"){
-            var index1 = '';
-            var index2 = '';
-            var real_val = "None";
-            if(jQuery.type(attribute_mapping["branch"]) == 'array'){
-                index1 = attribute_mapping["branch"][info[3]-2];
-                index2 = attribute_mapping["branch"][info[3]-1];
-                if(index1 == undefined) real_val = "~" + index2;
-                else if(index2 == undefined) real_val = index1 + "~";
-                else real_val = index1 + "~" + index2;
-            }
-            else if(jQuery.type(attribute_mapping["branch"]) == 'object'){
-                real_val = display_detail["branch_mapping"][(info[3]-1).toString()];
-            }
-            real_val += " (L" + info[3] + ")";
-            context.fillText(display_detail["branch"] + ": " + real_val, px, py+60);
-        }
-        context.fillText("Branch Side: " + info[4], px, py+80);
-        */
     },
 
     writeNote: function (px, py, info) {

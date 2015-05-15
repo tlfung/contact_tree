@@ -177,7 +177,7 @@ var MyApp = function MyApp(){
             document.cookie = "session_id=" + session_id.toString() + ";"
         }
     }
-    // last_use = "contact_diary_taiwan";
+    
     // if(session_id == 8407169205136597){
     //     session_id = 8807169205136597;
     //     document.cookie = "session_id=" + session_id.toString() + ";"

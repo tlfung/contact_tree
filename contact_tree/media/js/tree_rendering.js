@@ -105,7 +105,7 @@ var RenderingView = Backbone.View.extend({
 
         this.canvas_x_boundary;
         this.canvas_y_boundary;
-        this.nobranch = 0;
+        this.leaves_id = 0;
     },
 
     redraw: function(){
@@ -127,7 +127,7 @@ var RenderingView = Backbone.View.extend({
         this.translate_point = self.model.get("canvas_translate");
         // for the scale of clicking grid
         this.c_detail = 8*this.scale;
-
+        this.leaves_id = 0;
         self.canvas_x_boundary = [-this.translate_point[0]/this.scale, (self.myCanvas.width - this.translate_point[0]) / this.scale ];
         self.canvas_y_boundary = [-this.translate_point[1]/this.scale, (self.myCanvas.height - this.translate_point[1]) / self.scale ];
 
@@ -252,6 +252,9 @@ var RenderingView = Backbone.View.extend({
                 // adjust the trunk scale
                 var ori_dr = right_side*0.65;
                 var ori_dl = left_side*0.65;
+                var count_dr = right_side*0.45;
+                var count_dl = left_side*0.45;
+
                 var t_scale = (right_side + left_side)/150;
                 if(right_side+left_side < 80){
                     t_scale = 0.5;
@@ -362,9 +365,9 @@ var RenderingView = Backbone.View.extend({
 
                     var used_dr = 0;
                     var used_dl = 0;
-                    this.nobranch = 0;
+                    
                     // draw right tree
-                    if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || ori_dr == 0){ this.nobranch = 1; }
+                    if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || (count_dr <= 0 && (count_dl-layer_total_alter["left"][real_height]*0.45) <= 0)){}
 
                     else
                         used_dr = this.draw_right_branch(height, layer_total_alter["right"][real_height], ego["right"][real_height]["level"]);
@@ -374,13 +377,16 @@ var RenderingView = Backbone.View.extend({
                     this.context.fillStyle = mapping_color.trunk;
                     this.context.strokeStyle = mapping_color.trunk;
                     this.context.beginPath();
-                    if((real_height == self.total_layer-1 && layer_total_alter["left"][real_height] == 0) || ori_dl == 0){}
+                    if((real_height == self.total_layer-1 && layer_total_alter["left"][real_height] == 0) || ((count_dr-layer_total_alter["right"][real_height]*0.45) <= 0 && count_dl <= 0)){}
 
                     else
                         used_dl = this.draw_left_branch(height, layer_total_alter["left"][real_height], ego["left"][real_height]["level"]);
 
                     ori_dr -= used_dr*0.45;                    
                     ori_dl -= used_dl*0.45;
+                    count_dr -= used_dr*0.45;                    
+                    count_dl -= used_dl*0.45;
+                    
                     this.start_y = this.start_y - this.stick_length - this.temp_height;
                     // this.start_x = this.start_x + 100;
                     real_height += 1;
@@ -558,11 +564,14 @@ var RenderingView = Backbone.View.extend({
             // this.context.lineWidth = 5;
         }
         else{ // no branch
-            this.nobranch = 1;
             // this.context.lineTo(this.start_x + this.dr, this.start_y - this.stick_length);
             // this.context.lineTo(this.start_x - this.dl, this.start_y - this.stick_length);
             // this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height);
             // this.context.closePath();
+            // (2*this.start_x + this.dr - this.dl)*0.5
+            this.context.quadraticCurveTo(this.start_x + this.dr + 10 + layer*8 - layer*10, this.start_y - this.stick_length + layer*15, this.start_x + this.dr + 50 + layer*10 - layer*10, this.start_y - this.stick_length - 100 + layer*15);
+            this.context.quadraticCurveTo(this.start_x + this.dr + 25 + layer*10 - layer*10, this.start_y - this.stick_length - 150 + layer*15, this.start_x - this.dl, this.start_y + this.temp_height);
+            this.context.closePath();           
 
             // draw rectangle to fill the trunk
             this.context.moveTo(this.start_x + this.dr, this.start_y + this.temp_height);
@@ -1051,13 +1060,17 @@ var RenderingView = Backbone.View.extend({
 
         }
         else{ // no branch
-            if(this.nobranch == 1){
-                this.context.lineTo(this.start_x - this.dl, this.start_y - this.stick_length);
-                this.context.lineTo(this.start_x + this.dr, this.start_y - this.stick_length);
-                this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height);
-                this.context.closePath();
-            }
-
+            /*
+            this.context.lineTo(this.start_x - this.dl, this.start_y - this.stick_length);
+            this.context.lineTo(this.start_x + this.dr, this.start_y - this.stick_length);
+            this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height);
+            this.context.closePath();
+            */
+            // (2*this.start_x + this.dr - this.dl)*0.5
+            this.context.quadraticCurveTo(this.start_x - this.dl - 10 - layer*8 + layer*10, this.start_y - this.stick_length + layer*15, this.start_x - this.dl - 50 - layer*10 + layer*10, this.start_y - this.stick_length - 100 + layer*15);
+            this.context.quadraticCurveTo(this.start_x - this.dl - 25 - layer*10 + layer*10, this.start_y - this.stick_length - 150 + layer*15, this.start_x + this.dr, this.start_y + this.temp_height);
+            this.context.closePath();
+            
             // draw rectangle to fill the trunk
             this.context.moveTo(this.start_x - this.dl, this.start_y + this.temp_height);
             this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height + this.stick_length+200);
@@ -1498,6 +1511,7 @@ var RenderingView = Backbone.View.extend({
                                     if(clicking_point[0] >= 0 && clicking_point[0] <= this.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= this.myCanvas.height/self.c_detail){
                                         if(leaf_id != "none")
                                             this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+" +  leaf_id;
+                                        // add leaf clicking grid!!!
                                         // else
                                         //     this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+ ";
                                     }
@@ -2294,8 +2308,9 @@ var RenderingView = Backbone.View.extend({
     },
     
     leaf_style_1: function(ctx, cx, cy, radius, color, angle, l_id) {
-        var self = this;
+        var self = this;        
         if(this.snap == 0 && this.save_img == 0){
+            this.leaves_id += 1;
             // var canvas_x_boundary = [-this.translate_point[0]/this.scale, (self.myCanvas.width - this.translate_point[0]) / this.scale ];
             // var canvas_y_boundary = [-this.translate_point[1]/this.scale, (self.myCanvas.height - this.translate_point[1]) / self.scale ];
             if(cx < self.canvas_x_boundary[0] || cx > self.canvas_x_boundary[1] || cy > self.canvas_y_boundary[1] || cy < self.canvas_y_boundary[0])
@@ -2488,6 +2503,8 @@ var RenderingView = Backbone.View.extend({
 
         var ori_dr = right_side*0.65;
         var ori_dl = left_side*0.65;
+        var count_dr = right_side*0.45;
+        var count_dl = left_side*0.45;
         var t_scale = (right_side + left_side)/150;
         if(right_side+left_side < 80){
             t_scale = 0.5;
@@ -2533,8 +2550,7 @@ var RenderingView = Backbone.View.extend({
     
             var used_dr = 0;
             var used_dl = 0;
-            this.nobranch = 0;
-            if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || ori_dr == 0){this.nobranch = 1;}
+            if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || ((count_dl-layer_total_alter["left"][real_height]*0.45) <= 0 && count_dr <= 0)){}
 
             else
                 used_dr = this.draw_right_branch(height, layer_total_alter["right"][real_height], ego["right"][real_height]["level"]);
@@ -2543,13 +2559,15 @@ var RenderingView = Backbone.View.extend({
             this.context.fillStyle = mapping_color.trunk;
             this.context.strokeStyle = mapping_color.trunk;
             this.context.beginPath();
-            if((real_height == self.total_layer-1 && layer_total_alter["left"][real_height] == 0) || ori_dl == 0){}
+            if((real_height == self.total_layer-1 && layer_total_alter["left"][real_height] == 0) || ((count_dr-layer_total_alter["right"][real_height]*0.45) <= 0 && count_dl <= 0)){}
 
             else
                 used_dl = this.draw_left_branch(height, layer_total_alter["left"][real_height], ego["left"][real_height]["level"]);
 
             ori_dr -= used_dr*0.45;
             ori_dl -= used_dl*0.45;
+            count_dr -= used_dr*0.45;
+            count_dl -= used_dl*0.45;
             this.start_y = this.start_y - this.stick_length - this.temp_height;
             real_height += 1;
         }
@@ -2638,6 +2656,9 @@ var RenderingView = Backbone.View.extend({
 
         var ori_dr = right_side*0.65;
         var ori_dl = left_side*0.65;
+        var count_dr = right_side*0.45;
+        var count_dl = left_side*0.45;
+        
         var t_scale = (right_side + left_side)/150;
         if(right_side+left_side < 80){
             t_scale = 0.5;
@@ -2683,8 +2704,7 @@ var RenderingView = Backbone.View.extend({
     
             var used_dr = 0;
             var used_dl = 0;
-            this.nobranch = 0;
-            if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || ori_dr == 0){this.nobranch = 1;}
+            if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || ((count_dl-layer_total_alter["left"][real_height]*0.45) <= 0 && count_dr <= 0)){}
 
             else
                 used_dr = this.draw_right_branch(height, layer_total_alter["right"][real_height], ego["right"][real_height]["level"]);
@@ -2693,13 +2713,16 @@ var RenderingView = Backbone.View.extend({
             this.context.fillStyle = mapping_color.trunk;
             this.context.strokeStyle = mapping_color.trunk;
             this.context.beginPath();
-            if((real_height == self.total_layer-1 && layer_total_alter["left"][real_height] == 0) || ori_dl == 0){}
+            if((real_height == self.total_layer-1 && layer_total_alter["left"][real_height] == 0)|| ((count_dr-layer_total_alter["right"][real_height]*0.45) <= 0 && count_dl <= 0)){}
 
             else
                 used_dl = this.draw_left_branch(height, layer_total_alter["left"][real_height], ego["left"][real_height]["level"]);
 
             ori_dr -= used_dr*0.45;
             ori_dl -= used_dl*0.45;
+            count_dr -= used_dr*0.45;
+            count_dl -= used_dl*0.45;
+            
             this.start_y = this.start_y - this.stick_length - this.temp_height;
             
             real_height += 1;
