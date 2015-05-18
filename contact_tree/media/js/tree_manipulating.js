@@ -115,6 +115,7 @@ var ZoomView = Backbone.View.extend({
             self.scale = self.model.get("canvas_scale");
             self.model.set({"clicking_leaf":-1});
             // var grid = self.model.get("canvas_grid");
+            var alter_info = self.model.get("info_table");
             var c_detail = self.model.get("canvas_detail");
             var mousePos = self.getMousePos(self.myCanvas, evt);
             
@@ -136,15 +137,25 @@ var ZoomView = Backbone.View.extend({
                 var point_info = self.grid[Math.floor(mousePos.x/c_detail)][Math.floor(mousePos.y/c_detail)];
                 if(point_info != -1){
                     var parse_grid = point_info.split("*+");
-                    if(parse_grid.length == 1 || parse_grid[0] == "saveIMG" || parse_grid[0] == "popup" || parse_grid[0] == "root"){
+                    /*
+                    if(parse_grid.length == 4){
+                        var index = parse_grid[2].split("_");
+                        self.model.set({"clicking_leaf":parse_grid[3]});
+                        self.writeMessage1(Math.floor(mousePos.x), Math.floor(mousePos.y), alter_info[index[0]][index[1]], alter_info["leaves"][parse_grid[1]])
+                        // self.writeNote(Math.floor(mousePos.x), Math.floor(mousePos.y), parse_grid[3]);
+                    }
+                    else
+                    */ 
+                    if(parse_grid.length == 1 || parse_grid[0] == "leafid" || parse_grid[0] == "saveIMG" || parse_grid[0] == "popup" || parse_grid[0] == "root"){
                         self.el_main_canvas.css("cursor", "pointer");
                     }
                     else{ 
-                        self.el_main_canvas.css("cursor", "");
+                        self.el_main_canvas.css("cursor", "");                        
                         if(parse_grid[0] == "leaf"){
                             self.model.set({"clicking_leaf":parse_grid[1]});
                             self.writeNote(Math.floor(mousePos.x), Math.floor(mousePos.y), parse_grid[1]);
                         }
+                     
                     }
                 }
             }
@@ -222,6 +233,11 @@ var ZoomView = Backbone.View.extend({
                         $( "#resolution_dialog" ).dialog( "open" );
                         self.saving_info = [ego, sub];                        
                     }
+                    else if(parse_grid[0] == "leafid"){
+                        var index = parse_grid[2].split("_");
+                        // console.log(parse_grid[1], parse_grid[2], alter_info[index[0]][index[1]], alter_info["leaves"][parse_grid[1]]);         
+                        self.writeMessage1(Math.floor(mousePos.x), Math.floor(mousePos.y), alter_info[index[0]][index[1]], alter_info["leaves"][parse_grid[1]]);
+                    }
                     else{
                         var index = self.grid[Math.floor(mousePos.x/c_detail)][Math.floor(mousePos.y/c_detail)].split("_");
                         self.writeMessage(Math.floor(mousePos.x), Math.floor(mousePos.y), alter_info[index[0]][index[1]]);
@@ -269,7 +285,7 @@ var ZoomView = Backbone.View.extend({
             context.fillRect(px-2, py, 150, 90);
         context.font = '12pt Calibri';
         context.fillStyle = 'black';
-        context.fillText("Alter id: " + info[0], px, py+20); //pos
+        context.fillText("Alter Id: " + info[0], px, py+20); //pos
         context.fillText("Total Contacts: " + info[1], px, py+40);
         // context.fillText("Fruit Size: " + info[2], px, py+60);
         context.fillText("Branch Layer: " + info[3], px, py+60);
@@ -287,6 +303,29 @@ var ZoomView = Backbone.View.extend({
         context.font = '12pt Calibri';
         context.fillStyle = 'black';
         context.fillText(info, px+15, py+15); //pos
+    },
+
+    writeMessage1: function (px, py, info, leaf_info) {
+        var self = this;
+        var mode = self.model.get("view_mode");
+        var context = self.myCanvas.getContext('2d');
+        context.fillStyle = 'rgba(225,225,225, 0.5)';
+        if(display_detail["fruit"] != "none")
+            context.fillRect(px-2, py, 150, 150);
+        else
+            context.fillRect(px-2, py, 150, 130);
+        context.font = '12pt Calibri';
+        context.fillStyle = 'black';
+        context.fillText("Leaf Size: " + leaf_info[0], px, py+20);
+        context.fillText("Color Group: " + leaf_info[1], px, py+40);
+        context.fillText("Alter Id: " + info[0], px, py+60); //pos
+        context.fillText("Total Contacts: " + info[1], px, py+80);
+        // context.fillText("Fruit Size: " + info[2], px, py+60);
+        context.fillText("Branch Layer: " + info[3], px, py+100);
+        context.fillText("Branch Side: " + info[4], px, py+120);
+        if(display_detail["fruit"] != "none"){
+            context.fillText("Fruit Size: " + info[2], px, py+140);
+        }
     },
 
     set_snap_event: function(){

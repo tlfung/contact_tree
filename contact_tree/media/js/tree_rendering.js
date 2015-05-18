@@ -131,6 +131,8 @@ var RenderingView = Backbone.View.extend({
         self.canvas_x_boundary = [-this.translate_point[0]/this.scale, (self.myCanvas.width - this.translate_point[0]) / this.scale ];
         self.canvas_y_boundary = [-this.translate_point[1]/this.scale, (self.myCanvas.height - this.translate_point[1]) / self.scale ];
 
+        this.hash_table[this.subyear] = {};
+        this.hash_table["leaves"] = {};
         if(this.scale > 0.6){ // to draw all the tree leaf
             this.on_moving = 0;
         }
@@ -1457,6 +1459,7 @@ var RenderingView = Backbone.View.extend({
                 for(var h = 0; h < cluster; h++){ 
                     var radius = leaf_table[sum_leaf[g].size];                    
                     var color = mapping_color.render_leaf_color[sum_leaf[g].color];
+                    var leaf_detail = sum_leaf[g].size + "#" + sum_leaf[g].color;
                     var leaf_id = sum_leaf[g].leaf_id;
                     
                     if(leaf_id != "none" && self.leaf_hovor == leaf_id){
@@ -1509,11 +1512,13 @@ var RenderingView = Backbone.View.extend({
                                     
                                     var clicking_point = [Math.round(real_x/self.c_detail), Math.round(real_y/self.c_detail)];
                                     if(clicking_point[0] >= 0 && clicking_point[0] <= this.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= this.myCanvas.height/self.c_detail){
-                                        if(leaf_id != "none")
+                                        if(leaf_id != "none"){
                                             this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+" +  leaf_id;
-                                        // add leaf clicking grid!!!
-                                        // else
-                                        //     this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+ ";
+                                            // this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leafid*+" +  self.leaves_id + "*+" + set_alter_id + "*+" + leaf_id;
+                                        }
+                                        else{
+                                            this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leafid*+" +  self.leaves_id + "*+" + set_alter_id;
+                                        }
                                     }
                                 }
                                 
@@ -1531,7 +1536,7 @@ var RenderingView = Backbone.View.extend({
                             }
                         }
 
-                        this.leaf_style_1(this.context, point_x, point_y, radius, color, angle, leaf_id);
+                        this.leaf_style_1(this.context, point_x, point_y, radius, color, angle, leaf_id, leaf_detail);
 
                     }
                     else{
@@ -1545,10 +1550,12 @@ var RenderingView = Backbone.View.extend({
                                     
                                     var clicking_point = [Math.round(real_x/self.c_detail), Math.round(real_y/self.c_detail)];
                                     if(clicking_point[0] >= 0 && clicking_point[0] <= this.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= this.myCanvas.height/self.c_detail){
-                                        if(leaf_id != "none")
+                                        if(leaf_id != "none"){
                                             this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+" +  leaf_id;
-                                        // else
-                                        //     this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leaf*+ ";
+                                        }
+                                        else{
+                                            this.clicking_grid[clicking_point[0]][clicking_point[1]] = "leafid*+" +  self.leaves_id + "*+" + set_alter_id;
+                                        }
                                     }
                                 }
                                 
@@ -1567,7 +1574,7 @@ var RenderingView = Backbone.View.extend({
                             }
                         }
                         
-                        this.leaf_style_1(this.context, point_x, point_y, radius, color, angle, leaf_id);
+                        this.leaf_style_1(this.context, point_x, point_y, radius, color, angle, leaf_id, leaf_detail);
                         
                     }
 
@@ -2307,15 +2314,17 @@ var RenderingView = Backbone.View.extend({
         this.context.lineCap = 'round';
     },
     
-    leaf_style_1: function(ctx, cx, cy, radius, color, angle, l_id) {
+    leaf_style_1: function(ctx, cx, cy, radius, color, angle, l_id, leaf_detail) {
         var self = this;        
         if(this.snap == 0 && this.save_img == 0){
+            this.hash_table["leaves"][self.leaves_id] = [leaf_detail.split("#")[0], leaf_detail.split("#")[1]]; // [radius, color]
             this.leaves_id += 1;
             // var canvas_x_boundary = [-this.translate_point[0]/this.scale, (self.myCanvas.width - this.translate_point[0]) / this.scale ];
             // var canvas_y_boundary = [-this.translate_point[1]/this.scale, (self.myCanvas.height - this.translate_point[1]) / self.scale ];
             if(cx < self.canvas_x_boundary[0] || cx > self.canvas_x_boundary[1] || cy > self.canvas_y_boundary[1] || cy < self.canvas_y_boundary[0])
                 return;
         }
+
         ctx.save();
         this.context.lineWidth = 1;
         if(l_id != "none" && self.leaf_hovor == l_id){
