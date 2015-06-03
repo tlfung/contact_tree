@@ -2104,7 +2104,8 @@ def one_contact_structure(user_ctree_data, structure_request):
                 final_structure[sub][e] = one_structure
 
     return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
-    
+    # with open("./contact_tree/data/tree_structure.json", "wb") as json_file:
+    #     json_file.write(return_json)    
     return return_json
 
 

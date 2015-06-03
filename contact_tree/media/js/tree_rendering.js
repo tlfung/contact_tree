@@ -181,7 +181,7 @@ var RenderingView = Backbone.View.extend({
         var structure = self.model.get("tree_structure");
         var attr_map = self.model.get("attribute");
 
-        this.context.lineWidth = 5; // set the style
+        this.context.lineWidth = 50; // set the style
 
         this.context.setTransform(1, 0, 0, 1, 0, 0);
         this.context.clearRect(0, 0, this.myCanvas.width, this.myCanvas.height);
@@ -336,6 +336,7 @@ var RenderingView = Backbone.View.extend({
                 this.context.lineWidth = 5; // set the style
                 var real_height = 0;
                 for(var height = 0; height < self.total_layer; height++){
+                    mapping_color.trunk = "rgb(" + (125-(height+1)*3).toString() + "," + (96-(height+1)*3).toString() + "," + (65-(height+1)*3).toString() + ")";
                     if(this.start_y + this.stick_length + this.temp_height < self.canvas_y_boundary[0] && self.tree_size[self.ego_label][4] != "none"){ 
                         break;
                     }
@@ -347,8 +348,12 @@ var RenderingView = Backbone.View.extend({
                         real_height += 1;
                         continue;
                     }
+                    
                     this.context.fillStyle = mapping_color.trunk;
                     this.context.strokeStyle = mapping_color.trunk;
+                    // this.context.fillStyle = "rgb(" + (125-(height+1)*3).toString() + "," + (96-(height+1)*3).toString() + "," + (65-(height+1)*3).toString() + ")";
+                    // this.context.strokeStyle = "rgb(" + (125-(height+1)*3).toString() + "," + (96-(height+1)*3).toString() + "," + (65-(height+1)*3).toString() + ")";
+                    // this.context.strokeStyle = "black";
                     this.context.beginPath();
 
                    
@@ -378,6 +383,9 @@ var RenderingView = Backbone.View.extend({
                     // draw left tree
                     this.context.fillStyle = mapping_color.trunk;
                     this.context.strokeStyle = mapping_color.trunk;
+                    // this.context.fillStyle = "rgb(" + (125-(height+1)*3).toString() + "," + (96-(height+1)*3).toString() + "," + (65-(height+1)*3).toString() + ")";
+                    // this.context.strokeStyle = "rgb(" + (125-(height+1)*3).toString() + "," + (96-(height+1)*3).toString() + "," + (65-(height+1)*3).toString() + ")";
+                    // this.context.strokeStyle = "black";
                     this.context.beginPath();
                     if((real_height == self.total_layer-1 && layer_total_alter["left"][real_height] == 0) || ((count_dr-layer_total_alter["right"][real_height]*0.45) <= 0 && count_dl <= 0)){}
 
@@ -540,6 +548,22 @@ var RenderingView = Backbone.View.extend({
 
         var weight = Math.abs(tree_rstpoint[3] - tree_rstpoint[1]);
 
+        var trunk_in_canvas = [ Math.round((((this.start_x + this.dr)*this.scale) + this.translate_point[0])/self.c_detail), 
+                                Math.round((((this.start_y + this.temp_height)*this.scale) + this.translate_point[1])/self.c_detail),
+                                Math.round((((this.start_x - this.dl)*this.scale) + this.translate_point[0])/self.c_detail),
+                                Math.round((((this.start_y + this.temp_height + this.stick_length + 200)*this.scale) + this.translate_point[1])/self.c_detail)];
+        // console.log(trunk_in_canvas);
+        for(var i = trunk_in_canvas[2]; i < trunk_in_canvas[0]; i++){
+            if(i >= 0 && i <= this.myCanvas.width/self.c_detail){
+                for(var j = trunk_in_canvas[1]; j < trunk_in_canvas[3]; j++){
+                    if(j >= 0 && j <= this.myCanvas.height/self.c_detail){
+                        this.clicking_grid[i][j] = "*t*";
+                        // console.log(this.clicking_grid[i][j]);
+                    }
+                }
+            }
+        }
+
         // draw branch
         this.context.moveTo(this.start_x + this.dr, this.start_y + this.temp_height);
         if(total_draw_stick > 0){
@@ -571,8 +595,8 @@ var RenderingView = Backbone.View.extend({
             // this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height);
             // this.context.closePath();
             // (2*this.start_x + this.dr - this.dl)*0.5
-            this.context.quadraticCurveTo(this.start_x + this.dr + 10 + layer*8 - layer*10, this.start_y - this.stick_length + layer*15, this.start_x + this.dr + 50 + layer*10 - layer*10, this.start_y - this.stick_length - 100 + layer*15);
-            this.context.quadraticCurveTo(this.start_x + this.dr + 25 + layer*10 - layer*10, this.start_y - this.stick_length - 150 + layer*15, this.start_x - this.dl, this.start_y + this.temp_height);
+            this.context.quadraticCurveTo(this.start_x + this.dr + 10 - layer*1.5, this.start_y - this.stick_length + layer*15, this.start_x + this.dr + 50, this.start_y - this.stick_length - 100 + layer*15);
+            this.context.quadraticCurveTo(this.start_x + this.dr + 25, this.start_y - this.stick_length - 150 + layer*15, this.start_x - this.dl, this.start_y + this.temp_height);
             this.context.closePath();           
 
             // draw rectangle to fill the trunk
@@ -1069,8 +1093,8 @@ var RenderingView = Backbone.View.extend({
             this.context.closePath();
             */
             // (2*this.start_x + this.dr - this.dl)*0.5
-            this.context.quadraticCurveTo(this.start_x - this.dl - 10 - layer*8 + layer*10, this.start_y - this.stick_length + layer*15, this.start_x - this.dl - 50 - layer*10 + layer*10, this.start_y - this.stick_length - 100 + layer*15);
-            this.context.quadraticCurveTo(this.start_x - this.dl - 25 - layer*10 + layer*10, this.start_y - this.stick_length - 150 + layer*15, this.start_x + this.dr, this.start_y + this.temp_height);
+            this.context.quadraticCurveTo(this.start_x - this.dl - 10 + layer*1.5, this.start_y - this.stick_length + layer*15, this.start_x - this.dl - 50, this.start_y - this.stick_length - 100 + layer*15);
+            this.context.quadraticCurveTo(this.start_x - this.dl - 25, this.start_y - this.stick_length - 150 + layer*15, this.start_x + this.dr, this.start_y + this.temp_height);
             this.context.closePath();
             
             // draw rectangle to fill the trunk
@@ -2283,7 +2307,7 @@ var RenderingView = Backbone.View.extend({
         return x;
 
     },
-
+    // find rotate vector
     find_dir: function(v, angle){
         var rotate_matrix = [ Math.cos(angle), Math.sin(angle),
                              -Math.sin(angle), Math.cos(angle) ];

@@ -177,13 +177,20 @@ var MyApp = function MyApp(){
             document.cookie = "session_id=" + session_id.toString() + ";"
         }
     }
-    
-    // if(session_id == 8407169205136597){
-    //     session_id = 8807169205136597;
-    //     document.cookie = "session_id=" + session_id.toString() + ";"
-    //     first_use = 0;
-    //     document.cookie = "mode=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
-    // }
+
+    /*
+    if(session_id == 8407169205136597){
+        session_id = 8807169205136597;
+        document.cookie = "session_id=" + session_id.toString() + ";"
+        first_use = 0;
+        document.cookie = "mode=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
+    */
+    if(session_id == 1404160985257476){
+        session_id = 5407169205136597;
+        document.cookie = "session_id=" + session_id.toString() + ";";
+        document.cookie = "mode=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
+    }
     
     // get the share url
     var current_url = window.location.href;
@@ -210,7 +217,7 @@ var MyApp = function MyApp(){
     // set drawing canvas size
     myCanvas.height = $(window).height()-$("#header").height()-$("#top_list").height()-$("#footer").height()-$("#history").height()-45;
     myCanvas.width = $("#canvas_container").width();
-
+    
     // initial all the page cantainer
     $("#canvas_container").css({'height': myCanvas.height});
 
@@ -239,6 +246,7 @@ var MyApp = function MyApp(){
         var myCanvas = drawing_canvas.main_canvas;
         myCanvas.height = window.innerHeight-$("#header").height()-$("#top_list").height()-$("#footer").height()-$("#history").height()-45;
         myCanvas.width = $("#canvas_container").width();
+
         $("#canvas_container").css({'height': myCanvas.height});
         $("#c").css({'height': "100%"});
         $("#c").css({'width': "101%"});

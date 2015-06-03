@@ -221,7 +221,7 @@ var SelectingView = Backbone.View.extend({
         self.el_dataselect.change(function(){
             user_history = 0;
             // if get the new dataset
-            if(initial_user != 0){ // not the first to triggrt change effect
+            if(initial_user != 0){ // not the first to triggr change effect
                 in_change_mode = 1;
                 self.model.set({"moving": 0});
                 self.model.set({"selected_egos": {}});

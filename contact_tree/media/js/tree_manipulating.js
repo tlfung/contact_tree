@@ -48,7 +48,7 @@ var ZoomView = Backbone.View.extend({
             $("#resolution_dialog").dialog("close");
             self.model.set({"save_tree": self.saving_info});               
         });
-       
+        
     },
 
     get_grid: function(){
@@ -118,7 +118,9 @@ var ZoomView = Backbone.View.extend({
             var alter_info = self.model.get("info_table");
             var c_detail = self.model.get("canvas_detail");
             var mousePos = self.getMousePos(self.myCanvas, evt);
-            
+            var ctx = self.myCanvas.getContext("2d");
+            var img_data = ctx.getImageData(mousePos.x, mousePos.y, 1, 1).data;
+
             self.el_main_canvas.css("cursor", "");
             if (self.dragStart && Math.abs(mousePos.x-self.dragStart.x)>0.1){
                 self.dragged = true;
@@ -135,7 +137,11 @@ var ZoomView = Backbone.View.extend({
             }
             else{
                 var point_info = self.grid[Math.floor(mousePos.x/c_detail)][Math.floor(mousePos.y/c_detail)];
-                if(point_info != -1){
+                
+                if(point_info != "*t*" && (125-img_data[0])/3 == (96-img_data[1])/3 && (125-img_data[0])/3 == (65-img_data[2])/3 && (65-img_data[2])/3 == (96-img_data[1])/3){
+                    self.el_main_canvas.css("cursor", "pointer"); 
+                }
+                else if(point_info != -1){
                     var parse_grid = point_info.split("*+");
                     /*
                     if(parse_grid.length == 4){
@@ -146,7 +152,7 @@ var ZoomView = Backbone.View.extend({
                     }
                     else
                     */ 
-                    if(parse_grid.length == 1 || parse_grid[0] == "leafid" || parse_grid[0] == "saveIMG" || parse_grid[0] == "popup" || parse_grid[0] == "root"){
+                    if(point_info != "*t*" && (parse_grid.length == 1 || parse_grid[0] == "leafid" || parse_grid[0] == "saveIMG" || parse_grid[0] == "popup" || parse_grid[0] == "root")){
                         self.el_main_canvas.css("cursor", "pointer");
                     }
                     else{ 
@@ -154,8 +160,7 @@ var ZoomView = Backbone.View.extend({
                         if(parse_grid[0] == "leaf"){
                             self.model.set({"clicking_leaf":parse_grid[1]});
                             self.writeNote(Math.floor(mousePos.x), Math.floor(mousePos.y), parse_grid[1]);
-                        }
-                     
+                        }                     
                     }
                 }
             }
@@ -171,12 +176,21 @@ var ZoomView = Backbone.View.extend({
             self.scale = self.model.get("canvas_scale");
             var mousePos = self.getMousePos(self.myCanvas, evt);
             var alter_info = self.model.get("info_table");
-
+            // get image data
+            var ctx = self.myCanvas.getContext("2d");
+            var img_data = ctx.getImageData(mousePos.x, mousePos.y, 1, 1).data;
+            // console.log("image data:", img_data);
             var c_detail = self.model.get("canvas_detail");
+            
             if (!self.dragged && !self.click){
                 var point_info = self.grid[Math.floor(mousePos.x/c_detail)][Math.floor(mousePos.y/c_detail)];
-                if(point_info != -1){    
-                    var parse_grid = point_info.split("*+");                
+                if(point_info != "*t*" && (125-img_data[0])/3 == (96-img_data[1])/3 && (125-img_data[0])/3 == (65-img_data[2])/3 && (65-img_data[2])/3 == (96-img_data[1])/3){
+                    // console.log("tree layer:", (125-img_data[0])/3);
+                    self.writeNote(Math.floor(mousePos.x), Math.floor(mousePos.y), "L" + (125-img_data[0])/3);
+                }
+                else if(point_info != -1){    
+                    var parse_grid = point_info.split("*+");
+                    console.log("+++++", point_info);
                     if(parse_grid[0] == "leaf"){
                     }
                     else if(parse_grid[0] == "root"){
@@ -239,14 +253,16 @@ var ZoomView = Backbone.View.extend({
                         self.writeMessage1(Math.floor(mousePos.x), Math.floor(mousePos.y), alter_info[index[0]][index[1]], alter_info["leaves"][parse_grid[1]]);
                     }
                     else{
-                        var index = self.grid[Math.floor(mousePos.x/c_detail)][Math.floor(mousePos.y/c_detail)].split("_");
-                        self.writeMessage(Math.floor(mousePos.x), Math.floor(mousePos.y), alter_info[index[0]][index[1]]);
+                        if(point_info != "*t*"){
+                            var index = self.grid[Math.floor(mousePos.x/c_detail)][Math.floor(mousePos.y/c_detail)].split("_");
+                            self.writeMessage(Math.floor(mousePos.x), Math.floor(mousePos.y), alter_info[index[0]][index[1]]);
+                        }                        
                     }
                 }
 
             }
             self.dragStart = null;
-        },false);
+        }, true);
 
         self.myCanvas.addEventListener('mousedown', function(evt) {
             self.grid = self.model.get("canvas_grid");
@@ -258,7 +274,7 @@ var ZoomView = Backbone.View.extend({
                 self.model.set({"moving": 1});
             }
             // self.model.trigger('change:canvas_scale');
-        }, false);
+        }, true);
 
     },
 
@@ -347,7 +363,7 @@ var ZoomView = Backbone.View.extend({
                 self.el_raw_data_table.empty();
                 self.el_info_title.html("EGO " + ego.toUpperCase() + "(" + sub.toUpperCase() + "):" + detail[0].toUpperCase());
                 self.el_loading_table.show();
-                var list_table = function(data){                    
+                var list_table = function(data){
                     for(var r = 0; r < data.length; r++){
                         var row = $('<tr id="' + data[r][0] + '"></tr>');
                         if(r == 0){
