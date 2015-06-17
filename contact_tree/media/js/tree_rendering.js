@@ -573,8 +573,14 @@ var RenderingView = Backbone.View.extend({
             this.context.closePath();
             // draw rectangle to fill the trunk
             this.context.moveTo(this.start_x + this.dr, this.start_y + this.temp_height);
-            this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height + this.stick_length+200);
-            this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height + this.stick_length+200);
+            if(layer != 0){
+                this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height*2 + this.stick_length*2);
+                this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height*2 + this.stick_length*2);
+            }
+            else{
+                this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height + this.stick_length + 200);
+                this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height + this.stick_length + 200);
+            }
             this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height);
             this.context.closePath();
 
@@ -601,8 +607,14 @@ var RenderingView = Backbone.View.extend({
 
             // draw rectangle to fill the trunk
             this.context.moveTo(this.start_x + this.dr, this.start_y + this.temp_height);
-            this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height + this.stick_length+200);
-            this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height + this.stick_length+200);
+            if(layer != 0){
+                this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height*2 + this.stick_length*2);
+                this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height*2 + this.stick_length*2);
+            }
+            else{
+                this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height + this.stick_length + 200);
+                this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height + this.stick_length + 200);
+            }
             this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height);
             this.context.closePath();
 
@@ -1068,8 +1080,14 @@ var RenderingView = Backbone.View.extend({
             this.context.closePath();
             // draw rectangle to fill the trunk
             this.context.moveTo(this.start_x - this.dl, this.start_y + this.temp_height);
-            this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height + this.stick_length+200);
-            this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height + this.stick_length+200);
+            if(layer != 0){
+                this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height*2 + this.stick_length*2);
+                this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height*2 + this.stick_length*2);
+            }
+            else{
+                this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height + this.stick_length + 200);
+                this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height + this.stick_length + 200);
+            }
             this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height);
             this.context.closePath();
 
@@ -1099,8 +1117,14 @@ var RenderingView = Backbone.View.extend({
             
             // draw rectangle to fill the trunk
             this.context.moveTo(this.start_x - this.dl, this.start_y + this.temp_height);
-            this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height + this.stick_length+200);
-            this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height + this.stick_length+200);
+            if(layer != 0){
+                this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height*2 + this.stick_length*2);
+                this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height*2 + this.stick_length*2);
+            }
+            else{
+                this.context.lineTo(this.start_x - this.dl, this.start_y + this.temp_height + this.stick_length + 200);
+                this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height + this.stick_length + 200);
+            }
             this.context.lineTo(this.start_x + this.dr, this.start_y + this.temp_height);
             this.context.closePath();
 
