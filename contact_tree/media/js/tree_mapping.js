@@ -1707,7 +1707,7 @@ var MappingView = Backbone.View.extend({
                     
                     if(used == 1){
                         if(color_table[l_color] == render_table[v]){
-                            select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + mapping_color.roots_color[l_color] + ";");
+                            select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; top:" + ($("#layer_slider").height()-3) + "; background-color:" + color_table[l_color] + ";");
                         }
                     }
                     else{
@@ -1751,7 +1751,7 @@ var MappingView = Backbone.View.extend({
                         
                         if(used == 1){
                             if(color_table[l_color] == render_table[(v+1)]){
-                                select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; top:-15; background-color:" + mapping_color.roots_color[l_color] + ";");
+                                select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; top:-15; background-color:" + color_table[l_color] + ";");
                             }
                         }
                         else{
@@ -1785,7 +1785,7 @@ var MappingView = Backbone.View.extend({
                                         
                     if(used == 1){
                         if(color_table[l_color] == render_table[v]){
-                            select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + mapping_color.roots_color[l_color] + ";");
+                            select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; top:" + (handle.eq(v-1).position().top+handle.eq(v).position().top)/2 + "; background-color:" + color_table[l_color] + ";");
                         }
                     }
                     else{
@@ -1829,7 +1829,7 @@ var MappingView = Backbone.View.extend({
                     
                         if(used == 1){
                             if(color_table[l_color] == render_table[(v+1)]){
-                                select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; top:-15; background-color:" + mapping_color.roots_color[l_color] + ";");
+                                select_container.val(l_color.toString()).attr('style', "height:15px; width:100px; position:absolute; top:-15; background-color:" + color_table[l_color] + ";");
                             }
                         }
                         else{
