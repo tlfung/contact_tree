@@ -2660,10 +2660,10 @@ var RenderingView = Backbone.View.extend({
                 break;
             case 'normal':
                 // this.save_scale = self.model.get("canvas_scale");
-                this.save_scale = 0.5;
+                this.save_scale = 0.25;
                 break;
             case 'high':
-                this.save_scale = 1;    
+                this.save_scale = 0.5;    
         }
         this.saveCanvas.height = tree_height*this.save_scale;
         this.saveCanvas.width = tree_width*this.save_scale;
