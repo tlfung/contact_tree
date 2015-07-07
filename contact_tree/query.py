@@ -32,7 +32,8 @@ class DB:
   conn = None
 
   def connect(self):
-    self.conn = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree", use_unicode=True, charset="utf8", cursorclass=MySQLdb.cursors.DictCursor)
+    # self.conn = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="ctree_eu", use_unicode=True, charset="utf8", cursorclass=MySQLdb.cursors.DictCursor)
+    self.conn = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="ctree", use_unicode=True, charset="utf8", cursorclass=MySQLdb.cursors.DictCursor)
   def query(self, sql):
     try:
       cursor = self.conn.cursor()
@@ -174,7 +175,8 @@ def test_type(table, attr_type):
 # load csv file to database
 def create_csv2database(request):
     final_attr_info = dict()
-    database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree")
+    # database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="ctree_eu")
+    database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="ctree")
     clause = database.cursor()
     tree_cmpt = ["trunk", "branch", "bside", "leaf_color", "leaf_size", "fruit_size", "root"]
     clause.execute('SET SQL_SAFE_UPDATES = 0;')
@@ -216,7 +218,8 @@ def create_csv2database(request):
     
 # update the attribute information
 def update_collection_data(data_table, attr_json):
-    database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree", use_unicode=True, charset="utf8")
+    database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="ctree", use_unicode=True, charset="utf8")
+    # database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="ctree_eu", use_unicode=True, charset="utf8")
     clause = database.cursor()
     db = DB()
     clause.execute('SET SQL_SAFE_UPDATES = 0;')
@@ -343,7 +346,7 @@ def get_insert(table, header):
     field_markers = ', '.join('%s' for col in header)
     return 'INSERT INTO %s (%s) VALUES (%s);' % \
         (table, field_names, field_markers)
-
+        
 
 def safe_col(s):
     return re.sub('\W+', '_', s.lower()).strip('_')
@@ -363,7 +366,8 @@ def define_type(s):
 
 
 def csv2mysql(fn, table):
-    database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="Ctree", use_unicode=True, charset="utf8")
+    # database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="ctree_eu", use_unicode=True, charset="utf8")
+    database = MySQLdb.connect(host="localhost", user="root", passwd="vidim", db="ctree", use_unicode=True, charset="utf8")
     clause = database.cursor()
     print 'Analyzing column types ...'
     # col_types = get_col_types(fn)

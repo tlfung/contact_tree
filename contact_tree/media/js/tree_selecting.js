@@ -479,7 +479,9 @@ var SelectingView = Backbone.View.extend({
             self.el_submit_ego.click(function(){ // store selecting data
                 self.my_ego_selected = self.model.get("selected_egos");
                 self.my_ego_display = self.model.get("display_egos");
-                
+                // ga('send', 'event', 'test_ego_select', session_id, now_mode, self.my_ego);
+                ga('send', 'event', now_mode, "ego_selection", self.my_ego, session_id);
+
                 // store last page's selections
                 var display = [];
                 var select_ego = [];
@@ -513,7 +515,10 @@ var SelectingView = Backbone.View.extend({
                 $("#menu_dialog").dialog("close");
 
                 self.model.trigger('change:selected_egos');
-                // self.model.trigger('change:display_egos');   
+                // self.model.trigger('change:display_egos'); 
+
+                // console.log(now_mode, self.my_ego.toString()+":"+select_ego.toString(), "ego_displaying", session_id);
+                ga('send', 'event', now_mode, "ego_displaying", self.my_ego.toString()+":"+select_ego.toString(), session_id);
 
             });
         }

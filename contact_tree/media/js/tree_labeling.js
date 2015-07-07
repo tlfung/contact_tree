@@ -80,7 +80,6 @@ var LabelView = Backbone.View.extend({
             $('.dropdown-menu').on('click', function (e) { // e?? on vs click??
                 e.stopPropagation();
             });
-
             this.set_label_event(group);
         }
 
@@ -161,6 +160,10 @@ var LabelView = Backbone.View.extend({
                 // self.model.set({"canvas_scale":0.15});
                 self.model.trigger('change:selected_egos');
                 self.model.trigger('change:display_egos');
+
+                var event_mode = self.model.get("view_mode");
+                // console.log(event_mode, this.attributes["name"].value, "ego_deleting", session_id);
+                ga('send', 'event', event_mode, "ego_deleting", this.attributes["name"].value, session_id);
                 return false;                
             });
             
@@ -194,6 +197,10 @@ var LabelView = Backbone.View.extend({
                     self.update_slider();
                 }
                 self.model.trigger('change:display_egos');
+                var event_mode = self.model.get("view_mode");
+                // console.log(event_mode, on_ego.toString()+":"+self.temp_selecting.toString(), "ego_displaying", session_id);
+                ga('send', 'event', event_mode, "ego_displaying", on_ego.toString()+":"+self.temp_selecting.toString(), session_id);
+                
             });
         }
                 

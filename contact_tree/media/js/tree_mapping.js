@@ -30,6 +30,8 @@ var MappingView = Backbone.View.extend({
         this.current_render_roots_color;
         this.current_attr_option;
 
+        this.page_time = 0;
+
         this.change_mapping = 0;
         this.apply_mapping = 0;
         $( "#sidekey_dialog" ).dialog({
@@ -40,7 +42,8 @@ var MappingView = Backbone.View.extend({
             width: $(window).width()*0.7,
             modal: true,
             resizable: false,
-            close: function(){
+            close: function(){     
+                var now_mode = self.model.get("view_mode"); 
                 if(self.change_mapping != 2 && self.change_mapping != 0 && self.apply_mapping == 0){
                     // mapping_color.render_leaf_color = JSON.parse(JSON.stringify(self.current_render_leaf_color));
                     // mapping_color.render_roots_color = JSON.parse(JSON.stringify(self.current_render_roots_color));                
@@ -49,7 +52,7 @@ var MappingView = Backbone.View.extend({
                     // self.model.set({"attr_option": self.current_attr_option});
                     var data_group = self.model.get("dataset_group");
                     var now_attr = self.model.get("attribute");
-                    var now_mode = self.model.get("view_mode");
+                    // var now_mode = self.model.get("view_mode");
                     var all_ego = self.model.get("selected_egos");
                     var ego_list = [];
                     
@@ -62,6 +65,8 @@ var MappingView = Backbone.View.extend({
                         self.restructure(result);
                         self.model.trigger('change:tree_structure');
                     });
+                    ga('send', 'event', now_mode, "mapping_check", session_id, (Date.now()-self.page_time)/1000);
+                    // console.log(now_mode, session_id, "mapping_check", (Date.now()-self.page_time)/1000);
                 }
                 else if(self.change_mapping != 2 && self.change_mapping != 0 && self.apply_mapping != 0){
                     if(self.apply_mapping == 1)
@@ -71,7 +76,7 @@ var MappingView = Backbone.View.extend({
                     if(r==true) {
                         var data_group = self.model.get("dataset_group");
                         var now_attr = self.model.get("attribute");
-                        var now_mode = self.model.get("view_mode");
+                        // var now_mode = self.model.get("view_mode");
                         var all_ego = self.model.get("selected_egos");
                         var ego_list = [];
                         
@@ -84,12 +89,18 @@ var MappingView = Backbone.View.extend({
                             self.restructure(result);
                             self.model.trigger('change:tree_structure');
                         });
+                        ga('send', 'event', now_mode, "mapping_check", session_id, (Date.now()-self.page_time)/1000);
                     }
                     else{
                         $("#sidekey_dialog").dialog("open");
                         return;
                     }
                 }
+                else{
+                    ga('send', 'event', now_mode, "mapping_check", session_id, (Date.now()-self.page_time)/1000);
+                    // console.log(now_mode, session_id, "mapping_check", (Date.now()-self.page_time)/1000);
+                }
+                
             }
         });
 
@@ -97,6 +108,8 @@ var MappingView = Backbone.View.extend({
             self.el_mapping_img.attr('src', 'media/img/real_mix_tree.png');
             self.save_current_mapping();
             $("#sidekey_dialog").dialog("open");
+            self.page_time = Date.now();
+
             self.el_sidekey_save_img.hide();
             self.el_sidekey_selection.hide();
             self.el_sidekey_operation.hide();
@@ -1323,6 +1336,9 @@ var MappingView = Backbone.View.extend({
             delete attribute_mapping[comp];
         }
         attr_map[comp] = new_attr;
+        // console.log(data_mode, comp, new_attr, session_id);
+        ga('send', 'event', data_mode, comp, new_attr, session_id);
+        // ga('send', 'event', event_mode, on_ego.toString()+":"+self.temp_selecting.toString(), "ego_displaying", session_id);
 
         if(new_attr == "none"){
             var update_info = data_mode + ":-ctree_" + comp + ":-" + new_attr + ":-" + JSON.stringify(["none"]);
@@ -1429,7 +1445,8 @@ var MappingView = Backbone.View.extend({
         }
 
         attr_map[comp] = new_attr;
-
+        // console.log(data_mode, comp, new_attr, session_id);
+        ga('send', 'event', data_mode, comp, new_attr, session_id);
         if(new_attr == "none"){
             var update_info = data_mode + ":-ctree_" + comp + ":-" + new_attr + ":-" + JSON.stringify(["none"]);
 
@@ -1510,7 +1527,8 @@ var MappingView = Backbone.View.extend({
         }
 
         attr_map[comp] = new_attr;
-
+        // console.log(data_mode, comp, new_attr, session_id);
+        ga('send', 'event', data_mode, comp, new_attr, session_id);
         if(new_attr == "none"){}
         
         else{
@@ -2395,6 +2413,9 @@ var MappingView = Backbone.View.extend({
                 delete attribute_mapping["branch"];
             }
             attr_map["branch"] = self.el_sidekeyselect.val();
+
+            // console.log(data_mode, "branch", self.el_sidekeyselect.val(), session_id);
+            ga('send', 'event', data_mode, "branch", self.el_sidekeyselect.val(), session_id);
 
             if(self.el_sidekeyselect.val() == "none"){}
             

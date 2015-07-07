@@ -44,9 +44,11 @@ var ZoomView = Backbone.View.extend({
 
         // submit the resolution and trigger the drawing buffer
         $("#res_submit").click(function(){
+            var event_mode = self.model.get("view_mode");
             self.saving_info.push($('.res_checkbox:checked').val());
             $("#resolution_dialog").dialog("close");
-            self.model.set({"save_tree": self.saving_info});               
+            self.model.set({"save_tree": self.saving_info});    
+            ga('send', 'event', event_mode, "click_saveIMG", session_id);
         });
         
     },
@@ -76,7 +78,7 @@ var ZoomView = Backbone.View.extend({
             var delta_scale = Math.floor(evt.wheelDelta*3*10/100)/10; //for mac
         
             var factor = Math.pow(scaleFactor, delta);
-            
+            var event_mode = self.model.get("view_mode");
 
             var nx = mousePos.x - (tx * factor * self.scale);
             var ny = mousePos.y - (ty * factor * self.scale);
@@ -105,7 +107,8 @@ var ZoomView = Backbone.View.extend({
                 });
 
                 self.model.set({"canvas_translate":[nx, ny]});
-                self.model.set({"canvas_scale":factor*self.scale});     
+                self.model.set({"canvas_scale":factor*self.scale});   
+                ga('send', 'event', event_mode, "zoom", session_id, Math.round((factor*self.scale)/0.15));  
             }
         }, false);
 
@@ -114,6 +117,7 @@ var ZoomView = Backbone.View.extend({
             self.translate = self.model.get("canvas_translate");
             self.scale = self.model.get("canvas_scale");
             self.model.set({"clicking_leaf":-1});
+            var event_mode = self.model.get("view_mode");
             // var grid = self.model.get("canvas_grid");
             var alter_info = self.model.get("info_table");
             var c_detail = self.model.get("canvas_detail");
@@ -134,6 +138,7 @@ var ZoomView = Backbone.View.extend({
                 self.model.trigger('change:canvas_scale');
                 
                 self.dragStart = self.getMousePos(self.myCanvas, evt);//mousePos.x,mousePos.y
+                ga('send', 'event', event_mode, "drag", session_id, Math.round(self.scale/0.15));
             }
             else{
                 var point_info = self.grid[Math.floor(mousePos.x/c_detail)][Math.floor(mousePos.y/c_detail)];
@@ -181,22 +186,26 @@ var ZoomView = Backbone.View.extend({
             var img_data = ctx.getImageData(mousePos.x, mousePos.y, 1, 1).data;
             // console.log("image data:", img_data);
             var c_detail = self.model.get("canvas_detail");
+            var event_mode = self.model.get("view_mode");
             
             if (!self.dragged && !self.click){
                 var point_info = self.grid[Math.floor(mousePos.x/c_detail)][Math.floor(mousePos.y/c_detail)];
                 if(point_info != "*t*" && (125-img_data[0])/3 == (96-img_data[1])/3 && (125-img_data[0])/3 == (65-img_data[2])/3 && (65-img_data[2])/3 == (96-img_data[1])/3){
                     // console.log("tree layer:", (125-img_data[0])/3);
-                    self.writeNote(Math.floor(mousePos.x), Math.floor(mousePos.y), "L" + (125-img_data[0])/3);
+                    self.writeNote(Math.floor(mousePos.x), Math.floor(mousePos.y), "L" + Math.round((125-img_data[0])/3));
+                    ga('send', 'event', event_mode, "click_branch", session_id);
                 }
                 else if(point_info != -1){    
                     var parse_grid = point_info.split("*+");
-                    console.log("+++++", point_info);
+                    // console.log("+++++", point_info);
                     if(parse_grid[0] == "leaf"){
                     }
                     else if(parse_grid[0] == "root"){
                         self.writeNote(Math.floor(mousePos.x), Math.floor(mousePos.y), parse_grid[1]);
+                        ga('send', 'event', event_mode, "click_root", session_id);
                     }
                     else if(parse_grid[0] == "popup"){
+                        ga('send', 'event', event_mode, "click_info", session_id);
                         var table = self.model.get("view_mode");
                         var ego = parse_grid[1].split(":-")[0]
                         var sub = parse_grid[1].split(":-")[1]
@@ -251,11 +260,13 @@ var ZoomView = Backbone.View.extend({
                         var index = parse_grid[2].split("_");
                         // console.log(parse_grid[1], parse_grid[2], alter_info[index[0]][index[1]], alter_info["leaves"][parse_grid[1]]);         
                         self.writeMessage1(Math.floor(mousePos.x), Math.floor(mousePos.y), alter_info[index[0]][index[1]], alter_info["leaves"][parse_grid[1]]);
+                        ga('send', 'event', event_mode, "click_leaf", session_id);
                     }
                     else{
                         if(point_info != "*t*"){
                             var index = self.grid[Math.floor(mousePos.x/c_detail)][Math.floor(mousePos.y/c_detail)].split("_");
                             self.writeMessage(Math.floor(mousePos.x), Math.floor(mousePos.y), alter_info[index[0]][index[1]]);
+                            ga('send', 'event', event_mode, "click_stick", session_id);
                         }                        
                     }
                 }
