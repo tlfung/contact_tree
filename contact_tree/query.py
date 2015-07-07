@@ -238,8 +238,13 @@ def update_collection_data(data_table, attr_json):
         a_index += 1
     database.commit()
 
-    cur = db.query('SELECT alterid FROM ' + data_table + ' WHERE egoid=(SELECT min(egoid) FROM ' + data_table + ');')
-    temp_alter = cur.fetchone()['alterid']
+    cur = db.query('SELECT alterid FROM ' + data_table + ' WHERE egoid=(SELECT min(egoid) FROM ' + data_table + ') limit 3;')
+    # temp_alter = cur.fetchone()['alterid']
+    test_alter = []
+    alter_cur = cur.fetchall()
+    for d in alter_cur:
+        test_alter.append(d["alterid"])
+    print test_alter
     cur = db.query('SELECT min(egoid) FROM ' + data_table + ';')
     temp_ego = cur.fetchone()['min(egoid)']
     
@@ -247,10 +252,14 @@ def update_collection_data(data_table, attr_json):
         if a == 'dataset':
             continue
         else:
+            check_alter = 0
             # print 'SELECT COUNT(DISTINCT(`' + a + '`)) from ' + data_table + ' WHERE alterid ="' + str(temp_alter) + '" and egoid="' + str(temp_ego) + '";'
-            cur = db.query('SELECT COUNT(DISTINCT(`' + a + '`)) from ' + data_table + ' WHERE alterid ="' + str(temp_alter) + '" and egoid="' + str(temp_ego) + '" AND `' + a + '` != "";')
-            alter_count = cur.fetchone()
-            if alter_count['COUNT(DISTINCT(`' + a + '`))'] == 1:
+            for temp_alter in test_alter:
+                cur = db.query('SELECT COUNT(DISTINCT(`' + a + '`)) from ' + data_table + ' WHERE alterid ="' + str(temp_alter) + '" and egoid="' + str(temp_ego) + '" AND `' + a + '` != "";')
+                alter_count = cur.fetchone()
+                if alter_count['COUNT(DISTINCT(`' + a + '`))'] == 1:
+                    check_alter += 1
+            if check_alter == 3:
                 # print 'UPDATE dataset_collection SET `alter` = 1 WHERE attr="' + a + '" and dataset="' + data_table + '";'
                 clause.execute('UPDATE dataset_collection SET `alter_info` = 1 WHERE attr="' + a + '" and dataset = "' + data_table + '";')
 
