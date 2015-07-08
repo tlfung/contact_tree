@@ -501,10 +501,13 @@ def find_default_mapping(data_table):
     deafult_mapping = dict()
     db = DB()
     deafult_mapping["stick"] = "alterid"
-
+    
     alter_cat_attr = []
     alter_num_attr = []
     all_other_attr = []
+    branch_attr_cat = []
+    branch_attr_num = []
+    branch_related_time = ""
 
     cur = db.query('SELECT * FROM dataset_collection WHERE attr != "dataset" AND `type` != "id" AND attr_range > 1 AND dataset="' + data_table + '" ORDER BY attr_range;')
     all_attr = cur.fetchall()
@@ -517,10 +520,38 @@ def find_default_mapping(data_table):
                 alter_cat_attr.append(relate['attr'])
         else:
             all_other_attr.append(relate['attr'])
+
+    cur = db.query('SHOW columns FROM ' + data_table + ';')
+    all_attr = cur.fetchall()
+    
+    # find time-related attribites
+    for c in all_attr:
+        if c['Field'].find('year') != -1 or c['Field'].find('age') != -1:
+            if c['Field'] in alter_num_attr:
+                branch_attr_num.append(c['Field'])
+                alter_num_attr.pop(alter_num_attr.index(c['Field']))
+            elif c['Field'] in alter_cat_attr:
+                branch_attr_cat.append(c['Field'])
+                alter_cat_attr.pop(alter_cat_attr.index(c['Field']))
             
+    # count the length of differenct kinds of attributes
     len_alter_cat_attr = len(alter_cat_attr)
     len_alter_num_attr = len(alter_num_attr)
     len_all_other_attr = len(all_other_attr)
+    len_branch_attr_cat = len(branch_attr_cat)
+    len_branch_attr_num = len(branch_attr_num)
+
+    # leave only one attribute for branch mapping
+    if len_branch_attr_cat >= 1:
+        branch_related_time = branch_attr_cat[-1]
+        for b1 in branch_attr_cat[:-1]:
+            alter_cat_attr.append(b1)
+        for b2 in branch_attr_num:
+            alter_num_attr.append(b2)
+    elif len_branch_attr_num >= 1:
+        branch_related_time = branch_attr_num[-1]
+        for b2 in branch_attr_num[:-1]:
+            alter_num_attr.append(b2)
 
     if len_alter_cat_attr >= 3:
         deafult_mapping["trunk"] = alter_cat_attr[0]
@@ -566,6 +597,8 @@ def find_default_mapping(data_table):
         deafult_mapping["branch"] = all_other_attr[-1]
         deafult_mapping["bside"] = all_other_attr[1]
 
+    if branch_related_time != "":
+        deafult_mapping["branch"] = branch_related_time
 
     deafult_mapping["fruit_size"] = "none"
     deafult_mapping["leaf_color"] = "none"
