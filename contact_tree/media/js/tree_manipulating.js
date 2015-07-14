@@ -306,10 +306,13 @@ var ZoomView = Backbone.View.extend({
         var mode = self.model.get("view_mode");
         var context = self.myCanvas.getContext('2d');
         context.fillStyle = 'rgba(225,225,225, 0.5)';
+        var box = 130 + 7*(info[0].length-10)
+        if (box < 130)
+            box = 130
         if(display_detail["fruit"] != "none")
-            context.fillRect(px-2, py, 150, 110);
+            context.fillRect(px-2, py, box, 110);
         else
-            context.fillRect(px-2, py, 150, 90);
+            context.fillRect(px-2, py, box, 90);
         context.font = '12pt Calibri';
         context.fillStyle = 'black';
         context.fillText("Alter Id: " + info[0], px, py+20); //pos
@@ -337,10 +340,13 @@ var ZoomView = Backbone.View.extend({
         var mode = self.model.get("view_mode");
         var context = self.myCanvas.getContext('2d');
         context.fillStyle = 'rgba(225,225,225, 0.5)';
+        var box = 130 + 7*(info[0].length-10)
+        if (box < 130)
+            box = 130
         if(display_detail["fruit"] != "none")
-            context.fillRect(px-2, py, 150, 150);
+            context.fillRect(px-2, py, box, 150);
         else
-            context.fillRect(px-2, py, 150, 130);
+            context.fillRect(px-2, py, box, 130);
         context.font = '12pt Calibri';
         context.fillStyle = 'black';
         context.fillText("Leaf Size: " + leaf_info[0], px, py+20);
