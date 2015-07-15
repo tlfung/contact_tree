@@ -369,9 +369,9 @@ def define_type(s):
     elif s == 'boolean':
         return "char(1) NULL DEFAULT NULL"
     elif s == 'id':
-        return "varchar(64) NULL DEFAULT NULL"
+        return "varchar(256) NULL DEFAULT NULL"
     else:
-        return "varchar(64) NULL DEFAULT NULL"
+        return "varchar(256) NULL DEFAULT NULL"
 
 
 def csv2mysql(fn, table):
@@ -526,7 +526,7 @@ def find_default_mapping(data_table):
     
     # find time-related attribites
     for c in all_attr:
-        if c['Field'].find('year') != -1 or c['Field'].find('age') != -1:
+        if (c['Field'].find('year') != -1 or c['Field'].find('age') != -1) and c['Field'].find('page') == -1:
             if c['Field'] in alter_num_attr:
                 branch_attr_num.append(c['Field'])
                 alter_num_attr.pop(alter_num_attr.index(c['Field']))
@@ -2346,7 +2346,7 @@ def auto_save(request):
         canvas_translate = "canvas_translate='" + str(save_detail[12]).encode('utf-8') + "'"
         total_ego = "total_ego='" + str(save_detail[13]).encode('utf-8') + "'"
         group = 'data_group="' + str(save_detail[14]).encode('utf-8') + '"'
-        component_attribute = "component_attribute='" + str(save_detail[15]).encode('utf-8') + "'"
+        component_attribute = "component_attribute='" + str(save_detail[15]).replace('"', '\\\"').encode('utf-8') + "'"
         waves = "waves='" + str(save_detail[16]).encode('utf-8') + "'"
 
         condition = "session_id=" + session + " AND " + mode + " AND " + group
