@@ -56,6 +56,7 @@ leaf_size_index = 6
 leaf_color_index = 7
 root_index = 8
 highlight_index = 9
+sorting_index = 10
 
 cache_time = 172800 # 48hr
 
@@ -753,7 +754,7 @@ def unique_stick(all_data, attr, branch_layer):
                 # level and up
                 if meeting[branch_index] == l and meeting[bside_index] == 1:
                     if len(alter_array_left_up[level]) == 0:
-                        structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                        structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index],  "sorting": meeting[sorting_index], "leaf": []})
                         structure["left"][level]["level"]["up"][len(alter_array_left_up[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                         alter_array_left_up[level].append(meeting[stick])
 
@@ -765,7 +766,7 @@ def unique_stick(all_data, attr, branch_layer):
                                 break
                             count_alter += 1
                         if new_alter == -1:
-                            structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                            structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "sorting": meeting[sorting_index], "leaf": []})
                             structure["left"][level]["level"]["up"][len(alter_array_left_up[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             alter_array_left_up[level].append(meeting[stick])
                         else:
@@ -776,7 +777,7 @@ def unique_stick(all_data, attr, branch_layer):
                 # level and down
                 elif meeting[branch_index] == l and meeting[bside_index] == 0:
                     if len(alter_array_left_down[level]) == 0:
-                        structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                        structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "sorting": meeting[sorting_index], "leaf": []})
                         structure["left"][level]["level"]["down"][len(alter_array_left_down[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                         alter_array_left_down[level].append(meeting[stick])
                     else:
@@ -787,7 +788,7 @@ def unique_stick(all_data, attr, branch_layer):
                                 break
                             count_alter += 1
                         if new_alter == -1:
-                            structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                            structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "sorting": meeting[sorting_index], "leaf": []})
                             structure["left"][level]["level"]["down"][len(alter_array_left_down[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             alter_array_left_down[level].append(meeting[stick])
                         else:
@@ -803,7 +804,7 @@ def unique_stick(all_data, attr, branch_layer):
                 # level and up
                 if meeting[branch_index] == l and meeting[bside_index] == 1:
                     if len(alter_array_right_up[level]) == 0:
-                        structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                        structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "sorting": meeting[sorting_index], "leaf": []})
                         structure["right"][level]["level"]["up"][len(alter_array_right_up[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                         alter_array_right_up[level].append(meeting[stick])
                     else:
@@ -814,7 +815,7 @@ def unique_stick(all_data, attr, branch_layer):
                                 break
                             count_alter += 1
                         if new_alter == -1:
-                            structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                            structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "sorting": meeting[sorting_index], "leaf": []})
                             structure["right"][level]["level"]["up"][len(alter_array_right_up[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             alter_array_right_up[level].append(meeting[stick])
                         else:
@@ -824,7 +825,7 @@ def unique_stick(all_data, attr, branch_layer):
                 # level and down
                 elif meeting[branch_index] == l and meeting[bside_index] == 0:
                     if len(alter_array_right_down[level]) == 0:
-                        structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                        structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "sorting": meeting[sorting_index], "leaf": []})
                         structure["right"][level]["level"]["down"][len(alter_array_right_down[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                         alter_array_right_down[level].append(meeting[stick])
                     else:
@@ -835,7 +836,7 @@ def unique_stick(all_data, attr, branch_layer):
                                 break
                             count_alter += 1
                         if new_alter == -1:
-                            structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                            structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "sorting": meeting[sorting_index], "leaf": []})
                             structure["right"][level]["level"]["down"][len(alter_array_right_down[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             alter_array_right_down[level].append(meeting[stick])
                         else:
@@ -904,7 +905,7 @@ def duplicate_stick(all_data, attr, branch_layer):
                 # level and up
                 if meeting[branch_index] == l and meeting[bside_index] == 1:
                     if len(alter_array_left[level]) == 0:
-                        structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                        structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "sorting": meeting[sorting_index], "leaf": []})
                         structure["left"][level]["level"]["up"][len(alter_array_left[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                         structure["left"][level]["level"]["down"].append({})
                         alter_array_left[level].append(meeting[stick])
@@ -917,13 +918,13 @@ def duplicate_stick(all_data, attr, branch_layer):
                                 break
                             count_alter += 1
                         if new_alter == -1:
-                            structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                            structure["left"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "sorting": meeting[sorting_index], "leaf": []})
                             structure["left"][level]["level"]["up"][len(alter_array_left[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             structure["left"][level]["level"]["down"].append({})
                             alter_array_left[level].append(meeting[stick])
                         else:
                             if is_empty(structure["left"][level]["level"]["up"][new_alter]):
-                                structure["left"][level]["level"]["up"][new_alter] = {"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []}
+                                structure["left"][level]["level"]["up"][new_alter] = {"id": meeting[stick], "fruit": meeting[fruit_size_index], "sorting": meeting[sorting_index], "leaf": []}
                                 structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             else:
                                 structure["left"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
@@ -935,7 +936,7 @@ def duplicate_stick(all_data, attr, branch_layer):
                 # level and down
                 elif meeting[branch_index] == l and meeting[bside_index] == 0:
                     if len(alter_array_left[level]) == 0:
-                        structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                        structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "sorting": meeting[sorting_index], "leaf": []})
                         structure["left"][level]["level"]["down"][len(alter_array_left[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                         structure["left"][level]["level"]["up"].append({})
                         alter_array_left[level].append(meeting[stick])
@@ -947,13 +948,13 @@ def duplicate_stick(all_data, attr, branch_layer):
                                 break
                             count_alter += 1
                         if new_alter == -1:
-                            structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                            structure["left"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "sorting": meeting[sorting_index], "leaf": []})
                             structure["left"][level]["level"]["down"][len(alter_array_left[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             structure["left"][level]["level"]["up"].append({})
                             alter_array_left[level].append(meeting[stick])
                         else:
                             if is_empty(structure["left"][level]["level"]["down"][new_alter]):
-                                structure["left"][level]["level"]["down"][new_alter] = {"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []}
+                                structure["left"][level]["level"]["down"][new_alter] = {"id": meeting[stick], "fruit": meeting[fruit_size_index], "sorting": meeting[sorting_index], "leaf": []}
                                 structure["left"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             else:
                                 structure["left"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
@@ -968,7 +969,7 @@ def duplicate_stick(all_data, attr, branch_layer):
                 # level and up
                 if meeting[branch_index] == l and meeting[bside_index] == 1:
                     if len(alter_array_right[level]) == 0:
-                        structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                        structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "sorting": meeting[sorting_index], "leaf": []})
                         structure["right"][level]["level"]["up"][len(alter_array_right[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                         structure["right"][level]["level"]["down"].append({})
                         alter_array_right[level].append(meeting[stick])
@@ -980,13 +981,13 @@ def duplicate_stick(all_data, attr, branch_layer):
                                 break
                             count_alter += 1
                         if new_alter == -1:
-                            structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                            structure["right"][level]["level"]["up"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "sorting": meeting[sorting_index], "leaf": []})
                             structure["right"][level]["level"]["up"][len(alter_array_right[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             structure["right"][level]["level"]["down"].append({})
                             alter_array_right[level].append(meeting[stick])
                         else:
                             if is_empty(structure["right"][level]["level"]["up"][new_alter]):
-                                structure["right"][level]["level"]["up"][new_alter] = {"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []}
+                                structure["right"][level]["level"]["up"][new_alter] = {"id": meeting[stick], "fruit": meeting[fruit_size_index], "sorting": meeting[sorting_index], "leaf": []}
                                 structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             else:
                                 structure["right"][level]["level"]["up"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
@@ -997,7 +998,7 @@ def duplicate_stick(all_data, attr, branch_layer):
                 # level and down
                 elif meeting[branch_index] == l and meeting[bside_index] == 0:
                     if len(alter_array_right[level]) == 0:
-                        structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                        structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "sorting": meeting[sorting_index], "leaf": []})
                         structure["right"][level]["level"]["down"][len(alter_array_right[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                         structure["right"][level]["level"]["up"].append({})
                         alter_array_right[level].append(meeting[stick])
@@ -1009,13 +1010,13 @@ def duplicate_stick(all_data, attr, branch_layer):
                                 break
                             count_alter += 1
                         if new_alter == -1:
-                            structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []})
+                            structure["right"][level]["level"]["down"].append({"id": meeting[stick], "fruit": meeting[fruit_size_index], "sorting": meeting[sorting_index], "leaf": []})
                             structure["right"][level]["level"]["down"][len(alter_array_right[level])]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             structure["right"][level]["level"]["up"].append({})
                             alter_array_right[level].append(meeting[stick])
                         else:
                             if is_empty(structure["right"][level]["level"]["down"][new_alter]):
-                                structure["right"][level]["level"]["down"][new_alter] = {"id": meeting[stick], "fruit": meeting[fruit_size_index], "leaf": []}
+                                structure["right"][level]["level"]["down"][new_alter] = {"id": meeting[stick], "fruit": meeting[fruit_size_index], "sorting": meeting[sorting_index], "leaf": []}
                                 structure["right"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
                             else:
                                 structure["right"][level]["level"]["down"][new_alter]["leaf"].append({"size": meeting[leaf_size_index], "color": meeting[leaf_color_index], "leaf_id": leaf_highlights})
@@ -1155,6 +1156,7 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
                                 record_index = leaf_color_index
                             elif compt == 'branch':
                                 record_index = branch_index
+                                record[sorting_index] = 0
                             elif compt == 'root':
                                 record_index = root_index
 
@@ -1216,6 +1218,9 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
                                                 if float(record[ori_index[compt]]) > float(val_map[order-1]) and float(record[ori_index[compt]]) <= float(val_map[order]):
                                                     record[record_index] = int(size_map[order])
                                                     break
+
+                                    if compt == 'branch':
+                                        record[sorting_index] = int(record[ori_index[compt]])
           
                             else: # only branch will have default mapping
                                 if collecting_data["type"] == "numerical":
@@ -1239,6 +1244,8 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
                                             if int(record[ori_index[compt]]) > reorder[order-1] and int(record[ori_index[compt]]) <= reorder[order]:
                                                 record[record_index] = order                                        
                                                 break
+                                    record[sorting_index] = int(record[ori_index[compt]])
+
                                 else:
                                     if len(branch_order_index) == 0:
                                         precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + data_table + ' ORDER BY(' + attr[compt] + ');')
@@ -1276,7 +1283,7 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
     attr_idx = []
     attr_name = []
     index_found = 1
-    index_list = 10
+    index_list = 11
     unused_col = {"e_id":1, "egoid":1, "alterid":1, "ctree_branch":1, "ctree_trunk":1, "ctree_bside":1, "ctree_leaf_color":1, "ctree_leaf_size":1, "ctree_fruit_size":1, "ctree_root":1 }
     # check to create data index
     with open("./contact_tree/data/dataset_index.json", "rb") as json_file:
@@ -1438,6 +1445,7 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
                         record_index = leaf_color_index
                     elif compt == 'branch':
                         record_index = branch_index
+                        ctree_record[sorting_index] = 0
                     elif compt == 'root':
                         record_index = root_index
 
@@ -1499,6 +1507,9 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
                                         if float(d[attr[compt]]) > float(val_map[order-1]) and float(d[attr[compt]]) <= float(val_map[order]):
                                             ctree_record[record_index] = int(size_map[order])
                                             break
+
+                            if compt == 'branch':
+                                ctree_record[sorting_index] = int(d[attr[compt]])
   
                     else: # only branch will have default mapping
                         if collecting_data["type"] == "numerical":
@@ -1522,6 +1533,8 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
                                     if int(d[attr[compt]]) > reorder[order-1] and int(d[attr[compt]]) <= reorder[order]:
                                         ctree_record[record_index] = order                                        
                                         break
+                            ctree_record[sorting_index] = int(d[attr[compt]])
+
                         else:
                             if len(branch_order_index) == 0:
                                 precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + data_table + ' ORDER BY(' + attr[compt] + ');')
@@ -1710,6 +1723,7 @@ def update_binary(request):
         json_file.write(user_ctree_data_json)
 
     return HttpResponse(return_json)
+
 
 def update_layer(request):
     db = DB()
@@ -2149,6 +2163,17 @@ def one_contact_structure(user_ctree_data, structure_request):
                     final_structure[sub] = dict()
                 final_structure[sub][e] = one_structure
 
+
+    for d in final_structure:
+        for e in final_structure[d]:
+            for layer in final_structure[d][e]['right']:
+                layer['level']['down'] = sorted(layer['level']['down'], key=lambda k: k['sorting'])
+                layer['level']['up'] = sorted(layer['level']['up'], key=lambda k: k['sorting'])
+            for layer in final_structure[d][e]['left']:
+                layer['level']['down'] = sorted(layer['level']['down'], key=lambda k: k['sorting'])
+                layer['level']['up'] = sorted(layer['level']['up'], key=lambda k: k['sorting'])
+               
+
     return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
     # with open("./contact_tree/data/tree_structure.json", "wb") as json_file:
     #     json_file.write(return_json)    
@@ -2188,7 +2213,7 @@ def one_contact_update(request):
 
         structure_request = list_request[0] + ":-" + list_request[4] + ":-" + list_request[5] + ":-" + list_request[2]
         return_json = one_contact_structure(user_ctree_data, structure_request)
-
+        
     else:
         raise Http404
 
