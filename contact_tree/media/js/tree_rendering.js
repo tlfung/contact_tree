@@ -254,8 +254,8 @@ var RenderingView = Backbone.View.extend({
                 // adjust the trunk scale
                 var ori_dr = right_side*0.65;
                 var ori_dl = left_side*0.65;
-                var count_dr = right_side*0.45;
-                var count_dl = left_side*0.45;
+                var count_dr = right_side;
+                var count_dl = left_side;
 
                 var t_scale = (right_side + left_side)/150;
                 if(right_side+left_side < 80){
@@ -374,7 +374,7 @@ var RenderingView = Backbone.View.extend({
                     var used_dl = 0;
                     
                     // draw right tree
-                    if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || (count_dr <= 0 && (count_dl-layer_total_alter["left"][real_height]*0.45) <= 0)){}
+                    if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || (count_dr <= 0 && (count_dl-layer_total_alter["left"][real_height]) <= 0)){}
 
                     else
                         used_dr = this.draw_right_branch(height, layer_total_alter["right"][real_height], ego["right"][real_height]["level"]);
@@ -387,16 +387,21 @@ var RenderingView = Backbone.View.extend({
                     // this.context.strokeStyle = "rgb(" + (125-(height+1)*3).toString() + "," + (96-(height+1)*3).toString() + "," + (65-(height+1)*3).toString() + ")";
                     // this.context.strokeStyle = "black";
                     this.context.beginPath();
-                    if((real_height == self.total_layer-1 && layer_total_alter["left"][real_height] == 0) || ((count_dr-layer_total_alter["right"][real_height]*0.45) <= 0 && count_dl <= 0)){}
+                    if((real_height == self.total_layer-1 && layer_total_alter["left"][real_height] == 0) || ((count_dr-layer_total_alter["right"][real_height]) <= 0 && count_dl <= 0)){}
 
                     else
                         used_dl = this.draw_left_branch(height, layer_total_alter["left"][real_height], ego["left"][real_height]["level"]);
 
                     ori_dr -= used_dr*0.45;                    
                     ori_dl -= used_dl*0.45;
-                    count_dr -= used_dr*0.45;                    
-                    count_dl -= used_dl*0.45;
+                    // count_dr -= used_dr*0.45;                    
+                    // count_dl -= used_dl*0.45;
+                    count_dr -= used_dr;                    
+                    count_dl -= used_dl;
                     
+                    if(count_dr + count_dl == 0){
+                        break;
+                    }
                     this.start_y = this.start_y - this.stick_length - this.temp_height;
                     // this.start_x = this.start_x + 100;
                     real_height += 1;
