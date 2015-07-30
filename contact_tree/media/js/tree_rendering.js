@@ -634,14 +634,16 @@ var RenderingView = Backbone.View.extend({
         var real_drawing = 0;
         for(var n = 0, len = stick_pos[long_stick].length; n < len; n++){
             // n = real_drawing;
-            var nature = real_drawing*(Math.abs(d-u)/stick_scale);
+            var nature = n*(Math.abs(d-u)/stick_scale);
+            
             if(Math.abs(d-u)<len/2){
                 // nature = n*(layer+1)*2;
-                nature = real_drawing*((this.sub_slop/10)+1)*2;
+                nature = n*((this.sub_slop/10)+1)*2;
             }
-            else if(len>20 && Math.abs(d-u)/stick_scale>(layer+2)*2 && layer < 6){
+            // else if(len>20 && Math.abs(d-u)/stick_scale>(layer+2)*2 && layer < 6){
+            else if(len>20 && Math.abs(d-u)/stick_scale>(layer+1)*2){
                 // nature = real_drawing*(layer+2)*2;
-                nature = real_drawing*((this.sub_slop/10)+2)*2;
+                nature = n*((this.sub_slop/10)+2)*2;
             }
             nature = nature*nature_scale;
             // nature = real_drawing*(layer+2)*2;
@@ -1141,13 +1143,13 @@ var RenderingView = Backbone.View.extend({
         var nature_scale = self.model.get("dtl_branch_curve");
         var w = weight/total_draw_stick;
         for(var n = 0, len = stick_pos[long_stick].length; n < len; n++){
-
             var nature = n*(Math.abs(d-u)/stick_scale);
             if(Math.abs(d-u)<len/2){
                 nature = n*((this.sub_slop/10)+1)*2;
             }
-            else if(len>20 && Math.abs(d-u)/stick_scale>(layer+1)*3){
+            else if(len>20 && Math.abs(d-u)/stick_scale>(layer+1)*2){
                 nature = n*((this.sub_slop/10)+2)*2;
+                // nature = real_drawing*((this.sub_slop/10)+2)*2;
             }
             nature = nature*nature_scale;
 
@@ -2434,12 +2436,12 @@ var RenderingView = Backbone.View.extend({
         if(this.snap == 0 && this.save_img == 0){
             // context.fillStyle = 'rgba(204,0,0, 0.5)';
             context.fillStyle = 'rgb(230, 127, 128)';
-            context.fillRect(pos[0]+message.length*60+10, pos[1]-75, 90, 90);
+            context.fillRect(pos[0]+message.length*50+60, pos[1]-75, 90, 90);
             context.fillStyle = 'black';
             context.font = 'bold 64pt Courier';
-            context.fillText("i", pos[0]+message.length*60+30, pos[1]-5);
+            context.fillText("i", pos[0]+message.length*50+80, pos[1]-5);
 
-            var box = [pos[0]+message.length*60+10, pos[1]-75];
+            var box = [pos[0]+message.length*50+60, pos[1]-75];
 
             for(var tx=(box[0]*self.scale + self.translate_point[0]); tx < ((box[0]+90)*self.scale + self.translate_point[0]); tx++){
                 for(var ty=(box[1]*self.scale + self.translate_point[1]); ty < ((box[1]+90)*self.scale + self.translate_point[1]); ty++){
@@ -2450,12 +2452,12 @@ var RenderingView = Backbone.View.extend({
             }
 
             context.fillStyle = 'rgb(145,186,240)';
-            context.fillRect(pos[0]+message.length*60+10 + 100, pos[1]-75, 90, 90);
+            context.fillRect(pos[0]+message.length*50+60 + 100, pos[1]-75, 90, 90);
             context.fillStyle = 'black';
             context.font = 'bold 64pt Courier';
-            context.fillText("↴", pos[0]+message.length*60+30 + 100, pos[1]);
+            context.fillText("↴", pos[0]+message.length*50+80 + 100, pos[1]);
             // context.fillText("↧", pos[0]+message.length*60+30 + 100, pos[1]);
-            var box = [pos[0]+message.length*60+10 + 100, pos[1]-75];
+            var box = [pos[0]+message.length*60+50 + 100, pos[1]-75];
 
             for(var tx=(box[0]*self.scale + self.translate_point[0]); tx < ((box[0]+90)*self.scale + self.translate_point[0]); tx++){
                 for(var ty=(box[1]*self.scale + self.translate_point[1]); ty < ((box[1]+90)*self.scale + self.translate_point[1]); ty++){
@@ -2661,7 +2663,7 @@ var RenderingView = Backbone.View.extend({
 
         switch(saving_tree[2]){
             case 'low':
-                this.save_scale = 0.15;
+                this.save_scale = 0.05; // 0.15
                 break;
             case 'normal':
                 // this.save_scale = self.model.get("canvas_scale");
