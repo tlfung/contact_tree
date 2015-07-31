@@ -447,17 +447,24 @@ var RenderingView = Backbone.View.extend({
 
         // give index of position
         if(alters["up"].length > alters["down"].length){
-            var n = Math.floor(alters["up"].length/alters["down"].length);
+            var n = alters["up"].length/alters["down"].length;
             stick_pos["up"] = util.order_list(0, alters["up"].length);
             //console.log("step", n)
-            for(var a = alters["up"].length-1; a >= 0, alters["down"].length > 0; a -= n){
+            var a = alters["up"].length-1;
+            var last = 0;
+            while(a >= 0 && alters["down"].length > 0){
                 stick_pos["down"].push(a);
+                last = a;
                 if(stick_pos["down"].length == alters["down"].length){
                     break;
                 }
+                a = Math.round(a-n);
             }
             if(stick_pos["down"].length < alters["down"].length){
-                stick_pos["down"].push(0);
+                if(last == 0)
+                    stick_pos["down"].push(1);
+                else
+                    stick_pos["down"].push(0);
             }
             stick_pos["down"].sort( function(a, b){return a-b} );
             long_stick = "up";
@@ -465,16 +472,23 @@ var RenderingView = Backbone.View.extend({
         }
 
         else if(alters["up"].length < alters["down"].length){
-            var n = Math.floor(alters["down"].length/alters["up"].length);
+            var n = alters["down"].length/alters["up"].length;
             stick_pos["down"] = util.order_list(0, alters["down"].length);
-            for(var a = alters["down"].length-1; a >= 0, alters["up"].length > 0; a -= n){
+            var a = alters["down"].length-1;
+            var last = 0;
+            while(a >= 0 && alters["up"].length > 0){
                 stick_pos["up"].push(a);
+                last = a;
                 if(stick_pos["up"].length == alters["up"].length){
                     break;
                 }
+                a = Math.round(a-n);
             }
             if(stick_pos["up"].length < alters["up"].length){
-                stick_pos["up"].push(0);
+                if(last == 0)
+                    stick_pos["up"].push(1);
+                else
+                    stick_pos["up"].push(0);
             }
             stick_pos["up"].sort( function(a, b){return a-b} );
             long_stick = "down";
@@ -650,7 +664,7 @@ var RenderingView = Backbone.View.extend({
             // console.log("layer", layer, "abs", len/3, "nature", nature);
             var sx = {"up": (layer*5), "down":(layer*11)};
             var sy = {"up": (layer*7.5), "down":(layer*12)};
-            var begin_index = {"up": [2, 3], "down":[0, 1]};
+            var begin_index = {"up": [2, 3], "down":[0, 1]}; //!!! 45 degree this.find_dir(ori_v, Math.PI/4);
             var extra_slope = { "up": [(this.stick_dx-sx[long_stick])*0.4-nature/(len/2), (-this.stick_dy-sy[long_stick])*0.4-nature/(len/2)], 
                                 "down":[(this.stick_dx+sx[long_stick])*0.4+nature/(len/2), (this.stick_dy-sy[long_stick])*0.4-nature/(len/2)] };
             // var stick_m = {"up": (-1.5 - layer/18)-nature/(len/2), "down":(0.5 - layer/5)-nature/(len/2)};
@@ -906,7 +920,7 @@ var RenderingView = Backbone.View.extend({
                 
             }
             
-            if(total_draw_stick > 1){
+            if(total_draw_stick > 1){ //!!! update the stick slope
                 this.context.fillStyle = mapping_color.trunk;
                 this.context.strokeStyle = mapping_color.trunk;
                 this.context.lineCap = 'round';
@@ -971,17 +985,23 @@ var RenderingView = Backbone.View.extend({
         var total_leaf = temp_total_leaf["up"] + temp_total_leaf["down"];
         // give index of position
         if(alters["up"].length > alters["down"].length){
-            var n = Math.floor(alters["up"].length/alters["down"].length);
+            var n = alters["up"].length/alters["down"].length;
             stick_pos["up"] = util.order_list(0, alters["up"].length);
-            
-            for(var a = alters["up"].length-1; a >= 0, alters["down"].length > 0; a -= n){
+            var a = alters["up"].length-1;
+            var last = 0;
+            while(a >= 0 && alters["down"].length > 0){
                 stick_pos["down"].push(a);
+                last = a;
                 if(stick_pos["down"].length == alters["down"].length){
                     break;
                 }
+                a = Math.round(a-n);
             }
             if(stick_pos["down"].length < alters["down"].length){
-                stick_pos["down"].push(0);
+                if(last == 0)
+                    stick_pos["down"].push(1);
+                else
+                    stick_pos["down"].push(0);
             }
             stick_pos["down"].sort( function(a, b){return a-b} );
             long_stick = "up";
@@ -989,16 +1009,23 @@ var RenderingView = Backbone.View.extend({
         }
 
         else if(alters["up"].length < alters["down"].length){
-            var n = Math.floor(alters["down"].length/alters["up"].length);
+            var n = alters["down"].length/alters["up"].length;
             stick_pos["down"] = util.order_list(0, alters["down"].length);
-            for(var a = alters["down"].length-1; a >= 0, alters["up"].length > 0; a -= n){
+            var a = alters["down"].length-1;
+            var last = 0;
+            while(a >= 0 && alters["up"].length > 0){
                 stick_pos["up"].push(a);
+                last = a;
                 if(stick_pos["up"].length == alters["up"].length){
                     break;
                 }
+                a = Math.round(a-n);
             }
             if(stick_pos["up"].length < alters["up"].length){
-                stick_pos["up"].push(0);
+                if(last == 0)
+                    stick_pos["up"].push(1);
+                else
+                    stick_pos["up"].push(0);
             }
             stick_pos["up"].sort( function(a, b){return a-b} );
             long_stick = "down";
