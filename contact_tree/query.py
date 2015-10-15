@@ -141,7 +141,8 @@ def test_type(table, attr_type):
                 f_val = a_cur.fetchone()
                 # attr_info[field] = dict()
                 for ff in f_val:
-                    attr_info[field][ff.split("(")[0]] = f_val[ff]
+                    clean_info = str(f_val[ff]).replace("\'", "").replace('\"', '')
+                    attr_info[field][ff.split("(")[0]] = clean_info
                 # if attr_info[f]["COUNT"] > 20:
                 #     final_attr_info["incat"].append(f)
                 attr_info[field]["RANGE"] = attr_info[field]["COUNT"]
@@ -668,6 +669,7 @@ def get_list_ego(request):
         final_return.append(default_attr)
 
         # get all the information for the attributes
+        # update with the same format and add a local column!!!
         cur = db.query('SELECT * FROM dataset_collection WHERE dataset="' + data_table + '";')
         attr_info = cur.fetchall()
         for info in attr_info:
@@ -697,7 +699,7 @@ def get_list_ego(request):
     return HttpResponse(return_json)
 
 
-def unique_stick(all_data, attr, branch_layer):
+def unique_stick(all_data, attr, branch_layer, data_table):
     structure = dict()
     # print stick_unique
     structure["right"] = []
@@ -705,6 +707,17 @@ def unique_stick(all_data, attr, branch_layer):
 
     root = attr['root']
     stick = alterid_index
+
+    global sorting_index
+
+    with open("./contact_tree/data/dataset_index.json", "rb") as json_file:
+        dataset_index = json.load(json_file)
+
+    if attr['leaf_size'] != 'none':
+        root_cnt_indx = dataset_index[data_table][attr['leaf_size']]
+    if data_table.find('student_flow') != -1 and attr['leaf_color'] != 'none':
+        sorting_index = dataset_index[data_table][attr['leaf_color']]
+        # print "+++", sorting_index
 
     alter_array_right_up = []
     alter_array_left_up = []
@@ -738,12 +751,21 @@ def unique_stick(all_data, attr, branch_layer):
         if root != "none":
             if meeting[root_index] not in structure["root"][0]:
                 structure["root"][0][meeting[root_index]] = dict()
-                structure["root"][0][meeting[root_index]]["length"] = 0
+                #!!! add leave size as length if is student flow as meeting[leaf_size_index]
+                if data_table.find('student_flow') != -1:
+                    root_cnt = meeting[root_cnt_indx]
+                    structure["root"][0][meeting[root_index]]["length"] = root_cnt
+                else:
+                    structure["root"][0][meeting[root_index]]["length"] = 0
                 structure["root"][0][meeting[root_index]]["sub"] = [10 for i in range(12)] # may add attribute mapping
                 structure["root"][0][meeting[root_index]]["root_cat"] = meeting[root_index]
                 # print structure["root"]
             else:
-                structure["root"][0][meeting[root_index]]["length"] += 1
+                if data_table.find('student_flow') != -1:
+                    root_cnt = meeting[root_cnt_indx]
+                    structure["root"][0][meeting[root_index]]["length"] += root_cnt
+                else:
+                    structure["root"][0][meeting[root_index]]["length"] += 1
 
         leaf_highlights = meeting[highlight_index]
         # left
@@ -844,7 +866,8 @@ def unique_stick(all_data, attr, branch_layer):
 
                     break
                 level += 1
-
+                
+    sorting_index = 10
     # if empty_structure == structure:
     #     structure = "error"
     print "***", count_miss
@@ -1183,7 +1206,7 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
                                         if float(record[ori_index[compt]]) >= float(mapping[compt][0]):
                                             record[record_index] = 0
                                                                                                                  
-                                        elif float(record[ori_index[compt]]) <= float(mapping[compt][-1]):
+                                        elif float(record[ori_index[compt]]) < float(mapping[compt][-1]): # float(record[ori_index[compt]]) <= float(mapping[compt][-1]):
                                             record[record_index] = len(mapping[compt])
                                                                                 
                                         else:
@@ -1195,7 +1218,7 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
                                         if float(record[ori_index[compt]]) <= float(mapping[compt][0]):
                                             record[record_index] = 0
 
-                                        elif float(record[ori_index[compt]]) >= float(mapping[compt][-1]):
+                                        elif float(record[ori_index[compt]]) > float(mapping[compt][-1]): # float(record[ori_index[compt]]) >= float(mapping[compt][-1]):
                                             record[record_index] = len(mapping[compt])
                                         
                                         else:
@@ -1225,7 +1248,7 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
                             else: # only branch will have default mapping
                                 if collecting_data["type"] == "numerical":
                                     if len(reorder) == 0:
-                                        gap = collecting_data['attr_range']/9.0
+                                        gap = collecting_data['attr_range']/9.0 # find attribute local range!!!
                                         g = float(collecting_data["min"])
                                         while g <= float(collecting_data["max"]):
                                             reorder.append(round(g, 2))
@@ -1248,7 +1271,7 @@ def set_ctree_mapping(user_ctree_data, table, attr, mapping, ego_group, select_e
 
                                 else:
                                     if len(branch_order_index) == 0:
-                                        precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + data_table + ' ORDER BY(' + attr[compt] + ');')
+                                        precur = db.query('SELECT DISTINCT(' + attr[compt] + ') FROM ' + data_table + ' ORDER BY(' + attr[compt] + ');') # add where egoid = selected!!!
                                         real_data = precur.fetchall()
                                         for dist_d in real_data:
                                             branch_order_index.append(dist_d[attr[compt]])
@@ -1472,7 +1495,7 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
                                 if float(d[attr[compt]]) >= float(mapping[compt][0]):
                                     ctree_record[record_index] = 0
                                                                                                          
-                                elif float(d[attr[compt]]) <= float(mapping[compt][-1]):
+                                elif float(d[attr[compt]]) < float(mapping[compt][-1]): # float(d[attr[compt]]) <= float(mapping[compt][-1]):
                                     ctree_record[record_index] = len(mapping[compt])
                                                                         
                                 else:
@@ -1484,7 +1507,7 @@ def insert_ctree_mapping(user_ctree_data, all_data, table, attr, mapping, ego_gr
                                 if float(d[attr[compt]]) <= float(mapping[compt][0]):
                                     ctree_record[record_index] = 0
 
-                                elif float(d[attr[compt]]) >= float(mapping[compt][-1]):
+                                elif float(d[attr[compt]]) > float(mapping[compt][-1]): # float(d[attr[compt]]) >= float(mapping[compt][-1]):
                                     ctree_record[record_index] = len(mapping[compt])
                                 
                                 else:
@@ -2135,7 +2158,7 @@ def one_contact_structure(user_ctree_data, structure_request):
             
             if stick_unique == '1':
                 # print "in_unique"
-                one_structure = unique_stick(all_data, attr, branch_layer)
+                one_structure = unique_stick(all_data, attr, branch_layer, data_table)
 
             else:
                 # print "in_duplicate"
@@ -2154,7 +2177,7 @@ def one_contact_structure(user_ctree_data, structure_request):
 
                 if stick_unique == '1':
                     # print "in_unique"
-                    one_structure = unique_stick(all_data, attr, branch_layer)
+                    one_structure = unique_stick(all_data, attr, branch_layer, data_table)
 
                 else:
                     # print "in_duplicate"
@@ -2165,7 +2188,10 @@ def one_contact_structure(user_ctree_data, structure_request):
 
 
     for d in final_structure:
+        print 'for1', d
         for e in final_structure[d]:
+            print 'for2', e
+            # print final_structure[d][e]
             for layer in final_structure[d][e]['right']:
                 layer['level']['down'] = sorted(layer['level']['down'], key=lambda k: k['sorting'])
                 layer['level']['up'] = sorted(layer['level']['up'], key=lambda k: k['sorting'])
@@ -2173,7 +2199,6 @@ def one_contact_structure(user_ctree_data, structure_request):
                 layer['level']['down'] = sorted(layer['level']['down'], key=lambda k: k['sorting'])
                 layer['level']['up'] = sorted(layer['level']['up'], key=lambda k: k['sorting'])
                
-
     return_json = simplejson.dumps(final_structure, indent=4, use_decimal=True)
     # with open("./contact_tree/data/tree_structure.json", "wb") as json_file:
     #     json_file.write(return_json)    
@@ -2378,6 +2403,8 @@ def auto_save(request):
 
         update_query = waves + "," + group + "," + display_egos + "," + selected_egos + "," + leaf_scale + "," + fruit_scale + "," + sub_leaf_len_scale + "," + dtl_branch_curve + "," + root_curve + "," + root_len_scale + "," + filter_contact + "," + canvas_scale + "," + tree_boundary + "," + canvas_translate + "," + total_ego + "," + component_attribute
     
+        print "========="
+        print "UPDATE auto_save SET %s WHERE %s;" %(update_query, condition)
         db.query("UPDATE auto_save SET %s WHERE %s;" %(update_query, condition))
 
 

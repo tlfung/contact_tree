@@ -68,17 +68,20 @@ var RenderingView = Backbone.View.extend({
         this.tree_lstpoint = [0, 0, 0, 0];
 
         this.stick_d = 30;
-        this.sub_stick_length = 55;
+        this.fruit_d = 110;
+        this.stick_variation = [50, 30, 0, 80, 15, 110]; // [30, 70, 0, 120, 10, 80];
+        // this.sub_stick_length = 55;
+        this.sub_stick_length = 45;
         this.sub_slop = 0;
 
-        this.add_nature = 120;
-        this.right_cluster_leaf = [];
-        this.left_cluster_leaf = [];
+        // this.add_nature = 120;
+        // this.right_cluster_leaf = [];
+        // this.left_cluster_leaf = [];
 
-        this.add_bend = 0;
-        this.add_last_bend = 0;
-        this.last_dr = 0;
-        this.last_dl = 0;
+        // this.add_bend = 0;
+        // this.add_last_bend = 0;
+        // this.last_dr = 0;
+        // this.last_dl = 0;
 
         this.clicking_grid = [];
         this.snaping_grid = [];
@@ -210,10 +213,36 @@ var RenderingView = Backbone.View.extend({
                 var layer_total_alter = {"right": [], "left": []};
                 
                 this.start_y = (this.myCanvas.height/0.15)-this.stick_length-380; //_gly
-
+                
                 for(var s = 0; s < self.total_layer; s++){ // !!!count twice if alter is not unique...
                     var l = ego["left"][s]["level"]["down"].length + ego["left"][s]["level"]["up"].length;
                     var r = ego["right"][s]["level"]["down"].length + ego["right"][s]["level"]["up"].length;
+                    // var std_l = 0, std_r = 0;
+                    /*
+                    if(this.view.includes('student_flow')){
+                        l = 0;
+                        for(var cnt_s = 0; cnt_s < ego["left"][s]["level"]["down"].length; cnt_s++){
+                            for(var cnt_leaf = 0; cnt_leaf < ego["left"][s]["level"]["down"][cnt_s]["leaf"].length; cnt_leaf++)
+                                l += ego["left"][s]["level"]["down"][cnt_s]["leaf"][cnt_leaf]["size"];
+                        }
+                        for(var cnt_s = 0; cnt_s < ego["left"][s]["level"]["up"].length; cnt_s++){
+                            for(var cnt_leaf = 0; cnt_leaf < ego["left"][s]["level"]["up"][cnt_s]["leaf"].length; cnt_leaf++)
+                                l += ego["left"][s]["level"]["up"][cnt_s]["leaf"][cnt_leaf]["size"];
+                        }
+
+                        r = 0;
+                        for(var cnt_s = 0; cnt_s < ego["right"][s]["level"]["down"].length; cnt_s++){
+                            for(var cnt_leaf = 0; cnt_leaf < ego["right"][s]["level"]["down"][cnt_s]["leaf"].length; cnt_leaf++)
+                                r += ego["right"][s]["level"]["down"][cnt_s]["leaf"][cnt_leaf]["size"];
+                        }
+                        for(var cnt_s = 0; cnt_s < ego["right"][s]["level"]["up"].length; cnt_s++){
+                            for(var cnt_leaf = 0; cnt_leaf < ego["right"][s]["level"]["up"][cnt_s]["leaf"].length; cnt_leaf++)
+                                r += ego["right"][s]["level"]["up"][cnt_s]["leaf"][cnt_leaf]["size"];
+                        }
+                        r = Math.round(r/5);
+                        l = Math.round(l/5);
+                    }
+                    */
                     layer_total_alter["right"].push(r);
                     layer_total_alter["left"].push(l);
                     left_side += l;
@@ -227,6 +256,7 @@ var RenderingView = Backbone.View.extend({
                     // alart and delete this ego
                 }
                 
+
                 var msg = "";
                 var click_info = "";
                 if(self.group != "all"){
@@ -254,8 +284,35 @@ var RenderingView = Backbone.View.extend({
                 var ori_dl = left_side*0.65;
                 var count_dr = right_side;
                 var count_dl = left_side;
+                var t_scale = (right_side + left_side)/150; // the small make the tree bigger
+                /*
+                if(this.view.includes('student_flow')){//!!! for student flow, this.view.includes('student_flow')
+                    var real_std = 0;
+                    if("root" in ego){
+                        for(var one_r in ego["root"][0]){
+                            real_std += ego["root"][0][one_r]["length"];
+                        }
+                    }
+                    var b_scale = Math.pow(real_std, 0.1)*1.5;
+                    t_scale = 15 - Math.pow(real_std, 0.085)*2.5;
+                    right_side = 150*b_scale;
+                    left_side = 105*b_scale;
+                    ori_dr = right_side*0.65;
+                    ori_dl = left_side*0.65;
+                    count_dr = right_side;
+                    count_dl = left_side;
+                }
+                */
+                if(this.view.includes('student_flow')){//!!! for student flow, this.view.includes('student_flow')
+                    var real_std = 0;
+                    if("root" in ego){
+                        for(var one_r in ego["root"][0]){
+                            real_std += ego["root"][0][one_r]["length"];
+                        }
+                    }
+                    t_scale = 10 - Math.pow(real_std, 0.085)*2.5;
+                }
 
-                var t_scale = (right_side + left_side)/150;
                 if(right_side+left_side < 80){
                     t_scale = 0.5;
                 }
@@ -264,6 +321,7 @@ var RenderingView = Backbone.View.extend({
                         t_scale = 1;
                     }
                 }
+
 
                 if(self.ego_label in self.tree_size){ // has exact tree boundary
                     this.start_x += (self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0]) + 150;
@@ -372,7 +430,9 @@ var RenderingView = Backbone.View.extend({
                     var used_dl = 0;
                     
                     // draw right tree
-                    if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || (count_dr <= 0 && (count_dl-layer_total_alter["left"][real_height]) <= 0)){}
+                    if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || (count_dr <= 0 && (count_dl-layer_total_alter["left"][real_height]) <= 0)){
+                        used_dr = this.draw_right_branch(height, layer_total_alter["right"][real_height], ego["right"][real_height]["level"]);
+                    }
 
                     else
                         used_dr = this.draw_right_branch(height, layer_total_alter["right"][real_height], ego["right"][real_height]["level"]);
@@ -385,7 +445,9 @@ var RenderingView = Backbone.View.extend({
                     // this.context.strokeStyle = "rgb(" + (125-(height+1)*3).toString() + "," + (96-(height+1)*3).toString() + "," + (65-(height+1)*3).toString() + ")";
                     // this.context.strokeStyle = "black";
                     this.context.beginPath();
-                    if((real_height == self.total_layer-1 && layer_total_alter["left"][real_height] == 0) || ((count_dr-layer_total_alter["right"][real_height]) <= 0 && count_dl <= 0)){}
+                    if((real_height == self.total_layer-1 && layer_total_alter["left"][real_height] == 0) || ((count_dr-layer_total_alter["right"][real_height]) <= 0)){
+                        used_dl = this.draw_left_branch(height, layer_total_alter["left"][real_height], ego["left"][real_height]["level"]);
+                    }
 
                     else
                         used_dl = this.draw_left_branch(height, layer_total_alter["left"][real_height], ego["left"][real_height]["level"]);
@@ -651,12 +713,19 @@ var RenderingView = Backbone.View.extend({
         var b_dist = 0;
         var unit_v = [];
         var stick_v = {};
-        var stick_len = this.stick_d*len_scale;
+        var base_stick_len = this.stick_d*len_scale;
         var stick_slop;
         var begin_index = {"up": [2, 3], "down":[0, 1]};
+
         for(var n = 0, len = stick_pos[long_stick].length; n < len; n++){
             var nature = n*(Math.abs(d-u)/stick_scale);
-            
+            var stick_len = (this.stick_d + this.stick_variation[n%6])*len_scale;
+            if(alters[long_stick][n]["leaf"].length > 10){
+                stick_len = (this.stick_d + this.stick_variation[n%2])*len_scale;
+            }
+            if(alters[long_stick][n]["fruit"] > 0 && (this.view.includes('student_flow') || this.view.includes('path_demo'))){
+                stick_len = (this.stick_d + this.fruit_d)*len_scale;
+            }
             if(Math.abs(d-u)<len/2){
                 nature = n*((this.sub_slop/10)+1)*2;
             }
@@ -672,8 +741,10 @@ var RenderingView = Backbone.View.extend({
             unit_v = [branch_v[0]/b_dist, branch_v[1]/b_dist];
             stick_v = {'up': this.find_dir(unit_v, Math.PI/4), 'down': this.find_dir(unit_v, -Math.PI/4)};
 
-            stick_slope = {"up":[stick_v['up'][0]*stick_len, stick_v['up'][1]*stick_len], 
-                          "down":[stick_v['down'][0]*stick_len, stick_v['down'][1]*stick_len]}
+            // stick_slope = {"up":[stick_v['up'][0]*stick_len, stick_v['up'][1]*stick_len], 
+            //               "down":[stick_v['down'][0]*stick_len, stick_v['down'][1]*stick_len]}
+            stick_slope = {"up":[stick_v['up'][0], stick_v['up'][1]], 
+                          "down":[stick_v['down'][0], stick_v['down'][1]]}
 
             var sub_total_leaf = 0;
             
@@ -682,7 +753,7 @@ var RenderingView = Backbone.View.extend({
             
             var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"] + "#" + long_stick + "#r#" + layer;
             
-            var start_point = [ tree_rstpoint[begin_index[long_stick][0]]+stick_slope[long_stick][0], tree_rstpoint[begin_index[long_stick][1]]+stick_slope[long_stick][1] ];
+            var start_point = [ tree_rstpoint[begin_index[long_stick][0]]+stick_slope[long_stick][0]*stick_len, tree_rstpoint[begin_index[long_stick][1]]+stick_slope[long_stick][1]*stick_len ];
             
             if((!jQuery.isEmptyObject(alters[long_stick][n]) && alters[long_stick][n]["leaf"].length <= self.filter_cnt) || jQuery.isEmptyObject(alters[long_stick][n])){
                 if(!jQuery.isEmptyObject(alters[long_stick][n]))
@@ -698,13 +769,21 @@ var RenderingView = Backbone.View.extend({
                         continue;
                     }
                     else{
+                        stick_len = (this.stick_d + this.stick_variation[n%6])*len_scale;
+                        if(alters[long_stick][n]["leaf"].length > 10){
+                            stick_len = (this.stick_d + this.stick_variation[n%2])*len_scale;
+                        }
+                        if(alters[long_stick][n]["fruit"] > 0 && (this.view.includes('student_flow') || this.view.includes('path_demo'))){
+                            stick_len = (this.stick_d + this.fruit_d)*len_scale;
+                        }
                         this.context.fillStyle = mapping_color.trunk;
                         this.context.strokeStyle = mapping_color.trunk;
-                        
+                        this.context.lineWidth = 8;
+
                         this.context.lineCap = 'round';
                         this.context.beginPath();
                         this.context.moveTo(tree_rstpoint[begin_index[short_stick][0]], tree_rstpoint[begin_index[short_stick][1]]);
-                        this.context.lineTo(tree_rstpoint[begin_index[short_stick][0]]+stick_slope[short_stick][0], tree_rstpoint[begin_index[short_stick][1]]+stick_slope[short_stick][1]);
+                        this.context.lineTo(tree_rstpoint[begin_index[short_stick][0]]+stick_slope[short_stick][0]*stick_len, tree_rstpoint[begin_index[short_stick][1]]+stick_slope[short_stick][1]*stick_len);
                         
                         this.context.stroke();//draw line
                         this.context.fill();//fill color
@@ -729,7 +808,7 @@ var RenderingView = Backbone.View.extend({
                             }                    
                         }                        
 
-                        start_point = [ tree_rstpoint[begin_index[short_stick][0]]+stick_slope[short_stick][0], tree_rstpoint[begin_index[short_stick][1]]+stick_slope[short_stick][1] ];
+                        start_point = [ tree_rstpoint[begin_index[short_stick][0]]+stick_slope[short_stick][0]*stick_len, tree_rstpoint[begin_index[short_stick][1]]+stick_slope[short_stick][1]*stick_len ];
                         
                         var stick_leaf = 0;
                         stick_leaf = this.draw_leaf(set_alter_id, alters[short_stick][count_short_stick], start_point, stick_v[short_stick]); 
@@ -796,12 +875,20 @@ var RenderingView = Backbone.View.extend({
         
             // sub stick
             if(!jQuery.isEmptyObject(alters[long_stick][n])){
+                stick_len = (this.stick_d + this.stick_variation[n%6])*len_scale;
+                if(alters[long_stick][n]["leaf"].length > 10){
+                    stick_len = (this.stick_d + this.stick_variation[n%2])*len_scale;
+                }
+                if(alters[long_stick][n]["fruit"] > 0 && (this.view.includes('student_flow') || this.view.includes('path_demo'))){
+                    stick_len = (this.stick_d + this.fruit_d)*len_scale;
+                }
                 this.context.fillStyle = mapping_color.trunk;
                 this.context.strokeStyle = mapping_color.trunk;
+                this.context.lineWidth = 8;
                 this.context.lineCap = 'round';
                 this.context.beginPath();
                 this.context.moveTo(tree_rstpoint[begin_index[long_stick][0]], tree_rstpoint[begin_index[long_stick][1]]);
-                this.context.lineTo(tree_rstpoint[begin_index[long_stick][0]]+stick_slope[long_stick][0], tree_rstpoint[begin_index[long_stick][1]]+stick_slope[long_stick][1]);
+                this.context.lineTo(tree_rstpoint[begin_index[long_stick][0]]+stick_slope[long_stick][0]*stick_len, tree_rstpoint[begin_index[long_stick][1]]+stick_slope[long_stick][1]*stick_len);
                 //context.lineTo(_rstpoint[2],_rstpoint[3])
                 this.context.stroke();//draw line
                 this.context.fill();//fill color
@@ -860,12 +947,20 @@ var RenderingView = Backbone.View.extend({
                     count_short_stick++;
                 }
                 else{
+                    stick_len = (this.stick_d + this.stick_variation[count_short_stick%6])*len_scale;
+                    if(alters[short_stick][count_short_stick]["leaf"].length > 10){
+                        stick_len = (this.stick_d + this.stick_variation[count_short_stick%2])*len_scale;
+                    }
+                    if(alters[short_stick][count_short_stick]["fruit"] > 0 && (this.view.includes('student_flow') || this.view.includes('path_demo'))){
+                        stick_len = (this.stick_d + this.fruit_d)*len_scale;
+                    }
                     this.context.fillStyle = mapping_color.trunk;
                     this.context.strokeStyle = mapping_color.trunk;
+                    this.context.lineWidth = 8;
                     this.context.lineCap = 'round';
                     this.context.beginPath();
                     this.context.moveTo(tree_rstpoint[begin_index[short_stick][0]], tree_rstpoint[begin_index[short_stick][1]]);
-                    this.context.lineTo(tree_rstpoint[begin_index[short_stick][0]]+stick_slope[short_stick][0], tree_rstpoint[begin_index[short_stick][1]]+stick_slope[short_stick][1]);
+                    this.context.lineTo(tree_rstpoint[begin_index[short_stick][0]]+stick_slope[short_stick][0]*stick_len, tree_rstpoint[begin_index[short_stick][1]]+stick_slope[short_stick][1]*stick_len);
                     
                     this.context.stroke();//draw line
                     this.context.fill();//fill color
@@ -891,7 +986,7 @@ var RenderingView = Backbone.View.extend({
                     }
                     
 
-                    start_point = [ tree_rstpoint[begin_index[short_stick][0]]+stick_slope[short_stick][0], tree_rstpoint[begin_index[short_stick][1]]+stick_slope[short_stick][1] ];
+                    start_point = [ tree_rstpoint[begin_index[short_stick][0]]+stick_slope[short_stick][0]*stick_len, tree_rstpoint[begin_index[short_stick][1]]+stick_slope[short_stick][1]*stick_len ];
                     
                     var stick_leaf = 0;
                     stick_leaf = this.draw_leaf(set_alter_id, alters[short_stick][count_short_stick], start_point, stick_v[short_stick]); 
@@ -917,6 +1012,10 @@ var RenderingView = Backbone.View.extend({
                 this.context.strokeStyle = mapping_color.trunk;
                 this.context.lineCap = 'round';
                 this.context.beginPath();
+
+                if(this.view.includes('student_flow_label')){
+                    this.sub_stick_length = 75;
+                }
 
                 var ori_rstpoint = [0, 0, 0, 0];
                 ori_rstpoint[0] = tree_rstpoint[0];
@@ -1176,6 +1275,13 @@ var RenderingView = Backbone.View.extend({
         var begin_index = {"up": [2, 3], "down":[0, 1]};
         for(var n = 0, len = stick_pos[long_stick].length; n < len; n++){
             var nature = n*(Math.abs(d-u)/stick_scale);
+            var stick_len = (this.stick_d + this.stick_variation[n%6])*len_scale;
+            if(alters[long_stick][n]["leaf"].length > 10){
+                stick_len = (this.stick_d + this.stick_variation[n%2])*len_scale;
+            }
+            if(alters[long_stick][n]["fruit"] > 0 && (this.view.includes('student_flow') || this.view.includes('path_demo'))){
+                stick_len = (this.stick_d + this.fruit_d)*len_scale;
+            }
             if(Math.abs(d-u)<len/2){
                 nature = n*((this.sub_slop/10)+1)*2;
             }
@@ -1191,18 +1297,28 @@ var RenderingView = Backbone.View.extend({
             unit_v = [branch_v[0]/b_dist, branch_v[1]/b_dist];
             stick_v = {'up': this.find_dir(unit_v, -Math.PI/4), 'down': this.find_dir(unit_v, Math.PI/4)};
 
-            stick_slope = {"up":[stick_v['up'][0]*stick_len, stick_v['up'][1]*stick_len], 
-                          "down":[stick_v['down'][0]*stick_len, stick_v['down'][1]*stick_len]};
+            // stick_slope = {"up":[stick_v['up'][0]*stick_len, stick_v['up'][1]*stick_len], 
+            //               "down":[stick_v['down'][0]*stick_len, stick_v['down'][1]*stick_len]};
+
+            stick_slope = {"up":[stick_v['up'][0], stick_v['up'][1]], 
+                          "down":[stick_v['down'][0], stick_v['down'][1]]};
 
             var point_in_canvas = [ (tree_lstpoint[begin_index[long_stick][0]]*this.scale) + this.translate_point[0], (tree_lstpoint[begin_index[long_stick][1]]*this.scale) + this.translate_point[1]];
             var stick_vector = [stick_v[long_stick][0], stick_v[long_stick][1]];
             var set_alter_id = this.subyear + "_" + alters[long_stick][n]["id"] + "#" + long_stick + "#l#" + layer;
             
-            var start_point = [ tree_lstpoint[begin_index[long_stick][0]]+stick_slope[long_stick][0], tree_lstpoint[begin_index[long_stick][1]]+stick_slope[long_stick][1] ];
+            var start_point = [ tree_lstpoint[begin_index[long_stick][0]]+stick_slope[long_stick][0]*stick_len, tree_lstpoint[begin_index[long_stick][1]]+stick_slope[long_stick][1]*stick_len ];
            
             var sub_total_leaf = 0;
 
             if((!jQuery.isEmptyObject(alters[long_stick][n]) && alters[long_stick][n]["leaf"].length <= self.filter_cnt) || jQuery.isEmptyObject(alters[long_stick][n])){
+                stick_len = (this.stick_d + this.stick_variation[n%6])*len_scale;
+                if(alters[long_stick][n]["leaf"].length > 10){
+                    stick_len = (this.stick_d + this.stick_variation[n%2])*len_scale;
+                }
+                if(alters[long_stick][n]["fruit"] > 0 && (this.view.includes('student_flow') || this.view.includes('path_demo'))){
+                    stick_len = (this.stick_d + this.fruit_d)*len_scale;
+                }
                 if(!jQuery.isEmptyObject(alters[long_stick][n]))
                     sub_total_leaf += alters[long_stick][n]["leaf"].length; 
                 if(stick_pos[short_stick][count_short_stick] == n){
@@ -1215,13 +1331,14 @@ var RenderingView = Backbone.View.extend({
                         count_short_stick++;
                         continue;
                     }
-                    else{
+                    else{                        
                         this.context.fillStyle = mapping_color.trunk;
                         this.context.strokeStyle = mapping_color.trunk;
+                        this.context.lineWidth = 8;
                         this.context.lineCap = 'round';
                         this.context.beginPath();
                         this.context.moveTo(tree_lstpoint[begin_index[short_stick][0]], tree_lstpoint[begin_index[short_stick][1]]);
-                        this.context.lineTo(tree_lstpoint[begin_index[short_stick][0]]+stick_slope[short_stick][0], tree_lstpoint[begin_index[short_stick][1]]+stick_slope[short_stick][1]);
+                        this.context.lineTo(tree_lstpoint[begin_index[short_stick][0]]+stick_slope[short_stick][0]*stick_len, tree_lstpoint[begin_index[short_stick][1]]+stick_slope[short_stick][1]*stick_len);
                        
                         this.context.stroke();//draw line
                         // this.context.fill();//fill color
@@ -1248,7 +1365,7 @@ var RenderingView = Backbone.View.extend({
                             }           
                         }
 
-                        start_point = [ tree_lstpoint[begin_index[short_stick][0]]+stick_slope[short_stick][0], tree_lstpoint[begin_index[short_stick][1]]+stick_slope[short_stick][1] ];
+                        start_point = [ tree_lstpoint[begin_index[short_stick][0]]+stick_slope[short_stick][0]*stick_len, tree_lstpoint[begin_index[short_stick][1]]+stick_slope[short_stick][1]*stick_len ];
                         stick_leaf = 0;
                         stick_leaf = this.draw_leaf(set_alter_id, alters[short_stick][count_short_stick], start_point, stick_v[short_stick]);
                         
@@ -1311,12 +1428,20 @@ var RenderingView = Backbone.View.extend({
             }
             // sub stick
             if(!jQuery.isEmptyObject(alters[long_stick][n])){
+                stick_len = (this.stick_d + this.stick_variation[n%6])*len_scale;
+                if(alters[long_stick][n]["leaf"].length > 10){
+                    stick_len = (this.stick_d + this.stick_variation[n%2])*len_scale;
+                }
+                if(alters[long_stick][n]["fruit"] > 0 && (this.view.includes('student_flow') || this.view.includes('path_demo'))){
+                    stick_len = (this.stick_d + this.fruit_d)*len_scale;
+                }
+                this.context.lineWidth = 8;
                 this.context.fillStyle = mapping_color.trunk;
                 this.context.strokeStyle = mapping_color.trunk;
                 this.context.lineCap = 'round';
                 this.context.beginPath();
                 this.context.moveTo(tree_lstpoint[begin_index[long_stick][0]], tree_lstpoint[begin_index[long_stick][1]]);
-                this.context.lineTo(tree_lstpoint[begin_index[long_stick][0]]+stick_slope[long_stick][0], tree_lstpoint[begin_index[long_stick][1]]+stick_slope[long_stick][1]);
+                this.context.lineTo(tree_lstpoint[begin_index[long_stick][0]]+stick_slope[long_stick][0]*stick_len, tree_lstpoint[begin_index[long_stick][1]]+stick_slope[long_stick][1]*stick_len);
                 //context.lineTo(_rstpoint[2],_rstpoint[3])
                 this.context.stroke();//draw line
                 // this.context.fill();//fill color
@@ -1374,12 +1499,20 @@ var RenderingView = Backbone.View.extend({
                     count_short_stick++;
                 }
                 else{
+                    stick_len = (this.stick_d + this.stick_variation[count_short_stick%6])*len_scale;
+                    if(alters[short_stick][count_short_stick]["leaf"].length > 10){
+                        stick_len = (this.stick_d + this.stick_variation[count_short_stick%2])*len_scale;
+                    }
+                    if(alters[short_stick][count_short_stick]["fruit"] > 0 && (this.view.includes('student_flow') || this.view.includes('path_demo'))){
+                        stick_len = (this.stick_d + this.fruit_d)*len_scale;
+                    }
                     this.context.fillStyle = mapping_color.trunk;
                     this.context.strokeStyle = mapping_color.trunk;
+                    this.context.lineWidth = 8;
                     this.context.lineCap = 'round';
                     this.context.beginPath();
                     this.context.moveTo(tree_lstpoint[begin_index[short_stick][0]], tree_lstpoint[begin_index[short_stick][1]]);
-                    this.context.lineTo(tree_lstpoint[begin_index[short_stick][0]]+stick_slope[short_stick][0], tree_lstpoint[begin_index[short_stick][1]]+stick_slope[short_stick][1]);
+                    this.context.lineTo(tree_lstpoint[begin_index[short_stick][0]]+stick_slope[short_stick][0]*stick_len, tree_lstpoint[begin_index[short_stick][1]]+stick_slope[short_stick][1]*stick_len);
                     
                     this.context.stroke();//draw line
                     // this.context.fill();//fill color
@@ -1406,7 +1539,7 @@ var RenderingView = Backbone.View.extend({
                         }
                     }               
                     
-                    start_point = [ tree_lstpoint[begin_index[short_stick][0]]+stick_slope[short_stick][0], tree_lstpoint[begin_index[short_stick][1]]+stick_slope[short_stick][1] ];
+                    start_point = [ tree_lstpoint[begin_index[short_stick][0]]+stick_slope[short_stick][0]*stick_len, tree_lstpoint[begin_index[short_stick][1]]+stick_slope[short_stick][1]*stick_len ];
                     
                     stick_leaf = 0;
                     stick_leaf = this.draw_leaf(set_alter_id, alters[short_stick][count_short_stick], start_point, stick_v[short_stick]);
@@ -1510,7 +1643,11 @@ var RenderingView = Backbone.View.extend({
         this.context.fillStyle = mapping_color.trunk;
         this.context.strokeStyle = mapping_color.trunk;
         this.context.lineCap = 'round';
-        this.context.lineWidth = 5;
+        this.context.lineWidth = 8;
+        var random_angle_option = [(Math.PI/4), -(Math.PI/4)];
+        var random_angle = random_angle_option[Math.floor(Math.random()*2)];
+        // var random_angle = random_angle_option[0]
+        // var random_angle = random_angle_option[Math.floor(point_y%2)];
         while(g<len){
             next = 0;
             // angle = Math.PI/2;
@@ -1519,7 +1656,7 @@ var RenderingView = Backbone.View.extend({
                 var tip = 0;
                 
                 if(self.on_moving == 0){
-                    if(len < 3)
+                    if(len <= 3)
                         tip = fruit_size/2+2;
                     for(var t = 0; t < len; t++){
                         tip += (leaf_table[sum_leaf[t].size]/2);
@@ -1549,14 +1686,23 @@ var RenderingView = Backbone.View.extend({
                     
                     if(leaf_id != "none" && self.leaf_hovor == leaf_id){
                         radius = leaf_table[sum_leaf[g].size]*2;
+                        // color = mapping_color.render_leaf_color[sum_leaf[g].color];
                         if(next > 0){
                             point_y += dir_v[1]*radius*0.75;
                             point_x += dir_v[0]*radius*0.75;
                         }                        
                     }
                     else{
-                        point_y += dir_v[1]*next;
-                        point_x += dir_v[0]*next;
+                        if(this.view.includes('student_flow')){
+                            point_y += dir_v[1]*next*1.5;
+                            point_x += dir_v[0]*next*1.5;
+                        }
+                        else{
+                            // point_y += dir_v[1]*next*1.25;
+                            // point_x += dir_v[0]*next*1.25;
+                            point_y += dir_v[1]*next*1;
+                            point_x += dir_v[0]*next*1;
+                        }
                     }
                     
                    
@@ -1586,7 +1732,8 @@ var RenderingView = Backbone.View.extend({
                     }
                     
                     if(g%2==0){
-                        angle = angle + (Math.PI/4);
+                        // angle = angle + (Math.PI/4);
+                        angle = angle + random_angle;
                     
                         if(this.snap == 0 && this.save_img == 0){
                             for(var leaf_x = 0; leaf_x < 2.5*radius*this.scale; leaf_x++){
@@ -1625,7 +1772,8 @@ var RenderingView = Backbone.View.extend({
 
                     }
                     else{
-                        angle = angle - (Math.PI/4);
+                        // angle = angle - (Math.PI/4);
+                        angle = angle - random_angle;
                         if(this.snap == 0 && this.save_img == 0){
                             for(var leaf_x = 0; leaf_x < 2.5*radius*this.scale; leaf_x++){
                                 for(var leaf_y = -radius*this.scale*0.5; leaf_y < radius*this.scale*0.5; leaf_y++){
@@ -1769,7 +1917,7 @@ var RenderingView = Backbone.View.extend({
                     }
                     
                     this.context.beginPath();
-                    this.context.lineWidth = 5;
+                    this.context.lineWidth = 8;
                     this.context.lineCap = 'round';
                     this.context.moveTo(p[0], p[1]);
                     this.context.lineTo(point_x, point_y);
@@ -1805,7 +1953,7 @@ var RenderingView = Backbone.View.extend({
                     this.context.strokeStyle = mapping_color.trunk;
                     
                     this.context.beginPath();
-                    this.context.lineWidth = 5;
+                    this.context.lineWidth = 8;
                     this.context.lineCap = 'round';
                     this.context.moveTo(p[0], p[1]);
                     this.context.lineTo(point_x, point_y);
@@ -1831,36 +1979,31 @@ var RenderingView = Backbone.View.extend({
         var self = this;
         ctx.lineWidth = 3;
         var grd = ctx.createLinearGradient((px_r + px_l)/2, py, (px_r + px_l)/2, py+200);
-        grd.addColorStop(0, mapping_color.trunk);
-        grd.addColorStop(1, mapping_color.root);
-        grd.addColorStop(0, mapping_color.trunk);
-        grd.addColorStop(1, mapping_color.root);
+        grd.addColorStop(0, "#7D6041");
+        grd.addColorStop(1, mapping_color.root);        
         ctx.fillStyle = grd;
         ctx.strokeStyle = grd;
-        var root_index = [];
-        var root_amount = [];
-        var sorted_root = [];
+
         var total_amount = 0;
         var total_stick = 0;
+        var max_root = 0;
         for(var r in total_root){
             if(r != -1){
                 total_stick++;
                 total_amount += total_root[r]["length"];
-                root_index.push(r)
-                root_amount.push(total_root[r]["length"]);
-                sorted_root.push(total_root[r]["length"]);
+                if(max_root < total_root[r]["length"])
+                    max_root = total_root[r]["length"];
             }
         }
-        sorted_root.sort(function(a,b){return b - a})
-        
-        var min_root = 1;
-        var max_root = Math.max.apply(Math, root_amount);
-        var root_size = min_root*Math.pow(max_root, 0.3);
-        var author_area = root_index[jQuery.inArray(max_root, root_amount)];
+
+        var r_center = Math.ceil(total_stick/2) - 1;
+        var root_area = r_center;
         var root_scale = self.model.get("root_curve");
         var root_length = self.model.get("root_len_scale");
-        var trunk_weigth = (px_r - px_l)/4; ///total_stick;
-        
+        var trunk_weigth = (px_r - px_l)/4; //total_stick;
+
+        var root_size = Math.pow(total_root[root_area]["length"], 0.3);
+        // root_size = total_root[root_area]["length"]/10;
         // draw main root
         ctx.beginPath();
         
@@ -1876,18 +2019,17 @@ var RenderingView = Backbone.View.extend({
         
         var grd_root = ctx.createLinearGradient((px_r + px_l)/2, py+200, (px_r + px_l)/2, py+400);
         grd_root.addColorStop(0, mapping_color.root);
-        grd_root.addColorStop(1, mapping_color.render_roots_color[author_area]);
+        grd_root.addColorStop(1, mapping_color.render_roots_color[root_area]);
         ctx.fillStyle = grd_root;
         ctx.strokeStyle = grd_root;
         
         var cp_bottom = [(px_r + px_l)/2, py + 200 + root_size*1.5];
         var stick_right_side = [(px_r+px_l)/2 + trunk_weigth, py+200];
         var stick_left_side = [(px_r+px_l)/2 - trunk_weigth, py+200];
-        var main_step = [ trunk_weigth/total_root[author_area]["sub"].length, ((root_size*105 + 200)/total_root[author_area]["sub"].length)*root_length]; //-250
+        var main_step = [ trunk_weigth/total_root[root_area]["sub"].length, ((root_size*105)/total_root[root_area]["sub"].length)*root_length]; //-250
        
         var n = 4;
-        for(var i = 1; i < total_root[author_area]["sub"].length; i++){
-
+        for(var i = 1; i < total_root[root_area]["sub"].length; i++){
             if(i%2 == 0)
                 curve = -(25 + i);
             else
@@ -1895,7 +2037,7 @@ var RenderingView = Backbone.View.extend({
             var right_m = [stick_right_side[0] - main_step[0] + curve, stick_right_side[1] + main_step[1]/2];
             var left_m = [stick_left_side[0] + main_step[0] + curve, stick_left_side[1] + main_step[1]/2];
             
-            if(total_root[author_area]["sub"][i] != 0){
+            if(total_root[root_area]["sub"][i] != 0){
                 var fractal = 0;
                 if((i+1) % n == 0) fractal = (25 + i);
                 else if(i % n == 0) fractal = -(25 + i);
@@ -1903,7 +2045,7 @@ var RenderingView = Backbone.View.extend({
                     ctx.beginPath();
                     ctx.moveTo(stick_right_side[0], stick_right_side[1]);              
                     
-                    ctx.bezierCurveTo(stick_right_side[0] - main_step[0], stick_right_side[1] + main_step[1], stick_right_side[0] + main_step[0]*3 + Math.abs(curve), stick_right_side[1] + main_step[1]*0.5, stick_right_side[0] + main_step[0]*3 + total_root[author_area]["sub"][i]*3 + Math.abs(curve) + fractal, stick_right_side[1] + main_step[1]*2 + total_root[author_area]["sub"][i]*2.5 - fractal); //+/- total_root[author_area]["sub"][i]*5
+                    ctx.bezierCurveTo(stick_right_side[0] - main_step[0], stick_right_side[1] + main_step[1], stick_right_side[0] + main_step[0]*3 + Math.abs(curve), stick_right_side[1] + main_step[1]*0.5, stick_right_side[0] + main_step[0]*3 + total_root[root_area]["sub"][i]*3 + Math.abs(curve) + fractal, stick_right_side[1] + main_step[1]*2 + total_root[root_area]["sub"][i]*2.5 - fractal); //+/- total_root[root_area]["sub"][i]*5
                     ctx.bezierCurveTo(stick_right_side[0] + main_step[0]*3 + Math.abs(curve), stick_right_side[1] + main_step[1]*0.5 + 10, stick_right_side[0] - main_step[0], stick_right_side[1] + main_step[1], (stick_left_side[0] + stick_right_side[0])/2, stick_right_side[1]);
                     ctx.stroke();
                     ctx.fill();
@@ -1912,7 +2054,7 @@ var RenderingView = Backbone.View.extend({
                 else{
                     ctx.beginPath();
                     ctx.moveTo(stick_left_side[0], stick_left_side[1]);
-                    ctx.bezierCurveTo(stick_left_side[0] + main_step[0], stick_left_side[1] + main_step[1], stick_left_side[0] - main_step[0]*3 - Math.abs(curve), stick_left_side[1] + main_step[1]*0.5, stick_left_side[0] - main_step[0]*3 - total_root[author_area]["sub"][i]*3 - Math.abs(curve) - fractal, stick_left_side[1] + main_step[1]*2 + total_root[author_area]["sub"][i]*2.5 - fractal); //+/- total_root[author_area]["sub"][i]*5
+                    ctx.bezierCurveTo(stick_left_side[0] + main_step[0], stick_left_side[1] + main_step[1], stick_left_side[0] - main_step[0]*3 - Math.abs(curve), stick_left_side[1] + main_step[1]*0.5, stick_left_side[0] - main_step[0]*3 - total_root[root_area]["sub"][i]*3 - Math.abs(curve) - fractal, stick_left_side[1] + main_step[1]*2 + total_root[root_area]["sub"][i]*2.5 - fractal); //+/- total_root[root_area]["sub"][i]*5
                     ctx.bezierCurveTo(stick_left_side[0] - main_step[0]*3 - Math.abs(curve), stick_left_side[1] + main_step[1]*0.5 + 10, stick_left_side[0] + main_step[0], stick_left_side[1] + main_step[1], (stick_left_side[0] + stick_right_side[0])/2, stick_left_side[1]);
                     ctx.stroke();
                     ctx.fill();
@@ -1932,7 +2074,7 @@ var RenderingView = Backbone.View.extend({
                         for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + main_step[1])*this.scale + self.translate_point[1]); root_y++){
                             var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
                             if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
-                                self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[author_area]["root_cat"];
+                                self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[root_area]["length"];
                             }
                         }
                     }
@@ -1958,7 +2100,7 @@ var RenderingView = Backbone.View.extend({
                         for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + main_step[1])*this.scale + self.translate_point[1]); root_y++){
                             var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
                             if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
-                                self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[author_area]["root_cat"];
+                                self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[root_area]["length"];
                             }
                         }
                     }
@@ -1972,9 +2114,9 @@ var RenderingView = Backbone.View.extend({
                 ctx.fill();
                 n = n + 3;
                 continue;
-                
             }
 
+            // for the root tail
             ctx.beginPath();
             ctx.moveTo(stick_right_side[0], stick_right_side[1]);
             ctx.quadraticCurveTo(right_m[0], right_m[1], stick_right_side[0] - main_step[0], stick_right_side[1] + main_step[1]);
@@ -1985,7 +2127,7 @@ var RenderingView = Backbone.View.extend({
                     for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + main_step[1])*this.scale + self.translate_point[1]); root_y++){
                         var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
                         if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
-                            self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[author_area]["root_cat"];
+                            self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[root_area]["length"];
                         }
                     }
                 }
@@ -1994,8 +2136,13 @@ var RenderingView = Backbone.View.extend({
             stick_right_side = [stick_right_side[0] - main_step[0], stick_right_side[1] + main_step[1]];
             stick_left_side = [stick_left_side[0] + main_step[0], stick_left_side[1] + main_step[1]];
              
-            if(self.tree_size[self.ego_label][4] == "none" && self.snap == 0)
-                self.tree_size[self.ego_label][3] = stick_left_side[1];
+            // if(self.tree_size[self.ego_label][4] == "none" && self.snap == 0)
+            //     self.tree_size[self.ego_label][3] = stick_left_side[1];
+
+            if(self.tree_size[self.ego_label][4] == "none" && self.snap == 0){
+                if((stick_left_side[1] + main_step[1]*2) > self.tree_size[self.ego_label][3])
+                    self.tree_size[self.ego_label][3] = stick_left_side[1] + main_step[1]*2;
+            }
 
             ctx.stroke();
             ctx.fill();
@@ -2013,34 +2160,36 @@ var RenderingView = Backbone.View.extend({
         ctx.stroke();
         ctx.fill();
 
-        var total = root_index.length;
-        var side = 0;
-        var cp_side = [px_r, px_l];
+        var total = total_stick;
+        var cp_side = [px_r, px_l];        
+        var extend = 300/total_stick;
         
-        var extend = 300/root_amount.length;
-        
-        var root_index_sorted = [];
-        for(var i in sorted_root){
-            root_index_sorted.push(root_index[jQuery.inArray(sorted_root[i], root_amount)]);
-            root_amount.splice(jQuery.inArray(sorted_root[i], root_amount), 1, -1);
-        }
-        
-        for(var index in root_index_sorted){
-            r = root_index_sorted[index];
-            root_size = Math.pow(total_root[r]["length"], 0.3);
-            if(r == author_area || root_size == 0 || r == -1){
-                continue;
-            }
-            
+        var cnt_pair = 1;
+        for(var side = 1; side <= total_stick; side++){        
             ctx.beginPath();
             if(side%2 == 0){ //right side
+                var temp_cp = py + 100; // !!! original parameter
+                if(cnt_pair == 1){ // customize for student flow
+                    extend = -15/total_stick;
+                    temp_cp = py + 175;
+                }
+                else{
+                    extend = 300/total_stick;
+                    if(cnt_pair == 3)
+                        temp_cp = py + 130;
+                    else
+                        temp_cp = py + 50;
+                }
+                r = r_center + cnt_pair;
+                root_size = Math.pow(total_root[r]["length"], 0.3);
+                // root_size = total_root[r]["length"]/10;
                 ctx.fillStyle = grd;
                 ctx.strokeStyle = grd;
                 n = 4;
                 ctx.moveTo(px_r, py);
-                ctx.bezierCurveTo(px_r + side*15, py + 120, cp_side[0] + total*10 - side*15, py+60, cp_side[0] + total*10 + side*15 + extend, py+200);
-                ctx.lineTo(cp_side[0] + total*10 + side*15 - trunk_weigth + extend, py+200);
-                ctx.bezierCurveTo(cp_side[0] + total*10 - side*15 - trunk_weigth, py + 100, cp_bottom[0], py + 200, cp_bottom[0], py);
+                ctx.bezierCurveTo(px_r + cnt_pair*15, py + 120, cp_side[0] + total*10 - cnt_pair*15, py+60, cp_side[0] + total*10 + cnt_pair*15 + extend, py+200);
+                ctx.lineTo(cp_side[0] + total*10 + cnt_pair*15 - trunk_weigth + extend, py+200);
+                ctx.bezierCurveTo(cp_side[0] + total*10 - cnt_pair*15 - trunk_weigth, temp_cp, cp_bottom[0], py + 200, cp_bottom[0], py);
                 this.context.closePath();
                 ctx.stroke();
                 ctx.fill();
@@ -2051,28 +2200,27 @@ var RenderingView = Backbone.View.extend({
                 ctx.fillStyle = grd_root;
                 ctx.strokeStyle = grd_root;
 
-                cp_side[0] = cp_side[0] + total*10 + side*15 + extend;
-                var unit_point = [(((side*22.5 + extend*0.65)*root_size)/total_root[r]["sub"].length)*root_length, ((105*root_size)/total_root[r]["sub"].length)*root_length]; // root_size*3
+                cp_side[0] = cp_side[0] + total*10 + cnt_pair*15 + extend;
+                var unit_point = [(((cnt_pair*22.5 + extend*0.65)*root_size)/total_root[r]["sub"].length)*root_length, ((105*root_size)/total_root[r]["sub"].length)*root_length]; // root_size*3
                 var unit_weigth = trunk_weigth/total_root[r]["sub"].length;
                 var stick_right_side = [cp_side[0], py+200];
                 var stick_left_side = [cp_side[0] - trunk_weigth, py+200];
                 var i = 0;
-                curve = 10+root_size*2;
+                curve = 10+root_size*0.5;
                 
-                for(i = 1; i < total_root[r]["sub"].length; i++){
-                   
+                for(i = 1; i < total_root[r]["sub"].length; i++){                   
                     if(i%2 == 0)
-                        curve = -(10+root_size*2-i)
+                        curve = -(10+root_size*2-i);
                     else
-                        curve = 10+root_size*2-i 
+                        curve = 10+root_size*2-i; 
 
                     var curve_point = [(stick_right_side[0]*2 + unit_point[0] - root_scale*(i-1))/2, (stick_left_side[0]*2 + unit_point[0] + unit_weigth - root_scale*(i-1))/2];    
                     var right_m = [curve_point[0] + curve, stick_right_side[1] + unit_point[1]/2];
                     var left_m = [curve_point[1] + curve, stick_left_side[1] + unit_point[1]/2]; 
                     if(total_root[r]["sub"][i] != 0){
                         var fractal = 0;
-                        if((i+1) % n == 0) fractal = (10+root_size*2-i);
-                        else if(i % n == 0) fractal = -(10+root_size*2-i);
+                        if((i+1) % n == 0) fractal = (10+root_size*0.1-i);
+                        else if(i % n == 0) fractal = -(10+root_size*0.1-i);
                         if(i%2 == 0){
                             ctx.beginPath();
                             ctx.moveTo(stick_right_side[0], stick_right_side[1]);
@@ -2107,7 +2255,7 @@ var RenderingView = Backbone.View.extend({
                                 for(var root_x = ((stick_right_side[0] + unit_point[0] - root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + this.translate_point[0]); root_x--){                            
                                     var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
                                     if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
-                                        self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["root_cat"];
+                                        self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["length"];
                                     }
                                 }
                             }
@@ -2132,7 +2280,7 @@ var RenderingView = Backbone.View.extend({
                                 for(var root_x = ((stick_right_side[0] + unit_point[0] - root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + this.translate_point[0]); root_x--){                            
                                     var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
                                     if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
-                                        self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["root_cat"];
+                                        self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["length"];
                                     }
                                 }
                             }
@@ -2158,7 +2306,7 @@ var RenderingView = Backbone.View.extend({
                             for(var root_x = ((stick_right_side[0] + unit_point[0] - root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + this.translate_point[0]); root_x--){                            
                                 var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
                                 if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
-                                    self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["root_cat"];
+                                    self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["length"];
                                 }
                             }
                         }
@@ -2167,6 +2315,12 @@ var RenderingView = Backbone.View.extend({
                     stick_right_side = [stick_right_side[0] + unit_point[0] - root_scale*(i-1), stick_right_side[1] + unit_point[1]];
                     stick_left_side = [stick_left_side[0] + unit_point[0] + unit_weigth - root_scale*(i-1), stick_left_side[1] + unit_point[1]];
                                 
+                    if(self.tree_size[self.ego_label][4] == "none" && self.snap == 0){
+                        if(stick_left_side[0] > self.tree_size[self.ego_label][1])
+                            self.tree_size[self.ego_label][1] = stick_left_side[0];
+                        if((stick_left_side[1] + unit_point[1]*2) > self.tree_size[self.ego_label][3])
+                            self.tree_size[self.ego_label][3] = stick_left_side[1] + unit_point[1]*2;
+                    }
                     ctx.stroke();
                     ctx.fill();
                 }
@@ -2180,16 +2334,29 @@ var RenderingView = Backbone.View.extend({
                 ctx.bezierCurveTo(left_m[0] + curve, left_m[1], left_m[0], left_m[1], stick_left_side[0], stick_left_side[1]);
                                 
                 ctx.stroke();
-                ctx.fill();                
+                ctx.fill();  
+                cnt_pair += 1;              
             }
 
             else{ // left side
+                var temp_cp = py + 100;
+                r = r_center - cnt_pair;
+                extend = 300/total_stick;
+                if(r < 0)
+                    continue;
+
+                if(cnt_pair == 2)
+                    temp_cp = py + 130;
+                else
+                    temp_cp = py + 50;
+                root_size = Math.pow(total_root[r]["length"], 0.3);
+                // root_size = total_root[r]["length"]/10;
                 ctx.fillStyle = grd;
                 ctx.strokeStyle = grd;
                 ctx.moveTo(px_l, py);
-                ctx.bezierCurveTo(px_l - side*15, py + 120, cp_side[1] - total*10 + side*15, py + 60, cp_side[1] - total*10 - side*15 - extend, py+200);
-                ctx.lineTo(cp_side[1] - total*10 - side*15 + trunk_weigth - extend, py+200);
-                ctx.bezierCurveTo(cp_side[1] - total*10 + side*15 + trunk_weigth, py + 100, cp_bottom[0], py + 250, cp_bottom[0], py);
+                ctx.bezierCurveTo(px_l - cnt_pair*15, py + 120, cp_side[1] - total*10 + cnt_pair*15, py + 60, cp_side[1] - total*10 - cnt_pair*15 - extend, py+200);
+                ctx.lineTo(cp_side[1] - total*10 - cnt_pair*15 + trunk_weigth - extend, py+200);
+                ctx.bezierCurveTo(cp_side[1] - total*10 + cnt_pair*15 + trunk_weigth, temp_cp, cp_bottom[0], py + 250, cp_bottom[0], py);
                 this.context.closePath();
                 ctx.stroke();
                 ctx.fill();
@@ -2200,20 +2367,20 @@ var RenderingView = Backbone.View.extend({
                 ctx.fillStyle = grd_root;
                 ctx.strokeStyle = grd_root;
 
-                cp_side[1] = cp_side[1] - total*10 - side*15 - extend;
+                cp_side[1] = cp_side[1] - total*10 - cnt_pair*15 - extend;
 
-                var unit_point = [(((side*22.5 + extend*0.65)*root_size)/total_root[r]["sub"].length)*root_length, ((105*root_size)/total_root[r]["sub"].length)*root_length]; // root_size*3
+                var unit_point = [(((cnt_pair*22.5 + extend*0.65)*root_size)/total_root[r]["sub"].length)*root_length, ((105*root_size)/total_root[r]["sub"].length)*root_length]; // root_size*3
                 var unit_weigth = trunk_weigth/total_root[r]["sub"].length;
                 var stick_right_side = [cp_side[1], py+200];
                 var stick_left_side = [cp_side[1] + trunk_weigth, py+200];
                 var i = 0;
-                curve = 10+root_size*2;
+                curve = 10+root_size*0.5;
                 n = 4;
                 for(i = 1; i < total_root[r]["sub"].length; i++){
                     if(i%2 == 0)
-                        curve = -(10+root_size*2-i)
+                        curve = -(10+root_size*2-i);
                     else
-                        curve = 10+root_size*2-i 
+                        curve = 10+root_size*2-i; 
 
                     var curve_point = [(stick_right_side[0]*2 - unit_point[0] + root_scale*(i-1))/2, (stick_left_side[0]*2 - unit_point[0] - unit_weigth + root_scale*(i-1))/2];                         
                     var right_m = [curve_point[0] + curve, stick_right_side[1] + unit_point[1]/2];
@@ -2221,8 +2388,8 @@ var RenderingView = Backbone.View.extend({
 
                     if(total_root[r]["sub"][i] != 0){
                         var fractal = 0;
-                        if((i+1) % n == 0) fractal = (10+root_size*2-i);
-                        else if(i % n == 0) fractal = -(10+root_size*2-i);
+                        if((i+1) % n == 0) fractal = (10+root_size*0.1-i);
+                        else if(i % n == 0) fractal = -(10+root_size*0.1-i);
                         
                         if(i%2 == 0){
                             ctx.beginPath();
@@ -2254,7 +2421,7 @@ var RenderingView = Backbone.View.extend({
                                 for(var root_x = ((stick_right_side[0] - unit_point[0] + root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x < (stick_left_side[0]*self.scale + this.translate_point[0]); root_x++){                            
                                     var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
                                     if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
-                                        self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["root_cat"];
+                                        self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["length"];
                                     }
                                 }
                             }
@@ -2280,7 +2447,7 @@ var RenderingView = Backbone.View.extend({
                                 for(var root_x = ((stick_right_side[0] - unit_point[0] + root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x < (stick_left_side[0]*self.scale + this.translate_point[0]); root_x++){                            
                                     var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
                                     if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
-                                        self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["root_cat"];
+                                        self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["length"];
                                     }
                                 }
                             }
@@ -2305,7 +2472,7 @@ var RenderingView = Backbone.View.extend({
                             for(var root_x = ((stick_right_side[0] - unit_point[0] + root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x < (stick_left_side[0]*self.scale + this.translate_point[0]); root_x++){                            
                                 var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
                                 if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
-                                    self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["root_cat"];
+                                    self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["length"];
                                 }
                             }
                         }
@@ -2313,6 +2480,13 @@ var RenderingView = Backbone.View.extend({
                     
                     stick_right_side = [stick_right_side[0] - unit_point[0] + root_scale*(i-1), stick_right_side[1] + unit_point[1]];
                     stick_left_side = [stick_left_side[0] - unit_point[0] - unit_weigth + root_scale*(i-1), stick_left_side[1] + unit_point[1]];               
+                    
+                    if(self.tree_size[self.ego_label][4] == "none" && self.snap == 0){
+                        if(stick_left_side[0] < self.tree_size[self.ego_label][0])
+                            self.tree_size[self.ego_label][0] = stick_left_side[0];
+                        if((stick_left_side[1] + unit_point[1]*2) > self.tree_size[self.ego_label][3])
+                            self.tree_size[self.ego_label][3] = stick_left_side[1] + unit_point[1]*2;
+                    }
                     ctx.stroke();
                     ctx.fill();
                 }
@@ -2329,7 +2503,7 @@ var RenderingView = Backbone.View.extend({
                 ctx.fill();
             }          
 
-            side ++;
+            // side ++;
             total --;
             
         }
@@ -2411,7 +2585,12 @@ var RenderingView = Backbone.View.extend({
         }
 
         ctx.save();
-        this.context.lineWidth = 1;
+
+        if(this.view.includes('student_flow'))
+            this.context.lineWidth = 5;
+        else
+            this.context.lineWidth = 1;
+            this.context.lineWidth = 1*self.model.get("leaf_scale");
         if(l_id != "none" && self.leaf_hovor == l_id){
             this.context.lineWidth = 25;
         }
@@ -2430,7 +2609,7 @@ var RenderingView = Backbone.View.extend({
         ctx.stroke();
         this.context.fill();
         ctx.restore();
-        this.context.lineWidth = 5;
+        this.context.lineWidth = 8;
         this.context.lineCap = 'round';
     },
 
@@ -2440,8 +2619,9 @@ var RenderingView = Backbone.View.extend({
         if(fruit_drawing == 0)
             return;
         context.fillStyle = mapping_color.fruit;//fill color
-        context.strokeStyle = mapping_color.fruit;;//line's color
-
+        // context.strokeStyle = mapping_color.fruit;;//line's color
+        context.strokeStyle = '#ED3C3C';
+        context.lineWidth = 1*self.model.get("fruit_scale");;
         context.beginPath()
         var cx = posx;
         var cy = posy;
@@ -2449,6 +2629,7 @@ var RenderingView = Backbone.View.extend({
         this.circle(context, cx, cy, radius);
         context.closePath();
         context.fill();
+        context.stroke();
     },
 
     circle: function(ctx, cx, cy, radius){
@@ -2487,7 +2668,7 @@ var RenderingView = Backbone.View.extend({
             context.font = 'bold 64pt Courier';
             context.fillText("↴", pos[0]+message.length*50+80 + 100, pos[1]);
             // context.fillText("↧", pos[0]+message.length*60+30 + 100, pos[1]);
-            var box = [pos[0]+message.length*60+50 + 100, pos[1]-75];
+            var box = [pos[0]+message.length*50+60 + 100, pos[1]-75];
 
             for(var tx=(box[0]*self.scale + self.translate_point[0]); tx < ((box[0]+90)*self.scale + self.translate_point[0]); tx++){
                 for(var ty=(box[1]*self.scale + self.translate_point[1]); ty < ((box[1]+90)*self.scale + self.translate_point[1]); ty++){
@@ -2599,6 +2780,16 @@ var RenderingView = Backbone.View.extend({
         var count_dr = right_side*0.45;
         var count_dl = left_side*0.45;
         var t_scale = (right_side + left_side)/150;
+
+        if(this.view.includes('student_flow')){//!!! for student flow, this.view.includes('student_flow')
+            var real_std = 0;
+            if("root" in ego){
+                for(var one_r in ego["root"][0]){
+                    real_std += ego["root"][0][one_r]["length"];
+                }
+            }
+            t_scale = 10 - Math.pow(real_std, 0.085)*2.5;
+        }
         if(right_side+left_side < 80){
             t_scale = 0.5;
         }
@@ -2625,6 +2816,7 @@ var RenderingView = Backbone.View.extend({
         this.context.lineWidth = 5; // set the style
         var real_height = 0;
         for(var height = 0; height < self.total_layer; height++){
+            mapping_color.trunk = "rgb(" + (125-(height+1)*3).toString() + "," + (96-(height+1)*3).toString() + "," + (65-(height+1)*3).toString() + ")";
             this.context.fillStyle = mapping_color.trunk;
             this.context.strokeStyle = mapping_color.trunk;
             this.context.beginPath();
@@ -2691,14 +2883,14 @@ var RenderingView = Backbone.View.extend({
 
         switch(saving_tree[2]){
             case 'low':
-                this.save_scale = 0.05; // 0.15
+                this.save_scale = 0.25; // 0.15
                 break;
             case 'normal':
                 // this.save_scale = self.model.get("canvas_scale");
-                this.save_scale = 0.25;
+                this.save_scale = 0.3;
                 break;
             case 'high':
-                this.save_scale = 0.5;    
+                this.save_scale = 0.4;    
         }
         this.saveCanvas.height = tree_height*this.save_scale;
         this.saveCanvas.width = tree_width*this.save_scale;
@@ -2731,7 +2923,7 @@ var RenderingView = Backbone.View.extend({
             left_side += l;
             right_side += r;
         }
-        var total_contact = left_side + right_side;
+        // var total_contact = left_side + right_side;
         var stick_length = 0;
         for(var l = 0; l < layer_total_alter["left"].length; l++){
             var down = ego["left"][l]["level"]["down"].length;
@@ -2744,14 +2936,43 @@ var RenderingView = Backbone.View.extend({
             }
         }
         
-        this.start_x = self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0] + 150;
+        this.start_x = self.tree_size[this.ego_label][4] - self.tree_size[this.ego_label][0] + 200;
 
         var ori_dr = right_side*0.65;
         var ori_dl = left_side*0.65;
-        var count_dr = right_side*0.45;
-        var count_dl = left_side*0.45;
+        var count_dr = right_side;
+        var count_dl = left_side;
         
         var t_scale = (right_side + left_side)/150;
+
+        if(this.view.includes('student_flow')){//!!! for student flow, this.view.includes('student_flow')
+            var real_std = 0;
+            if("root" in ego){
+                for(var one_r in ego["root"][0]){
+                    real_std += ego["root"][0][one_r]["length"];
+                }
+            }
+            t_scale = 10 - Math.pow(real_std, 0.085)*2.5;
+        }
+        /*
+        if(this.view.includes('student_flow')){//!!! for student flow, this.view.includes('student_flow')
+            var real_std = 0;
+            if("root" in ego){
+                for(var one_r in ego["root"][0]){
+                    real_std += ego["root"][0][one_r]["length"];
+                }
+            }
+            var b_scale = Math.pow(real_std, 0.1)*1.5;
+            t_scale = 15 - Math.pow(real_std, 0.085)*2.5;
+            right_side = 150*b_scale;
+            left_side = 105*b_scale;
+            ori_dr = right_side*0.65;
+            ori_dl = left_side*0.65;
+            count_dr = right_side;
+            count_dl = left_side;
+
+        }
+        */
         if(right_side+left_side < 80){
             t_scale = 0.5;
         }
@@ -2778,6 +2999,7 @@ var RenderingView = Backbone.View.extend({
         this.context.lineWidth = 5; // set the style
         var real_height = 0;
         for(var height = 0; height < self.total_layer; height++){
+            mapping_color.trunk = "rgb(" + (125-(height+1)*3).toString() + "," + (96-(height+1)*3).toString() + "," + (65-(height+1)*3).toString() + ")";
             this.context.fillStyle = mapping_color.trunk;
             this.context.strokeStyle = mapping_color.trunk;
             this.context.beginPath();
@@ -2796,7 +3018,10 @@ var RenderingView = Backbone.View.extend({
     
             var used_dr = 0;
             var used_dl = 0;
-            if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || ((count_dl-layer_total_alter["left"][real_height]*0.45) <= 0 && count_dr <= 0)){}
+            // if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || (count_dr <= 0 && (count_dl-layer_total_alter["left"][real_height]) <= 0)){
+            if((real_height == self.total_layer-1 && layer_total_alter["right"][real_height] == 0) || ((count_dl-layer_total_alter["left"][real_height]) <= 0 && count_dr <= 0)){
+                used_dr = this.draw_right_branch(height, layer_total_alter["right"][real_height], ego["right"][real_height]["level"]);
+            }
 
             else
                 used_dr = this.draw_right_branch(height, layer_total_alter["right"][real_height], ego["right"][real_height]["level"]);
@@ -2805,15 +3030,21 @@ var RenderingView = Backbone.View.extend({
             this.context.fillStyle = mapping_color.trunk;
             this.context.strokeStyle = mapping_color.trunk;
             this.context.beginPath();
-            if((real_height == self.total_layer-1 && layer_total_alter["left"][real_height] == 0)|| ((count_dr-layer_total_alter["right"][real_height]*0.45) <= 0 && count_dl <= 0)){}
+            if((real_height == self.total_layer-1 && layer_total_alter["left"][real_height] == 0)|| ((count_dr-layer_total_alter["right"][real_height]) <= 0 && count_dl <= 0)){
+                used_dl = this.draw_left_branch(height, layer_total_alter["left"][real_height], ego["left"][real_height]["level"]);
+            }
 
             else
                 used_dl = this.draw_left_branch(height, layer_total_alter["left"][real_height], ego["left"][real_height]["level"]);
 
             ori_dr -= used_dr*0.45;
             ori_dl -= used_dl*0.45;
-            count_dr -= used_dr*0.45;
-            count_dl -= used_dl*0.45;
+            count_dr -= used_dr;
+            count_dl -= used_dl;
+
+            if(count_dr + count_dl == 0){
+                break;
+            }
             
             this.start_y = this.start_y - this.stick_length - this.temp_height;
             

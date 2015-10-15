@@ -290,7 +290,8 @@ var ControlView = Backbone.View.extend({
                         from: Math.round(10*l_scale)/10
                     });
                     self.el_dtl_fruit_size.ionRangeSlider("update", {
-                        from: Math.round(10*f_scale)/10
+                        // from: Math.round(10*f_scale)/10
+                        from: Math.round(f_scale*l_scale*10/3)/10
                     });
                 break;
 

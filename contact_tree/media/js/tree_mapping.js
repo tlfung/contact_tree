@@ -592,7 +592,7 @@ var MappingView = Backbone.View.extend({
         var mapping_gap = attr_range/9;
         var slider_val = [];
         // check the gap
-        var total_gap = 20;
+        var total_gap = 25;
         if(attr_range < 10)
             total_gap = attr_range*2;
         if(one_attr == ori_attr && comp in attribute_mapping){
@@ -2820,7 +2820,8 @@ var MappingView = Backbone.View.extend({
         for(s in component_attribute[data_mode]){
             if(s == "none"){}
             else{
-                if(component_attribute[data_mode][s][0].length == 0 || component_attribute[data_mode][s][4] != "1" || (s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["fruit_size"]))
+                // if(component_attribute[data_mode][s][0].length == 0 || component_attribute[data_mode][s][4] != "1" || (s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["fruit_size"]))
+                if(component_attribute[data_mode][s][0].length == 0 || (s != attr_map["root"] && attr_opt.indexOf(s) != -1 && s != attr_map["fruit_size"]))
                     continue;
             }
             var text = s;

@@ -192,7 +192,9 @@ var MyApp = function MyApp(){
         document.cookie = "mode=;expires=Thu, 01 Jan 1970 00:00:00 GMT";
     }
     */
-    
+    first_use = 1;
+    session_id = 5407169205136597;
+    last_use = "researcher";
     // get the share url
     var current_url = window.location.href;
     if(current_url.search("#share_id=") != -1){
