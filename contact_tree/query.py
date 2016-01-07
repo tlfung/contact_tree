@@ -2188,9 +2188,9 @@ def one_contact_structure(user_ctree_data, structure_request):
 
 
     for d in final_structure:
-        print 'for1', d
+        # print 'for1', d
         for e in final_structure[d]:
-            print 'for2', e
+            # print 'for2', e
             # print final_structure[d][e]
             for layer in final_structure[d][e]['right']:
                 layer['level']['down'] = sorted(layer['level']['down'], key=lambda k: k['sorting'])
@@ -2403,8 +2403,8 @@ def auto_save(request):
 
         update_query = waves + "," + group + "," + display_egos + "," + selected_egos + "," + leaf_scale + "," + fruit_scale + "," + sub_leaf_len_scale + "," + dtl_branch_curve + "," + root_curve + "," + root_len_scale + "," + filter_contact + "," + canvas_scale + "," + tree_boundary + "," + canvas_translate + "," + total_ego + "," + component_attribute
     
-        print "========="
-        print "UPDATE auto_save SET %s WHERE %s;" %(update_query, condition)
+        # print "========="
+        # print "UPDATE auto_save SET %s WHERE %s;" %(update_query, condition)
         db.query("UPDATE auto_save SET %s WHERE %s;" %(update_query, condition))
 
 

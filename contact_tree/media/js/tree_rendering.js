@@ -218,31 +218,7 @@ var RenderingView = Backbone.View.extend({
                     var l = ego["left"][s]["level"]["down"].length + ego["left"][s]["level"]["up"].length;
                     var r = ego["right"][s]["level"]["down"].length + ego["right"][s]["level"]["up"].length;
                     // var std_l = 0, std_r = 0;
-                    /*
-                    if(this.view.includes('student_flow')){
-                        l = 0;
-                        for(var cnt_s = 0; cnt_s < ego["left"][s]["level"]["down"].length; cnt_s++){
-                            for(var cnt_leaf = 0; cnt_leaf < ego["left"][s]["level"]["down"][cnt_s]["leaf"].length; cnt_leaf++)
-                                l += ego["left"][s]["level"]["down"][cnt_s]["leaf"][cnt_leaf]["size"];
-                        }
-                        for(var cnt_s = 0; cnt_s < ego["left"][s]["level"]["up"].length; cnt_s++){
-                            for(var cnt_leaf = 0; cnt_leaf < ego["left"][s]["level"]["up"][cnt_s]["leaf"].length; cnt_leaf++)
-                                l += ego["left"][s]["level"]["up"][cnt_s]["leaf"][cnt_leaf]["size"];
-                        }
-
-                        r = 0;
-                        for(var cnt_s = 0; cnt_s < ego["right"][s]["level"]["down"].length; cnt_s++){
-                            for(var cnt_leaf = 0; cnt_leaf < ego["right"][s]["level"]["down"][cnt_s]["leaf"].length; cnt_leaf++)
-                                r += ego["right"][s]["level"]["down"][cnt_s]["leaf"][cnt_leaf]["size"];
-                        }
-                        for(var cnt_s = 0; cnt_s < ego["right"][s]["level"]["up"].length; cnt_s++){
-                            for(var cnt_leaf = 0; cnt_leaf < ego["right"][s]["level"]["up"][cnt_s]["leaf"].length; cnt_leaf++)
-                                r += ego["right"][s]["level"]["up"][cnt_s]["leaf"][cnt_leaf]["size"];
-                        }
-                        r = Math.round(r/5);
-                        l = Math.round(l/5);
-                    }
-                    */
+                    
                     layer_total_alter["right"].push(r);
                     layer_total_alter["left"].push(l);
                     left_side += l;
@@ -285,24 +261,7 @@ var RenderingView = Backbone.View.extend({
                 var count_dr = right_side;
                 var count_dl = left_side;
                 var t_scale = (right_side + left_side)/150; // the small make the tree bigger
-                /*
-                if(this.view.includes('student_flow')){//!!! for student flow, this.view.includes('student_flow')
-                    var real_std = 0;
-                    if("root" in ego){
-                        for(var one_r in ego["root"][0]){
-                            real_std += ego["root"][0][one_r]["length"];
-                        }
-                    }
-                    var b_scale = Math.pow(real_std, 0.1)*1.5;
-                    t_scale = 15 - Math.pow(real_std, 0.085)*2.5;
-                    right_side = 150*b_scale;
-                    left_side = 105*b_scale;
-                    ori_dr = right_side*0.65;
-                    ori_dl = left_side*0.65;
-                    count_dr = right_side;
-                    count_dl = left_side;
-                }
-                */
+                
                 if(this.view.includes('student_flow')){//!!! for student flow, this.view.includes('student_flow')
                     var real_std = 0;
                     if("root" in ego){
@@ -1977,6 +1936,558 @@ var RenderingView = Backbone.View.extend({
 
     draw_root: function(total_root, py, px_r, px_l, ctx){
         var self = this;
+
+        if(this.view.includes('student_flow')){
+            this.draw_root_flow(total_root, py, px_r, px_l, ctx);
+            return;
+        }
+        ctx.lineWidth = 3;
+        var grd = ctx.createLinearGradient((px_r + px_l)/2, py, (px_r + px_l)/2, py+200);
+        grd.addColorStop(0, "#7D6041");
+        grd.addColorStop(1, mapping_color.root);        
+        ctx.fillStyle = grd;
+        ctx.strokeStyle = grd;
+
+        var total_amount = 0;
+        var total_stick = 0;
+        var max_root = 0;
+        var real_root_idx = [];
+        for(var r in total_root){
+            if(r != -1 && total_root[r]["length"] != 0){ //&& total_root[r]["length"] != 0
+                total_stick++;
+                real_root_idx.push(r);
+                total_amount += total_root[r]["length"];
+                if(max_root < total_root[r]["length"])
+                    max_root = total_root[r]["length"];
+            }
+        }
+
+        var r_center = Math.ceil(total_stick/2) - 1;
+        var root_area = real_root_idx[r_center];
+        var root_scale = self.model.get("root_curve");
+        var root_length = self.model.get("root_len_scale");
+        var trunk_weigth = (px_r - px_l)/4; //total_stick;
+
+        var root_size = Math.pow(total_root[root_area]["length"], 0.3);
+
+        // root_size = total_root[root_area]["length"]/10;
+        // draw main root
+        ctx.beginPath();
+        
+        var cpr = [(px_r+px_l)/2 + trunk_weigth*1.5, py + 120];
+        var cpl = [(px_r+px_l)/2 - trunk_weigth*1.5, py + 120];
+        ctx.moveTo(px_r, py);
+        ctx.bezierCurveTo(px_r, cpr[1], cpr[0], cpr[1], (px_r+px_l)/2 + trunk_weigth, py+200);
+        ctx.lineTo((px_r+px_l)/2 - trunk_weigth, py+200);
+        ctx.bezierCurveTo(cpl[0], cpl[1], px_l, cpl[1], px_l, py);
+        this.context.closePath();
+        ctx.stroke();
+        ctx.fill();
+        
+        var grd_root = ctx.createLinearGradient((px_r + px_l)/2, py+200, (px_r + px_l)/2, py+400);
+        grd_root.addColorStop(0, mapping_color.root);
+        grd_root.addColorStop(1, mapping_color.render_roots_color[root_area]);
+        ctx.fillStyle = grd_root;
+        ctx.strokeStyle = grd_root;
+        
+        var cp_bottom = [(px_r + px_l)/2, py + 200 + root_size*1.5];
+        var stick_right_side = [(px_r+px_l)/2 + trunk_weigth, py+200];
+        var stick_left_side = [(px_r+px_l)/2 - trunk_weigth, py+200];
+        var main_step = [ trunk_weigth/total_root[root_area]["sub"].length, ((root_size*105)/total_root[root_area]["sub"].length)*root_length]; //-250
+       
+        var n = 4;
+        for(var i = 1; i < total_root[root_area]["sub"].length; i++){
+            if(i%2 == 0)
+                curve = -(25 + i);
+            else
+                curve = 25 + i;
+            var right_m = [stick_right_side[0] - main_step[0] + curve, stick_right_side[1] + main_step[1]/2];
+            var left_m = [stick_left_side[0] + main_step[0] + curve, stick_left_side[1] + main_step[1]/2];
+            
+            if(total_root[root_area]["sub"][i] != 0){
+                var fractal = 0;
+                if((i+1) % n == 0) fractal = (25 + i);
+                else if(i % n == 0) fractal = -(25 + i);
+                if(i%2 == 0){ 
+                    ctx.beginPath();
+                    ctx.moveTo(stick_right_side[0], stick_right_side[1]);              
+                    
+                    ctx.bezierCurveTo(stick_right_side[0] - main_step[0], stick_right_side[1] + main_step[1], stick_right_side[0] + main_step[0]*3 + Math.abs(curve), stick_right_side[1] + main_step[1]*0.5, stick_right_side[0] + main_step[0]*3 + total_root[root_area]["sub"][i]*3 + Math.abs(curve) + fractal, stick_right_side[1] + main_step[1]*2 + total_root[root_area]["sub"][i]*2.5 - fractal); //+/- total_root[root_area]["sub"][i]*5
+                    ctx.bezierCurveTo(stick_right_side[0] + main_step[0]*3 + Math.abs(curve), stick_right_side[1] + main_step[1]*0.5 + 10, stick_right_side[0] - main_step[0], stick_right_side[1] + main_step[1], (stick_left_side[0] + stick_right_side[0])/2, stick_right_side[1]);
+                    ctx.stroke();
+                    ctx.fill();
+                    
+                }
+                else{
+                    ctx.beginPath();
+                    ctx.moveTo(stick_left_side[0], stick_left_side[1]);
+                    ctx.bezierCurveTo(stick_left_side[0] + main_step[0], stick_left_side[1] + main_step[1], stick_left_side[0] - main_step[0]*3 - Math.abs(curve), stick_left_side[1] + main_step[1]*0.5, stick_left_side[0] - main_step[0]*3 - total_root[root_area]["sub"][i]*3 - Math.abs(curve) - fractal, stick_left_side[1] + main_step[1]*2 + total_root[root_area]["sub"][i]*2.5 - fractal); //+/- total_root[root_area]["sub"][i]*5
+                    ctx.bezierCurveTo(stick_left_side[0] - main_step[0]*3 - Math.abs(curve), stick_left_side[1] + main_step[1]*0.5 + 10, stick_left_side[0] + main_step[0], stick_left_side[1] + main_step[1], (stick_left_side[0] + stick_right_side[0])/2, stick_left_side[1]);
+                    ctx.stroke();
+                    ctx.fill();
+                                      
+                }
+
+            }
+            
+            if(i == 1){
+                ctx.beginPath();
+                ctx.moveTo(stick_right_side[0], stick_right_side[1]);
+                ctx.bezierCurveTo(right_m[0] - curve, right_m[1], right_m[0], right_m[1], stick_right_side[0] - main_step[0], stick_right_side[1] + main_step[1]);
+                ctx.lineTo(stick_left_side[0] + main_step[0], stick_left_side[1] + main_step[1]);
+                ctx.bezierCurveTo(left_m[0], left_m[1], left_m[0] - curve, left_m[1], stick_left_side[0], stick_left_side[1]);
+                if(this.snap == 0 && this.save_img == 0){
+                    for(var root_x = (stick_right_side[0]*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + self.translate_point[0]) ; root_x--){
+                        for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + main_step[1])*this.scale + self.translate_point[1]); root_y++){
+                            var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
+                            if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
+                                self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[root_area]["length"];
+                            }
+                        }
+                    }
+                }
+                
+
+                stick_right_side = [stick_right_side[0] - main_step[0], stick_right_side[1] + main_step[1]];
+                stick_left_side = [stick_left_side[0] + main_step[0], stick_left_side[1] + main_step[1]];
+                
+                ctx.stroke();
+                ctx.fill();
+                continue;
+            }
+            
+            else if(i % n == 0){
+                ctx.beginPath();
+                ctx.moveTo(stick_right_side[0], stick_right_side[1]);
+                ctx.bezierCurveTo(right_m[0] + curve*0.5, right_m[1], right_m[0] + curve*2, right_m[1], stick_right_side[0] - main_step[0] + curve*2, stick_right_side[1] + main_step[1]);
+                ctx.lineTo(stick_left_side[0] + main_step[0]  + curve*2, stick_left_side[1] + main_step[1]);
+                ctx.bezierCurveTo(left_m[0]  + curve*2, left_m[1], left_m[0] + curve*0.5, left_m[1], stick_left_side[0], stick_left_side[1]);
+                if(this.snap == 0 && this.save_img == 0){
+                    for(var root_x = (stick_right_side[0]*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + self.translate_point[0]) ; root_x--){
+                        for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + main_step[1])*this.scale + self.translate_point[1]); root_y++){
+                            var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
+                            if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
+                                self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[root_area]["length"];
+                            }
+                        }
+                    }
+                }
+                
+                stick_right_side = [stick_right_side[0] - main_step[0]  + curve*2, stick_right_side[1] + main_step[1]];
+                stick_left_side = [stick_left_side[0] + main_step[0] + curve*2, stick_left_side[1] + main_step[1]];
+                
+                 
+                ctx.stroke();
+                ctx.fill();
+                n = n + 3;
+                continue;
+            }
+
+            // for the root tail
+            ctx.beginPath();
+            ctx.moveTo(stick_right_side[0], stick_right_side[1]);
+            ctx.quadraticCurveTo(right_m[0], right_m[1], stick_right_side[0] - main_step[0], stick_right_side[1] + main_step[1]);
+            ctx.lineTo(stick_left_side[0] + main_step[0], stick_left_side[1] + main_step[1]);
+            ctx.quadraticCurveTo(left_m[0], left_m[1], stick_left_side[0], stick_left_side[1]);
+            if(this.snap == 0 && this.save_img == 0){
+                for(var root_x = (stick_right_side[0]*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + self.translate_point[0]) ; root_x--){
+                    for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + main_step[1])*this.scale + self.translate_point[1]); root_y++){
+                        var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
+                        if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
+                            self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[root_area]["length"];
+                        }
+                    }
+                }
+            }
+            
+            stick_right_side = [stick_right_side[0] - main_step[0], stick_right_side[1] + main_step[1]];
+            stick_left_side = [stick_left_side[0] + main_step[0], stick_left_side[1] + main_step[1]];
+             
+            // if(self.tree_size[self.ego_label][4] == "none" && self.snap == 0)
+            //     self.tree_size[self.ego_label][3] = stick_left_side[1];
+
+            if(self.tree_size[self.ego_label][4] == "none" && self.snap == 0){
+                if((stick_left_side[1] + main_step[1]*2) > self.tree_size[self.ego_label][3])
+                    self.tree_size[self.ego_label][3] = stick_left_side[1] + main_step[1]*2;
+            }
+
+            ctx.stroke();
+            ctx.fill();
+            
+        }
+
+        var right_m = [stick_right_side[0] - main_step[0] - curve*2, stick_right_side[1] + main_step[1]];
+        var left_m = [stick_left_side[0] + main_step[0] - curve*2, stick_left_side[1] + main_step[1]];
+
+        ctx.beginPath();
+        ctx.moveTo(stick_right_side[0], stick_right_side[1]);
+        ctx.bezierCurveTo(right_m[0], right_m[1], right_m[0] + curve*3, right_m[1], (px_r + px_l)/2 - curve*4, stick_left_side[1] + main_step[1]*2);
+        ctx.bezierCurveTo(left_m[0] + curve*3, left_m[1], left_m[0], left_m[1], stick_left_side[0], stick_left_side[1]);
+        
+        ctx.stroke();
+        ctx.fill();
+
+        var total = total_stick;
+        var cp_side = [px_r, px_l];        
+        var extend = 300/total_stick;
+        
+        var cnt_pair = 1;
+        for(var side = 1; side <= total_stick; side++){        
+            ctx.beginPath();
+            if(side%2 == 0){ //right side
+                var temp_cp = py + 100; // !!! original parameter
+                /*
+                // customize for student flow
+                if(cnt_pair == 1){ 
+                    extend = -15/total_stick;
+                    temp_cp = py + 175;
+                }
+                else{
+                    extend = 300/total_stick;
+                    if(cnt_pair == 3)
+                        temp_cp = py + 130;
+                    else
+                        temp_cp = py + 50;
+                }
+                */
+                r = real_root_idx[r_center + cnt_pair];
+                root_size = Math.pow(total_root[r]["length"], 0.3);
+                
+                // root_size = total_root[r]["length"]/10;
+                ctx.fillStyle = grd;
+                ctx.strokeStyle = grd;
+                n = 4;
+                ctx.moveTo(px_r, py);
+                ctx.bezierCurveTo(px_r + cnt_pair*15, py + 120, cp_side[0] + total*10 - cnt_pair*15, py+60, cp_side[0] + total*10 + cnt_pair*15 + extend, py+200);
+                ctx.lineTo(cp_side[0] + total*10 + cnt_pair*15 - trunk_weigth + extend, py+200);
+                ctx.bezierCurveTo(cp_side[0] + total*10 - cnt_pair*15 - trunk_weigth, temp_cp, cp_bottom[0], py + 200, cp_bottom[0], py);
+                this.context.closePath();
+                ctx.stroke();
+                ctx.fill();
+
+                grd_root = ctx.createLinearGradient((px_r + px_l)/2, py+200, (px_r + px_l)/2, py+400);
+                grd_root.addColorStop(0, mapping_color.root);
+                grd_root.addColorStop(1, mapping_color.render_roots_color[r]);
+                ctx.fillStyle = grd_root;
+                ctx.strokeStyle = grd_root;
+
+                cp_side[0] = cp_side[0] + total*10 + cnt_pair*15 + extend;
+                var unit_point = [(((cnt_pair*22.5 + extend*0.65)*root_size)/total_root[r]["sub"].length)*root_length, ((105*root_size)/total_root[r]["sub"].length)*root_length]; // root_size*3
+                var unit_weigth = trunk_weigth/total_root[r]["sub"].length;
+                var stick_right_side = [cp_side[0], py+200];
+                var stick_left_side = [cp_side[0] - trunk_weigth, py+200];
+                var i = 0;
+                curve = 10+root_size*0.5;
+                
+                for(i = 1; i < total_root[r]["sub"].length; i++){                   
+                    if(i%2 == 0)
+                        curve = -(10+root_size*2-i);
+                    else
+                        curve = 10+root_size*2-i; 
+
+                    var curve_point = [(stick_right_side[0]*2 + unit_point[0] - root_scale*(i-1))/2, (stick_left_side[0]*2 + unit_point[0] + unit_weigth - root_scale*(i-1))/2];    
+                    var right_m = [curve_point[0] + curve, stick_right_side[1] + unit_point[1]/2];
+                    var left_m = [curve_point[1] + curve, stick_left_side[1] + unit_point[1]/2]; 
+                    if(total_root[r]["sub"][i] != 0){
+                        var fractal = 0;
+                        if((i+1) % n == 0) fractal = (10+root_size*0.1-i);
+                        else if(i % n == 0) fractal = -(10+root_size*0.1-i);
+                        if(i%2 == 0){
+                            ctx.beginPath();
+                            ctx.moveTo(stick_right_side[0], stick_right_side[1]);
+                            ctx.bezierCurveTo(stick_right_side[0] + unit_point[0]*2 - root_scale*(i-1)*2, stick_right_side[1] + unit_point[1]*2, stick_right_side[0] + unit_point[0]*2 + total + 30 - root_scale*(i-1), stick_right_side[1] + unit_point[1], stick_right_side[0] + unit_point[0]*5 - root_scale*(i+1) + 30 + total_root[r]["sub"][i]*3 + fractal, stick_right_side[1] + unit_point[1] + total_root[r]["sub"][i]*2.5 - fractal); //+/- total_root[r]["sub"][i]*5
+                            ctx.bezierCurveTo(stick_right_side[0] + unit_point[0]*2 + total + 30 - root_scale*(i-1), stick_right_side[1] + unit_point[1] + 5, stick_right_side[0] + unit_point[0]*2 - root_scale*(i-1)*2, stick_right_side[1] + unit_point[1]*2, stick_left_side[0], stick_right_side[1]);
+                            ctx.stroke();
+                            ctx.fill();
+                            
+                        }
+                        else{
+                            ctx.beginPath();
+                            ctx.moveTo(stick_left_side[0], stick_left_side[1]);
+                            ctx.bezierCurveTo(stick_left_side[0] + unit_point[0]*2 - root_scale*(i-1)*2 + unit_weigth*2, stick_left_side[1] + unit_point[1]*2, stick_left_side[0] + unit_point[0] - total - 30 - root_scale*(i-1) + unit_weigth, stick_left_side[1] + unit_point[1], stick_left_side[0] + unit_point[0]*2 + unit_weigth*2 - root_scale*(i+1) - 30 - total_root[r]["sub"][i]*3 - fractal, stick_left_side[1] + unit_point[1]*3 + total_root[r]["sub"][i]*2.5 - fractal); //+/- total_root[r]["sub"][i]*5
+                            ctx.bezierCurveTo(stick_left_side[0] + unit_point[0] - total - 30 - root_scale*(i-1) + unit_weigth, stick_left_side[1] + unit_point[1] + 5, stick_left_side[0] + unit_point[0]*2 - root_scale*(i-1)*2 + unit_weigth*2, stick_left_side[1] + unit_point[1]*2, stick_right_side[0], stick_left_side[1]);
+                            ctx.stroke();
+                            ctx.fill();
+                            
+                        }
+                       
+                    }
+                    
+                    if(i == 1){
+                        ctx.beginPath();
+                        ctx.moveTo(stick_right_side[0], stick_right_side[1]);
+                        ctx.bezierCurveTo(right_m[0] - curve, right_m[1], right_m[0], right_m[1], stick_right_side[0] + unit_point[0] - root_scale*(i-1), stick_right_side[1] + unit_point[1]);
+                        // ctx.lineTo(stick_right_side[0] - unit_point[0], stick_right_side[1] + unit_point[1]);
+                        ctx.lineTo(stick_left_side[0] + unit_point[0] + unit_weigth - root_scale*(i-1), stick_left_side[1] + unit_point[1]);
+                        ctx.bezierCurveTo(left_m[0], left_m[1], left_m[0] - curve, left_m[1], stick_left_side[0], stick_left_side[1]);
+                        // ctx.lineTo(stick_left_side[0], stick_left_side[1]);
+                        if(this.snap == 0 && this.save_img == 0){
+                            for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + unit_point[1])*this.scale + self.translate_point[1]); root_y++){
+                                for(var root_x = ((stick_right_side[0] + unit_point[0] - root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + this.translate_point[0]); root_x--){                            
+                                    var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
+                                    if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
+                                        self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["length"];
+                                    }
+                                }
+                            }
+                        }
+                        
+                        stick_right_side = [stick_right_side[0] + unit_point[0] - root_scale*(i-1), stick_right_side[1] + unit_point[1]];
+                        stick_left_side = [stick_left_side[0] + unit_point[0] + unit_weigth - root_scale*(i-1), stick_left_side[1] + unit_point[1]];
+                         
+                        ctx.stroke();
+                        ctx.fill();
+                        continue;
+                    }
+
+                    else if(i % n == 0){
+                        ctx.beginPath();
+                        ctx.moveTo(stick_right_side[0], stick_right_side[1]);
+                        ctx.bezierCurveTo(right_m[0] + curve*0.5, right_m[1], right_m[0] + curve*2, right_m[1], stick_right_side[0] + unit_point[0] - root_scale*(i-1) + curve*2, stick_right_side[1] + unit_point[1]);
+                        ctx.lineTo(stick_left_side[0] + unit_point[0] + unit_weigth - root_scale*(i-1) + curve*2, stick_left_side[1] + unit_point[1]);
+                        ctx.bezierCurveTo(left_m[0] + curve*2, left_m[1], left_m[0] + curve*0.5, left_m[1], stick_left_side[0], stick_left_side[1]);
+                        if(this.snap == 0 && this.save_img == 0){
+                            for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + unit_point[1])*this.scale + self.translate_point[1]); root_y++){
+                                for(var root_x = ((stick_right_side[0] + unit_point[0] - root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + this.translate_point[0]); root_x--){                            
+                                    var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
+                                    if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
+                                        self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["length"];
+                                    }
+                                }
+                            }
+                        }
+                        
+                        stick_right_side = [stick_right_side[0] + unit_point[0] - root_scale*(i-1) + curve*2, stick_right_side[1] + unit_point[1]];
+                        stick_left_side = [stick_left_side[0] + unit_point[0] + unit_weigth - root_scale*(i-1) + curve*2, stick_left_side[1] + unit_point[1]];
+                         
+                        ctx.stroke();
+                        ctx.fill();
+                        n = n + 3;
+                        continue;                        
+                    }
+
+                                                            
+                    ctx.beginPath();
+                    ctx.moveTo(stick_right_side[0], stick_right_side[1]);
+                    ctx.quadraticCurveTo(right_m[0], right_m[1], stick_right_side[0] + unit_point[0] - root_scale*(i-1), stick_right_side[1] + unit_point[1]);
+                    ctx.lineTo(stick_left_side[0] + unit_point[0] + unit_weigth - root_scale*(i-1), stick_left_side[1] + unit_point[1]);
+                    ctx.quadraticCurveTo(left_m[0], left_m[1], stick_left_side[0], stick_left_side[1]);
+                    if(this.snap == 0 && this.save_img == 0){
+                        for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + unit_point[1])*this.scale + self.translate_point[1]); root_y++){
+                            for(var root_x = ((stick_right_side[0] + unit_point[0] - root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x > (stick_left_side[0]*self.scale + this.translate_point[0]); root_x--){                            
+                                var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
+                                if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
+                                    self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["length"];
+                                }
+                            }
+                        }
+                    }
+                    
+                    stick_right_side = [stick_right_side[0] + unit_point[0] - root_scale*(i-1), stick_right_side[1] + unit_point[1]];
+                    stick_left_side = [stick_left_side[0] + unit_point[0] + unit_weigth - root_scale*(i-1), stick_left_side[1] + unit_point[1]];
+                                
+                    if(self.tree_size[self.ego_label][4] == "none" && self.snap == 0){
+                        if(stick_left_side[0] > self.tree_size[self.ego_label][1])
+                            self.tree_size[self.ego_label][1] = stick_left_side[0];
+                        if((stick_left_side[1] + unit_point[1]*2) > self.tree_size[self.ego_label][3])
+                            self.tree_size[self.ego_label][3] = stick_left_side[1] + unit_point[1]*2;
+                    }
+                    ctx.stroke();
+                    ctx.fill();
+                }
+
+                var curve_point = [(stick_right_side[0]*2 + unit_point[0] - root_scale*(i-1))/2, (stick_left_side[0]*2 + unit_point[0] + unit_weigth - root_scale*(i-1))/2];    
+                var right_m = [curve_point[0] - curve, stick_right_side[1] + unit_point[1]/2];
+                var left_m = [curve_point[1] - curve, stick_left_side[1] + unit_point[1]/2]; 
+                ctx.beginPath();
+                ctx.moveTo(stick_right_side[0], stick_right_side[1]);
+                ctx.bezierCurveTo(right_m[0], right_m[1], right_m[0] + curve, right_m[1], stick_right_side[0] + unit_point[0]*2 - root_scale*(i-1)*2, stick_right_side[1] + unit_point[1]*2);
+                ctx.bezierCurveTo(left_m[0] + curve, left_m[1], left_m[0], left_m[1], stick_left_side[0], stick_left_side[1]);
+                                
+                ctx.stroke();
+                ctx.fill();  
+                cnt_pair += 1;              
+            }
+
+            else{ // left side
+                if(r_center - cnt_pair < 0) {
+                    continue
+                }
+                var temp_cp = py + 100;
+                r = real_root_idx[r_center - cnt_pair];
+                // r = r_center - cnt_pair;
+                extend = 300/total_stick;
+                /*
+                if(cnt_pair == 2)
+                    temp_cp = py + 130;
+                else
+                    temp_cp = py + 50;
+                */
+                root_size = Math.pow(total_root[r]["length"], 0.3);
+                
+                // root_size = total_root[r]["length"]/10;
+                ctx.fillStyle = grd;
+                ctx.strokeStyle = grd;
+                ctx.moveTo(px_l, py);
+                ctx.bezierCurveTo(px_l - cnt_pair*15, py + 120, cp_side[1] - total*10 + cnt_pair*15, py + 60, cp_side[1] - total*10 - cnt_pair*15 - extend, py+200);
+                ctx.lineTo(cp_side[1] - total*10 - cnt_pair*15 + trunk_weigth - extend, py+200);
+                ctx.bezierCurveTo(cp_side[1] - total*10 + cnt_pair*15 + trunk_weigth, temp_cp, cp_bottom[0], py + 250, cp_bottom[0], py);
+                this.context.closePath();
+                ctx.stroke();
+                ctx.fill();
+
+                grd_root = ctx.createLinearGradient((px_r + px_l)/2, py+200, (px_r + px_l)/2, py+400);
+                grd_root.addColorStop(0, mapping_color.root);
+                grd_root.addColorStop(1, mapping_color.render_roots_color[r]);
+                ctx.fillStyle = grd_root;
+                ctx.strokeStyle = grd_root;
+
+                cp_side[1] = cp_side[1] - total*10 - cnt_pair*15 - extend;
+
+                var unit_point = [(((cnt_pair*22.5 + extend*0.65)*root_size)/total_root[r]["sub"].length)*root_length, ((105*root_size)/total_root[r]["sub"].length)*root_length]; // root_size*3
+                var unit_weigth = trunk_weigth/total_root[r]["sub"].length;
+                var stick_right_side = [cp_side[1], py+200];
+                var stick_left_side = [cp_side[1] + trunk_weigth, py+200];
+                var i = 0;
+                curve = 10+root_size*0.5;
+                n = 4;
+                for(i = 1; i < total_root[r]["sub"].length; i++){
+                    if(i%2 == 0)
+                        curve = -(10+root_size*2-i);
+                    else
+                        curve = 10+root_size*2-i; 
+
+                    var curve_point = [(stick_right_side[0]*2 - unit_point[0] + root_scale*(i-1))/2, (stick_left_side[0]*2 - unit_point[0] - unit_weigth + root_scale*(i-1))/2];                         
+                    var right_m = [curve_point[0] + curve, stick_right_side[1] + unit_point[1]/2];
+                    var left_m = [curve_point[1] + curve, stick_left_side[1] + unit_point[1]/2];
+
+                    if(total_root[r]["sub"][i] != 0){
+                        var fractal = 0;
+                        if((i+1) % n == 0) fractal = (10+root_size*0.1-i);
+                        else if(i % n == 0) fractal = -(10+root_size*0.1-i);
+                        
+                        if(i%2 == 0){
+                            ctx.beginPath();
+                            ctx.moveTo(stick_right_side[0], stick_right_side[1]);
+                            ctx.bezierCurveTo(stick_right_side[0] - unit_point[0]*2 + root_scale*(i-1)*2, stick_right_side[1] + unit_point[1]*2, stick_right_side[0] - unit_point[0]*2 - total - 30 + root_scale*(i-1), stick_right_side[1] + unit_point[1], stick_right_side[0] - unit_point[0]*5 + root_scale*(i+1) - 30 - total_root[r]["sub"][i]*3 - fractal, stick_right_side[1] + unit_point[1] + total_root[r]["sub"][i]*2.5 - fractal); //+/- total_root[r]["sub"][i]*5
+                            ctx.bezierCurveTo(stick_right_side[0] - unit_point[0]*2 - total - 30 + root_scale*(i-1), stick_right_side[1] + unit_point[1] + 5, stick_right_side[0] - unit_point[0]*2 + root_scale*(i-1)*2, stick_right_side[1] + unit_point[1]*2, stick_left_side[0], stick_right_side[1]);
+                            ctx.stroke();
+                            ctx.fill();
+                        }
+                
+                        else{
+                            ctx.beginPath();
+                            ctx.moveTo(stick_left_side[0], stick_left_side[1]);
+                            ctx.bezierCurveTo(stick_left_side[0] - unit_point[0]*2 + root_scale*(i-1)*2 - unit_weigth*2, stick_left_side[1] + unit_point[1]*2, stick_left_side[0] - unit_point[0] + total + 30 + root_scale*(i-1) - unit_weigth, stick_left_side[1] + unit_point[1], stick_left_side[0] - unit_point[0]*2 - unit_weigth*2 + root_scale*(i+1) + 30 + total_root[r]["sub"][i]*3 + fractal, stick_left_side[1] + unit_point[1]*3 + total_root[r]["sub"][i]*2.5 - fractal); //+/- total_root[r]["sub"][i]*5
+                            ctx.bezierCurveTo(stick_left_side[0] - unit_point[0] + total + 30 + root_scale*(i-1) - unit_weigth, stick_left_side[1] + unit_point[1] + 5, stick_left_side[0] - unit_point[0]*2 + root_scale*(i-1)*2 - unit_weigth*2, stick_left_side[1] + unit_point[1]*2, stick_right_side[0], stick_left_side[1]);
+                            ctx.stroke();
+                            ctx.fill();
+                        }
+
+                    }
+                    if(i == 1){
+                        ctx.beginPath();
+                        ctx.moveTo(stick_right_side[0], stick_right_side[1]);
+                        ctx.bezierCurveTo(right_m[0] - curve, right_m[1], right_m[0], right_m[1], stick_right_side[0] - unit_point[0] + root_scale*(i-1), stick_right_side[1] + unit_point[1]);
+                        ctx.lineTo(stick_left_side[0] - unit_point[0] - unit_weigth + root_scale*(i-1), stick_left_side[1] + unit_point[1]);
+                        ctx.bezierCurveTo(left_m[0], left_m[1], left_m[0] - curve, left_m[1], stick_left_side[0], stick_left_side[1]);
+                        if(this.snap == 0 && this.save_img == 0){
+                            for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + unit_point[1])*this.scale + self.translate_point[1]); root_y++){
+                                for(var root_x = ((stick_right_side[0] - unit_point[0] + root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x < (stick_left_side[0]*self.scale + this.translate_point[0]); root_x++){                            
+                                    var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
+                                    if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
+                                        self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["length"];
+                                    }
+                                }
+                            }
+                        }
+                        
+                        stick_right_side = [stick_right_side[0] - unit_point[0] + root_scale*(i-1), stick_right_side[1] + unit_point[1]];
+                        stick_left_side = [stick_left_side[0] - unit_point[0] - unit_weigth + root_scale*(i-1), stick_left_side[1] + unit_point[1]];    
+                         
+                        ctx.stroke();
+                        ctx.fill();
+                        continue;
+                    }
+                    else if(i % n == 0){
+                        ctx.beginPath();
+                        ctx.moveTo(stick_right_side[0], stick_right_side[1]);
+                        ctx.bezierCurveTo(right_m[0] + curve*0.5, right_m[1], right_m[0] + curve*2, right_m[1], stick_right_side[0] - unit_point[0] + root_scale*(i-1) + curve*2, stick_right_side[1] + unit_point[1]);
+                        // ctx.lineTo(stick_right_side[0] - unit_point[0], stick_right_side[1] + unit_point[1]);
+                        ctx.lineTo(stick_left_side[0] - unit_point[0] - unit_weigth + root_scale*(i-1) + curve*2, stick_left_side[1] + unit_point[1]);
+                        ctx.bezierCurveTo(left_m[0] + curve*2, left_m[1], left_m[0] + curve*0.5, left_m[1], stick_left_side[0], stick_left_side[1]);
+                        // ctx.lineTo(stick_left_side[0], stick_left_side[1]);
+                        if(this.snap == 0 && this.save_img == 0){
+                            for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + unit_point[1])*this.scale + self.translate_point[1]); root_y++){
+                                for(var root_x = ((stick_right_side[0] - unit_point[0] + root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x < (stick_left_side[0]*self.scale + this.translate_point[0]); root_x++){                            
+                                    var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
+                                    if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
+                                        self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["length"];
+                                    }
+                                }
+                            }
+                        }
+                        
+                        stick_right_side = [stick_right_side[0] - unit_point[0] + root_scale*(i-1) + curve*2, stick_right_side[1] + unit_point[1]];
+                        stick_left_side = [stick_left_side[0] - unit_point[0] - unit_weigth + root_scale*(i-1) + curve*2, stick_left_side[1] + unit_point[1]];    
+                         
+                        ctx.stroke();
+                        ctx.fill();
+                        n = n + 3;
+                        continue;                        
+                    }
+                    
+                    ctx.beginPath();
+                    ctx.moveTo(stick_right_side[0], stick_right_side[1]);
+                    ctx.quadraticCurveTo(right_m[0], right_m[1], stick_right_side[0] - unit_point[0] + root_scale*(i-1), stick_right_side[1] + unit_point[1]);
+                    ctx.lineTo(stick_left_side[0] - unit_point[0] - unit_weigth + root_scale*(i-1), stick_left_side[1] + unit_point[1]);
+                    ctx.quadraticCurveTo(left_m[0], left_m[1], stick_left_side[0], stick_left_side[1]);
+                    if(this.snap == 0 && this.save_img == 0){
+                        for(var root_y = (stick_right_side[1]*self.scale + self.translate_point[1]); root_y < ((stick_right_side[1] + unit_point[1])*this.scale + self.translate_point[1]); root_y++){
+                            for(var root_x = ((stick_right_side[0] - unit_point[0] + root_scale*(i-1))*self.scale + this.translate_point[0]) ; root_x < (stick_left_side[0]*self.scale + this.translate_point[0]); root_x++){                            
+                                var clicking_point = [Math.round(root_x/self.c_detail), Math.round(root_y/self.c_detail)];
+                                if(clicking_point[0] >= 0 && clicking_point[0] <= self.myCanvas.width/self.c_detail && clicking_point[1] >= 0 && clicking_point[1] <= self.myCanvas.height/self.c_detail){
+                                    self.clicking_grid[clicking_point[0]][clicking_point[1]] = "root*+" +  total_root[r]["length"];
+                                }
+                            }
+                        }
+                    }
+                    
+                    stick_right_side = [stick_right_side[0] - unit_point[0] + root_scale*(i-1), stick_right_side[1] + unit_point[1]];
+                    stick_left_side = [stick_left_side[0] - unit_point[0] - unit_weigth + root_scale*(i-1), stick_left_side[1] + unit_point[1]];               
+                    
+                    if(self.tree_size[self.ego_label][4] == "none" && self.snap == 0){
+                        if(stick_left_side[0] < self.tree_size[self.ego_label][0])
+                            self.tree_size[self.ego_label][0] = stick_left_side[0];
+                        if((stick_left_side[1] + unit_point[1]*2) > self.tree_size[self.ego_label][3])
+                            self.tree_size[self.ego_label][3] = stick_left_side[1] + unit_point[1]*2;
+                    }
+                    ctx.stroke();
+                    ctx.fill();
+                }
+
+                var curve_point = [(stick_right_side[0]*2 - unit_point[0] + root_scale*(i-1))/2, (stick_left_side[0]*2 - unit_point[0] - unit_weigth + root_scale*(i-1))/2];                         
+                var right_m = [curve_point[0] - curve, stick_right_side[1] + unit_point[1]/2];
+                var left_m = [curve_point[1] - curve, stick_left_side[1] + unit_point[1]/2];
+                ctx.beginPath();
+                ctx.moveTo(stick_right_side[0], stick_right_side[1]);
+                ctx.bezierCurveTo(right_m[0], right_m[1], right_m[0] + curve, right_m[1], stick_right_side[0] - unit_point[0]*2 + root_scale*(i-1)*2, stick_right_side[1] + unit_point[1]*2);
+                ctx.bezierCurveTo(left_m[0] + curve, left_m[1], left_m[0], left_m[1], stick_left_side[0], stick_left_side[1]);
+
+                ctx.stroke();
+                ctx.fill();
+            }          
+
+            // side ++;
+            total --;
+            
+        }
+        
+        
+    },
+
+    draw_root_flow: function(total_root, py, px_r, px_l, ctx){
+        var self = this;
         ctx.lineWidth = 3;
         var grd = ctx.createLinearGradient((px_r + px_l)/2, py, (px_r + px_l)/2, py+200);
         grd.addColorStop(0, "#7D6041");
@@ -1988,7 +2499,7 @@ var RenderingView = Backbone.View.extend({
         var total_stick = 0;
         var max_root = 0;
         for(var r in total_root){
-            if(r != -1){
+            if(r != -1){ //&& total_root[r]["length"] != 0
                 total_stick++;
                 total_amount += total_root[r]["length"];
                 if(max_root < total_root[r]["length"])
@@ -2182,6 +2693,9 @@ var RenderingView = Backbone.View.extend({
                 }
                 r = r_center + cnt_pair;
                 root_size = Math.pow(total_root[r]["length"], 0.3);
+                if(root_size == 0 || r == -1){
+                    continue;
+                }
                 // root_size = total_root[r]["length"]/10;
                 ctx.fillStyle = grd;
                 ctx.strokeStyle = grd;
@@ -2350,6 +2864,9 @@ var RenderingView = Backbone.View.extend({
                 else
                     temp_cp = py + 50;
                 root_size = Math.pow(total_root[r]["length"], 0.3);
+                if(root_size == 0 || r == -1){
+                    continue;
+                }
                 // root_size = total_root[r]["length"]/10;
                 ctx.fillStyle = grd;
                 ctx.strokeStyle = grd;

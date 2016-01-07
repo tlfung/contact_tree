@@ -579,7 +579,8 @@ var MappingView = Backbone.View.extend({
         var revert = "d";
         var attr_min = parseInt(component_attribute[data_mode][one_attr][1]);
         var attr_max = parseInt(component_attribute[data_mode][one_attr][2]);
-        var attr_range = component_attribute[data_mode][one_attr][3];
+        // var attr_range = component_attribute[data_mode][one_attr][3];
+        var attr_range = attr_max - attr_min + 1;
 
         var sep = $('<div id="sep_group" class="left" style="margin:15 0 0 10; position:relative;"></div>');
         var gap = $('<div style="margin-top:5px;"></div>');
@@ -706,7 +707,8 @@ var MappingView = Backbone.View.extend({
             
             var attr_min = parseInt(component_attribute[data_mode][one_attr][1]);
             var attr_max = parseInt(component_attribute[data_mode][one_attr][2]);
-            var attr_range = component_attribute[data_mode][one_attr][3];
+            // var attr_range = component_attribute[data_mode][one_attr][3];
+            var attr_range = attr_max - attr_min + 1;
             var gap = attr_range/($("#sep_gap").val()-1); //!!!
             var new_slider_val = [];
             var real_slider_val = [];
@@ -781,7 +783,8 @@ var MappingView = Backbone.View.extend({
             revert = "d";
             var attr_min = parseInt(component_attribute[data_mode][one_attr][1]);
             var attr_max = parseInt(component_attribute[data_mode][one_attr][2]);
-            var attr_range = component_attribute[data_mode][one_attr][3];
+            // var attr_range = component_attribute[data_mode][one_attr][3];
+            var attr_range = attr_max - attr_min + 1;
             var gap = attr_range/($("#sep_gap").val()-1);
             var new_slider_val = [];
             
@@ -922,7 +925,8 @@ var MappingView = Backbone.View.extend({
 
         var attr_min = parseInt(component_attribute[data_mode][one_attr][1]);
         var attr_max = parseInt(component_attribute[data_mode][one_attr][2]);
-        var attr_range = component_attribute[data_mode][one_attr][3];
+        // var attr_range = component_attribute[data_mode][one_attr][3];
+        var attr_range = attr_max - attr_min + 1;
 
         var sep = $('<div id="sep_group" class="left" style="margin:15 0 0 10; position:relative;"></div>');
         var gap = $('<div style="margin-top:10px; margin-bottom: 10px;"></div>');
@@ -1186,7 +1190,8 @@ var MappingView = Backbone.View.extend({
 
         var attr_min = parseInt(component_attribute[data_mode][one_attr][1]);
         var attr_max = parseInt(component_attribute[data_mode][one_attr][2]);
-        var attr_range = component_attribute[data_mode][one_attr][3];
+        // var attr_range = component_attribute[data_mode][one_attr][3];
+        var attr_range = attr_max - attr_min + 1;
         
         var sep = $('<div id="sep_group" class="left" style="margin:15 0 0 10; position:relative;"></div>');
         var gap = $('<div style="margin-top:10px;"></div>');
@@ -1273,7 +1278,8 @@ var MappingView = Backbone.View.extend({
             var val_map = [];
             var attr_min = parseInt(component_attribute[data_mode][one_attr][1]);
             var attr_max = parseInt(component_attribute[data_mode][one_attr][2]);
-            var attr_range = component_attribute[data_mode][one_attr][3];
+            // var attr_range = component_attribute[data_mode][one_attr][3];
+            var attr_range = attr_max - attr_min + 1;
             var mapping_gap = attr_range/($("#sep_gap").val()-1); //!!!
             var new_slider_val = [];
         
